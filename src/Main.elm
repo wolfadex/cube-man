@@ -10,18 +10,22 @@ import Browser
 import Browser.Events
 import Camera3d
 import Color
+import Cone3d
 import Direction3d
-import Frame3d
+import Duration
+import Frame3d exposing (Frame3d)
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Json.Decode
 import Length
 import Pixels
-import Point3d
+import Point3d exposing (Point3d)
 import Quantity
 import Scene3d
 import Scene3d.Material
+import Sphere3d
+import Vector3d
 import Viewpoint3d
 
 
@@ -44,7 +48,13 @@ type alias Model =
     , cameraRotation : Angle
     , mouseDragging : Bool
     , cursorBounce : Animation Float
+    , boardEncoding : String
+    , playerFrame : Frame3d Length.Meters WorldCoordinates {}
     }
+
+
+type WorldCoordinates
+    = WorldCoordinates Never
 
 
 type alias Point =
@@ -53,6 +63,38 @@ type alias Point =
 
 type alias Board =
     Array Bool
+
+
+encodeBoard : Board -> String
+encodeBoard board =
+    Array.foldr
+        (\cell enc ->
+            if cell then
+                "1" ++ enc
+
+            else
+                "0" ++ enc
+        )
+        ""
+        board
+
+
+decodeBoard : String -> Board
+decodeBoard enc =
+    String.foldl
+        (\char board ->
+            case char of
+                '0' ->
+                    Array.push False board
+
+                '1' ->
+                    Array.push True board
+
+                _ ->
+                    board
+        )
+        Array.empty
+        enc
 
 
 pointToIndex : { maxY : Int, maxZ : Int } -> Point -> Int
@@ -77,12 +119,26 @@ indexToPoint { maxX, maxY, maxZ } index =
 
 init : () -> ( Model, Cmd Msg )
 init () =
-    ( { maxX = 8
-      , maxY = 8
-      , maxZ = 8
-      , board = Array.repeat (8 * 8 * 8) True
-      , editorCursor = ( 0, 5, 0 )
-      , cameraRotation = Angle.degrees 0
+    let
+        maxX =
+            8
+
+        maxY =
+            8
+
+        maxZ =
+            8
+
+        board =
+            -- Array.repeat (maxX * maxY * maxZ) True
+            decodeBoard borgCube
+    in
+    ( { maxX = maxX
+      , maxY = maxY
+      , maxZ = maxZ
+      , board = board
+      , editorCursor = ( 1, 4, 7 )
+      , cameraRotation = Angle.degrees 135
       , mouseDragging = False
       , cursorBounce =
             Animation.init 0
@@ -97,9 +153,19 @@ init () =
                   }
                 ]
                 |> Animation.withLoop
+      , boardEncoding = encodeBoard board
+      , playerFrame = Frame3d.atPoint (Point3d.meters 1 4 7)
       }
     , Cmd.none
     )
+
+
+
+-- Borg Cube board
+
+
+borgCube =
+    "11101111111011111110111111101111000000001110111111101111111011111110111111111111111111111111111101111110111111111111111111101111111011111111111111111111111111110111111011111111111111111110111100000000011111100111111001111110011111100111111001111110000000001110111111111111111111111111111101111110111111111111111111101111111011111111111111111111111111110111111011111111111111111110111111101111111111111111111111111111011111101111111111111111111011111110111111101111111011111110111100000000111011111110111111101111"
 
 
 subscriptions : Model -> Sub Msg
@@ -164,6 +230,8 @@ type Msg
     | MouseDown
     | MouseUp
     | MouseMove Float
+    | EncodingChanged String
+    | LoadBoard
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -188,9 +256,23 @@ update msg model =
                                 model.cursorBounce
                     in
                     anim
+                , playerFrame =
+                    model.playerFrame
+                        |> Frame3d.translateIn
+                            (Frame3d.xDirection model.playerFrame)
+                            (Length.meters 2
+                                |> Quantity.per (Duration.seconds 1)
+                                |> Quantity.for (Duration.milliseconds deltaMs)
+                            )
               }
             , Cmd.none
             )
+
+        EncodingChanged boardEncoding ->
+            ( { model | boardEncoding = boardEncoding }, Cmd.none )
+
+        LoadBoard ->
+            ( { model | board = decodeBoard model.boardEncoding }, Cmd.none )
 
         MouseDown ->
             ( { model | mouseDragging = True }, Cmd.none )
@@ -211,12 +293,16 @@ update msg model =
         KeyPressed key ->
             case key of
                 " " ->
-                    ( { model
-                        | board =
+                    let
+                        board =
                             Array.Extra.update
                                 (pointToIndex { maxZ = model.maxZ, maxY = model.maxY } model.editorCursor)
                                 not
                                 model.board
+                    in
+                    ( { model
+                        | board = board
+                        , boardEncoding = encodeBoard board
                       }
                     , Cmd.none
                     )
@@ -330,7 +416,7 @@ view model =
             , Html.Attributes.style "display" "inline-flex"
             ]
             [ let
-                camera =
+                editorCamera =
                     Camera3d.perspective
                         { viewpoint =
                             Viewpoint3d.orbitZ
@@ -341,6 +427,23 @@ view model =
                                 }
                         , verticalFieldOfView = Angle.degrees 30
                         }
+
+                gameplayCamera =
+                    Camera3d.perspective
+                        { viewpoint =
+                            let
+                                targetPos =
+                                    Frame3d.originPoint model.playerFrame
+                            in
+                            Viewpoint3d.lookAt
+                                { focalPoint = targetPos
+                                , eyePoint =
+                                    targetPos
+                                        |> Point3d.translateIn (Frame3d.zDirection model.playerFrame) (Length.meters 15)
+                                , upDirection = Frame3d.xDirection model.playerFrame
+                                }
+                        , verticalFieldOfView = Angle.degrees 30
+                        }
               in
               Scene3d.sunny
                 { clipDepth = Length.meters 1
@@ -348,7 +451,7 @@ view model =
                 , shadows = True
                 , dimensions = ( Pixels.int 800, Pixels.int 600 )
                 , upDirection = Direction3d.positiveZ
-                , camera = camera
+                , camera = gameplayCamera
                 , sunlightDirection =
                     Direction3d.positiveZ
                         |> Direction3d.rotateAround Axis3d.x (Angle.degrees 60)
@@ -359,14 +462,73 @@ view model =
                             |> Array.toList
                             |> List.indexedMap (viewCell model)
                         , [ viewCursor model.cursorBounce model.editorCursor ]
+                        , [ viewPlayer model.playerFrame ]
                         ]
                 }
+            ]
+        , Html.br [] []
+        , Html.form
+            [ Html.Events.onSubmit LoadBoard ]
+            [ Html.button
+                [ Html.Attributes.type_ "submit" ]
+                [ Html.text "Load" ]
+            , Html.input
+                [ Html.Attributes.value model.boardEncoding
+                , Html.Events.onInput EncodingChanged
+                ]
+                []
             ]
         ]
     }
 
 
-viewCell : Model -> Int -> Bool -> Scene3d.Entity coordinates
+viewPlayer : Frame3d Length.Meters WorldCoordinates {} -> Scene3d.Entity WorldCoordinates
+viewPlayer frame =
+    let
+        pos =
+            Frame3d.originPoint frame
+    in
+    Scene3d.group
+        [ Scene3d.sphereWithShadow
+            (Scene3d.Material.matte Color.gray)
+            (Sphere3d.atOrigin
+                (Length.meters 0.5)
+            )
+        , Scene3d.coneWithShadow
+            (Scene3d.Material.matte Color.red)
+            (Cone3d.startingAt Point3d.origin
+                Direction3d.positiveX
+                { radius = Length.meters 0.5
+                , length = Length.meters 0.75
+                }
+            )
+        , Scene3d.coneWithShadow
+            (Scene3d.Material.matte Color.green)
+            (Cone3d.startingAt Point3d.origin
+                Direction3d.positiveY
+                { radius = Length.meters 0.5
+                , length = Length.meters 0.75
+                }
+            )
+        , Scene3d.coneWithShadow
+            (Scene3d.Material.matte Color.blue)
+            (Cone3d.startingAt Point3d.origin
+                Direction3d.positiveZ
+                { radius = Length.meters 0.5
+                , length = Length.meters 0.75
+                }
+            )
+        ]
+        |> Scene3d.translateBy
+            (Vector3d.from Point3d.origin pos)
+
+
+
+-- |> Scene3d.rotateAround
+--     (Axis3d.through pos Direction3d)
+
+
+viewCell : Model -> Int -> Bool -> Scene3d.Entity WorldCoordinates
 viewCell model index solid =
     if solid then
         let
@@ -380,7 +542,8 @@ viewCell model index solid =
         in
         Scene3d.blockWithShadow
             (Scene3d.Material.matte
-                (Color.rgb (toFloat x / toFloat model.maxX)
+                (Color.rgb
+                    (toFloat x / toFloat model.maxX)
                     (toFloat y / toFloat model.maxY)
                     (toFloat z / toFloat model.maxZ)
                 )
@@ -400,7 +563,7 @@ viewCell model index solid =
         Scene3d.nothing
 
 
-viewCursor : Animation Float -> Point -> Scene3d.Entity coordinates
+viewCursor : Animation Float -> Point -> Scene3d.Entity WorldCoordinates
 viewCursor bounceAnim ( x, y, z ) =
     let
         center =
