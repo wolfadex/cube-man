@@ -49,8 +49,22 @@ type alias Model =
     , mouseDragging : Bool
     , cursorBounce : Animation Float
     , boardEncoding : String
+    , mode : Mode
     , playerFrame : Frame3d Length.Meters WorldCoordinates {}
+    , playerFacing : Facing
     }
+
+
+type Mode
+    = Editor
+    | Game
+
+
+type Facing
+    = Forward
+    | Backward
+    | Left
+    | Right
 
 
 type WorldCoordinates
@@ -153,8 +167,10 @@ init () =
                   }
                 ]
                 |> Animation.withLoop
+      , mode = Game
       , boardEncoding = encodeBoard board
       , playerFrame = Frame3d.atPoint (Point3d.meters 1 4 7)
+      , playerFacing = Forward
       }
     , Cmd.none
     )
@@ -259,7 +275,21 @@ update msg model =
                 , playerFrame =
                     model.playerFrame
                         |> Frame3d.translateIn
-                            (Frame3d.xDirection model.playerFrame)
+                            (case model.playerFacing of
+                                Forward ->
+                                    Frame3d.xDirection model.playerFrame
+
+                                Backward ->
+                                    Frame3d.xDirection model.playerFrame
+                                        |> Direction3d.reverse
+
+                                Right ->
+                                    Frame3d.yDirection model.playerFrame
+                                        |> Direction3d.reverse
+
+                                Left ->
+                                    Frame3d.yDirection model.playerFrame
+                            )
                             (Length.meters 2
                                 |> Quantity.per (Duration.seconds 1)
                                 |> Quantity.for (Duration.milliseconds deltaMs)
@@ -291,120 +321,149 @@ update msg model =
             )
 
         KeyPressed key ->
-            case key of
-                " " ->
-                    let
-                        board =
-                            Array.Extra.update
-                                (pointToIndex { maxZ = model.maxZ, maxY = model.maxY } model.editorCursor)
-                                not
-                                model.board
-                    in
-                    ( { model
-                        | board = board
-                        , boardEncoding = encodeBoard board
-                      }
-                    , Cmd.none
-                    )
+            case model.mode of
+                Editor ->
+                    handleEditorKeyPressed key model
 
-                "w" ->
-                    let
-                        ( x, y, z ) =
-                            model.editorCursor
-                    in
-                    ( { model
-                        | editorCursor =
-                            ( min (model.maxX - 1) (x + 1)
-                            , y
-                            , z
-                            )
-                      }
-                    , Cmd.none
-                    )
+                Game ->
+                    handleGameKeyPressed key model
 
-                "s" ->
-                    let
-                        ( x, y, z ) =
-                            model.editorCursor
-                    in
-                    ( { model
-                        | editorCursor =
-                            ( max 0 (x - 1)
-                            , y
-                            , z
-                            )
-                      }
-                    , Cmd.none
-                    )
 
-                "a" ->
-                    let
-                        ( x, y, z ) =
-                            model.editorCursor
-                    in
-                    ( { model
-                        | editorCursor =
-                            ( x
-                            , min (model.maxY - 1) (y + 1)
-                            , z
-                            )
-                      }
-                    , Cmd.none
-                    )
+handleGameKeyPressed : String -> Model -> ( Model, Cmd Msg )
+handleGameKeyPressed key model =
+    case key of
+        "w" ->
+            ( { model | playerFacing = Forward }, Cmd.none )
 
-                "d" ->
-                    let
-                        ( x, y, z ) =
-                            model.editorCursor
-                    in
-                    ( { model
-                        | editorCursor =
-                            ( x
-                            , max 0 (y - 1)
-                            , z
-                            )
-                      }
-                    , Cmd.none
-                    )
+        "s" ->
+            ( { model | playerFacing = Backward }, Cmd.none )
 
-                "e" ->
-                    let
-                        ( x, y, z ) =
-                            model.editorCursor
-                    in
-                    ( { model
-                        | editorCursor =
-                            ( x
-                            , y
-                            , min (model.maxZ - 1) (z + 1)
-                            )
-                      }
-                    , Cmd.none
-                    )
+        "d" ->
+            ( { model | playerFacing = Right }, Cmd.none )
 
-                "q" ->
-                    let
-                        ( x, y, z ) =
-                            model.editorCursor
-                    in
-                    ( { model
-                        | editorCursor =
-                            ( x
-                            , y
-                            , max 0 (z - 1)
-                            )
-                      }
-                    , Cmd.none
-                    )
+        "a" ->
+            ( { model | playerFacing = Left }, Cmd.none )
 
-                _ ->
-                    let
-                        _ =
-                            Debug.log "unhandled key" key
-                    in
-                    ( model
-                    , Cmd.none
+        _ ->
+            ( model, Cmd.none )
+
+
+handleEditorKeyPressed : String -> Model -> ( Model, Cmd Msg )
+handleEditorKeyPressed key model =
+    case key of
+        " " ->
+            let
+                board =
+                    Array.Extra.update
+                        (pointToIndex { maxZ = model.maxZ, maxY = model.maxY } model.editorCursor)
+                        not
+                        model.board
+            in
+            ( { model
+                | board = board
+                , boardEncoding = encodeBoard board
+              }
+            , Cmd.none
+            )
+
+        "w" ->
+            let
+                ( x, y, z ) =
+                    model.editorCursor
+            in
+            ( { model
+                | editorCursor =
+                    ( min (model.maxX - 1) (x + 1)
+                    , y
+                    , z
                     )
+              }
+            , Cmd.none
+            )
+
+        "s" ->
+            let
+                ( x, y, z ) =
+                    model.editorCursor
+            in
+            ( { model
+                | editorCursor =
+                    ( max 0 (x - 1)
+                    , y
+                    , z
+                    )
+              }
+            , Cmd.none
+            )
+
+        "a" ->
+            let
+                ( x, y, z ) =
+                    model.editorCursor
+            in
+            ( { model
+                | editorCursor =
+                    ( x
+                    , min (model.maxY - 1) (y + 1)
+                    , z
+                    )
+              }
+            , Cmd.none
+            )
+
+        "d" ->
+            let
+                ( x, y, z ) =
+                    model.editorCursor
+            in
+            ( { model
+                | editorCursor =
+                    ( x
+                    , max 0 (y - 1)
+                    , z
+                    )
+              }
+            , Cmd.none
+            )
+
+        "e" ->
+            let
+                ( x, y, z ) =
+                    model.editorCursor
+            in
+            ( { model
+                | editorCursor =
+                    ( x
+                    , y
+                    , min (model.maxZ - 1) (z + 1)
+                    )
+              }
+            , Cmd.none
+            )
+
+        "q" ->
+            let
+                ( x, y, z ) =
+                    model.editorCursor
+            in
+            ( { model
+                | editorCursor =
+                    ( x
+                    , y
+                    , max 0 (z - 1)
+                    )
+              }
+            , Cmd.none
+            )
+
+        _ ->
+            let
+                _ =
+                    Debug.log "unhandled key" key
+            in
+            ( model
+            , Cmd.none
+            )
 
 
 view : Model -> Browser.Document Msg
@@ -462,7 +521,7 @@ view model =
                             |> Array.toList
                             |> List.indexedMap (viewCell model)
                         , [ viewCursor model.cursorBounce model.editorCursor ]
-                        , [ viewPlayer model.playerFrame ]
+                        , [ viewPlayer model.playerFacing model.playerFrame ]
                         ]
                 }
             ]
@@ -482,8 +541,8 @@ view model =
     }
 
 
-viewPlayer : Frame3d Length.Meters WorldCoordinates {} -> Scene3d.Entity WorldCoordinates
-viewPlayer frame =
+viewPlayer : Facing -> Frame3d Length.Meters WorldCoordinates {} -> Scene3d.Entity WorldCoordinates
+viewPlayer facing frame =
     let
         pos =
             Frame3d.originPoint frame
@@ -519,13 +578,22 @@ viewPlayer frame =
                 }
             )
         ]
-        |> Scene3d.translateBy
-            (Vector3d.from Point3d.origin pos)
+        |> Scene3d.translateBy (Vector3d.from Point3d.origin pos)
+        |> Scene3d.rotateAround (Axis3d.through pos (Frame3d.zDirection frame))
+            (Angle.degrees <|
+                case facing of
+                    Forward ->
+                        0
 
+                    Backward ->
+                        180
 
+                    Left ->
+                        90
 
--- |> Scene3d.rotateAround
---     (Axis3d.through pos Direction3d)
+                    Right ->
+                        -90
+            )
 
 
 viewCell : Model -> Int -> Bool -> Scene3d.Entity WorldCoordinates
