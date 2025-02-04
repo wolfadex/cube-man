@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1738703181428"
+    "1738705440456"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -10959,7 +10959,8 @@ var $author$project$Main$init = function (_v0) {
 			mouseDragging: false,
 			playerFacing: $author$project$Main$Forward,
 			playerFrame: $ianmackenzie$elm_geometry$Frame3d$atPoint(
-				A3($ianmackenzie$elm_geometry$Point3d$meters, 1, 4, 7))
+				A3($ianmackenzie$elm_geometry$Point3d$meters, 1, 4, 7)),
+			playerWantFacing: $author$project$Main$Forward
 		},
 		$elm$core$Platform$Cmd$none);
 };
@@ -11551,12 +11552,6 @@ var $author$project$Main$subscriptions = function (model) {
 var $ianmackenzie$elm_units$Quantity$float = function (value) {
 	return $ianmackenzie$elm_units$Quantity$Quantity(value);
 };
-var $ianmackenzie$elm_units$Quantity$for = F2(
-	function (_v0, _v1) {
-		var independentValue = _v0.a;
-		var rateOfChange = _v1.a;
-		return $ianmackenzie$elm_units$Quantity$Quantity(rateOfChange * independentValue);
-	});
 var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Basics$min = F2(
 	function (x, y) {
@@ -11670,10 +11665,7 @@ var $author$project$Main$handleEditorKeyPressed = F2(
 			case ' ':
 				var board = A3(
 					$elmcraft$core_extra$Array$Extra$update,
-					A2(
-						$author$project$Main$pointToIndex,
-						{maxY: model.maxY, maxZ: model.maxZ},
-						model.editorCursor),
+					A2($author$project$Main$pointToIndex, model, model.editorCursor),
 					$elm$core$Basics$not,
 					model.board);
 				return _Utils_Tuple2(
@@ -11789,25 +11781,25 @@ var $author$project$Main$handleGameKeyPressed = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{playerFacing: $author$project$Main$Forward}),
+						{playerWantFacing: $author$project$Main$Forward}),
 					$elm$core$Platform$Cmd$none);
 			case 's':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{playerFacing: $author$project$Main$Backward}),
+						{playerWantFacing: $author$project$Main$Backward}),
 					$elm$core$Platform$Cmd$none);
 			case 'd':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{playerFacing: $author$project$Main$Right}),
+						{playerWantFacing: $author$project$Main$Right}),
 					$elm$core$Platform$Cmd$none);
 			case 'a':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{playerFacing: $author$project$Main$Left}),
+						{playerWantFacing: $author$project$Main$Left}),
 					$elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -11819,35 +11811,12 @@ var $ianmackenzie$elm_units$Quantity$interpolateFrom = F3(
 		var end = _v1.a;
 		return (parameter <= 0.5) ? $ianmackenzie$elm_units$Quantity$Quantity(start + (parameter * (end - start))) : $ianmackenzie$elm_units$Quantity$Quantity(end + ((1 - parameter) * (start - end)));
 	});
-var $ianmackenzie$elm_units$Length$meters = function (numMeters) {
-	return $ianmackenzie$elm_units$Quantity$Quantity(numMeters);
-};
-var $ianmackenzie$elm_units$Duration$seconds = function (numSeconds) {
-	return $ianmackenzie$elm_units$Quantity$Quantity(numSeconds);
-};
-var $ianmackenzie$elm_units$Duration$milliseconds = function (numMilliseconds) {
-	return $ianmackenzie$elm_units$Duration$seconds(0.001 * numMilliseconds);
-};
 var $ianmackenzie$elm_units$Quantity$minus = F2(
 	function (_v0, _v1) {
 		var y = _v0.a;
 		var x = _v1.a;
 		return $ianmackenzie$elm_units$Quantity$Quantity(x - y);
 	});
-var $ianmackenzie$elm_units$Quantity$per = F2(
-	function (_v0, _v1) {
-		var independentValue = _v0.a;
-		var dependentValue = _v1.a;
-		return $ianmackenzie$elm_units$Quantity$Quantity(dependentValue / independentValue);
-	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $ianmackenzie$elm_geometry$Direction3d$reverse = function (_v0) {
-	var d = _v0.a;
-	return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-		{x: -d.x, y: -d.y, z: -d.z});
-};
 var $author$project$Animation$stepHelper = F4(
 	function (_default, interpolate, frames, elapsedTime) {
 		stepHelper:
@@ -11956,9 +11925,34 @@ var $author$project$Animation$step = F3(
 			}
 		}
 	});
-var $ianmackenzie$elm_units$Quantity$toFloat = function (_v0) {
-	var value = _v0.a;
-	return value;
+var $ianmackenzie$elm_units$Quantity$for = F2(
+	function (_v0, _v1) {
+		var independentValue = _v0.a;
+		var rateOfChange = _v1.a;
+		return $ianmackenzie$elm_units$Quantity$Quantity(rateOfChange * independentValue);
+	});
+var $ianmackenzie$elm_units$Length$meters = function (numMeters) {
+	return $ianmackenzie$elm_units$Quantity$Quantity(numMeters);
+};
+var $ianmackenzie$elm_units$Duration$seconds = function (numSeconds) {
+	return $ianmackenzie$elm_units$Quantity$Quantity(numSeconds);
+};
+var $ianmackenzie$elm_units$Duration$milliseconds = function (numMilliseconds) {
+	return $ianmackenzie$elm_units$Duration$seconds(0.001 * numMilliseconds);
+};
+var $ianmackenzie$elm_units$Quantity$per = F2(
+	function (_v0, _v1) {
+		var independentValue = _v0.a;
+		var dependentValue = _v1.a;
+		return $ianmackenzie$elm_units$Quantity$Quantity(dependentValue / independentValue);
+	});
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $ianmackenzie$elm_geometry$Direction3d$reverse = function (_v0) {
+	var d = _v0.a;
+	return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+		{x: -d.x, y: -d.y, z: -d.z});
 };
 var $ianmackenzie$elm_geometry$Frame3d$originPoint = function (_v0) {
 	var properties = _v0.a;
@@ -12013,61 +12007,271 @@ var $ianmackenzie$elm_geometry$Frame3d$translateIn = F3(
 			A2($ianmackenzie$elm_geometry$Vector3d$withLength, distance, direction),
 			frame);
 	});
+var $author$project$Main$movePlayer = F2(
+	function (deltaMs, model) {
+		return _Utils_update(
+			model,
+			{
+				playerFrame: A3(
+					$ianmackenzie$elm_geometry$Frame3d$translateIn,
+					function () {
+						var _v0 = A2($elm$core$Debug$log, 'playerFacing', model.playerFacing);
+						switch (_v0.$) {
+							case 'Forward':
+								return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
+							case 'Backward':
+								return $ianmackenzie$elm_geometry$Direction3d$reverse(
+									$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame));
+							case 'Right':
+								return $ianmackenzie$elm_geometry$Direction3d$reverse(
+									$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame));
+							default:
+								return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
+						}
+					}(),
+					A2(
+						$ianmackenzie$elm_units$Quantity$for,
+						$ianmackenzie$elm_units$Duration$milliseconds(deltaMs),
+						A2(
+							$ianmackenzie$elm_units$Quantity$per,
+							$ianmackenzie$elm_units$Duration$seconds(1),
+							$ianmackenzie$elm_units$Length$meters(2))),
+					model.playerFrame)
+			});
+	});
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $ianmackenzie$elm_units$Quantity$zero = $ianmackenzie$elm_units$Quantity$Quantity(0);
+var $ianmackenzie$elm_geometry$Point3d$distanceFrom = F2(
+	function (_v0, _v1) {
+		var p1 = _v0.a;
+		var p2 = _v1.a;
+		var deltaZ = p2.z - p1.z;
+		var deltaY = p2.y - p1.y;
+		var deltaX = p2.x - p1.x;
+		var largestComponent = A2(
+			$elm$core$Basics$max,
+			$elm$core$Basics$abs(deltaX),
+			A2(
+				$elm$core$Basics$max,
+				$elm$core$Basics$abs(deltaY),
+				$elm$core$Basics$abs(deltaZ)));
+		if (!largestComponent) {
+			return $ianmackenzie$elm_units$Quantity$zero;
+		} else {
+			var scaledZ = deltaZ / largestComponent;
+			var scaledY = deltaY / largestComponent;
+			var scaledX = deltaX / largestComponent;
+			var scaledLength = $elm$core$Basics$sqrt(((scaledX * scaledX) + (scaledY * scaledY)) + (scaledZ * scaledZ));
+			return $ianmackenzie$elm_units$Quantity$Quantity(scaledLength * largestComponent);
+		}
+	});
+var $ianmackenzie$elm_units$Quantity$equalWithin = F3(
+	function (_v0, _v1, _v2) {
+		var tolerance = _v0.a;
+		var x = _v1.a;
+		var y = _v2.a;
+		return _Utils_cmp(
+			$elm$core$Basics$abs(x - y),
+			tolerance) < 1;
+	});
+var $author$project$Main$oppositeFacings = F2(
+	function (faceA, faceB) {
+		var _v0 = _Utils_Tuple2(faceA, faceB);
+		_v0$4:
+		while (true) {
+			switch (_v0.a.$) {
+				case 'Forward':
+					if (_v0.b.$ === 'Backward') {
+						var _v1 = _v0.a;
+						var _v2 = _v0.b;
+						return true;
+					} else {
+						break _v0$4;
+					}
+				case 'Backward':
+					if (_v0.b.$ === 'Forward') {
+						var _v3 = _v0.a;
+						var _v4 = _v0.b;
+						return true;
+					} else {
+						break _v0$4;
+					}
+				case 'Left':
+					if (_v0.b.$ === 'Right') {
+						var _v5 = _v0.a;
+						var _v6 = _v0.b;
+						return true;
+					} else {
+						break _v0$4;
+					}
+				default:
+					if (_v0.b.$ === 'Left') {
+						var _v7 = _v0.a;
+						var _v8 = _v0.b;
+						return true;
+					} else {
+						break _v0$4;
+					}
+			}
+		}
+		return false;
+	});
+var $elm$core$Basics$round = _Basics_round;
+var $ianmackenzie$elm_geometry$Point3d$unwrap = function (_v0) {
+	var pointCoordinates = _v0.a;
+	return pointCoordinates;
+};
+var $author$project$Main$point3dToPoint = function (point) {
+	var parts = $ianmackenzie$elm_geometry$Point3d$unwrap(point);
+	return _Utils_Tuple3(
+		$elm$core$Basics$round(parts.x),
+		$elm$core$Basics$round(parts.y),
+		$elm$core$Basics$round(parts.z));
+};
+var $author$project$Main$pointToPoint3d = function (_v0) {
+	var x = _v0.a;
+	var y = _v0.b;
+	var z = _v0.c;
+	return A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z);
+};
+var $ianmackenzie$elm_geometry$Point3d$translateIn = F3(
+	function (_v0, _v1, _v2) {
+		var d = _v0.a;
+		var distance = _v1.a;
+		var p = _v2.a;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
+			{x: p.x + (distance * d.x), y: p.y + (distance * d.y), z: p.z + (distance * d.z)});
+	});
+var $author$project$Main$setPlayerFacing = function (model) {
+	if (_Utils_eq(model.playerFacing, model.playerWantFacing)) {
+		return model;
+	} else {
+		var playerBoardPoint = A2(
+			$elm$core$Debug$log,
+			'player point',
+			$author$project$Main$point3dToPoint(
+				$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame)));
+		var targetBoardPoint = A2(
+			$elm$core$Debug$log,
+			'target point',
+			$author$project$Main$point3dToPoint(
+				A3(
+					$ianmackenzie$elm_geometry$Point3d$translateIn,
+					function () {
+						var _v1 = model.playerWantFacing;
+						switch (_v1.$) {
+							case 'Forward':
+								return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
+							case 'Backward':
+								return $ianmackenzie$elm_geometry$Direction3d$reverse(
+									$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame));
+							case 'Left':
+								return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
+							default:
+								return $ianmackenzie$elm_geometry$Direction3d$reverse(
+									$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame));
+						}
+					}(),
+					$ianmackenzie$elm_units$Length$meters(1),
+					$author$project$Main$pointToPoint3d(playerBoardPoint))));
+		if (A2($author$project$Main$oppositeFacings, model.playerFacing, model.playerWantFacing)) {
+			return _Utils_update(
+				model,
+				{playerFacing: model.playerWantFacing});
+		} else {
+			if (A3(
+				$ianmackenzie$elm_units$Quantity$equalWithin,
+				$ianmackenzie$elm_units$Length$meters(0.1),
+				A2(
+					$elm$core$Debug$log,
+					'dist',
+					A2(
+						$ianmackenzie$elm_geometry$Point3d$distanceFrom,
+						$author$project$Main$pointToPoint3d(playerBoardPoint),
+						$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame))),
+				$ianmackenzie$elm_units$Length$meters(0))) {
+				var _v0 = A2(
+					$elm$core$Debug$log,
+					'cell at target',
+					A2(
+						$elm$core$Array$get,
+						A2($author$project$Main$pointToIndex, model, targetBoardPoint),
+						model.board));
+				if (_v0.$ === 'Nothing') {
+					return model;
+				} else {
+					var cell = _v0.a;
+					return A2($elm$core$Debug$log, 'cell', cell) ? model : _Utils_update(
+						model,
+						{
+							playerFacing: model.playerWantFacing,
+							playerFrame: $ianmackenzie$elm_geometry$Frame3d$unsafe(
+								{
+									originPoint: $author$project$Main$pointToPoint3d(playerBoardPoint),
+									xDirection: $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame),
+									yDirection: $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame),
+									zDirection: $ianmackenzie$elm_geometry$Frame3d$zDirection(model.playerFrame)
+								})
+						});
+				}
+			} else {
+				return model;
+			}
+		}
+	}
+};
+var $author$project$Main$tickPlayer = F2(
+	function (deltaMs, model) {
+		return A2(
+			$author$project$Main$movePlayer,
+			deltaMs,
+			$author$project$Main$setPlayerFacing(model));
+	});
+var $ianmackenzie$elm_units$Quantity$toFloat = function (_v0) {
+	var value = _v0.a;
+	return value;
+};
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'Tick':
 				var deltaMs = msg.a;
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							cursorBounce: function () {
-								var _v1 = A3(
-									$author$project$Animation$step,
-									{
-										easing: $elm$core$Basics$identity,
-										interpolate: F3(
-											function (a, b, dist) {
-												return $ianmackenzie$elm_units$Quantity$toFloat(
-													A3(
-														$ianmackenzie$elm_units$Quantity$interpolateFrom,
-														$ianmackenzie$elm_units$Quantity$float(a),
-														$ianmackenzie$elm_units$Quantity$float(b),
-														dist));
-											})
-									},
-									deltaMs,
-									model.cursorBounce);
-								var anim = _v1.b;
-								return anim;
-							}(),
-							playerFrame: A3(
-								$ianmackenzie$elm_geometry$Frame3d$translateIn,
-								function () {
-									var _v2 = model.playerFacing;
-									switch (_v2.$) {
-										case 'Forward':
-											return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
-										case 'Backward':
-											return $ianmackenzie$elm_geometry$Direction3d$reverse(
-												$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame));
-										case 'Right':
-											return $ianmackenzie$elm_geometry$Direction3d$reverse(
-												$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame));
-										default:
-											return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
+					A2(
+						$author$project$Main$tickPlayer,
+						deltaMs,
+						_Utils_update(
+							model,
+							{
+								cursorBounce: function () {
+									var _v1 = model.mode;
+									if (_v1.$ === 'Editor') {
+										var _v2 = A3(
+											$author$project$Animation$step,
+											{
+												easing: $elm$core$Basics$identity,
+												interpolate: F3(
+													function (a, b, dist) {
+														return $ianmackenzie$elm_units$Quantity$toFloat(
+															A3(
+																$ianmackenzie$elm_units$Quantity$interpolateFrom,
+																$ianmackenzie$elm_units$Quantity$float(a),
+																$ianmackenzie$elm_units$Quantity$float(b),
+																dist));
+													})
+											},
+											deltaMs,
+											model.cursorBounce);
+										var anim = _v2.b;
+										return anim;
+									} else {
+										return model.cursorBounce;
 									}
-								}(),
-								A2(
-									$ianmackenzie$elm_units$Quantity$for,
-									$ianmackenzie$elm_units$Duration$milliseconds(deltaMs),
-									A2(
-										$ianmackenzie$elm_units$Quantity$per,
-										$ianmackenzie$elm_units$Duration$seconds(1),
-										$ianmackenzie$elm_units$Length$meters(2))),
-								model.playerFrame)
-						}),
+								}()
+							})),
 					$elm$core$Platform$Cmd$none);
 			case 'EncodingChanged':
 				var boardEncoding = msg.a;
@@ -12151,10 +12355,6 @@ var $ianmackenzie$elm_geometry$Vector3d$cross = F2(
 		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
 			{x: (v1.y * v2.z) - (v1.z * v2.y), y: (v1.z * v2.x) - (v1.x * v2.z), z: (v1.x * v2.y) - (v1.y * v2.x)});
 	});
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
-var $elm$core$Basics$sqrt = _Basics_sqrt;
 var $ianmackenzie$elm_geometry$Vector3d$direction = function (_v0) {
 	var v = _v0.a;
 	var largestComponent = A2(
@@ -12240,7 +12440,6 @@ var $ianmackenzie$elm_geometry$Vector3d$reverse = function (_v0) {
 	return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
 		{x: -v.x, y: -v.y, z: -v.z});
 };
-var $ianmackenzie$elm_units$Quantity$zero = $ianmackenzie$elm_units$Quantity$Quantity(0);
 var $ianmackenzie$elm_geometry$Vector3d$zero = $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
 	{x: 0, y: 0, z: 0});
 var $ianmackenzie$elm_geometry$Direction3d$orthonormalize = F3(
@@ -12672,7 +12871,6 @@ var $elm$virtual_dom$VirtualDom$keyedNode = function (tag) {
 		_VirtualDom_noScript(tag));
 };
 var $elm$html$Html$Keyed$node = $elm$virtual_dom$VirtualDom$keyedNode;
-var $elm$core$Basics$round = _Basics_round;
 var $elm_explorations$webgl$WebGL$Internal$Stencil = function (a) {
 	return {$: 'Stencil', a: a};
 };
@@ -13630,10 +13828,6 @@ var $ianmackenzie$elm_3d_camera$Viewpoint3d$viewDirection = function (_v0) {
 };
 var $ianmackenzie$elm_geometry$Frame3d$atOrigin = $ianmackenzie$elm_geometry$Geometry$Types$Frame3d(
 	{originPoint: $ianmackenzie$elm_geometry$Point3d$origin, xDirection: $ianmackenzie$elm_geometry$Direction3d$x, yDirection: $ianmackenzie$elm_geometry$Direction3d$y, zDirection: $ianmackenzie$elm_geometry$Direction3d$z});
-var $ianmackenzie$elm_geometry$Point3d$unwrap = function (_v0) {
-	var pointCoordinates = _v0.a;
-	return pointCoordinates;
-};
 var $ianmackenzie$elm_geometry_linear_algebra_interop$Geometry$Interop$LinearAlgebra$Frame3d$toMat4 = function (frame) {
 	var p = $ianmackenzie$elm_geometry$Point3d$unwrap(
 		$ianmackenzie$elm_geometry$Frame3d$originPoint(frame));
@@ -14196,14 +14390,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$sunny = function (_arguments) {
 };
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $ianmackenzie$elm_geometry$Point3d$translateIn = F3(
-	function (_v0, _v1, _v2) {
-		var d = _v0.a;
-		var distance = _v1.a;
-		var p = _v2.a;
-		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
-			{x: p.x + (distance * d.x), y: p.y + (distance * d.y), z: p.z + (distance * d.z)});
-	});
 var $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor = function (a) {
 	return {$: 'BackgroundColor', a: a};
 };
@@ -16567,10 +16753,7 @@ var $avh4$elm_color$Color$rgb = F3(
 var $author$project$Main$viewCell = F3(
 	function (model, index, solid) {
 		if (solid) {
-			var _v0 = A2(
-				$author$project$Main$indexToPoint,
-				{maxX: model.maxX, maxY: model.maxY, maxZ: model.maxZ},
-				index);
+			var _v0 = A2($author$project$Main$indexToPoint, model, index);
 			var x = _v0.a;
 			var y = _v0.b;
 			var z = _v0.c;
@@ -17636,14 +17819,28 @@ var $author$project$Main$view = function (model) {
 											$elm$core$List$indexedMap,
 											$author$project$Main$viewCell(model),
 											$elm$core$Array$toList(model.board)),
-											_List_fromArray(
-											[
-												A2($author$project$Main$viewCursor, model.cursorBounce, model.editorCursor)
-											]),
-											_List_fromArray(
-											[
-												A2($author$project$Main$viewPlayer, model.playerFacing, model.playerFrame)
-											])
+											function () {
+											var _v0 = model.mode;
+											if (_v0.$ === 'Editor') {
+												return _List_fromArray(
+													[
+														A2($author$project$Main$viewCursor, model.cursorBounce, model.editorCursor)
+													]);
+											} else {
+												return _List_Nil;
+											}
+										}(),
+											function () {
+											var _v1 = model.mode;
+											if (_v1.$ === 'Editor') {
+												return _List_Nil;
+											} else {
+												return _List_fromArray(
+													[
+														A2($author$project$Main$viewPlayer, model.playerFacing, model.playerFrame)
+													]);
+											}
+										}()
 										])),
 								shadows: true,
 								sunlightDirection: A3(

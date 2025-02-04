@@ -52,6 +52,7 @@ type alias Model =
     , mode : Mode
     , playerFrame : Frame3d Length.Meters WorldCoordinates {}
     , playerFacing : Facing
+    , playerWantFacing : Facing
     }
 
 
@@ -111,12 +112,12 @@ decodeBoard enc =
         enc
 
 
-pointToIndex : { maxY : Int, maxZ : Int } -> Point -> Int
+pointToIndex : { m | maxY : Int, maxZ : Int } -> Point -> Int
 pointToIndex { maxY, maxZ } ( x, y, z ) =
     x * maxY * maxZ + y * maxZ + z
 
 
-indexToPoint : { maxX : Int, maxY : Int, maxZ : Int } -> Int -> Point
+indexToPoint : { m | maxX : Int, maxY : Int, maxZ : Int } -> Int -> Point
 indexToPoint { maxX, maxY, maxZ } index =
     let
         x =
@@ -129,6 +130,20 @@ indexToPoint { maxX, maxY, maxZ } index =
             index - x * maxY * maxZ - y * maxZ
     in
     ( x, y, z )
+
+
+pointToPoint3d : Point -> Point3d Length.Meters WorldCoordinates
+pointToPoint3d ( x, y, z ) =
+    Point3d.meters (toFloat x) (toFloat y) (toFloat z)
+
+
+point3dToPoint : Point3d Length.Meters WorldCoordinates -> Point
+point3dToPoint point =
+    let
+        parts =
+            Point3d.unwrap point
+    in
+    ( round parts.x, round parts.y, round parts.z )
 
 
 init : () -> ( Model, Cmd Msg )
@@ -171,6 +186,7 @@ init () =
       , boardEncoding = encodeBoard board
       , playerFrame = Frame3d.atPoint (Point3d.meters 1 4 7)
       , playerFacing = Forward
+      , playerWantFacing = Forward
       }
     , Cmd.none
     )
@@ -254,47 +270,31 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick deltaMs ->
-            ( { model
-                | cursorBounce =
-                    let
-                        ( _, anim ) =
-                            Animation.step
-                                { easing = identity
-                                , interpolate =
-                                    \a b dist ->
-                                        Quantity.interpolateFrom
-                                            (Quantity.float a)
-                                            (Quantity.float b)
-                                            dist
-                                            |> Quantity.toFloat
-                                }
-                                deltaMs
+            ( tickPlayer deltaMs
+                { model
+                    | cursorBounce =
+                        case model.mode of
+                            Editor ->
+                                let
+                                    ( _, anim ) =
+                                        Animation.step
+                                            { easing = identity
+                                            , interpolate =
+                                                \a b dist ->
+                                                    Quantity.interpolateFrom
+                                                        (Quantity.float a)
+                                                        (Quantity.float b)
+                                                        dist
+                                                        |> Quantity.toFloat
+                                            }
+                                            deltaMs
+                                            model.cursorBounce
+                                in
+                                anim
+
+                            Game ->
                                 model.cursorBounce
-                    in
-                    anim
-                , playerFrame =
-                    model.playerFrame
-                        |> Frame3d.translateIn
-                            (case model.playerFacing of
-                                Forward ->
-                                    Frame3d.xDirection model.playerFrame
-
-                                Backward ->
-                                    Frame3d.xDirection model.playerFrame
-                                        |> Direction3d.reverse
-
-                                Right ->
-                                    Frame3d.yDirection model.playerFrame
-                                        |> Direction3d.reverse
-
-                                Left ->
-                                    Frame3d.yDirection model.playerFrame
-                            )
-                            (Length.meters 2
-                                |> Quantity.per (Duration.seconds 1)
-                                |> Quantity.for (Duration.milliseconds deltaMs)
-                            )
-              }
+                }
             , Cmd.none
             )
 
@@ -329,20 +329,142 @@ update msg model =
                     handleGameKeyPressed key model
 
 
+tickPlayer : Float -> Model -> Model
+tickPlayer deltaMs model =
+    model
+        |> setPlayerFacing
+        |> movePlayer deltaMs
+
+
+movePlayer : Float -> Model -> Model
+movePlayer deltaMs model =
+    { model
+        | playerFrame =
+            model.playerFrame
+                |> Frame3d.translateIn
+                    (case Debug.log "playerFacing" model.playerFacing of
+                        Forward ->
+                            Frame3d.xDirection model.playerFrame
+
+                        Backward ->
+                            Frame3d.xDirection model.playerFrame
+                                |> Direction3d.reverse
+
+                        Right ->
+                            Frame3d.yDirection model.playerFrame
+                                |> Direction3d.reverse
+
+                        Left ->
+                            Frame3d.yDirection model.playerFrame
+                    )
+                    (Length.meters 2
+                        |> Quantity.per (Duration.seconds 1)
+                        |> Quantity.for (Duration.milliseconds deltaMs)
+                    )
+    }
+
+
+setPlayerFacing : Model -> Model
+setPlayerFacing model =
+    if model.playerFacing == model.playerWantFacing then
+        model
+
+    else
+        let
+            playerBoardPoint =
+                model.playerFrame
+                    |> Frame3d.originPoint
+                    |> point3dToPoint
+                    |> Debug.log "player point"
+
+            targetBoardPoint =
+                playerBoardPoint
+                    |> pointToPoint3d
+                    |> Point3d.translateIn
+                        (case model.playerWantFacing of
+                            Forward ->
+                                Frame3d.xDirection model.playerFrame
+
+                            Backward ->
+                                Frame3d.xDirection model.playerFrame
+                                    |> Direction3d.reverse
+
+                            Left ->
+                                Frame3d.yDirection model.playerFrame
+
+                            Right ->
+                                Frame3d.yDirection model.playerFrame
+                                    |> Direction3d.reverse
+                        )
+                        (Length.meters 1)
+                    |> point3dToPoint
+                    |> Debug.log "target point"
+        in
+        if oppositeFacings model.playerFacing model.playerWantFacing then
+            { model | playerFacing = model.playerWantFacing }
+
+        else if
+            Quantity.equalWithin (Length.meters 0.1)
+                (Debug.log "dist" (Point3d.distanceFrom (pointToPoint3d playerBoardPoint) (Frame3d.originPoint model.playerFrame)))
+                (Length.meters 0)
+        then
+            case Array.get (pointToIndex model targetBoardPoint) model.board |> Debug.log "cell at target" of
+                Nothing ->
+                    model
+
+                Just cell ->
+                    if Debug.log "cell" cell then
+                        model
+
+                    else
+                        { model
+                            | playerFrame =
+                                Frame3d.unsafe
+                                    { originPoint = pointToPoint3d playerBoardPoint
+                                    , xDirection = Frame3d.xDirection model.playerFrame
+                                    , yDirection = Frame3d.yDirection model.playerFrame
+                                    , zDirection = Frame3d.zDirection model.playerFrame
+                                    }
+                            , playerFacing = model.playerWantFacing
+                        }
+
+        else
+            model
+
+
+oppositeFacings : Facing -> Facing -> Bool
+oppositeFacings faceA faceB =
+    case ( faceA, faceB ) of
+        ( Forward, Backward ) ->
+            True
+
+        ( Backward, Forward ) ->
+            True
+
+        ( Left, Right ) ->
+            True
+
+        ( Right, Left ) ->
+            True
+
+        _ ->
+            False
+
+
 handleGameKeyPressed : String -> Model -> ( Model, Cmd Msg )
 handleGameKeyPressed key model =
     case key of
         "w" ->
-            ( { model | playerFacing = Forward }, Cmd.none )
+            ( { model | playerWantFacing = Forward }, Cmd.none )
 
         "s" ->
-            ( { model | playerFacing = Backward }, Cmd.none )
+            ( { model | playerWantFacing = Backward }, Cmd.none )
 
         "d" ->
-            ( { model | playerFacing = Right }, Cmd.none )
+            ( { model | playerWantFacing = Right }, Cmd.none )
 
         "a" ->
-            ( { model | playerFacing = Left }, Cmd.none )
+            ( { model | playerWantFacing = Left }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
@@ -355,7 +477,7 @@ handleEditorKeyPressed key model =
             let
                 board =
                     Array.Extra.update
-                        (pointToIndex { maxZ = model.maxZ, maxY = model.maxY } model.editorCursor)
+                        (pointToIndex model model.editorCursor)
                         not
                         model.board
             in
@@ -520,8 +642,18 @@ view model =
                         [ model.board
                             |> Array.toList
                             |> List.indexedMap (viewCell model)
-                        , [ viewCursor model.cursorBounce model.editorCursor ]
-                        , [ viewPlayer model.playerFacing model.playerFrame ]
+                        , case model.mode of
+                            Editor ->
+                                [ viewCursor model.cursorBounce model.editorCursor ]
+
+                            Game ->
+                                []
+                        , case model.mode of
+                            Editor ->
+                                []
+
+                            Game ->
+                                [ viewPlayer model.playerFacing model.playerFrame ]
                         ]
                 }
             ]
@@ -602,10 +734,7 @@ viewCell model index solid =
         let
             ( x, y, z ) =
                 indexToPoint
-                    { maxX = model.maxX
-                    , maxY = model.maxY
-                    , maxZ = model.maxZ
-                    }
+                    model
                     index
         in
         Scene3d.blockWithShadow
