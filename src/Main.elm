@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Angle exposing (Angle)
+import Animation exposing (Animation)
 import Array exposing (Array)
 import Array.Extra
 import Axis3d
@@ -42,6 +43,7 @@ type alias Model =
     , editorCursor : Point
     , cameraRotation : Angle
     , mouseDragging : Bool
+    , cursorBounce : Animation Float
     }
 
 
@@ -82,6 +84,19 @@ init () =
       , editorCursor = ( 0, 5, 0 )
       , cameraRotation = Angle.degrees 0
       , mouseDragging = False
+      , cursorBounce =
+            Animation.init 0
+                [ { value = 0
+                  , offset = 0
+                  }
+                , { value = 1
+                  , offset = 500
+                  }
+                , { value = 0
+                  , offset = 500
+                  }
+                ]
+                |> Animation.withLoop
       }
     , Cmd.none
     )
@@ -90,7 +105,8 @@ init () =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Browser.Events.onKeyPress decodeKeyPressed
+        [ Browser.Events.onAnimationFrameDelta Tick
+        , Browser.Events.onKeyPress decodeKeyPressed
         , if model.mouseDragging then
             Browser.Events.onMouseUp decodeMouseUp
 
@@ -109,7 +125,7 @@ deocdeMouseDown =
     Json.Decode.field "button" Json.Decode.int
         |> Json.Decode.andThen
             (\button ->
-                if Debug.log "mouse button" button == 0 then
+                if button == 0 then
                     Json.Decode.succeed MouseDown
 
                 else
@@ -143,7 +159,8 @@ decodeKeyPressed =
 
 
 type Msg
-    = KeyPressed String
+    = Tick Float
+    | KeyPressed String
     | MouseDown
     | MouseUp
     | MouseMove Float
@@ -152,24 +169,47 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        Tick deltaMs ->
+            ( { model
+                | cursorBounce =
+                    let
+                        ( _, anim ) =
+                            Animation.step
+                                { easing = identity
+                                , interpolate =
+                                    \a b dist ->
+                                        Quantity.interpolateFrom
+                                            (Quantity.float a)
+                                            (Quantity.float b)
+                                            dist
+                                            |> Quantity.toFloat
+                                }
+                                deltaMs
+                                model.cursorBounce
+                    in
+                    anim
+              }
+            , Cmd.none
+            )
+
         MouseDown ->
-            ( { model | mouseDragging = Debug.log "mouse down" True }, Cmd.none )
+            ( { model | mouseDragging = True }, Cmd.none )
 
         MouseUp ->
-            ( { model | mouseDragging = Debug.log "mouse down" False }, Cmd.none )
+            ( { model | mouseDragging = False }, Cmd.none )
 
         MouseMove delta ->
             ( { model
                 | cameraRotation =
                     model.cameraRotation
                         |> Quantity.minus
-                            (Angle.degrees (Debug.log "delta" delta))
+                            (Angle.degrees delta)
               }
             , Cmd.none
             )
 
         KeyPressed key ->
-            case Debug.log "key" key of
+            case key of
                 " " ->
                     ( { model
                         | board =
@@ -272,6 +312,10 @@ update msg model =
                     )
 
                 _ ->
+                    let
+                        _ =
+                            Debug.log "unhandled key" key
+                    in
                     ( model
                     , Cmd.none
                     )
@@ -314,7 +358,7 @@ view model =
                         [ model.board
                             |> Array.toList
                             |> List.indexedMap (viewCell model)
-                        , [ viewCursor model.editorCursor ]
+                        , [ viewCursor model.cursorBounce model.editorCursor ]
                         ]
                 }
             ]
@@ -356,14 +400,34 @@ viewCell model index solid =
         Scene3d.nothing
 
 
-viewCursor : Point -> Scene3d.Entity coordinates
-viewCursor ( x, y, z ) =
+viewCursor : Animation Float -> Point -> Scene3d.Entity coordinates
+viewCursor bounceAnim ( x, y, z ) =
     let
         center =
             Point3d.meters
                 (toFloat x)
                 (toFloat y)
                 (toFloat z)
+
+        ( bounce, _ ) =
+            Animation.step
+                { easing = identity
+                , interpolate =
+                    \a b dist ->
+                        Quantity.interpolateFrom
+                            (Quantity.float a)
+                            (Quantity.float b)
+                            dist
+                            |> Quantity.toFloat
+                }
+                0
+                bounceAnim
+
+        offset =
+            Length.meters (bounce * 0.1 + 0.5)
+
+        length =
+            Length.meters (bounce * -0.1 + 0.95)
     in
     Scene3d.group
         [ -- X bars
@@ -372,40 +436,40 @@ viewCursor ( x, y, z ) =
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
-                    |> Frame3d.translateIn Direction3d.positiveY (Length.meters 0.5)
-                    |> Frame3d.translateIn Direction3d.positiveZ (Length.meters 0.5)
+                    |> Frame3d.translateIn Direction3d.positiveY offset
+                    |> Frame3d.translateIn Direction3d.positiveZ offset
                 )
-                ( Length.meters 1.1, Length.meters 0.1, Length.meters 0.1 )
+                ( length, Length.meters 0.1, Length.meters 0.1 )
             )
         , Scene3d.block
             (Scene3d.Material.color Color.white)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
-                    |> Frame3d.translateIn Direction3d.positiveY (Length.meters 0.5)
-                    |> Frame3d.translateIn Direction3d.negativeZ (Length.meters 0.5)
+                    |> Frame3d.translateIn Direction3d.positiveY offset
+                    |> Frame3d.translateIn Direction3d.negativeZ offset
                 )
-                ( Length.meters 1.1, Length.meters 0.1, Length.meters 0.1 )
+                ( length, Length.meters 0.1, Length.meters 0.1 )
             )
         , Scene3d.block
             (Scene3d.Material.color Color.white)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
-                    |> Frame3d.translateIn Direction3d.negativeY (Length.meters 0.5)
-                    |> Frame3d.translateIn Direction3d.positiveZ (Length.meters 0.5)
+                    |> Frame3d.translateIn Direction3d.negativeY offset
+                    |> Frame3d.translateIn Direction3d.positiveZ offset
                 )
-                ( Length.meters 1.1, Length.meters 0.1, Length.meters 0.1 )
+                ( length, Length.meters 0.1, Length.meters 0.1 )
             )
         , Scene3d.block
             (Scene3d.Material.color Color.white)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
-                    |> Frame3d.translateIn Direction3d.negativeY (Length.meters 0.5)
-                    |> Frame3d.translateIn Direction3d.negativeZ (Length.meters 0.5)
+                    |> Frame3d.translateIn Direction3d.negativeY offset
+                    |> Frame3d.translateIn Direction3d.negativeZ offset
                 )
-                ( Length.meters 1.1, Length.meters 0.1, Length.meters 0.1 )
+                ( length, Length.meters 0.1, Length.meters 0.1 )
             )
 
         -- Z bars
@@ -414,40 +478,40 @@ viewCursor ( x, y, z ) =
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
-                    |> Frame3d.translateIn Direction3d.negativeY (Length.meters 0.5)
-                    |> Frame3d.translateIn Direction3d.negativeX (Length.meters 0.5)
+                    |> Frame3d.translateIn Direction3d.negativeY offset
+                    |> Frame3d.translateIn Direction3d.negativeX offset
                 )
-                ( Length.meters 0.1, Length.meters 0.1, Length.meters 1.1 )
+                ( Length.meters 0.1, Length.meters 0.1, length )
             )
         , Scene3d.block
             (Scene3d.Material.color Color.white)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
-                    |> Frame3d.translateIn Direction3d.positiveY (Length.meters 0.5)
-                    |> Frame3d.translateIn Direction3d.negativeX (Length.meters 0.5)
+                    |> Frame3d.translateIn Direction3d.positiveY offset
+                    |> Frame3d.translateIn Direction3d.negativeX offset
                 )
-                ( Length.meters 0.1, Length.meters 0.1, Length.meters 1.1 )
+                ( Length.meters 0.1, Length.meters 0.1, length )
             )
         , Scene3d.block
             (Scene3d.Material.color Color.white)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
-                    |> Frame3d.translateIn Direction3d.negativeY (Length.meters 0.5)
-                    |> Frame3d.translateIn Direction3d.positiveX (Length.meters 0.5)
+                    |> Frame3d.translateIn Direction3d.negativeY offset
+                    |> Frame3d.translateIn Direction3d.positiveX offset
                 )
-                ( Length.meters 0.1, Length.meters 0.1, Length.meters 1.1 )
+                ( Length.meters 0.1, Length.meters 0.1, length )
             )
         , Scene3d.block
             (Scene3d.Material.color Color.white)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
-                    |> Frame3d.translateIn Direction3d.positiveY (Length.meters 0.5)
-                    |> Frame3d.translateIn Direction3d.positiveX (Length.meters 0.5)
+                    |> Frame3d.translateIn Direction3d.positiveY offset
+                    |> Frame3d.translateIn Direction3d.positiveX offset
                 )
-                ( Length.meters 0.1, Length.meters 0.1, Length.meters 1.1 )
+                ( Length.meters 0.1, Length.meters 0.1, length )
             )
 
         -- Y bars
@@ -456,39 +520,39 @@ viewCursor ( x, y, z ) =
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
-                    |> Frame3d.translateIn Direction3d.positiveZ (Length.meters 0.5)
-                    |> Frame3d.translateIn Direction3d.negativeX (Length.meters 0.5)
+                    |> Frame3d.translateIn Direction3d.positiveZ offset
+                    |> Frame3d.translateIn Direction3d.negativeX offset
                 )
-                ( Length.meters 0.1, Length.meters 1.1, Length.meters 0.1 )
+                ( Length.meters 0.1, length, Length.meters 0.1 )
             )
         , Scene3d.block
             (Scene3d.Material.color Color.white)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
-                    |> Frame3d.translateIn Direction3d.negativeZ (Length.meters 0.5)
-                    |> Frame3d.translateIn Direction3d.negativeX (Length.meters 0.5)
+                    |> Frame3d.translateIn Direction3d.negativeZ offset
+                    |> Frame3d.translateIn Direction3d.negativeX offset
                 )
-                ( Length.meters 0.1, Length.meters 1.1, Length.meters 0.1 )
+                ( Length.meters 0.1, length, Length.meters 0.1 )
             )
         , Scene3d.block
             (Scene3d.Material.color Color.white)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
-                    |> Frame3d.translateIn Direction3d.positiveZ (Length.meters 0.5)
-                    |> Frame3d.translateIn Direction3d.positiveX (Length.meters 0.5)
+                    |> Frame3d.translateIn Direction3d.positiveZ offset
+                    |> Frame3d.translateIn Direction3d.positiveX offset
                 )
-                ( Length.meters 0.1, Length.meters 1.1, Length.meters 0.1 )
+                ( Length.meters 0.1, length, Length.meters 0.1 )
             )
         , Scene3d.block
             (Scene3d.Material.color Color.white)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
-                    |> Frame3d.translateIn Direction3d.negativeZ (Length.meters 0.5)
-                    |> Frame3d.translateIn Direction3d.positiveX (Length.meters 0.5)
+                    |> Frame3d.translateIn Direction3d.negativeZ offset
+                    |> Frame3d.translateIn Direction3d.positiveX offset
                 )
-                ( Length.meters 0.1, Length.meters 1.1, Length.meters 0.1 )
+                ( Length.meters 0.1, length, Length.meters 0.1 )
             )
         ]
