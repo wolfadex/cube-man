@@ -50,7 +50,7 @@ type alias Model =
     , cursorBounce : Animation Float
     , boardEncoding : String
     , mode : Mode
-    , playerFrame : Frame3d Length.Meters WorldCoordinates {}
+    , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : {} }
     , playerFacing : Facing
     , playerWantFacing : Facing
     , playerMovingAcrossEdge : Maybe Angle
@@ -473,15 +473,48 @@ movePlayer deltaMs model =
 
                 totalMovement =
                     Quantity.plus edgeDistTraveled distMoved
+
+                edgeTravelComplete =
+                    Quantity.equalWithin (Angle.degrees 1)
+                        totalMovement
+                        (Angle.degrees 90)
             in
             { model
-                | playerFrame = playerFrame
+                | playerFrame =
+                    if edgeTravelComplete then
+                        Frame3d.unsafe
+                            { originPoint =
+                                playerFrame
+                                    |> Frame3d.originPoint
+                                    |> point3dToPoint
+                                    |> pointToPoint3d
+                            , xDirection =
+                                playerFrame
+                                    |> Frame3d.xDirection
+                                    |> Direction3d.toVector
+                                    |> Vector3d.normalize
+                                    |> Vector3d.direction
+                                    |> Maybe.withDefault Direction3d.positiveX
+                            , yDirection =
+                                playerFrame
+                                    |> Frame3d.yDirection
+                                    |> Direction3d.toVector
+                                    |> Vector3d.normalize
+                                    |> Vector3d.direction
+                                    |> Maybe.withDefault Direction3d.positiveX
+                            , zDirection =
+                                playerFrame
+                                    |> Frame3d.zDirection
+                                    |> Direction3d.toVector
+                                    |> Vector3d.normalize
+                                    |> Vector3d.direction
+                                    |> Maybe.withDefault Direction3d.positiveX
+                            }
+
+                    else
+                        playerFrame
                 , playerMovingAcrossEdge =
-                    if
-                        Quantity.equalWithin (Angle.degrees 1)
-                            totalMovement
-                            (Angle.degrees 90)
-                    then
+                    if edgeTravelComplete then
                         Nothing
 
                     else
@@ -545,9 +578,27 @@ setPlayerFacing model =
                                 | playerFrame =
                                     Frame3d.unsafe
                                         { originPoint = pointToPoint3d playerBoardPoint
-                                        , xDirection = Frame3d.xDirection model.playerFrame
-                                        , yDirection = Frame3d.yDirection model.playerFrame
-                                        , zDirection = Frame3d.zDirection model.playerFrame
+                                        , xDirection =
+                                            model.playerFrame
+                                                |> Frame3d.xDirection
+                                                |> Direction3d.toVector
+                                                |> Vector3d.normalize
+                                                |> Vector3d.direction
+                                                |> Maybe.withDefault Direction3d.positiveX
+                                        , yDirection =
+                                            model.playerFrame
+                                                |> Frame3d.yDirection
+                                                |> Direction3d.toVector
+                                                |> Vector3d.normalize
+                                                |> Vector3d.direction
+                                                |> Maybe.withDefault Direction3d.positiveX
+                                        , zDirection =
+                                            model.playerFrame
+                                                |> Frame3d.zDirection
+                                                |> Direction3d.toVector
+                                                |> Vector3d.normalize
+                                                |> Vector3d.direction
+                                                |> Maybe.withDefault Direction3d.positiveX
                                         }
                                 , playerFacing = model.playerWantFacing
                             }
@@ -819,17 +870,14 @@ view model =
     }
 
 
-viewPlayer : Facing -> Frame3d Length.Meters WorldCoordinates {} -> Scene3d.Entity WorldCoordinates
+viewPlayer : Facing -> Frame3d Length.Meters WorldCoordinates { defines : {} } -> Scene3d.Entity WorldCoordinates
 viewPlayer facing frame =
-    let
-        pos =
-            Frame3d.originPoint frame
-    in
     Scene3d.group
         [ Scene3d.sphereWithShadow
             (Scene3d.Material.matte Color.gray)
-            (Sphere3d.atOrigin
+            (Sphere3d.atPoint Point3d.origin
                 (Length.meters 0.5)
+                |> Sphere3d.placeIn frame
             )
         , Scene3d.coneWithShadow
             (Scene3d.Material.matte Color.red)
@@ -838,6 +886,7 @@ viewPlayer facing frame =
                 { radius = Length.meters 0.5
                 , length = Length.meters 0.75
                 }
+                |> Cone3d.placeIn frame
             )
         , Scene3d.coneWithShadow
             (Scene3d.Material.matte Color.green)
@@ -846,6 +895,7 @@ viewPlayer facing frame =
                 { radius = Length.meters 0.5
                 , length = Length.meters 0.75
                 }
+                |> Cone3d.placeIn frame
             )
         , Scene3d.coneWithShadow
             (Scene3d.Material.matte Color.blue)
@@ -854,10 +904,11 @@ viewPlayer facing frame =
                 { radius = Length.meters 0.5
                 , length = Length.meters 0.75
                 }
+                |> Cone3d.placeIn frame
             )
         ]
-        |> Scene3d.translateBy (Vector3d.from Point3d.origin pos)
-        |> Scene3d.rotateAround (Axis3d.through pos (Frame3d.zDirection frame))
+        -- |> Scene3d.translateBy (Vector3d.from Point3d.origin pos)
+        |> Scene3d.rotateAround (Axis3d.through (Frame3d.originPoint frame) (Frame3d.zDirection frame))
             (Angle.degrees <|
                 case facing of
                     Forward ->
@@ -887,9 +938,9 @@ viewBlock model index block =
             Scene3d.blockWithShadow
                 (Scene3d.Material.matte
                     (Color.rgb
-                        (toFloat x / toFloat model.maxX)
-                        (toFloat y / toFloat model.maxY)
-                        (toFloat z / toFloat model.maxZ)
+                        (toFloat x * 1.2 / toFloat model.maxX)
+                        (toFloat y * 1.2 / toFloat model.maxY)
+                        (toFloat z * 1.2 / toFloat model.maxZ)
                     )
                 )
                 (Block3d.centeredOn
