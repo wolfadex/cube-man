@@ -53,6 +53,7 @@ type alias Model =
     , playerFrame : Frame3d Length.Meters WorldCoordinates {}
     , playerFacing : Facing
     , playerWantFacing : Facing
+    , playerMovingAcrossEdge : Maybe Angle
     }
 
 
@@ -77,18 +78,30 @@ type alias Point =
 
 
 type alias Board =
-    Array Bool
+    Array Block
+
+
+type Block
+    = Empty
+    | Wall
+    | Edge
 
 
 encodeBoard : Board -> String
 encodeBoard board =
     Array.foldr
-        (\cell enc ->
-            if cell then
-                "1" ++ enc
+        (\block enc ->
+            (case block of
+                Empty ->
+                    "0"
 
-            else
-                "0" ++ enc
+                Wall ->
+                    "1"
+
+                Edge ->
+                    "2"
+            )
+                ++ enc
         )
         ""
         board
@@ -100,10 +113,13 @@ decodeBoard enc =
         (\char board ->
             case char of
                 '0' ->
-                    Array.push False board
+                    Array.push Empty board
 
                 '1' ->
-                    Array.push True board
+                    Array.push Wall board
+
+                '2' ->
+                    Array.push Edge board
 
                 _ ->
                     board
@@ -187,6 +203,7 @@ init () =
       , playerFrame = Frame3d.atPoint (Point3d.meters 1 4 7)
       , playerFacing = Forward
       , playerWantFacing = Forward
+      , playerMovingAcrossEdge = Nothing
       }
     , Cmd.none
     )
@@ -197,7 +214,7 @@ init () =
 
 
 borgCube =
-    "11101111111011111110111111101111000000001110111111101111111011111110111111111111111111111111111101111110111111111111111111101111111011111111111111111111111111110111111011111111111111111110111100000000011111100111111001111110011111100111111001111110000000001110111111111111111111111111111101111110111111111111111111101111111011111111111111111111111111110111111011111111111111111110111111101111111111111111111111111111011111101111111111111111111011111110111111101111111011111110111100000000111011111110111111101111"
+    "11121111111011111110111111101111200000021110111111101111111211111110111111111111111111111111111101111110111111111111111111101111111011111111111111111111111111110111111011111111111111111110111120000002011111100111111001111110011111100111111001111110200000021110111111111111111111111111111101111110111111111111111111101111111011111111111111111111111111110111111011111111111111111110111111101111111111111111111111111111011111101111111111111111111011111112111111101111111011111110111120000002111011111110111111121111"
 
 
 subscriptions : Model -> Sub Msg
@@ -338,30 +355,138 @@ tickPlayer deltaMs model =
 
 movePlayer : Float -> Model -> Model
 movePlayer deltaMs model =
-    { model
-        | playerFrame =
-            model.playerFrame
-                |> Frame3d.translateIn
-                    (case Debug.log "playerFacing" model.playerFacing of
-                        Forward ->
-                            Frame3d.xDirection model.playerFrame
-
-                        Backward ->
-                            Frame3d.xDirection model.playerFrame
-                                |> Direction3d.reverse
-
-                        Right ->
-                            Frame3d.yDirection model.playerFrame
-                                |> Direction3d.reverse
-
-                        Left ->
-                            Frame3d.yDirection model.playerFrame
-                    )
-                    (Length.meters 2
+    let
+        doEdgeMovement () =
+            let
+                edgeMovement =
+                    Angle.degrees 45
                         |> Quantity.per (Duration.seconds 1)
                         |> Quantity.for (Duration.milliseconds deltaMs)
+            in
+            ( model.playerFrame
+                |> Frame3d.rotateAround
+                    (Axis3d.through
+                        (model.playerFrame
+                            |> Frame3d.originPoint
+                            |> point3dToPoint
+                            |> pointToPoint3d
+                            |> Point3d.translateIn
+                                (Frame3d.zDirection model.playerFrame)
+                                (Length.meters -1)
+                        )
+                        (case model.playerFacing of
+                            Forward ->
+                                Frame3d.yDirection model.playerFrame
+
+                            Backward ->
+                                Frame3d.yDirection model.playerFrame
+                                    |> Direction3d.reverse
+
+                            Left ->
+                                Frame3d.xDirection model.playerFrame
+                                    |> Direction3d.reverse
+
+                            Right ->
+                                Frame3d.xDirection model.playerFrame
+                        )
                     )
-    }
+                    edgeMovement
+            , edgeMovement
+            )
+    in
+    case model.playerMovingAcrossEdge of
+        Nothing ->
+            let
+                nearBlock =
+                    Array.get
+                        (model.playerFrame
+                            |> Frame3d.translateIn
+                                (case model.playerFacing of
+                                    Forward ->
+                                        Frame3d.xDirection model.playerFrame
+
+                                    Backward ->
+                                        Frame3d.xDirection model.playerFrame
+                                            |> Direction3d.reverse
+
+                                    Right ->
+                                        Frame3d.yDirection model.playerFrame
+                                            |> Direction3d.reverse
+
+                                    Left ->
+                                        Frame3d.yDirection model.playerFrame
+                                )
+                                (Length.meters 0.6)
+                            |> Frame3d.originPoint
+                            |> point3dToPoint
+                            |> pointToIndex model
+                        )
+                        model.board
+            in
+            case nearBlock of
+                Nothing ->
+                    model
+
+                Just Wall ->
+                    model
+
+                Just Edge ->
+                    let
+                        ( playerFrame, distMoved ) =
+                            doEdgeMovement ()
+                    in
+                    { model
+                        | playerFrame = playerFrame
+                        , playerMovingAcrossEdge = Just distMoved
+                    }
+
+                Just Empty ->
+                    { model
+                        | playerFrame =
+                            model.playerFrame
+                                |> Frame3d.translateIn
+                                    (case model.playerFacing of
+                                        Forward ->
+                                            Frame3d.xDirection model.playerFrame
+
+                                        Backward ->
+                                            Frame3d.xDirection model.playerFrame
+                                                |> Direction3d.reverse
+
+                                        Right ->
+                                            Frame3d.yDirection model.playerFrame
+                                                |> Direction3d.reverse
+
+                                        Left ->
+                                            Frame3d.yDirection model.playerFrame
+                                    )
+                                    (Length.meters 2
+                                        |> Quantity.per (Duration.seconds 1)
+                                        |> Quantity.for (Duration.milliseconds deltaMs)
+                                    )
+                    }
+
+        Just edgeDistTraveled ->
+            let
+                ( playerFrame, distMoved ) =
+                    doEdgeMovement ()
+
+                totalMovement =
+                    Quantity.plus edgeDistTraveled distMoved
+            in
+            { model
+                | playerFrame = playerFrame
+                , playerMovingAcrossEdge =
+                    if
+                        Quantity.equalWithin (Angle.degrees 1)
+                            totalMovement
+                            (Angle.degrees 90)
+                    then
+                        Nothing
+
+                    else
+                        Just totalMovement
+            }
 
 
 setPlayerFacing : Model -> Model
@@ -375,7 +500,6 @@ setPlayerFacing model =
                 model.playerFrame
                     |> Frame3d.originPoint
                     |> point3dToPoint
-                    |> Debug.log "player point"
 
             targetBoardPoint =
                 playerBoardPoint
@@ -398,35 +522,47 @@ setPlayerFacing model =
                         )
                         (Length.meters 1)
                     |> point3dToPoint
-                    |> Debug.log "target point"
         in
         if oppositeFacings model.playerFacing model.playerWantFacing then
             { model | playerFacing = model.playerWantFacing }
 
         else if
             Quantity.equalWithin (Length.meters 0.1)
-                (Debug.log "dist" (Point3d.distanceFrom (pointToPoint3d playerBoardPoint) (Frame3d.originPoint model.playerFrame)))
+                (Point3d.distanceFrom (pointToPoint3d playerBoardPoint) (Frame3d.originPoint model.playerFrame))
                 (Length.meters 0)
         then
-            case Array.get (pointToIndex model targetBoardPoint) model.board |> Debug.log "cell at target" of
+            case Array.get (pointToIndex model targetBoardPoint) model.board of
                 Nothing ->
                     model
 
-                Just cell ->
-                    if Debug.log "cell" cell then
-                        model
+                Just black ->
+                    case black of
+                        Wall ->
+                            model
 
-                    else
-                        { model
-                            | playerFrame =
-                                Frame3d.unsafe
-                                    { originPoint = pointToPoint3d playerBoardPoint
-                                    , xDirection = Frame3d.xDirection model.playerFrame
-                                    , yDirection = Frame3d.yDirection model.playerFrame
-                                    , zDirection = Frame3d.zDirection model.playerFrame
-                                    }
-                            , playerFacing = model.playerWantFacing
-                        }
+                        Empty ->
+                            { model
+                                | playerFrame =
+                                    Frame3d.unsafe
+                                        { originPoint = pointToPoint3d playerBoardPoint
+                                        , xDirection = Frame3d.xDirection model.playerFrame
+                                        , yDirection = Frame3d.yDirection model.playerFrame
+                                        , zDirection = Frame3d.zDirection model.playerFrame
+                                        }
+                                , playerFacing = model.playerWantFacing
+                            }
+
+                        Edge ->
+                            { model
+                                | playerFrame =
+                                    Frame3d.unsafe
+                                        { originPoint = pointToPoint3d playerBoardPoint
+                                        , xDirection = Frame3d.xDirection model.playerFrame
+                                        , yDirection = Frame3d.yDirection model.playerFrame
+                                        , zDirection = Frame3d.zDirection model.playerFrame
+                                        }
+                                , playerFacing = model.playerWantFacing
+                            }
 
         else
             model
@@ -478,8 +614,19 @@ handleEditorKeyPressed key model =
                 board =
                     Array.Extra.update
                         (pointToIndex model model.editorCursor)
-                        not
+                        cycleBlockType
                         model.board
+
+                cycleBlockType block =
+                    case block of
+                        Empty ->
+                            Edge
+
+                        Wall ->
+                            Empty
+
+                        Edge ->
+                            Wall
             in
             ( { model
                 | board = board
@@ -596,43 +743,42 @@ view model =
             [ Html.Attributes.style "border" "1px solid black"
             , Html.Attributes.style "display" "inline-flex"
             ]
-            [ let
-                editorCamera =
-                    Camera3d.perspective
-                        { viewpoint =
-                            Viewpoint3d.orbitZ
-                                { focalPoint = Point3d.meters 3.5 3.5 2
-                                , azimuth = model.cameraRotation
-                                , elevation = Angle.degrees 15
-                                , distance = Length.meters 30
-                                }
-                        , verticalFieldOfView = Angle.degrees 30
-                        }
-
-                gameplayCamera =
-                    Camera3d.perspective
-                        { viewpoint =
-                            let
-                                targetPos =
-                                    Frame3d.originPoint model.playerFrame
-                            in
-                            Viewpoint3d.lookAt
-                                { focalPoint = targetPos
-                                , eyePoint =
-                                    targetPos
-                                        |> Point3d.translateIn (Frame3d.zDirection model.playerFrame) (Length.meters 15)
-                                , upDirection = Frame3d.xDirection model.playerFrame
-                                }
-                        , verticalFieldOfView = Angle.degrees 30
-                        }
-              in
-              Scene3d.sunny
+            [ Scene3d.sunny
                 { clipDepth = Length.meters 1
                 , background = Scene3d.transparentBackground
                 , shadows = True
                 , dimensions = ( Pixels.int 800, Pixels.int 600 )
                 , upDirection = Direction3d.positiveZ
-                , camera = gameplayCamera
+                , camera =
+                    case model.mode of
+                        Game ->
+                            Camera3d.perspective
+                                { viewpoint =
+                                    let
+                                        targetPos =
+                                            Frame3d.originPoint model.playerFrame
+                                    in
+                                    Viewpoint3d.lookAt
+                                        { focalPoint = targetPos
+                                        , eyePoint =
+                                            targetPos
+                                                |> Point3d.translateIn (Frame3d.zDirection model.playerFrame) (Length.meters 15)
+                                        , upDirection = Frame3d.xDirection model.playerFrame
+                                        }
+                                , verticalFieldOfView = Angle.degrees 30
+                                }
+
+                        Editor ->
+                            Camera3d.perspective
+                                { viewpoint =
+                                    Viewpoint3d.orbitZ
+                                        { focalPoint = Point3d.meters 3.5 3.5 2
+                                        , azimuth = model.cameraRotation
+                                        , elevation = Angle.degrees 15
+                                        , distance = Length.meters 30
+                                        }
+                                , verticalFieldOfView = Angle.degrees 30
+                                }
                 , sunlightDirection =
                     Direction3d.positiveZ
                         |> Direction3d.rotateAround Axis3d.x (Angle.degrees 60)
@@ -641,7 +787,7 @@ view model =
                     List.concat
                         [ model.board
                             |> Array.toList
-                            |> List.indexedMap (viewCell model)
+                            |> List.indexedMap (viewBlock model)
                         , case model.mode of
                             Editor ->
                                 [ viewCursor model.cursorBounce model.editorCursor ]
@@ -728,36 +874,66 @@ viewPlayer facing frame =
             )
 
 
-viewCell : Model -> Int -> Bool -> Scene3d.Entity WorldCoordinates
-viewCell model index solid =
-    if solid then
-        let
-            ( x, y, z ) =
-                indexToPoint
-                    model
-                    index
-        in
-        Scene3d.blockWithShadow
-            (Scene3d.Material.matte
-                (Color.rgb
-                    (toFloat x / toFloat model.maxX)
-                    (toFloat y / toFloat model.maxY)
-                    (toFloat z / toFloat model.maxZ)
-                )
-            )
-            (Block3d.centeredOn
-                (Frame3d.atPoint
-                    (Point3d.meters
-                        (toFloat x)
-                        (toFloat y)
-                        (toFloat z)
+viewBlock : Model -> Int -> Block -> Scene3d.Entity WorldCoordinates
+viewBlock model index block =
+    case block of
+        Wall ->
+            let
+                ( x, y, z ) =
+                    indexToPoint
+                        model
+                        index
+            in
+            Scene3d.blockWithShadow
+                (Scene3d.Material.matte
+                    (Color.rgb
+                        (toFloat x / toFloat model.maxX)
+                        (toFloat y / toFloat model.maxY)
+                        (toFloat z / toFloat model.maxZ)
                     )
                 )
-                ( Length.meters 1, Length.meters 1, Length.meters 1 )
-            )
+                (Block3d.centeredOn
+                    (Frame3d.atPoint
+                        (Point3d.meters
+                            (toFloat x)
+                            (toFloat y)
+                            (toFloat z)
+                        )
+                    )
+                    ( Length.meters 1, Length.meters 1, Length.meters 1 )
+                )
 
-    else
-        Scene3d.nothing
+        Empty ->
+            Scene3d.nothing
+
+        Edge ->
+            case model.mode of
+                Game ->
+                    Scene3d.nothing
+
+                Editor ->
+                    let
+                        ( x, y, z ) =
+                            indexToPoint
+                                model
+                                index
+                    in
+                    Scene3d.blockWithShadow
+                        (Scene3d.Material.metal
+                            { baseColor = Color.orange
+                            , roughness = 1
+                            }
+                        )
+                        (Block3d.centeredOn
+                            (Frame3d.atPoint
+                                (Point3d.meters
+                                    (toFloat x)
+                                    (toFloat y)
+                                    (toFloat z)
+                                )
+                            )
+                            ( Length.meters 1, Length.meters 1, Length.meters 1 )
+                        )
 
 
 viewCursor : Animation Float -> Point -> Scene3d.Entity WorldCoordinates
