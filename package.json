@@ -1,0 +1,14 @@
+{
+    "name": "cube-man",
+    "scripts": {
+        "dev": "elm-watch hot"
+    },
+    "volta": {
+        "node": "22.13.1"
+    },
+    "devDependencies": {
+        "elm": "^0.19.1-6",
+        "elm-format": "^0.8.7",
+        "elm-watch": "^2.0.0-beta.4"
+    }
+}
