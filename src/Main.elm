@@ -44,13 +44,18 @@ type alias Model =
     , maxY : Int
     , maxZ : Int
     , board : Board
+    , xLowerVisible : Int
+    , xUpperVisible : Int
+    , yLowerVisible : Int
+    , yUpperVisible : Int
+    , zLowerVisible : Int
+    , zUpperVisible : Int
     , editorCursor : Point
     , cameraRotation : Angle
     , mouseDragging : Bool
     , cursorBounce : Animation Float
     , boardEncoding : String
     , mode : Mode
-    , playerTarget : Frame3d Length.Meters WorldCoordinates { defines : {} }
     , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : {} }
     , playerFacing : Facing
     , playerWantFacing : Facing
@@ -182,9 +187,15 @@ init () =
     ( { maxX = maxX
       , maxY = maxY
       , maxZ = maxZ
+      , xLowerVisible = 0
+      , xUpperVisible = maxX - 1
+      , yLowerVisible = 0
+      , yUpperVisible = maxY - 1
+      , zLowerVisible = 0
+      , zUpperVisible = maxZ - 1
       , board = board
-      , editorCursor = ( 1, 4, 7 )
-      , cameraRotation = Angle.degrees 135
+      , editorCursor = ( 0, 0, 0 )
+      , cameraRotation = Angle.degrees 225
       , mouseDragging = False
       , cursorBounce =
             Animation.init 0
@@ -199,10 +210,9 @@ init () =
                   }
                 ]
                 |> Animation.withLoop
-      , mode = Game
+      , mode = Editor
       , boardEncoding = encodeBoard board
       , playerFrame = Frame3d.atPoint (Point3d.meters 1 4 7)
-      , playerTarget = Frame3d.atPoint (Point3d.meters 2 4 7)
       , playerFacing = Forward
       , playerWantFacing = Forward
       , playerMovingAcrossEdge = Nothing
@@ -224,11 +234,11 @@ subscriptions model =
     Sub.batch
         [ Browser.Events.onAnimationFrameDelta Tick
         , Browser.Events.onKeyPress decodeKeyPressed
-        , if model.mouseDragging then
-            Browser.Events.onMouseUp decodeMouseUp
 
-          else
-            Browser.Events.onMouseDown deocdeMouseDown
+        -- , if model.mouseDragging then
+        --     Browser.Events.onMouseUp decodeMouseUp
+        --   else
+        --     Browser.Events.onMouseDown deocdeMouseDown
         , if model.mouseDragging then
             Browser.Events.onMouseMove decodeMouseMove
 
@@ -283,37 +293,22 @@ type Msg
     | MouseMove Float
     | EncodingChanged String
     | LoadBoard
+    | ChangeMode
+    | XLowerVisibleChanged Int
+    | XUpperVisibleChanged Int
+    | YLowerVisibleChanged Int
+    | YUpperVisibleChanged Int
+    | ZLowerVisibleChanged Int
+    | ZUpperVisibleChanged Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick deltaMs ->
-            ( tickPlayer deltaMs
-                { model
-                    | cursorBounce =
-                        case model.mode of
-                            Editor ->
-                                let
-                                    ( _, anim ) =
-                                        Animation.step
-                                            { easing = identity
-                                            , interpolate =
-                                                \a b dist ->
-                                                    Quantity.interpolateFrom
-                                                        (Quantity.float a)
-                                                        (Quantity.float b)
-                                                        dist
-                                                        |> Quantity.toFloat
-                                            }
-                                            deltaMs
-                                            model.cursorBounce
-                                in
-                                anim
-
-                            Game ->
-                                model.cursorBounce
-                }
+            ( model
+                |> animateCursor deltaMs
+                |> tickPlayer deltaMs
             , Cmd.none
             )
 
@@ -322,6 +317,19 @@ update msg model =
 
         LoadBoard ->
             ( { model | board = decodeBoard model.boardEncoding }, Cmd.none )
+
+        ChangeMode ->
+            ( { model
+                | mode =
+                    case model.mode of
+                        Editor ->
+                            Game
+
+                        Game ->
+                            Editor
+              }
+            , Cmd.none
+            )
 
         MouseDown ->
             ( { model | mouseDragging = True }, Cmd.none )
@@ -339,6 +347,54 @@ update msg model =
             , Cmd.none
             )
 
+        XLowerVisibleChanged value ->
+            ( { model
+                | xLowerVisible = value
+                , xUpperVisible = max value model.xUpperVisible
+              }
+            , Cmd.none
+            )
+
+        XUpperVisibleChanged value ->
+            ( { model
+                | xUpperVisible = value
+                , xLowerVisible = min value model.xLowerVisible
+              }
+            , Cmd.none
+            )
+
+        YLowerVisibleChanged value ->
+            ( { model
+                | yLowerVisible = value
+                , yUpperVisible = max value model.yUpperVisible
+              }
+            , Cmd.none
+            )
+
+        YUpperVisibleChanged value ->
+            ( { model
+                | yUpperVisible = value
+                , yLowerVisible = min value model.yLowerVisible
+              }
+            , Cmd.none
+            )
+
+        ZLowerVisibleChanged value ->
+            ( { model
+                | zLowerVisible = value
+                , zUpperVisible = max value model.zUpperVisible
+              }
+            , Cmd.none
+            )
+
+        ZUpperVisibleChanged value ->
+            ( { model
+                | zUpperVisible = value
+                , zLowerVisible = min value model.zLowerVisible
+              }
+            , Cmd.none
+            )
+
         KeyPressed key ->
             case model.mode of
                 Editor ->
@@ -348,11 +404,49 @@ update msg model =
                     handleGameKeyPressed key model
 
 
+animateCursor : Float -> Model -> Model
+animateCursor deltaMs model =
+    case model.mode of
+        Game ->
+            model
+
+        Editor ->
+            { model
+                | cursorBounce =
+                    case model.mode of
+                        Editor ->
+                            let
+                                ( _, anim ) =
+                                    Animation.step
+                                        { easing = identity
+                                        , interpolate =
+                                            \a b dist ->
+                                                Quantity.interpolateFrom
+                                                    (Quantity.float a)
+                                                    (Quantity.float b)
+                                                    dist
+                                                    |> Quantity.toFloat
+                                        }
+                                        deltaMs
+                                        model.cursorBounce
+                            in
+                            anim
+
+                        Game ->
+                            model.cursorBounce
+            }
+
+
 tickPlayer : Float -> Model -> Model
 tickPlayer deltaMs model =
-    model
-        |> setPlayerFacing
-        |> movePlayer deltaMs
+    case model.mode of
+        Editor ->
+            model
+
+        Game ->
+            model
+                |> setPlayerFacing
+                |> movePlayer deltaMs
 
 
 movePlayer : Float -> Model -> Model
@@ -821,10 +915,15 @@ view model =
         [ Html.div
             [ Html.Attributes.style "border" "1px solid black"
             , Html.Attributes.style "display" "inline-flex"
+            , if model.mouseDragging then
+                Html.Events.onMouseUp MouseUp
+
+              else
+                Html.Events.onMouseDown MouseDown
             ]
             [ Scene3d.sunny
                 { clipDepth = Length.meters 1
-                , background = Scene3d.transparentBackground
+                , background = Scene3d.backgroundColor Color.gray
                 , shadows = True
                 , dimensions = ( Pixels.int 800, Pixels.int 600 )
                 , upDirection = Direction3d.positiveZ
@@ -861,7 +960,10 @@ view model =
                 , sunlightDirection =
                     Direction3d.positiveZ
                         |> Direction3d.rotateAround Axis3d.x (Angle.degrees 60)
-                        |> Direction3d.rotateAround Axis3d.z (Angle.degrees 60)
+                        |> Direction3d.rotateAround Axis3d.z
+                            (model.cameraRotation
+                                |> Quantity.plus (Angle.degrees -60)
+                            )
                 , entities =
                     List.concat
                         [ model.board
@@ -884,23 +986,117 @@ view model =
             ]
         , Html.br [] []
         , Html.form
-            [ Html.Events.onSubmit LoadBoard ]
-            [ Html.button
+            [ Html.Events.onSubmit LoadBoard
+            , Html.Attributes.style "display" "flex"
+            , Html.Attributes.style "gap" "1rem"
+            ]
+            [ Html.label
+                [ Html.Attributes.style "display" "flex"
+                , Html.Attributes.style "gap" "1rem"
+                , Html.Attributes.style "align-items" "center"
+                ]
+                [ Html.span [] [ Html.text "Encoded Level:" ]
+                , Html.input
+                    [ Html.Attributes.value model.boardEncoding
+                    , Html.Events.onInput EncodingChanged
+                    ]
+                    []
+                ]
+            , Html.button
                 [ Html.Attributes.type_ "submit" ]
                 [ Html.text "Load" ]
+            ]
+        , Html.br [] []
+        , Html.button
+            [ Html.Attributes.type_ "button"
+            , Html.Events.onClick ChangeMode
+            ]
+            [ Html.text <|
+                case model.mode of
+                    Editor ->
+                        "Play Level"
+
+                    Game ->
+                        "Edit Level"
+            ]
+        , Html.br [] []
+        , Html.br [] []
+        , Html.label []
+            [ Html.span [] [ Html.text "X Visibility" ]
+            , Html.br [] []
+            , Html.span [] [ Html.text "Lower bound" ]
             , Html.input
-                [ Html.Attributes.value model.boardEncoding
-                , Html.Events.onInput EncodingChanged
+                [ Html.Attributes.type_ "range"
+                , Html.Attributes.min "0"
+                , Html.Attributes.max (String.fromInt (model.maxX - 1))
+                , Html.Attributes.step "1"
+                , Html.Attributes.value (String.fromInt model.xLowerVisible)
+                , Html.Events.onInput (String.toInt >> Maybe.withDefault model.xLowerVisible >> XLowerVisibleChanged)
+                ]
+                []
+            , Html.br [] []
+            , Html.span [] [ Html.text "Upper bound" ]
+            , Html.input
+                [ Html.Attributes.type_ "range"
+                , Html.Attributes.min "0"
+                , Html.Attributes.max (String.fromInt (model.maxX - 1))
+                , Html.Attributes.step "1"
+                , Html.Attributes.value (String.fromInt model.xUpperVisible)
+                , Html.Events.onInput (String.toInt >> Maybe.withDefault model.xLowerVisible >> XUpperVisibleChanged)
                 ]
                 []
             ]
         , Html.br [] []
-        , Html.ul []
-            [ Html.li []
-                [ Html.span []
-                    [ Html.text (Debug.toString model.playerFrame)
-                    ]
+        , Html.label []
+            [ Html.span [] [ Html.text "Y Visibility" ]
+            , Html.br [] []
+            , Html.span [] [ Html.text "Lower bound" ]
+            , Html.input
+                [ Html.Attributes.type_ "range"
+                , Html.Attributes.min "0"
+                , Html.Attributes.max (String.fromInt (model.maxY - 1))
+                , Html.Attributes.step "1"
+                , Html.Attributes.value (String.fromInt model.yLowerVisible)
+                , Html.Events.onInput (String.toInt >> Maybe.withDefault model.yLowerVisible >> YLowerVisibleChanged)
                 ]
+                []
+            , Html.br [] []
+            , Html.span [] [ Html.text "Upper bound" ]
+            , Html.input
+                [ Html.Attributes.type_ "range"
+                , Html.Attributes.min "0"
+                , Html.Attributes.max (String.fromInt (model.maxY - 1))
+                , Html.Attributes.step "1"
+                , Html.Attributes.value (String.fromInt model.yUpperVisible)
+                , Html.Events.onInput (String.toInt >> Maybe.withDefault model.yLowerVisible >> YUpperVisibleChanged)
+                ]
+                []
+            ]
+        , Html.br [] []
+        , Html.label []
+            [ Html.span [] [ Html.text "Z Visibility" ]
+            , Html.br [] []
+            , Html.span [] [ Html.text "Lower bound" ]
+            , Html.input
+                [ Html.Attributes.type_ "range"
+                , Html.Attributes.min "0"
+                , Html.Attributes.max (String.fromInt (model.maxZ - 1))
+                , Html.Attributes.step "1"
+                , Html.Attributes.value (String.fromInt model.zLowerVisible)
+                , Html.Events.onInput (String.toInt >> Maybe.withDefault model.zLowerVisible >> ZLowerVisibleChanged)
+                ]
+                []
+            , Html.br [] []
+            , Html.span [] [ Html.text "Upper bound" ]
+            , Html.input
+                [ Html.Attributes.type_ "range"
+                , Html.Attributes.min "0"
+                , Html.Attributes.max (String.fromInt (model.maxZ - 1))
+                , Html.Attributes.step "1"
+                , Html.Attributes.value (String.fromInt model.zUpperVisible)
+                , Html.Events.onInput (String.toInt >> Maybe.withDefault model.zLowerVisible >> ZUpperVisibleChanged)
+                ]
+                []
             ]
         ]
     }
@@ -943,7 +1139,6 @@ viewPlayer facing frame =
                 |> Cone3d.placeIn frame
             )
         ]
-        -- |> Scene3d.translateBy (Vector3d.from Point3d.origin pos)
         |> Scene3d.rotateAround (Axis3d.through (Frame3d.originPoint frame) (Frame3d.zDirection frame))
             (Angle.degrees <|
                 case facing of
@@ -971,24 +1166,28 @@ viewBlock model index block =
                         model
                         index
             in
-            Scene3d.blockWithShadow
-                (Scene3d.Material.matte
-                    (Color.rgb
-                        (toFloat x * 1.2 / toFloat model.maxX)
-                        (toFloat y * 1.2 / toFloat model.maxY)
-                        (toFloat z * 1.2 / toFloat model.maxZ)
-                    )
-                )
-                (Block3d.centeredOn
-                    (Frame3d.atPoint
-                        (Point3d.meters
-                            (toFloat x)
-                            (toFloat y)
-                            (toFloat z)
+            if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
+                Scene3d.nothing
+
+            else
+                Scene3d.blockWithShadow
+                    (Scene3d.Material.matte
+                        (Color.rgb
+                            (toFloat x * 1.2 / toFloat model.maxX)
+                            (toFloat y * 1.2 / toFloat model.maxY)
+                            (toFloat z * 1.2 / toFloat model.maxZ)
                         )
                     )
-                    ( Length.meters 1, Length.meters 1, Length.meters 1 )
-                )
+                    (Block3d.centeredOn
+                        (Frame3d.atPoint
+                            (Point3d.meters
+                                (toFloat x)
+                                (toFloat y)
+                                (toFloat z)
+                            )
+                        )
+                        ( Length.meters 1, Length.meters 1, Length.meters 1 )
+                    )
 
         Empty ->
             Scene3d.nothing
@@ -1005,22 +1204,26 @@ viewBlock model index block =
                                 model
                                 index
                     in
-                    Scene3d.blockWithShadow
-                        (Scene3d.Material.metal
-                            { baseColor = Color.orange
-                            , roughness = 1
-                            }
-                        )
-                        (Block3d.centeredOn
-                            (Frame3d.atPoint
-                                (Point3d.meters
-                                    (toFloat x)
-                                    (toFloat y)
-                                    (toFloat z)
-                                )
+                    if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
+                        Scene3d.nothing
+
+                    else
+                        Scene3d.blockWithShadow
+                            (Scene3d.Material.metal
+                                { baseColor = Color.orange
+                                , roughness = 1
+                                }
                             )
-                            ( Length.meters 1, Length.meters 1, Length.meters 1 )
-                        )
+                            (Block3d.centeredOn
+                                (Frame3d.atPoint
+                                    (Point3d.meters
+                                        (toFloat x)
+                                        (toFloat y)
+                                        (toFloat z)
+                                    )
+                                )
+                                ( Length.meters 0.5, Length.meters 0.5, Length.meters 0.5 )
+                            )
 
 
 viewCursor : Animation Float -> Point -> Scene3d.Entity WorldCoordinates

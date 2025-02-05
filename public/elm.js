@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1738727169967"
+    "1738729829671"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -10724,8 +10724,8 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$document = _Browser_document;
+var $author$project$Main$Editor = {$: 'Editor'};
 var $author$project$Main$Forward = {$: 'Forward'};
-var $author$project$Main$Game = {$: 'Game'};
 var $ianmackenzie$elm_geometry$Geometry$Types$Frame3d = function (a) {
 	return {$: 'Frame3d', a: a};
 };
@@ -10956,7 +10956,7 @@ var $author$project$Main$init = function (_v0) {
 		{
 			board: board,
 			boardEncoding: $author$project$Main$encodeBoard(board),
-			cameraRotation: $ianmackenzie$elm_units$Angle$degrees(135),
+			cameraRotation: $ianmackenzie$elm_units$Angle$degrees(225),
 			cursorBounce: $author$project$Animation$withLoop(
 				A2(
 					$author$project$Animation$init,
@@ -10967,19 +10967,23 @@ var $author$project$Main$init = function (_v0) {
 							{offset: 500, value: 1},
 							{offset: 500, value: 0}
 						]))),
-			editorCursor: _Utils_Tuple3(1, 4, 7),
+			editorCursor: _Utils_Tuple3(0, 0, 0),
 			maxX: maxX,
 			maxY: maxY,
 			maxZ: maxZ,
-			mode: $author$project$Main$Game,
+			mode: $author$project$Main$Editor,
 			mouseDragging: false,
 			playerFacing: $author$project$Main$Forward,
 			playerFrame: $ianmackenzie$elm_geometry$Frame3d$atPoint(
 				A3($ianmackenzie$elm_geometry$Point3d$meters, 1, 4, 7)),
 			playerMovingAcrossEdge: $elm$core$Maybe$Nothing,
-			playerTarget: $ianmackenzie$elm_geometry$Frame3d$atPoint(
-				A3($ianmackenzie$elm_geometry$Point3d$meters, 2, 4, 7)),
-			playerWantFacing: $author$project$Main$Forward
+			playerWantFacing: $author$project$Main$Forward,
+			xLowerVisible: 0,
+			xUpperVisible: maxX - 1,
+			yLowerVisible: 0,
+			yUpperVisible: maxY - 1,
+			zLowerVisible: 0,
+			zUpperVisible: maxZ - 1
 		},
 		$elm$core$Platform$Cmd$none);
 };
@@ -11004,23 +11008,6 @@ var $author$project$Main$decodeMouseMove = A2(
 	$elm$json$Json$Decode$map,
 	$author$project$Main$MouseMove,
 	A2($elm$json$Json$Decode$field, 'movementX', $elm$json$Json$Decode$float));
-var $author$project$Main$MouseUp = {$: 'MouseUp'};
-var $elm$json$Json$Decode$andThen = _Json_andThen;
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $author$project$Main$decodeMouseUp = A2(
-	$elm$json$Json$Decode$andThen,
-	function (button) {
-		return (!button) ? $elm$json$Json$Decode$succeed($author$project$Main$MouseUp) : $elm$json$Json$Decode$fail('Non-primary mouse button');
-	},
-	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
-var $author$project$Main$MouseDown = {$: 'MouseDown'};
-var $author$project$Main$deocdeMouseDown = A2(
-	$elm$json$Json$Decode$andThen,
-	function (button) {
-		return (!button) ? $elm$json$Json$Decode$succeed($author$project$Main$MouseDown) : $elm$json$Json$Decode$fail('Non-primary mouse button');
-	},
-	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $elm$browser$Browser$AnimationManager$Delta = function (a) {
 	return {$: 'Delta', a: a};
@@ -11555,22 +11542,175 @@ var $elm$browser$Browser$Events$on = F3(
 			A3($elm$browser$Browser$Events$MySub, node, name, decoder));
 	});
 var $elm$browser$Browser$Events$onKeyPress = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keypress');
-var $elm$browser$Browser$Events$onMouseDown = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'mousedown');
 var $elm$browser$Browser$Events$onMouseMove = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'mousemove');
-var $elm$browser$Browser$Events$onMouseUp = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'mouseup');
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$batch(
 		_List_fromArray(
 			[
 				$elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Main$Tick),
 				$elm$browser$Browser$Events$onKeyPress($author$project$Main$decodeKeyPressed),
-				model.mouseDragging ? $elm$browser$Browser$Events$onMouseUp($author$project$Main$decodeMouseUp) : $elm$browser$Browser$Events$onMouseDown($author$project$Main$deocdeMouseDown),
 				model.mouseDragging ? $elm$browser$Browser$Events$onMouseMove($author$project$Main$decodeMouseMove) : $elm$core$Platform$Sub$none
 			]));
 };
+var $author$project$Main$Game = {$: 'Game'};
 var $ianmackenzie$elm_units$Quantity$float = function (value) {
 	return $ianmackenzie$elm_units$Quantity$Quantity(value);
 };
+var $ianmackenzie$elm_units$Quantity$interpolateFrom = F3(
+	function (_v0, _v1, parameter) {
+		var start = _v0.a;
+		var end = _v1.a;
+		return (parameter <= 0.5) ? $ianmackenzie$elm_units$Quantity$Quantity(start + (parameter * (end - start))) : $ianmackenzie$elm_units$Quantity$Quantity(end + ((1 - parameter) * (start - end)));
+	});
+var $author$project$Animation$stepHelper = F4(
+	function (_default, interpolate, frames, elapsedTime) {
+		stepHelper:
+		while (true) {
+			if (!frames.b) {
+				return _Utils_Tuple2(_default, true);
+			} else {
+				if (!frames.b.b) {
+					var frame = frames.a;
+					return _Utils_Tuple2(frame.value, true);
+				} else {
+					var frameA = frames.a;
+					var _v1 = frames.b;
+					var frameB = _v1.a;
+					var rest = _v1.b;
+					if (elapsedTime <= 0) {
+						return _Utils_Tuple2(frameA.value, false);
+					} else {
+						if (_Utils_eq(elapsedTime, frameB.offset)) {
+							return _Utils_Tuple2(frameB.value, false);
+						} else {
+							if (_Utils_cmp(elapsedTime, frameB.offset) < 1) {
+								var t = elapsedTime / frameB.offset;
+								return _Utils_Tuple2(
+									A3(interpolate, frameA.value, frameB.value, t),
+									false);
+							} else {
+								var $temp$default = _default,
+									$temp$interpolate = interpolate,
+									$temp$frames = A2($elm$core$List$cons, frameB, rest),
+									$temp$elapsedTime = elapsedTime - frameB.offset;
+								_default = $temp$default;
+								interpolate = $temp$interpolate;
+								frames = $temp$frames;
+								elapsedTime = $temp$elapsedTime;
+								continue stepHelper;
+							}
+						}
+					}
+				}
+			}
+		}
+	});
+var $author$project$Animation$step = F3(
+	function (_v0, deltaTime, _v1) {
+		step:
+		while (true) {
+			var interpolate = _v0.interpolate;
+			var easing = _v0.easing;
+			var anim = _v1.a;
+			var _v2 = anim.state;
+			switch (_v2.$) {
+				case 'NoAnimation':
+					return _Utils_Tuple2(
+						anim._default,
+						$author$project$Animation$Animation(anim));
+				case 'Complete':
+					var frame = _v2.a;
+					return _Utils_Tuple2(
+						frame,
+						$author$project$Animation$Animation(anim));
+				default:
+					var elapsedTime = _v2.a;
+					if (anim.loops) {
+						var newElapsedTime = elapsedTime + deltaTime;
+						var _v3 = A4($author$project$Animation$stepHelper, anim._default, interpolate, anim.frames, newElapsedTime);
+						var frame = _v3.a;
+						var isComplete = _v3.b;
+						if (isComplete) {
+							var $temp$_v0 = {easing: easing, interpolate: interpolate},
+								$temp$deltaTime = deltaTime,
+								$temp$_v1 = $author$project$Animation$Animation(
+								_Utils_update(
+									anim,
+									{
+										state: $author$project$Animation$Animating(newElapsedTime - anim.totalTime)
+									}));
+							_v0 = $temp$_v0;
+							deltaTime = $temp$deltaTime;
+							_v1 = $temp$_v1;
+							continue step;
+						} else {
+							return _Utils_Tuple2(
+								frame,
+								$author$project$Animation$Animation(
+									_Utils_update(
+										anim,
+										{
+											state: $author$project$Animation$Animating(newElapsedTime)
+										})));
+						}
+					} else {
+						var newElapsedTime = elapsedTime + deltaTime;
+						var _v4 = A4($author$project$Animation$stepHelper, anim._default, interpolate, anim.frames, newElapsedTime);
+						var frame = _v4.a;
+						var isComplete = _v4.b;
+						return _Utils_Tuple2(
+							frame,
+							$author$project$Animation$Animation(
+								_Utils_update(
+									anim,
+									{
+										state: isComplete ? $author$project$Animation$Complete(frame) : $author$project$Animation$Animating(newElapsedTime)
+									})));
+					}
+			}
+		}
+	});
+var $ianmackenzie$elm_units$Quantity$toFloat = function (_v0) {
+	var value = _v0.a;
+	return value;
+};
+var $author$project$Main$animateCursor = F2(
+	function (deltaMs, model) {
+		var _v0 = model.mode;
+		if (_v0.$ === 'Game') {
+			return model;
+		} else {
+			return _Utils_update(
+				model,
+				{
+					cursorBounce: function () {
+						var _v1 = model.mode;
+						if (_v1.$ === 'Editor') {
+							var _v2 = A3(
+								$author$project$Animation$step,
+								{
+									easing: $elm$core$Basics$identity,
+									interpolate: F3(
+										function (a, b, dist) {
+											return $ianmackenzie$elm_units$Quantity$toFloat(
+												A3(
+													$ianmackenzie$elm_units$Quantity$interpolateFrom,
+													$ianmackenzie$elm_units$Quantity$float(a),
+													$ianmackenzie$elm_units$Quantity$float(b),
+													dist));
+										})
+								},
+								deltaMs,
+								model.cursorBounce);
+							var anim = _v2.b;
+							return anim;
+						} else {
+							return model.cursorBounce;
+						}
+					}()
+				});
+		}
+	});
 var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Basics$min = F2(
 	function (x, y) {
@@ -11833,125 +11973,11 @@ var $author$project$Main$handleGameKeyPressed = F2(
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
-var $ianmackenzie$elm_units$Quantity$interpolateFrom = F3(
-	function (_v0, _v1, parameter) {
-		var start = _v0.a;
-		var end = _v1.a;
-		return (parameter <= 0.5) ? $ianmackenzie$elm_units$Quantity$Quantity(start + (parameter * (end - start))) : $ianmackenzie$elm_units$Quantity$Quantity(end + ((1 - parameter) * (start - end)));
-	});
 var $ianmackenzie$elm_units$Quantity$minus = F2(
 	function (_v0, _v1) {
 		var y = _v0.a;
 		var x = _v1.a;
 		return $ianmackenzie$elm_units$Quantity$Quantity(x - y);
-	});
-var $author$project$Animation$stepHelper = F4(
-	function (_default, interpolate, frames, elapsedTime) {
-		stepHelper:
-		while (true) {
-			if (!frames.b) {
-				return _Utils_Tuple2(_default, true);
-			} else {
-				if (!frames.b.b) {
-					var frame = frames.a;
-					return _Utils_Tuple2(frame.value, true);
-				} else {
-					var frameA = frames.a;
-					var _v1 = frames.b;
-					var frameB = _v1.a;
-					var rest = _v1.b;
-					if (elapsedTime <= 0) {
-						return _Utils_Tuple2(frameA.value, false);
-					} else {
-						if (_Utils_eq(elapsedTime, frameB.offset)) {
-							return _Utils_Tuple2(frameB.value, false);
-						} else {
-							if (_Utils_cmp(elapsedTime, frameB.offset) < 1) {
-								var t = elapsedTime / frameB.offset;
-								return _Utils_Tuple2(
-									A3(interpolate, frameA.value, frameB.value, t),
-									false);
-							} else {
-								var $temp$default = _default,
-									$temp$interpolate = interpolate,
-									$temp$frames = A2($elm$core$List$cons, frameB, rest),
-									$temp$elapsedTime = elapsedTime - frameB.offset;
-								_default = $temp$default;
-								interpolate = $temp$interpolate;
-								frames = $temp$frames;
-								elapsedTime = $temp$elapsedTime;
-								continue stepHelper;
-							}
-						}
-					}
-				}
-			}
-		}
-	});
-var $author$project$Animation$step = F3(
-	function (_v0, deltaTime, _v1) {
-		step:
-		while (true) {
-			var interpolate = _v0.interpolate;
-			var easing = _v0.easing;
-			var anim = _v1.a;
-			var _v2 = anim.state;
-			switch (_v2.$) {
-				case 'NoAnimation':
-					return _Utils_Tuple2(
-						anim._default,
-						$author$project$Animation$Animation(anim));
-				case 'Complete':
-					var frame = _v2.a;
-					return _Utils_Tuple2(
-						frame,
-						$author$project$Animation$Animation(anim));
-				default:
-					var elapsedTime = _v2.a;
-					if (anim.loops) {
-						var newElapsedTime = elapsedTime + deltaTime;
-						var _v3 = A4($author$project$Animation$stepHelper, anim._default, interpolate, anim.frames, newElapsedTime);
-						var frame = _v3.a;
-						var isComplete = _v3.b;
-						if (isComplete) {
-							var $temp$_v0 = {easing: easing, interpolate: interpolate},
-								$temp$deltaTime = deltaTime,
-								$temp$_v1 = $author$project$Animation$Animation(
-								_Utils_update(
-									anim,
-									{
-										state: $author$project$Animation$Animating(newElapsedTime - anim.totalTime)
-									}));
-							_v0 = $temp$_v0;
-							deltaTime = $temp$deltaTime;
-							_v1 = $temp$_v1;
-							continue step;
-						} else {
-							return _Utils_Tuple2(
-								frame,
-								$author$project$Animation$Animation(
-									_Utils_update(
-										anim,
-										{
-											state: $author$project$Animation$Animating(newElapsedTime)
-										})));
-						}
-					} else {
-						var newElapsedTime = elapsedTime + deltaTime;
-						var _v4 = A4($author$project$Animation$stepHelper, anim._default, interpolate, anim.frames, newElapsedTime);
-						var frame = _v4.a;
-						var isComplete = _v4.b;
-						return _Utils_Tuple2(
-							frame,
-							$author$project$Animation$Animation(
-								_Utils_update(
-									anim,
-									{
-										state: isComplete ? $author$project$Animation$Complete(frame) : $author$project$Animation$Animating(newElapsedTime)
-									})));
-					}
-			}
-		}
 	});
 var $elm$core$Basics$round = _Basics_round;
 var $ianmackenzie$elm_geometry$Direction3d$unwrap = function (_v0) {
@@ -12610,15 +12636,16 @@ var $author$project$Main$setPlayerFacing = function (model) {
 };
 var $author$project$Main$tickPlayer = F2(
 	function (deltaMs, model) {
-		return A2(
-			$author$project$Main$movePlayer,
-			deltaMs,
-			$author$project$Main$setPlayerFacing(model));
+		var _v0 = model.mode;
+		if (_v0.$ === 'Editor') {
+			return model;
+		} else {
+			return A2(
+				$author$project$Main$movePlayer,
+				deltaMs,
+				$author$project$Main$setPlayerFacing(model));
+		}
 	});
-var $ianmackenzie$elm_units$Quantity$toFloat = function (_v0) {
-	var value = _v0.a;
-	return value;
-};
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -12628,35 +12655,7 @@ var $author$project$Main$update = F2(
 					A2(
 						$author$project$Main$tickPlayer,
 						deltaMs,
-						_Utils_update(
-							model,
-							{
-								cursorBounce: function () {
-									var _v1 = model.mode;
-									if (_v1.$ === 'Editor') {
-										var _v2 = A3(
-											$author$project$Animation$step,
-											{
-												easing: $elm$core$Basics$identity,
-												interpolate: F3(
-													function (a, b, dist) {
-														return $ianmackenzie$elm_units$Quantity$toFloat(
-															A3(
-																$ianmackenzie$elm_units$Quantity$interpolateFrom,
-																$ianmackenzie$elm_units$Quantity$float(a),
-																$ianmackenzie$elm_units$Quantity$float(b),
-																dist));
-													})
-											},
-											deltaMs,
-											model.cursorBounce);
-										var anim = _v2.b;
-										return anim;
-									} else {
-										return model.cursorBounce;
-									}
-								}()
-							})),
+						A2($author$project$Main$animateCursor, deltaMs, model)),
 					$elm$core$Platform$Cmd$none);
 			case 'EncodingChanged':
 				var boardEncoding = msg.a;
@@ -12671,6 +12670,21 @@ var $author$project$Main$update = F2(
 						model,
 						{
 							board: $author$project$Main$decodeBoard(model.boardEncoding)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'ChangeMode':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							mode: function () {
+								var _v1 = model.mode;
+								if (_v1.$ === 'Editor') {
+									return $author$project$Main$Game;
+								} else {
+									return $author$project$Main$Editor;
+								}
+							}()
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MouseDown':
@@ -12697,22 +12711,114 @@ var $author$project$Main$update = F2(
 								model.cameraRotation)
 						}),
 					$elm$core$Platform$Cmd$none);
+			case 'XLowerVisibleChanged':
+				var value = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							xLowerVisible: value,
+							xUpperVisible: A2($elm$core$Basics$max, value, model.xUpperVisible)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'XUpperVisibleChanged':
+				var value = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							xLowerVisible: A2($elm$core$Basics$min, value, model.xLowerVisible),
+							xUpperVisible: value
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'YLowerVisibleChanged':
+				var value = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							yLowerVisible: value,
+							yUpperVisible: A2($elm$core$Basics$max, value, model.yUpperVisible)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'YUpperVisibleChanged':
+				var value = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							yLowerVisible: A2($elm$core$Basics$min, value, model.yLowerVisible),
+							yUpperVisible: value
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'ZLowerVisibleChanged':
+				var value = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							zLowerVisible: value,
+							zUpperVisible: A2($elm$core$Basics$max, value, model.zUpperVisible)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'ZUpperVisibleChanged':
+				var value = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							zLowerVisible: A2($elm$core$Basics$min, value, model.zLowerVisible),
+							zUpperVisible: value
+						}),
+					$elm$core$Platform$Cmd$none);
 			default:
 				var key = msg.a;
-				var _v3 = model.mode;
-				if (_v3.$ === 'Editor') {
+				var _v2 = model.mode;
+				if (_v2.$ === 'Editor') {
 					return A2($author$project$Main$handleEditorKeyPressed, key, model);
 				} else {
 					return A2($author$project$Main$handleGameKeyPressed, key, model);
 				}
 		}
 	});
+var $author$project$Main$ChangeMode = {$: 'ChangeMode'};
 var $author$project$Main$EncodingChanged = function (a) {
 	return {$: 'EncodingChanged', a: a};
 };
 var $author$project$Main$LoadBoard = {$: 'LoadBoard'};
+var $author$project$Main$MouseDown = {$: 'MouseDown'};
+var $author$project$Main$MouseUp = {$: 'MouseUp'};
+var $author$project$Main$XLowerVisibleChanged = function (a) {
+	return {$: 'XLowerVisibleChanged', a: a};
+};
+var $author$project$Main$XUpperVisibleChanged = function (a) {
+	return {$: 'XUpperVisibleChanged', a: a};
+};
+var $author$project$Main$YLowerVisibleChanged = function (a) {
+	return {$: 'YLowerVisibleChanged', a: a};
+};
+var $author$project$Main$YUpperVisibleChanged = function (a) {
+	return {$: 'YUpperVisibleChanged', a: a};
+};
+var $author$project$Main$ZLowerVisibleChanged = function (a) {
+	return {$: 'ZLowerVisibleChanged', a: a};
+};
+var $author$project$Main$ZUpperVisibleChanged = function (a) {
+	return {$: 'ZUpperVisibleChanged', a: a};
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor = function (a) {
+	return {$: 'BackgroundColor', a: a};
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor = function (color) {
+	return $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor(color);
+};
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
 var $elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -12726,11 +12832,16 @@ var $elm$core$List$concat = function (lists) {
 };
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$form = _VirtualDom_node('form');
+var $avh4$elm_color$Color$RgbaSpace = F4(
+	function (a, b, c, d) {
+		return {$: 'RgbaSpace', a: a, b: b, c: c, d: d};
+	});
+var $avh4$elm_color$Color$gray = A4($avh4$elm_color$Color$RgbaSpace, 211 / 255, 215 / 255, 207 / 255, 1.0);
 var $elm$html$Html$input = _VirtualDom_node('input');
 var $ianmackenzie$elm_units$Pixels$int = function (numPixels) {
 	return $ianmackenzie$elm_units$Quantity$Quantity(numPixels);
 };
-var $elm$html$Html$li = _VirtualDom_node('li');
+var $elm$html$Html$label = _VirtualDom_node('label');
 var $ianmackenzie$elm_3d_camera$Camera3d$Types$Viewpoint3d = function (a) {
 	return {$: 'Viewpoint3d', a: a};
 };
@@ -12905,13 +13016,39 @@ var $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt = function (_arguments) {
 		}
 	}
 };
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
+var $elm$html$Html$Attributes$min = $elm$html$Html$Attributes$stringProperty('min');
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
 var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
 	return {$: 'MayStopPropagation', a: a};
 };
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var $elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
 		return A2(
@@ -12936,6 +13073,18 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$json$Json$Decode$map,
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
+};
+var $elm$html$Html$Events$onMouseDown = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'mousedown',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$html$Html$Events$onMouseUp = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'mouseup',
+		$elm$json$Json$Decode$succeed(msg));
 };
 var $elm$html$Html$Events$alwaysPreventDefault = function (msg) {
 	return _Utils_Tuple2(msg, true);
@@ -13083,6 +13232,9 @@ var $ianmackenzie$elm_3d_camera$Camera3d$perspective = function (_arguments) {
 		});
 };
 var $elm$html$Html$span = _VirtualDom_node('span');
+var $elm$html$Html$Attributes$step = function (n) {
+	return A2($elm$html$Html$Attributes$stringProperty, 'step', n);
+};
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $ianmackenzie$elm_3d_scene$Scene3d$Light$CastsShadows = function (a) {
@@ -13430,11 +13582,6 @@ var $elm_explorations$webgl$WebGL$Internal$StencilTest = function (a) {
 		};
 	};
 };
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var $elm_explorations$webgl$WebGL$Settings$StencilTest$testSeparate = F3(
 	function (_v0, options1, options2) {
 		var ref = _v0.ref;
@@ -14631,33 +14778,7 @@ var $ianmackenzie$elm_3d_scene$Scene3d$sunny = function (_arguments) {
 };
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$core$Debug$toString = _Debug_toString;
-var $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor = function (a) {
-	return {$: 'BackgroundColor', a: a};
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor = function (color) {
-	return $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor(color);
-};
-var $avh4$elm_color$Color$RgbaSpace = F4(
-	function (a, b, c, d) {
-		return {$: 'RgbaSpace', a: a, b: b, c: c, d: d};
-	});
-var $avh4$elm_color$Color$rgba = F4(
-	function (r, g, b, a) {
-		return A4($avh4$elm_color$Color$RgbaSpace, r, g, b, a);
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$transparentBackground = $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor(
-	A4($avh4$elm_color$Color$rgba, 0, 0, 0, 0));
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
-var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $ianmackenzie$elm_geometry$Frame3d$copy = function (_v0) {
 	var properties = _v0.a;
@@ -17004,7 +17125,7 @@ var $author$project$Main$viewBlock = F3(
 				var x = _v1.a;
 				var y = _v1.b;
 				var z = _v1.c;
-				return A2(
+				return ((_Utils_cmp(x, model.xLowerVisible) < 0) || ((_Utils_cmp(x, model.xUpperVisible) > 0) || ((_Utils_cmp(y, model.yLowerVisible) < 0) || ((_Utils_cmp(y, model.yUpperVisible) > 0) || ((_Utils_cmp(z, model.zLowerVisible) < 0) || (_Utils_cmp(z, model.zUpperVisible) > 0)))))) ? $ianmackenzie$elm_3d_scene$Scene3d$nothing : A2(
 					$ianmackenzie$elm_3d_scene$Scene3d$blockWithShadow,
 					$ianmackenzie$elm_3d_scene$Scene3d$Material$matte(
 						A3($avh4$elm_color$Color$rgb, (x * 1.2) / model.maxX, (y * 1.2) / model.maxY, (z * 1.2) / model.maxZ)),
@@ -17027,7 +17148,7 @@ var $author$project$Main$viewBlock = F3(
 					var x = _v3.a;
 					var y = _v3.b;
 					var z = _v3.c;
-					return A2(
+					return ((_Utils_cmp(x, model.xLowerVisible) < 0) || ((_Utils_cmp(x, model.xUpperVisible) > 0) || ((_Utils_cmp(y, model.yLowerVisible) < 0) || ((_Utils_cmp(y, model.yUpperVisible) > 0) || ((_Utils_cmp(z, model.zLowerVisible) < 0) || (_Utils_cmp(z, model.zUpperVisible) > 0)))))) ? $ianmackenzie$elm_3d_scene$Scene3d$nothing : A2(
 						$ianmackenzie$elm_3d_scene$Scene3d$blockWithShadow,
 						$ianmackenzie$elm_3d_scene$Scene3d$Material$metal(
 							{baseColor: $avh4$elm_color$Color$orange, roughness: 1}),
@@ -17036,9 +17157,9 @@ var $author$project$Main$viewBlock = F3(
 							$ianmackenzie$elm_geometry$Frame3d$atPoint(
 								A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z)),
 							_Utils_Tuple3(
-								$ianmackenzie$elm_units$Length$meters(1),
-								$ianmackenzie$elm_units$Length$meters(1),
-								$ianmackenzie$elm_units$Length$meters(1))));
+								$ianmackenzie$elm_units$Length$meters(0.5),
+								$ianmackenzie$elm_units$Length$meters(0.5),
+								$ianmackenzie$elm_units$Length$meters(0.5))));
 				}
 		}
 	});
@@ -17574,7 +17695,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow = F2(
 	function (givenMaterial, givenCone) {
 		return A4($ianmackenzie$elm_3d_scene$Scene3d$Entity$cone, true, true, givenMaterial, givenCone);
 	});
-var $avh4$elm_color$Color$gray = A4($avh4$elm_color$Color$RgbaSpace, 211 / 255, 215 / 255, 207 / 255, 1.0);
 var $avh4$elm_color$Color$green = A4($avh4$elm_color$Color$RgbaSpace, 115 / 255, 210 / 255, 22 / 255, 1.0);
 var $ianmackenzie$elm_geometry$Geometry$Types$Cone3d = function (a) {
 	return {$: 'Cone3d', a: a};
@@ -18099,13 +18219,14 @@ var $author$project$Main$view = function (model) {
 				_List_fromArray(
 					[
 						A2($elm$html$Html$Attributes$style, 'border', '1px solid black'),
-						A2($elm$html$Html$Attributes$style, 'display', 'inline-flex')
+						A2($elm$html$Html$Attributes$style, 'display', 'inline-flex'),
+						model.mouseDragging ? $elm$html$Html$Events$onMouseUp($author$project$Main$MouseUp) : $elm$html$Html$Events$onMouseDown($author$project$Main$MouseDown)
 					]),
 				_List_fromArray(
 					[
 						$ianmackenzie$elm_3d_scene$Scene3d$sunny(
 						{
-							background: $ianmackenzie$elm_3d_scene$Scene3d$transparentBackground,
+							background: $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor($avh4$elm_color$Color$gray),
 							camera: function () {
 								var _v0 = model.mode;
 								if (_v0.$ === 'Game') {
@@ -18178,7 +18299,10 @@ var $author$project$Main$view = function (model) {
 							sunlightDirection: A3(
 								$ianmackenzie$elm_geometry$Direction3d$rotateAround,
 								$ianmackenzie$elm_geometry$Axis3d$z,
-								$ianmackenzie$elm_units$Angle$degrees(60),
+								A2(
+									$ianmackenzie$elm_units$Quantity$plus,
+									$ianmackenzie$elm_units$Angle$degrees(-60),
+									model.cameraRotation),
 								A3(
 									$ianmackenzie$elm_geometry$Direction3d$rotateAround,
 									$ianmackenzie$elm_geometry$Axis3d$x,
@@ -18192,10 +18316,38 @@ var $author$project$Main$view = function (model) {
 				$elm$html$Html$form,
 				_List_fromArray(
 					[
-						$elm$html$Html$Events$onSubmit($author$project$Main$LoadBoard)
+						$elm$html$Html$Events$onSubmit($author$project$Main$LoadBoard),
+						A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+						A2($elm$html$Html$Attributes$style, 'gap', '1rem')
 					]),
 				_List_fromArray(
 					[
+						A2(
+						$elm$html$Html$label,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+								A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
+								A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$span,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Encoded Level:')
+									])),
+								A2(
+								$elm$html$Html$input,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$value(model.boardEncoding),
+										$elm$html$Html$Events$onInput($author$project$Main$EncodingChanged)
+									]),
+								_List_Nil)
+							])),
 						A2(
 						$elm$html$Html$button,
 						_List_fromArray(
@@ -18205,36 +18357,244 @@ var $author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$text('Load')
+							]))
+					])),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$type_('button'),
+						$elm$html$Html$Events$onClick($author$project$Main$ChangeMode)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						function () {
+							var _v3 = model.mode;
+							if (_v3.$ === 'Editor') {
+								return 'Play Level';
+							} else {
+								return 'Edit Level';
+							}
+						}())
+					])),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$label,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$span,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('X Visibility')
+							])),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2(
+						$elm$html$Html$span,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Lower bound')
 							])),
 						A2(
 						$elm$html$Html$input,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$value(model.boardEncoding),
-								$elm$html$Html$Events$onInput($author$project$Main$EncodingChanged)
+								$elm$html$Html$Attributes$type_('range'),
+								$elm$html$Html$Attributes$min('0'),
+								$elm$html$Html$Attributes$max(
+								$elm$core$String$fromInt(model.maxX - 1)),
+								$elm$html$Html$Attributes$step('1'),
+								$elm$html$Html$Attributes$value(
+								$elm$core$String$fromInt(model.xLowerVisible)),
+								$elm$html$Html$Events$onInput(
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$String$toInt,
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$Maybe$withDefault(model.xLowerVisible),
+										$author$project$Main$XLowerVisibleChanged)))
+							]),
+						_List_Nil),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2(
+						$elm$html$Html$span,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Upper bound')
+							])),
+						A2(
+						$elm$html$Html$input,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$type_('range'),
+								$elm$html$Html$Attributes$min('0'),
+								$elm$html$Html$Attributes$max(
+								$elm$core$String$fromInt(model.maxX - 1)),
+								$elm$html$Html$Attributes$step('1'),
+								$elm$html$Html$Attributes$value(
+								$elm$core$String$fromInt(model.xUpperVisible)),
+								$elm$html$Html$Events$onInput(
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$String$toInt,
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$Maybe$withDefault(model.xLowerVisible),
+										$author$project$Main$XUpperVisibleChanged)))
 							]),
 						_List_Nil)
 					])),
 				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				A2(
-				$elm$html$Html$ul,
+				$elm$html$Html$label,
 				_List_Nil,
 				_List_fromArray(
 					[
 						A2(
-						$elm$html$Html$li,
+						$elm$html$Html$span,
 						_List_Nil,
 						_List_fromArray(
 							[
+								$elm$html$Html$text('Y Visibility')
+							])),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2(
+						$elm$html$Html$span,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Lower bound')
+							])),
+						A2(
+						$elm$html$Html$input,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$type_('range'),
+								$elm$html$Html$Attributes$min('0'),
+								$elm$html$Html$Attributes$max(
+								$elm$core$String$fromInt(model.maxY - 1)),
+								$elm$html$Html$Attributes$step('1'),
+								$elm$html$Html$Attributes$value(
+								$elm$core$String$fromInt(model.yLowerVisible)),
+								$elm$html$Html$Events$onInput(
 								A2(
-								$elm$html$Html$span,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text(
-										$elm$core$Debug$toString(model.playerFrame))
-									]))
-							]))
+									$elm$core$Basics$composeR,
+									$elm$core$String$toInt,
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$Maybe$withDefault(model.yLowerVisible),
+										$author$project$Main$YLowerVisibleChanged)))
+							]),
+						_List_Nil),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2(
+						$elm$html$Html$span,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Upper bound')
+							])),
+						A2(
+						$elm$html$Html$input,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$type_('range'),
+								$elm$html$Html$Attributes$min('0'),
+								$elm$html$Html$Attributes$max(
+								$elm$core$String$fromInt(model.maxY - 1)),
+								$elm$html$Html$Attributes$step('1'),
+								$elm$html$Html$Attributes$value(
+								$elm$core$String$fromInt(model.yUpperVisible)),
+								$elm$html$Html$Events$onInput(
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$String$toInt,
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$Maybe$withDefault(model.yLowerVisible),
+										$author$project$Main$YUpperVisibleChanged)))
+							]),
+						_List_Nil)
+					])),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$label,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$span,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Z Visibility')
+							])),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2(
+						$elm$html$Html$span,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Lower bound')
+							])),
+						A2(
+						$elm$html$Html$input,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$type_('range'),
+								$elm$html$Html$Attributes$min('0'),
+								$elm$html$Html$Attributes$max(
+								$elm$core$String$fromInt(model.maxZ - 1)),
+								$elm$html$Html$Attributes$step('1'),
+								$elm$html$Html$Attributes$value(
+								$elm$core$String$fromInt(model.zLowerVisible)),
+								$elm$html$Html$Events$onInput(
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$String$toInt,
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$Maybe$withDefault(model.zLowerVisible),
+										$author$project$Main$ZLowerVisibleChanged)))
+							]),
+						_List_Nil),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2(
+						$elm$html$Html$span,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Upper bound')
+							])),
+						A2(
+						$elm$html$Html$input,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$type_('range'),
+								$elm$html$Html$Attributes$min('0'),
+								$elm$html$Html$Attributes$max(
+								$elm$core$String$fromInt(model.maxZ - 1)),
+								$elm$html$Html$Attributes$step('1'),
+								$elm$html$Html$Attributes$value(
+								$elm$core$String$fromInt(model.zUpperVisible)),
+								$elm$html$Html$Events$onInput(
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$String$toInt,
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$Maybe$withDefault(model.zLowerVisible),
+										$author$project$Main$ZUpperVisibleChanged)))
+							]),
+						_List_Nil)
 					]))
 			]),
 		title: 'Cube-Man'
