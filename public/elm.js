@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1738729829671"
+    "1738730501242"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -10725,6 +10725,7 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$document = _Browser_document;
 var $author$project$Main$Editor = {$: 'Editor'};
+var $author$project$Main$Empty = {$: 'Empty'};
 var $author$project$Main$Forward = {$: 'Forward'};
 var $ianmackenzie$elm_geometry$Geometry$Types$Frame3d = function (a) {
 	return {$: 'Frame3d', a: a};
@@ -10753,7 +10754,6 @@ var $ianmackenzie$elm_geometry$Frame3d$atPoint = function (point) {
 };
 var $author$project$Main$borgCube = '11121111111011111110111111101111200000021110111111101111111211111110111111111111111111111111111101111110111111111111111111101111111011111111111111111111111111110111111011111111111111111110111120000002011111100111111001111110011111100111111001111110200000021110111111111111111111111111111101111110111111111111111111101111111011111111111111111111111111110111111011111111111111111110111111101111111111111111111111111111011111101111111111111111111011111112111111101111111011111110111120000002111011111110111111121111';
 var $author$project$Main$Edge = {$: 'Edge'};
-var $author$project$Main$Empty = {$: 'Empty'};
 var $author$project$Main$Wall = {$: 'Wall'};
 var $elm$core$String$foldl = _String_foldl;
 var $elm$core$Elm$JsArray$push = _JsArray_push;
@@ -10978,6 +10978,7 @@ var $author$project$Main$init = function (_v0) {
 				A3($ianmackenzie$elm_geometry$Point3d$meters, 1, 4, 7)),
 			playerMovingAcrossEdge: $elm$core$Maybe$Nothing,
 			playerWantFacing: $author$project$Main$Forward,
+			selectedBlockType: $author$project$Main$Empty,
 			xLowerVisible: 0,
 			xUpperVisible: maxX - 1,
 			yLowerVisible: 0,
@@ -12771,6 +12772,13 @@ var $author$project$Main$update = F2(
 							zUpperVisible: value
 						}),
 					$elm$core$Platform$Cmd$none);
+			case 'BlockTypeSelected':
+				var blockType = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{selectedBlockType: blockType}),
+					$elm$core$Platform$Cmd$none);
 			default:
 				var key = msg.a;
 				var _v2 = model.mode;
@@ -12781,6 +12789,9 @@ var $author$project$Main$update = F2(
 				}
 		}
 	});
+var $author$project$Main$BlockTypeSelected = function (a) {
+	return {$: 'BlockTypeSelected', a: a};
+};
 var $author$project$Main$ChangeMode = {$: 'ChangeMode'};
 var $author$project$Main$EncodingChanged = function (a) {
 	return {$: 'EncodingChanged', a: a};
@@ -12806,6 +12817,14 @@ var $author$project$Main$ZLowerVisibleChanged = function (a) {
 var $author$project$Main$ZUpperVisibleChanged = function (a) {
 	return {$: 'ZUpperVisibleChanged', a: a};
 };
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
 var $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor = function (a) {
 	return {$: 'BackgroundColor', a: a};
 };
@@ -18378,6 +18397,66 @@ var $author$project$Main$view = function (model) {
 								return 'Edit Level';
 							}
 						}())
+					])),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+						A2($elm$html$Html$Attributes$style, 'gap', '1rem')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$Attributes$attribute,
+								'aria-pressed',
+								_Utils_eq(model.selectedBlockType, $author$project$Main$Wall) ? 'true' : 'false'),
+								$elm$html$Html$Attributes$type_('button'),
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$BlockTypeSelected($author$project$Main$Wall))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Wall')
+							])),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$Attributes$attribute,
+								'aria-pressed',
+								_Utils_eq(model.selectedBlockType, $author$project$Main$Edge) ? 'true' : 'false'),
+								$elm$html$Html$Attributes$type_('button'),
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$BlockTypeSelected($author$project$Main$Edge))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Edge')
+							])),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$Attributes$attribute,
+								'aria-pressed',
+								_Utils_eq(model.selectedBlockType, $author$project$Main$Empty) ? 'true' : 'false'),
+								$elm$html$Html$Attributes$type_('button'),
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$BlockTypeSelected($author$project$Main$Empty))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Empty')
+							]))
 					])),
 				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				A2($elm$html$Html$br, _List_Nil, _List_Nil),

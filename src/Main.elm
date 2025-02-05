@@ -50,6 +50,7 @@ type alias Model =
     , yUpperVisible : Int
     , zLowerVisible : Int
     , zUpperVisible : Int
+    , selectedBlockType : Block
     , editorCursor : Point
     , cameraRotation : Angle
     , mouseDragging : Bool
@@ -193,6 +194,7 @@ init () =
       , yUpperVisible = maxY - 1
       , zLowerVisible = 0
       , zUpperVisible = maxZ - 1
+      , selectedBlockType = Empty
       , board = board
       , editorCursor = ( 0, 0, 0 )
       , cameraRotation = Angle.degrees 225
@@ -300,6 +302,7 @@ type Msg
     | YUpperVisibleChanged Int
     | ZLowerVisibleChanged Int
     | ZUpperVisibleChanged Int
+    | BlockTypeSelected Block
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -394,6 +397,9 @@ update msg model =
               }
             , Cmd.none
             )
+
+        BlockTypeSelected blockType ->
+            ( { model | selectedBlockType = blockType }, Cmd.none )
 
         KeyPressed key ->
             case model.mode of
@@ -1018,6 +1024,49 @@ view model =
 
                     Game ->
                         "Edit Level"
+            ]
+        , Html.br [] []
+        , Html.br [] []
+        , Html.div
+            [ Html.Attributes.style "display" "flex"
+            , Html.Attributes.style "gap" "1rem"
+            ]
+            [ Html.button
+                [ Html.Attributes.attribute "aria-pressed" <|
+                    if model.selectedBlockType == Wall then
+                        "true"
+
+                    else
+                        "false"
+                , Html.Attributes.type_ "button"
+                , Html.Events.onClick (BlockTypeSelected Wall)
+                ]
+                [ Html.text "Wall"
+                ]
+            , Html.button
+                [ Html.Attributes.attribute "aria-pressed" <|
+                    if model.selectedBlockType == Edge then
+                        "true"
+
+                    else
+                        "false"
+                , Html.Attributes.type_ "button"
+                , Html.Events.onClick (BlockTypeSelected Edge)
+                ]
+                [ Html.text "Edge"
+                ]
+            , Html.button
+                [ Html.Attributes.attribute "aria-pressed" <|
+                    if model.selectedBlockType == Empty then
+                        "true"
+
+                    else
+                        "false"
+                , Html.Attributes.type_ "button"
+                , Html.Events.onClick (BlockTypeSelected Empty)
+                ]
+                [ Html.text "Empty"
+                ]
             ]
         , Html.br [] []
         , Html.br [] []
