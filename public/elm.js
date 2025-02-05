@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1738710332902"
+    "1738727169967"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -10977,6 +10977,8 @@ var $author$project$Main$init = function (_v0) {
 			playerFrame: $ianmackenzie$elm_geometry$Frame3d$atPoint(
 				A3($ianmackenzie$elm_geometry$Point3d$meters, 1, 4, 7)),
 			playerMovingAcrossEdge: $elm$core$Maybe$Nothing,
+			playerTarget: $ianmackenzie$elm_geometry$Frame3d$atPoint(
+				A3($ianmackenzie$elm_geometry$Point3d$meters, 2, 4, 7)),
 			playerWantFacing: $author$project$Main$Forward
 		},
 		$elm$core$Platform$Cmd$none);
@@ -11951,6 +11953,20 @@ var $author$project$Animation$step = F3(
 			}
 		}
 	});
+var $elm$core$Basics$round = _Basics_round;
+var $ianmackenzie$elm_geometry$Direction3d$unwrap = function (_v0) {
+	var coordinates = _v0.a;
+	return coordinates;
+};
+var $author$project$Main$correctSizeDirection = function (dir) {
+	var parts = $ianmackenzie$elm_geometry$Direction3d$unwrap(dir);
+	return $ianmackenzie$elm_geometry$Direction3d$unsafe(
+		{
+			x: $elm$core$Basics$round(parts.x),
+			y: $elm$core$Basics$round(parts.y),
+			z: $elm$core$Basics$round(parts.z)
+		});
+};
 var $elm$core$Basics$negate = function (n) {
 	return -n;
 };
@@ -12048,7 +12064,6 @@ var $ianmackenzie$elm_units$Quantity$plus = F2(
 		var x = _v1.a;
 		return $ianmackenzie$elm_units$Quantity$Quantity(x + y);
 	});
-var $elm$core$Basics$round = _Basics_round;
 var $ianmackenzie$elm_geometry$Point3d$unwrap = function (_v0) {
 	var pointCoordinates = _v0.a;
 	return pointCoordinates;
@@ -12256,7 +12271,7 @@ var $author$project$Main$movePlayer = F2(
 				A2(
 					$ianmackenzie$elm_units$Quantity$per,
 					$ianmackenzie$elm_units$Duration$seconds(1),
-					$ianmackenzie$elm_units$Angle$degrees(45)));
+					$ianmackenzie$elm_units$Angle$degrees(90)));
 			return _Utils_Tuple2(
 				A3(
 					$ianmackenzie$elm_geometry$Frame3d$rotateAround,
@@ -12363,7 +12378,7 @@ var $author$project$Main$movePlayer = F2(
 										A2(
 											$ianmackenzie$elm_units$Quantity$per,
 											$ianmackenzie$elm_units$Duration$seconds(1),
-											$ianmackenzie$elm_units$Length$meters(2))),
+											$ianmackenzie$elm_units$Length$meters(4))),
 									model.playerFrame)
 							});
 				}
@@ -12387,27 +12402,30 @@ var $author$project$Main$movePlayer = F2(
 							originPoint: $author$project$Main$pointToPoint3d(
 								$author$project$Main$point3dToPoint(
 									$ianmackenzie$elm_geometry$Frame3d$originPoint(playerFrame))),
-							xDirection: A2(
-								$elm$core$Maybe$withDefault,
-								$ianmackenzie$elm_geometry$Direction3d$positiveX,
-								$ianmackenzie$elm_geometry$Vector3d$direction(
-									$ianmackenzie$elm_geometry$Vector3d$normalize(
-										$ianmackenzie$elm_geometry$Direction3d$toVector(
-											$ianmackenzie$elm_geometry$Frame3d$xDirection(playerFrame))))),
-							yDirection: A2(
-								$elm$core$Maybe$withDefault,
-								$ianmackenzie$elm_geometry$Direction3d$positiveX,
-								$ianmackenzie$elm_geometry$Vector3d$direction(
-									$ianmackenzie$elm_geometry$Vector3d$normalize(
-										$ianmackenzie$elm_geometry$Direction3d$toVector(
-											$ianmackenzie$elm_geometry$Frame3d$yDirection(playerFrame))))),
-							zDirection: A2(
-								$elm$core$Maybe$withDefault,
-								$ianmackenzie$elm_geometry$Direction3d$positiveX,
-								$ianmackenzie$elm_geometry$Vector3d$direction(
-									$ianmackenzie$elm_geometry$Vector3d$normalize(
-										$ianmackenzie$elm_geometry$Direction3d$toVector(
-											$ianmackenzie$elm_geometry$Frame3d$zDirection(playerFrame)))))
+							xDirection: $author$project$Main$correctSizeDirection(
+								A2(
+									$elm$core$Maybe$withDefault,
+									$ianmackenzie$elm_geometry$Direction3d$positiveX,
+									$ianmackenzie$elm_geometry$Vector3d$direction(
+										$ianmackenzie$elm_geometry$Vector3d$normalize(
+											$ianmackenzie$elm_geometry$Direction3d$toVector(
+												$ianmackenzie$elm_geometry$Frame3d$xDirection(playerFrame)))))),
+							yDirection: $author$project$Main$correctSizeDirection(
+								A2(
+									$elm$core$Maybe$withDefault,
+									$ianmackenzie$elm_geometry$Direction3d$positiveX,
+									$ianmackenzie$elm_geometry$Vector3d$direction(
+										$ianmackenzie$elm_geometry$Vector3d$normalize(
+											$ianmackenzie$elm_geometry$Direction3d$toVector(
+												$ianmackenzie$elm_geometry$Frame3d$yDirection(playerFrame)))))),
+							zDirection: $author$project$Main$correctSizeDirection(
+								A2(
+									$elm$core$Maybe$withDefault,
+									$ianmackenzie$elm_geometry$Direction3d$positiveX,
+									$ianmackenzie$elm_geometry$Vector3d$direction(
+										$ianmackenzie$elm_geometry$Vector3d$normalize(
+											$ianmackenzie$elm_geometry$Direction3d$toVector(
+												$ianmackenzie$elm_geometry$Frame3d$zDirection(playerFrame))))))
 						}) : playerFrame,
 					playerMovingAcrossEdge: edgeTravelComplete ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(totalMovement)
 				});
@@ -12484,100 +12502,108 @@ var $author$project$Main$setPlayerFacing = function (model) {
 	if (_Utils_eq(model.playerFacing, model.playerWantFacing)) {
 		return model;
 	} else {
-		var playerBoardPoint = $author$project$Main$point3dToPoint(
-			$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame));
-		var targetBoardPoint = $author$project$Main$point3dToPoint(
-			A3(
-				$ianmackenzie$elm_geometry$Point3d$translateIn,
-				function () {
-					var _v2 = model.playerWantFacing;
-					switch (_v2.$) {
-						case 'Forward':
-							return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
-						case 'Backward':
-							return $ianmackenzie$elm_geometry$Direction3d$reverse(
-								$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame));
-						case 'Left':
-							return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
-						default:
-							return $ianmackenzie$elm_geometry$Direction3d$reverse(
-								$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame));
-					}
-				}(),
-				$ianmackenzie$elm_units$Length$meters(1),
-				$author$project$Main$pointToPoint3d(playerBoardPoint)));
-		if (A2($author$project$Main$oppositeFacings, model.playerFacing, model.playerWantFacing)) {
-			return _Utils_update(
-				model,
-				{playerFacing: model.playerWantFacing});
+		var _v0 = model.playerMovingAcrossEdge;
+		if (_v0.$ === 'Just') {
+			return model;
 		} else {
-			if (A3(
-				$ianmackenzie$elm_units$Quantity$equalWithin,
-				$ianmackenzie$elm_units$Length$meters(0.1),
-				A2(
-					$ianmackenzie$elm_geometry$Point3d$distanceFrom,
-					$author$project$Main$pointToPoint3d(playerBoardPoint),
-					$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame)),
-				$ianmackenzie$elm_units$Length$meters(0))) {
-				var _v0 = A2(
-					$elm$core$Array$get,
-					A2($author$project$Main$pointToIndex, model, targetBoardPoint),
-					model.board);
-				if (_v0.$ === 'Nothing') {
-					return model;
-				} else {
-					var black = _v0.a;
-					switch (black.$) {
-						case 'Wall':
-							return model;
-						case 'Empty':
-							return _Utils_update(
-								model,
-								{
-									playerFacing: model.playerWantFacing,
-									playerFrame: $ianmackenzie$elm_geometry$Frame3d$unsafe(
-										{
-											originPoint: $author$project$Main$pointToPoint3d(playerBoardPoint),
-											xDirection: A2(
-												$elm$core$Maybe$withDefault,
-												$ianmackenzie$elm_geometry$Direction3d$positiveX,
-												$ianmackenzie$elm_geometry$Vector3d$direction(
-													$ianmackenzie$elm_geometry$Vector3d$normalize(
-														$ianmackenzie$elm_geometry$Direction3d$toVector(
-															$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame))))),
-											yDirection: A2(
-												$elm$core$Maybe$withDefault,
-												$ianmackenzie$elm_geometry$Direction3d$positiveX,
-												$ianmackenzie$elm_geometry$Vector3d$direction(
-													$ianmackenzie$elm_geometry$Vector3d$normalize(
-														$ianmackenzie$elm_geometry$Direction3d$toVector(
-															$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame))))),
-											zDirection: A2(
-												$elm$core$Maybe$withDefault,
-												$ianmackenzie$elm_geometry$Direction3d$positiveX,
-												$ianmackenzie$elm_geometry$Vector3d$direction(
-													$ianmackenzie$elm_geometry$Vector3d$normalize(
-														$ianmackenzie$elm_geometry$Direction3d$toVector(
-															$ianmackenzie$elm_geometry$Frame3d$zDirection(model.playerFrame)))))
-										})
-								});
-						default:
-							return _Utils_update(
-								model,
-								{
-									playerFacing: model.playerWantFacing,
-									playerFrame: $ianmackenzie$elm_geometry$Frame3d$unsafe(
-										{
-											originPoint: $author$project$Main$pointToPoint3d(playerBoardPoint),
-											xDirection: $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame),
-											yDirection: $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame),
-											zDirection: $ianmackenzie$elm_geometry$Frame3d$zDirection(model.playerFrame)
-										})
-								});
-					}
-				}
+			var playerBoardPoint = $author$project$Main$point3dToPoint(
+				$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame));
+			var targetBoardPoint = $author$project$Main$point3dToPoint(
+				A3(
+					$ianmackenzie$elm_geometry$Point3d$translateIn,
+					function () {
+						var _v3 = model.playerWantFacing;
+						switch (_v3.$) {
+							case 'Forward':
+								return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
+							case 'Backward':
+								return $ianmackenzie$elm_geometry$Direction3d$reverse(
+									$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame));
+							case 'Left':
+								return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
+							default:
+								return $ianmackenzie$elm_geometry$Direction3d$reverse(
+									$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame));
+						}
+					}(),
+					$ianmackenzie$elm_units$Length$meters(1),
+					$author$project$Main$pointToPoint3d(playerBoardPoint)));
+			if (A2($author$project$Main$oppositeFacings, model.playerFacing, model.playerWantFacing)) {
+				return _Utils_update(
+					model,
+					{playerFacing: model.playerWantFacing});
 			} else {
-				return model;
+				if (A3(
+					$ianmackenzie$elm_units$Quantity$equalWithin,
+					$ianmackenzie$elm_units$Length$meters(0.1),
+					A2(
+						$ianmackenzie$elm_geometry$Point3d$distanceFrom,
+						$author$project$Main$pointToPoint3d(playerBoardPoint),
+						$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame)),
+					$ianmackenzie$elm_units$Length$meters(0))) {
+					var _v1 = A2(
+						$elm$core$Array$get,
+						A2($author$project$Main$pointToIndex, model, targetBoardPoint),
+						model.board);
+					if (_v1.$ === 'Nothing') {
+						return model;
+					} else {
+						var black = _v1.a;
+						switch (black.$) {
+							case 'Wall':
+								return model;
+							case 'Empty':
+								return _Utils_update(
+									model,
+									{
+										playerFacing: model.playerWantFacing,
+										playerFrame: $ianmackenzie$elm_geometry$Frame3d$unsafe(
+											{
+												originPoint: $author$project$Main$pointToPoint3d(playerBoardPoint),
+												xDirection: $author$project$Main$correctSizeDirection(
+													A2(
+														$elm$core$Maybe$withDefault,
+														$ianmackenzie$elm_geometry$Direction3d$positiveX,
+														$ianmackenzie$elm_geometry$Vector3d$direction(
+															$ianmackenzie$elm_geometry$Vector3d$normalize(
+																$ianmackenzie$elm_geometry$Direction3d$toVector(
+																	$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame)))))),
+												yDirection: $author$project$Main$correctSizeDirection(
+													A2(
+														$elm$core$Maybe$withDefault,
+														$ianmackenzie$elm_geometry$Direction3d$positiveX,
+														$ianmackenzie$elm_geometry$Vector3d$direction(
+															$ianmackenzie$elm_geometry$Vector3d$normalize(
+																$ianmackenzie$elm_geometry$Direction3d$toVector(
+																	$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame)))))),
+												zDirection: $author$project$Main$correctSizeDirection(
+													A2(
+														$elm$core$Maybe$withDefault,
+														$ianmackenzie$elm_geometry$Direction3d$positiveX,
+														$ianmackenzie$elm_geometry$Vector3d$direction(
+															$ianmackenzie$elm_geometry$Vector3d$normalize(
+																$ianmackenzie$elm_geometry$Direction3d$toVector(
+																	$ianmackenzie$elm_geometry$Frame3d$zDirection(model.playerFrame))))))
+											})
+									});
+							default:
+								return _Utils_update(
+									model,
+									{
+										playerFacing: model.playerWantFacing,
+										playerFrame: $ianmackenzie$elm_geometry$Frame3d$unsafe(
+											{
+												originPoint: $author$project$Main$pointToPoint3d(playerBoardPoint),
+												xDirection: $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame),
+												yDirection: $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame),
+												zDirection: $ianmackenzie$elm_geometry$Frame3d$zDirection(model.playerFrame)
+											})
+									});
+						}
+					}
+				} else {
+					return model;
+				}
 			}
 		}
 	}
@@ -12704,6 +12730,7 @@ var $elm$html$Html$input = _VirtualDom_node('input');
 var $ianmackenzie$elm_units$Pixels$int = function (numPixels) {
 	return $ianmackenzie$elm_units$Quantity$Quantity(numPixels);
 };
+var $elm$html$Html$li = _VirtualDom_node('li');
 var $ianmackenzie$elm_3d_camera$Camera3d$Types$Viewpoint3d = function (a) {
 	return {$: 'Viewpoint3d', a: a};
 };
@@ -13055,6 +13082,7 @@ var $ianmackenzie$elm_3d_camera$Camera3d$perspective = function (_arguments) {
 			viewpoint: _arguments.viewpoint
 		});
 };
+var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $ianmackenzie$elm_3d_scene$Scene3d$Light$CastsShadows = function (a) {
@@ -13715,10 +13743,6 @@ var $ianmackenzie$elm_geometry$BoundingBox3d$union = F2(
 				minZ: A2($elm$core$Basics$min, b1.minZ, b2.minZ)
 			});
 	});
-var $ianmackenzie$elm_geometry$Direction3d$unwrap = function (_v0) {
-	var coordinates = _v0.a;
-	return coordinates;
-};
 var $ianmackenzie$elm_geometry$BoundingBox3d$withDimensions = F2(
 	function (givenDimensions, givenCenterPoint) {
 		var _v0 = givenCenterPoint;
@@ -14607,6 +14631,7 @@ var $ianmackenzie$elm_3d_scene$Scene3d$sunny = function (_arguments) {
 };
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$core$Debug$toString = _Debug_toString;
 var $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor = function (a) {
 	return {$: 'BackgroundColor', a: a};
 };
@@ -14632,6 +14657,7 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 			$elm$json$Json$Encode$string(string));
 	});
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $ianmackenzie$elm_geometry$Frame3d$copy = function (_v0) {
 	var properties = _v0.a;
@@ -18188,6 +18214,27 @@ var $author$project$Main$view = function (model) {
 								$elm$html$Html$Events$onInput($author$project$Main$EncodingChanged)
 							]),
 						_List_Nil)
+					])),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				A2(
+				$elm$html$Html$ul,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$li,
+						_List_Nil,
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$span,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text(
+										$elm$core$Debug$toString(model.playerFrame))
+									]))
+							]))
 					]))
 			]),
 		title: 'Cube-Man'
