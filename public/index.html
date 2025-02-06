@@ -2,14 +2,44 @@
 <html>
     <head>
         <title>Cube-Man</title>
-        <style>
+
+        <link rel="stylesheet" href="assets/pico-css/css/pico.min.css" />
+        <!-- <style>
             button[aria-pressed="true"] {
                 background: blue;
                 color: white;
             }
-        </style>
+        </style> -->
     </head>
     <body>
+        <script>
+            Object.defineProperty(
+                HTMLElement.prototype,
+                "__setPointerCapture",
+                {
+                    set(pointerId) {
+                        console.log(
+                            "jarl",
+                            pointerId,
+                            this.__capturedPointer,
+                            this,
+                        );
+                        if (pointerId) {
+                            if (pointerId !== this.__capturedPointer) {
+                                this.releasePointerCapture(
+                                    this.__capturedPointer,
+                                );
+                            }
+                            this.setPointerCapture(pointerId);
+                        } else {
+                            this.releasePointerCapture(this.__capturedPointer);
+                        }
+
+                        this.__capturedPointer = pointerId;
+                    },
+                },
+            );
+        </script>
         <script src="elm.js"></script>
         <script>
             Elm.Main.init();

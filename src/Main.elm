@@ -4,11 +4,13 @@ import Angle exposing (Angle)
 import Animation exposing (Animation)
 import Array exposing (Array)
 import Array.Extra
-import Axis3d
+import Axis3d exposing (Axis3d)
+import Axis3d.Extra
 import Block3d
+import BoundingBox3d
 import Browser
 import Browser.Events
-import Camera3d
+import Camera3d exposing (Camera3d)
 import Color
 import Cone3d
 import Direction3d exposing (Direction3d)
@@ -18,10 +20,13 @@ import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Json.Decode
+import Json.Encode
 import Length
-import Pixels
+import Pixels exposing (Pixels)
+import Point2d exposing (Point2d)
 import Point3d exposing (Point3d)
 import Quantity
+import Rectangle2d
 import Scene3d
 import Scene3d.Material
 import Sphere3d
@@ -44,6 +49,7 @@ type alias Model =
     , maxY : Int
     , maxZ : Int
     , board : Board
+    , screenSize : { width : Int, height : Int }
     , xLowerVisible : Int
     , xUpperVisible : Int
     , yLowerVisible : Int
@@ -53,7 +59,7 @@ type alias Model =
     , selectedBlockType : Block
     , editorCursor : Point
     , cameraRotation : Angle
-    , mouseDragging : Bool
+    , mouseDragging : EditorMouseInteraction
     , cursorBounce : Animation Float
     , boardEncoding : String
     , mode : Mode
@@ -62,6 +68,12 @@ type alias Model =
     , playerWantFacing : Facing
     , playerMovingAcrossEdge : Maybe Angle
     }
+
+
+type EditorMouseInteraction
+    = NoInteraction
+    | InteractionStart Json.Decode.Value
+    | InteractionMoving Json.Decode.Value
 
 
 type Mode
@@ -196,9 +208,10 @@ init () =
       , zUpperVisible = maxZ - 1
       , selectedBlockType = Empty
       , board = board
+      , screenSize = { width = 800, height = 600 }
       , editorCursor = ( 0, 0, 0 )
       , cameraRotation = Angle.degrees 225
-      , mouseDragging = False
+      , mouseDragging = NoInteraction
       , cursorBounce =
             Animation.init 0
                 [ { value = 0
@@ -236,49 +249,7 @@ subscriptions model =
     Sub.batch
         [ Browser.Events.onAnimationFrameDelta Tick
         , Browser.Events.onKeyPress decodeKeyPressed
-
-        -- , if model.mouseDragging then
-        --     Browser.Events.onMouseUp decodeMouseUp
-        --   else
-        --     Browser.Events.onMouseDown deocdeMouseDown
-        , if model.mouseDragging then
-            Browser.Events.onMouseMove decodeMouseMove
-
-          else
-            Sub.none
         ]
-
-
-deocdeMouseDown : Json.Decode.Decoder Msg
-deocdeMouseDown =
-    Json.Decode.field "button" Json.Decode.int
-        |> Json.Decode.andThen
-            (\button ->
-                if button == 0 then
-                    Json.Decode.succeed MouseDown
-
-                else
-                    Json.Decode.fail "Non-primary mouse button"
-            )
-
-
-decodeMouseUp : Json.Decode.Decoder Msg
-decodeMouseUp =
-    Json.Decode.field "button" Json.Decode.int
-        |> Json.Decode.andThen
-            (\button ->
-                if button == 0 then
-                    Json.Decode.succeed MouseUp
-
-                else
-                    Json.Decode.fail "Non-primary mouse button"
-            )
-
-
-decodeMouseMove : Json.Decode.Decoder Msg
-decodeMouseMove =
-    Json.Decode.map MouseMove
-        (Json.Decode.field "movementX" Json.Decode.float)
 
 
 decodeKeyPressed : Json.Decode.Decoder Msg
@@ -287,12 +258,18 @@ decodeKeyPressed =
         (Json.Decode.field "key" Json.Decode.string)
 
 
+type ScreenCoordinates
+    = ScreenCoordinates Never
+
+
 type Msg
     = Tick Float
     | KeyPressed String
-    | MouseDown
+    | MouseDown Json.Decode.Value
     | MouseUp
-    | MouseMove Float
+    | GameClicked (Point2d Pixels ScreenCoordinates)
+    | MouseMove Json.Decode.Value Float
+    | PointerOver (Point2d Pixels ScreenCoordinates)
     | EncodingChanged String
     | LoadBoard
     | ChangeMode
@@ -310,7 +287,7 @@ update msg model =
     case msg of
         Tick deltaMs ->
             ( model
-                |> animateCursor deltaMs
+                -- |> animateCursor deltaMs
                 |> tickPlayer deltaMs
             , Cmd.none
             )
@@ -334,21 +311,96 @@ update msg model =
             , Cmd.none
             )
 
-        MouseDown ->
-            ( { model | mouseDragging = True }, Cmd.none )
+        MouseDown pointer ->
+            ( { model | mouseDragging = InteractionStart pointer }, Cmd.none )
 
         MouseUp ->
-            ( { model | mouseDragging = False }, Cmd.none )
+            ( { model | mouseDragging = NoInteraction }, Cmd.none )
 
-        MouseMove delta ->
+        GameClicked point ->
+            let
+                ray : Axis3d Length.Meters WorldCoordinates
+                ray =
+                    Camera3d.ray
+                        (editorCamera model)
+                        (Rectangle2d.from
+                            (Point2d.pixels 0 0)
+                            (Point2d.pixels
+                                (toFloat model.screenSize.width)
+                                (toFloat model.screenSize.height)
+                            )
+                        )
+                        point
+            in
+            ( model, Cmd.none )
+
+        MouseMove pointer delta ->
             ( { model
-                | cameraRotation =
+                | mouseDragging = InteractionMoving pointer
+                , cameraRotation =
                     model.cameraRotation
                         |> Quantity.minus
                             (Angle.degrees delta)
               }
             , Cmd.none
             )
+
+        PointerOver point ->
+            let
+                ray : Axis3d Length.Meters WorldCoordinates
+                ray =
+                    Camera3d.ray
+                        (editorCamera model)
+                        (Rectangle2d.from
+                            (Point2d.pixels 0 0)
+                            (Point2d.pixels
+                                (toFloat model.screenSize.width)
+                                (toFloat model.screenSize.height)
+                            )
+                        )
+                        point
+
+                maybeIntersection =
+                    Array.foldl
+                        (\block ( index, maybeInter ) ->
+                            ( index + 1
+                            , case block of
+                                Wall ->
+                                    let
+                                        boundingBox =
+                                            BoundingBox3d.withDimensions
+                                                ( Length.meters 1, Length.meters 1, Length.meters 1 )
+                                                (pointToPoint3d (indexToPoint model index))
+                                    in
+                                    case Axis3d.Extra.intersectionAxisAlignedBoundingBox3d ray boundingBox |> Debug.log "intersection?" of
+                                        Nothing ->
+                                            maybeInter
+
+                                        Just intersection ->
+                                            Just intersection
+
+                                _ ->
+                                    maybeInter
+                            )
+                        )
+                        ( 0, Nothing )
+                        model.board
+                        |> Tuple.second
+            in
+            case maybeIntersection of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just { intersection, normal } ->
+                    ( { model
+                        | editorCursor =
+                            intersection
+                                |> Point3d.translateIn normal
+                                    (Length.meters 0.5)
+                                |> point3dToPoint
+                      }
+                    , Cmd.none
+                    )
 
         XLowerVisibleChanged value ->
             ( { model
@@ -404,10 +456,25 @@ update msg model =
         KeyPressed key ->
             case model.mode of
                 Editor ->
-                    handleEditorKeyPressed key model
+                    -- handleEditorKeyPressed key model
+                    ( model, Cmd.none )
 
                 Game ->
                     handleGameKeyPressed key model
+
+
+editorCamera : Model -> Camera3d Length.Meters WorldCoordinates
+editorCamera model =
+    Camera3d.perspective
+        { viewpoint =
+            Viewpoint3d.orbitZ
+                { focalPoint = Point3d.meters 3.5 3.5 2
+                , azimuth = model.cameraRotation
+                , elevation = Angle.degrees 15
+                , distance = Length.meters 30
+                }
+        , verticalFieldOfView = Angle.degrees 30
+        }
 
 
 animateCursor : Float -> Model -> Model
@@ -914,238 +981,334 @@ handleEditorKeyPressed key model =
             )
 
 
+decodeMouseDown : Json.Decode.Decoder Msg
+decodeMouseDown =
+    Json.Decode.field "button" Json.Decode.int
+        |> Json.Decode.andThen
+            (\button ->
+                if button == 0 then
+                    Json.Decode.map MouseDown
+                        (Json.Decode.field "pointerId" Json.Decode.value)
+
+                else
+                    Json.Decode.fail "Non-primary mouse button"
+            )
+
+
+decodeMouseUp : Json.Decode.Decoder Msg
+decodeMouseUp =
+    Json.Decode.field "button" Json.Decode.int
+        |> Json.Decode.andThen
+            (\button ->
+                if button == 0 then
+                    Json.Decode.map2 (\x y -> GameClicked (Point2d.pixels x y))
+                        (Json.Decode.field "offsetX" Json.Decode.float)
+                        (Json.Decode.field "offsetX" Json.Decode.float)
+
+                else
+                    Json.Decode.fail "Non-primary mouse button"
+            )
+
+
+decodeMouseMove : Json.Decode.Value -> Json.Decode.Decoder Msg
+decodeMouseMove pointer =
+    Json.Decode.map (MouseMove pointer)
+        (Json.Decode.field "movementX" Json.Decode.float)
+
+
+decodeCursorMove : Json.Decode.Decoder Msg
+decodeCursorMove =
+    Json.Decode.map2 (\x y -> PointerOver (Point2d.pixels x y))
+        (Json.Decode.field "offsetX" Json.Decode.float)
+        (Json.Decode.field "offsetY" Json.Decode.float)
+
+
+decodePointerOver : Json.Decode.Decoder Msg
+decodePointerOver =
+    Json.Decode.map2 (\x y -> PointerOver (Point2d.pixels x y))
+        (Json.Decode.field "offsetX" Json.Decode.float)
+        (Json.Decode.field "offsetY" Json.Decode.float)
+
+
 view : Model -> Browser.Document Msg
 view model =
     { title = "Cube-Man"
     , body =
         [ Html.div
-            [ Html.Attributes.style "border" "1px solid black"
-            , Html.Attributes.style "display" "inline-flex"
-            , if model.mouseDragging then
-                Html.Events.onMouseUp MouseUp
-
-              else
-                Html.Events.onMouseDown MouseDown
-            ]
-            [ Scene3d.sunny
-                { clipDepth = Length.meters 1
-                , background = Scene3d.backgroundColor Color.gray
-                , shadows = True
-                , dimensions = ( Pixels.int 800, Pixels.int 600 )
-                , upDirection = Direction3d.positiveZ
-                , camera =
-                    case model.mode of
-                        Game ->
-                            Camera3d.perspective
-                                { viewpoint =
-                                    let
-                                        targetPos =
-                                            Frame3d.originPoint model.playerFrame
-                                    in
-                                    Viewpoint3d.lookAt
-                                        { focalPoint = targetPos
-                                        , eyePoint =
-                                            targetPos
-                                                |> Point3d.translateIn (Frame3d.zDirection model.playerFrame) (Length.meters 15)
-                                        , upDirection = Frame3d.xDirection model.playerFrame
-                                        }
-                                , verticalFieldOfView = Angle.degrees 30
-                                }
-
-                        Editor ->
-                            Camera3d.perspective
-                                { viewpoint =
-                                    Viewpoint3d.orbitZ
-                                        { focalPoint = Point3d.meters 3.5 3.5 2
-                                        , azimuth = model.cameraRotation
-                                        , elevation = Angle.degrees 15
-                                        , distance = Length.meters 30
-                                        }
-                                , verticalFieldOfView = Angle.degrees 30
-                                }
-                , sunlightDirection =
-                    Direction3d.positiveZ
-                        |> Direction3d.rotateAround Axis3d.x (Angle.degrees 60)
-                        |> Direction3d.rotateAround Axis3d.z
-                            (model.cameraRotation
-                                |> Quantity.plus (Angle.degrees -60)
-                            )
-                , entities =
-                    List.concat
-                        [ model.board
-                            |> Array.toList
-                            |> List.indexedMap (viewBlock model)
-                        , case model.mode of
-                            Editor ->
-                                [ viewCursor model.cursorBounce model.editorCursor ]
-
-                            Game ->
-                                []
-                        , case model.mode of
-                            Editor ->
-                                []
-
-                            Game ->
-                                [ viewPlayer model.playerFacing model.playerFrame ]
-                        ]
-                }
-            ]
-        , Html.br [] []
-        , Html.form
-            [ Html.Events.onSubmit LoadBoard
-            , Html.Attributes.style "display" "flex"
-            , Html.Attributes.style "gap" "1rem"
-            ]
-            [ Html.label
-                [ Html.Attributes.style "display" "flex"
-                , Html.Attributes.style "gap" "1rem"
-                , Html.Attributes.style "align-items" "center"
-                ]
-                [ Html.span [] [ Html.text "Encoded Level:" ]
-                , Html.input
-                    [ Html.Attributes.value model.boardEncoding
-                    , Html.Events.onInput EncodingChanged
-                    ]
-                    []
-                ]
-            , Html.button
-                [ Html.Attributes.type_ "submit" ]
-                [ Html.text "Load" ]
-            ]
-        , Html.br [] []
-        , Html.button
-            [ Html.Attributes.type_ "button"
-            , Html.Events.onClick ChangeMode
-            ]
-            [ Html.text <|
+            [ Html.Attributes.style "display" "grid"
+            , Html.Attributes.style "grid-template-columns" <|
                 case model.mode of
                     Editor ->
-                        "Play Level"
+                        "auto 20rem"
 
                     Game ->
-                        "Edit Level"
+                        "auto 8rem"
             ]
-        , Html.br [] []
-        , Html.br [] []
-        , Html.div
-            [ Html.Attributes.style "display" "flex"
-            , Html.Attributes.style "gap" "1rem"
-            ]
-            [ Html.button
-                [ Html.Attributes.attribute "aria-pressed" <|
-                    if model.selectedBlockType == Wall then
-                        "true"
+            [ Html.div
+                [ Html.Attributes.style "grid-column" <|
+                    case model.mode of
+                        Editor ->
+                            "1"
 
-                    else
-                        "false"
-                , Html.Attributes.type_ "button"
-                , Html.Events.onClick (BlockTypeSelected Wall)
-                ]
-                [ Html.text "Wall"
-                ]
-            , Html.button
-                [ Html.Attributes.attribute "aria-pressed" <|
-                    if model.selectedBlockType == Edge then
-                        "true"
+                        Game ->
+                            "1 / 2"
+                , Html.Attributes.style "grid-row" "1"
+                , case model.mouseDragging of
+                    NoInteraction ->
+                        Html.Events.on "pointerdown" decodeMouseDown
 
-                    else
-                        "false"
-                , Html.Attributes.type_ "button"
-                , Html.Events.onClick (BlockTypeSelected Edge)
-                ]
-                [ Html.text "Edge"
-                ]
-            , Html.button
-                [ Html.Attributes.attribute "aria-pressed" <|
-                    if model.selectedBlockType == Empty then
-                        "true"
+                    InteractionStart pointer ->
+                        Html.Events.on "pointerup" decodeMouseUp
 
-                    else
-                        "false"
-                , Html.Attributes.type_ "button"
-                , Html.Events.onClick (BlockTypeSelected Empty)
+                    InteractionMoving pointer ->
+                        Html.Events.on "pointermove" (decodeMouseMove pointer)
+                , case model.mouseDragging of
+                    NoInteraction ->
+                        Html.Events.on "pointermove" decodeCursorMove
+
+                    _ ->
+                        Html.Attributes.class ""
+                , case model.mouseDragging of
+                    NoInteraction ->
+                        Html.Attributes.property "__setPointerCapture" Json.Encode.null
+
+                    InteractionStart pointer ->
+                        Html.Attributes.property "__setPointerCapture" pointer
+
+                    InteractionMoving pointer ->
+                        Html.Attributes.property "__setPointerCapture" pointer
                 ]
-                [ Html.text "Empty"
+                [ Scene3d.sunny
+                    { clipDepth = Length.meters 1
+                    , background = Scene3d.backgroundColor Color.gray
+                    , shadows = True
+                    , dimensions = ( Pixels.int model.screenSize.width, Pixels.int model.screenSize.height )
+                    , upDirection = Direction3d.positiveZ
+                    , camera =
+                        case model.mode of
+                            Game ->
+                                let
+                                    cam : Camera3d Length.Meters WorldCoordinates
+                                    cam =
+                                        Camera3d.perspective
+                                            { viewpoint =
+                                                let
+                                                    targetPos =
+                                                        Frame3d.originPoint model.playerFrame
+                                                in
+                                                Viewpoint3d.lookAt
+                                                    { focalPoint = targetPos
+                                                    , eyePoint =
+                                                        targetPos
+                                                            |> Point3d.translateIn (Frame3d.zDirection model.playerFrame) (Length.meters 15)
+                                                    , upDirection = Frame3d.xDirection model.playerFrame
+                                                    }
+                                            , verticalFieldOfView = Angle.degrees 30
+                                            }
+                                in
+                                cam
+
+                            Editor ->
+                                editorCamera model
+                    , sunlightDirection =
+                        Direction3d.positiveZ
+                            |> Direction3d.rotateAround Axis3d.x (Angle.degrees 60)
+                            |> Direction3d.rotateAround Axis3d.z
+                                (model.cameraRotation
+                                    |> Quantity.plus (Angle.degrees -60)
+                                )
+                    , entities =
+                        List.concat
+                            [ model.board
+                                |> Array.toList
+                                |> List.indexedMap (viewBlock model)
+                            , case model.mode of
+                                Editor ->
+                                    [ viewCursor model.cursorBounce model.editorCursor ]
+
+                                Game ->
+                                    []
+                            , case model.mode of
+                                Editor ->
+                                    []
+
+                                Game ->
+                                    [ viewPlayer model.playerFacing model.playerFrame ]
+                            ]
+                    }
                 ]
-            ]
-        , Html.br [] []
-        , Html.br [] []
-        , Html.label []
-            [ Html.span [] [ Html.text "X Visibility" ]
-            , Html.br [] []
-            , Html.span [] [ Html.text "Lower bound" ]
-            , Html.input
-                [ Html.Attributes.type_ "range"
-                , Html.Attributes.min "0"
-                , Html.Attributes.max (String.fromInt (model.maxX - 1))
-                , Html.Attributes.step "1"
-                , Html.Attributes.value (String.fromInt model.xLowerVisible)
-                , Html.Events.onInput (String.toInt >> Maybe.withDefault model.xLowerVisible >> XLowerVisibleChanged)
-                ]
-                []
-            , Html.br [] []
-            , Html.span [] [ Html.text "Upper bound" ]
-            , Html.input
-                [ Html.Attributes.type_ "range"
-                , Html.Attributes.min "0"
-                , Html.Attributes.max (String.fromInt (model.maxX - 1))
-                , Html.Attributes.step "1"
-                , Html.Attributes.value (String.fromInt model.xUpperVisible)
-                , Html.Events.onInput (String.toInt >> Maybe.withDefault model.xLowerVisible >> XUpperVisibleChanged)
-                ]
-                []
-            ]
-        , Html.br [] []
-        , Html.label []
-            [ Html.span [] [ Html.text "Y Visibility" ]
-            , Html.br [] []
-            , Html.span [] [ Html.text "Lower bound" ]
-            , Html.input
-                [ Html.Attributes.type_ "range"
-                , Html.Attributes.min "0"
-                , Html.Attributes.max (String.fromInt (model.maxY - 1))
-                , Html.Attributes.step "1"
-                , Html.Attributes.value (String.fromInt model.yLowerVisible)
-                , Html.Events.onInput (String.toInt >> Maybe.withDefault model.yLowerVisible >> YLowerVisibleChanged)
-                ]
-                []
-            , Html.br [] []
-            , Html.span [] [ Html.text "Upper bound" ]
-            , Html.input
-                [ Html.Attributes.type_ "range"
-                , Html.Attributes.min "0"
-                , Html.Attributes.max (String.fromInt (model.maxY - 1))
-                , Html.Attributes.step "1"
-                , Html.Attributes.value (String.fromInt model.yUpperVisible)
-                , Html.Events.onInput (String.toInt >> Maybe.withDefault model.yLowerVisible >> YUpperVisibleChanged)
-                ]
-                []
-            ]
-        , Html.br [] []
-        , Html.label []
-            [ Html.span [] [ Html.text "Z Visibility" ]
-            , Html.br [] []
-            , Html.span [] [ Html.text "Lower bound" ]
-            , Html.input
-                [ Html.Attributes.type_ "range"
-                , Html.Attributes.min "0"
-                , Html.Attributes.max (String.fromInt (model.maxZ - 1))
-                , Html.Attributes.step "1"
-                , Html.Attributes.value (String.fromInt model.zLowerVisible)
-                , Html.Events.onInput (String.toInt >> Maybe.withDefault model.zLowerVisible >> ZLowerVisibleChanged)
-                ]
-                []
-            , Html.br [] []
-            , Html.span [] [ Html.text "Upper bound" ]
-            , Html.input
-                [ Html.Attributes.type_ "range"
-                , Html.Attributes.min "0"
-                , Html.Attributes.max (String.fromInt (model.maxZ - 1))
-                , Html.Attributes.step "1"
-                , Html.Attributes.value (String.fromInt model.zUpperVisible)
-                , Html.Events.onInput (String.toInt >> Maybe.withDefault model.zLowerVisible >> ZUpperVisibleChanged)
-                ]
-                []
+            , case model.mode of
+                Game ->
+                    Html.div
+                        [ Html.Attributes.style "grid-column" "2"
+                        , Html.Attributes.style "grid-row" "1"
+                        , Html.Attributes.style "padding" "0.5rem"
+                        ]
+                        [ Html.button
+                            [ Html.Attributes.type_ "button"
+                            , Html.Events.onClick ChangeMode
+                            ]
+                            [ Html.text "Edit Level"
+                            ]
+                        ]
+
+                Editor ->
+                    Html.div
+                        [ Html.Attributes.style "grid-column" "2"
+                        , Html.Attributes.style "padding" "0.5rem"
+                        , Html.Attributes.style "height" "100vh"
+                        , Html.Attributes.style "overflow" "auto"
+                        ]
+                        [ Html.button
+                            [ Html.Attributes.type_ "button"
+                            , Html.Events.onClick ChangeMode
+                            ]
+                            [ Html.text "Play Level"
+                            ]
+                        , Html.hr [] []
+                        , Html.div
+                            [ Html.Attributes.attribute "role" "group"
+                            ]
+                            [ Html.button
+                                [ Html.Attributes.attribute "aria-current" <|
+                                    if model.selectedBlockType == Wall then
+                                        "true"
+
+                                    else
+                                        "false"
+                                , Html.Attributes.type_ "button"
+                                , Html.Events.onClick (BlockTypeSelected Wall)
+                                ]
+                                [ Html.text "Wall"
+                                ]
+                            , Html.button
+                                [ Html.Attributes.attribute "aria-current" <|
+                                    if model.selectedBlockType == Edge then
+                                        "true"
+
+                                    else
+                                        "false"
+                                , Html.Attributes.type_ "button"
+                                , Html.Events.onClick (BlockTypeSelected Edge)
+                                ]
+                                [ Html.text "Edge"
+                                ]
+                            , Html.button
+                                [ Html.Attributes.attribute "aria-current" <|
+                                    if model.selectedBlockType == Empty then
+                                        "true"
+
+                                    else
+                                        "false"
+                                , Html.Attributes.type_ "button"
+                                , Html.Events.onClick (BlockTypeSelected Empty)
+                                ]
+                                [ Html.text "Empty"
+                                ]
+                            ]
+                        , Html.form []
+                            [ Html.fieldset
+                                []
+                                [ Html.label [] [ Html.span [] [ Html.text "X Visibility" ] ]
+                                , Html.fieldset []
+                                    [ Html.label [] [ Html.span [] [ Html.text "Lower bound" ] ]
+                                    , Html.input
+                                        [ Html.Attributes.type_ "range"
+                                        , Html.Attributes.min "0"
+                                        , Html.Attributes.max (String.fromInt (model.maxX - 1))
+                                        , Html.Attributes.step "1"
+                                        , Html.Attributes.value (String.fromInt model.xLowerVisible)
+                                        , Html.Events.onInput (String.toInt >> Maybe.withDefault model.xLowerVisible >> XLowerVisibleChanged)
+                                        ]
+                                        []
+                                    , Html.label [] [ Html.span [] [ Html.text "Upper bound" ] ]
+                                    , Html.input
+                                        [ Html.Attributes.type_ "range"
+                                        , Html.Attributes.min "0"
+                                        , Html.Attributes.max (String.fromInt (model.maxX - 1))
+                                        , Html.Attributes.step "1"
+                                        , Html.Attributes.value (String.fromInt model.xUpperVisible)
+                                        , Html.Events.onInput (String.toInt >> Maybe.withDefault model.xLowerVisible >> XUpperVisibleChanged)
+                                        ]
+                                        []
+                                    ]
+                                ]
+                            , Html.fieldset []
+                                [ Html.label [] [ Html.span [] [ Html.text "Y Visibility" ] ]
+                                , Html.fieldset []
+                                    [ Html.label [] [ Html.span [] [ Html.text "Lower bound" ] ]
+                                    , Html.input
+                                        [ Html.Attributes.type_ "range"
+                                        , Html.Attributes.min "0"
+                                        , Html.Attributes.max (String.fromInt (model.maxY - 1))
+                                        , Html.Attributes.step "1"
+                                        , Html.Attributes.value (String.fromInt model.yLowerVisible)
+                                        , Html.Events.onInput (String.toInt >> Maybe.withDefault model.yLowerVisible >> YLowerVisibleChanged)
+                                        ]
+                                        []
+                                    , Html.label [] [ Html.span [] [ Html.text "Upper bound" ] ]
+                                    , Html.input
+                                        [ Html.Attributes.type_ "range"
+                                        , Html.Attributes.min "0"
+                                        , Html.Attributes.max (String.fromInt (model.maxY - 1))
+                                        , Html.Attributes.step "1"
+                                        , Html.Attributes.value (String.fromInt model.yUpperVisible)
+                                        , Html.Events.onInput (String.toInt >> Maybe.withDefault model.yLowerVisible >> YUpperVisibleChanged)
+                                        ]
+                                        []
+                                    ]
+                                ]
+                            , Html.fieldset []
+                                [ Html.label [] [ Html.span [] [ Html.text "Z Visibility" ] ]
+                                , Html.fieldset []
+                                    [ Html.label [] [ Html.span [] [ Html.text "Lower bound" ] ]
+                                    , Html.input
+                                        [ Html.Attributes.type_ "range"
+                                        , Html.Attributes.min "0"
+                                        , Html.Attributes.max (String.fromInt (model.maxZ - 1))
+                                        , Html.Attributes.step "1"
+                                        , Html.Attributes.value (String.fromInt model.zLowerVisible)
+                                        , Html.Events.onInput (String.toInt >> Maybe.withDefault model.zLowerVisible >> ZLowerVisibleChanged)
+                                        ]
+                                        []
+                                    , Html.label [] [ Html.span [] [ Html.text "Upper bound" ] ]
+                                    , Html.input
+                                        [ Html.Attributes.type_ "range"
+                                        , Html.Attributes.min "0"
+                                        , Html.Attributes.max (String.fromInt (model.maxZ - 1))
+                                        , Html.Attributes.step "1"
+                                        , Html.Attributes.value (String.fromInt model.zUpperVisible)
+                                        , Html.Events.onInput (String.toInt >> Maybe.withDefault model.zLowerVisible >> ZUpperVisibleChanged)
+                                        ]
+                                        []
+                                    ]
+                                ]
+                            ]
+                        , Html.hr [] []
+                        , Html.form
+                            [ Html.Events.onSubmit LoadBoard
+                            , Html.Attributes.style "display" "flex"
+                            , Html.Attributes.style "gap" "1rem"
+                            ]
+                            [ Html.label
+                                [ Html.Attributes.style "display" "flex"
+                                , Html.Attributes.style "gap" "1rem"
+                                , Html.Attributes.style "align-items" "center"
+                                ]
+                                [ Html.span [] [ Html.text "Encoded Level:" ]
+                                ]
+                            , Html.fieldset [ Html.Attributes.attribute "role" "group" ]
+                                [ Html.input
+                                    [ Html.Attributes.value model.boardEncoding
+                                    , Html.Events.onInput EncodingChanged
+                                    ]
+                                    []
+                                , Html.button
+                                    [ Html.Attributes.type_ "submit" ]
+                                    [ Html.text "Load" ]
+                                ]
+                            ]
+                        ]
             ]
         ]
     }
