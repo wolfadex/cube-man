@@ -19,7 +19,9 @@
                 {
                     set(pointerId) {
                         if (pointerId == null) {
-                            this.releasePointerCapture(this.___pointerId);
+                            if (this.___pointerId) {
+                                this.releasePointerCapture(this.___pointerId);
+                            }
                         } else {
                             this.___pointerId = pointerId;
                             this.setPointerCapture(pointerId);
