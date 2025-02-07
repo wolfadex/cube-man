@@ -19,7 +19,7 @@ intersectionAxisAlignedBoundingBox3d rayXX boundingBox =
         delta : Vector3d units coordinates
         delta =
             Axis3d.direction rayXX
-                |> Vector3d.withLength (Quantity 1)
+                |> Vector3d.withLength (Quantity 1000)
 
         extrema =
             BoundingBox3d.extrema boundingBox

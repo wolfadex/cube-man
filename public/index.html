@@ -15,27 +15,15 @@
         <script>
             Object.defineProperty(
                 HTMLElement.prototype,
-                "__setPointerCapture",
+                "___setPointerCapture",
                 {
                     set(pointerId) {
-                        console.log(
-                            "jarl",
-                            pointerId,
-                            this.__capturedPointer,
-                            this,
-                        );
-                        if (pointerId) {
-                            if (pointerId !== this.__capturedPointer) {
-                                this.releasePointerCapture(
-                                    this.__capturedPointer,
-                                );
-                            }
-                            this.setPointerCapture(pointerId);
+                        if (pointerId == null) {
+                            this.releasePointerCapture(this.___pointerId);
                         } else {
-                            this.releasePointerCapture(this.__capturedPointer);
+                            this.___pointerId = pointerId;
+                            this.setPointerCapture(pointerId);
                         }
-
-                        this.__capturedPointer = pointerId;
                     },
                 },
             );

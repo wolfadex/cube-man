@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1738859186649"
+    "1738901849044"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -12064,7 +12064,7 @@ var $author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d = F2(
 		var extrema = $ianmackenzie$elm_geometry$BoundingBox3d$extrema(boundingBox);
 		var delta = A2(
 			$ianmackenzie$elm_geometry$Vector3d$withLength,
-			$ianmackenzie$elm_units$Quantity$Quantity(1),
+			$ianmackenzie$elm_units$Quantity$Quantity(1000),
 			$ianmackenzie$elm_geometry$Axis3d$direction(rayXX));
 		var delta2 = $ianmackenzie$elm_geometry$Vector3d$unwrap(delta);
 		var boxMin = A3($ianmackenzie$elm_geometry$Point3d$xyz, extrema.minX, extrema.minY, extrema.minZ);
@@ -12806,6 +12806,10 @@ var $author$project$Main$tickPlayer = F2(
 				$author$project$Main$setPlayerFacing(model));
 		}
 	});
+var $ianmackenzie$elm_units$Pixels$toFloat = function (_v0) {
+	var numPixels = _v0.a;
+	return numPixels;
+};
 var $ianmackenzie$elm_geometry$Geometry$Types$BoundingBox3d = function (a) {
 	return {$: 'BoundingBox3d', a: a};
 };
@@ -12864,107 +12868,132 @@ var $author$project$Main$update = F2(
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MouseDown':
-				var pointer = msg.a;
+				var pointerId = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							mouseDragging: $author$project$Main$InteractionStart(pointer)
+							mouseDragging: $author$project$Main$InteractionStart(pointerId)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MouseUp':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{mouseDragging: $author$project$Main$NoInteraction}),
-					$elm$core$Platform$Cmd$none);
-			case 'GameClicked':
 				var point = msg.a;
-				var ray = A3(
-					$ianmackenzie$elm_3d_camera$Camera3d$ray,
-					$author$project$Main$editorCamera(model),
-					A2(
-						$ianmackenzie$elm_geometry$Rectangle2d$from,
-						A2($ianmackenzie$elm_geometry$Point2d$pixels, 0, 0),
-						A2($ianmackenzie$elm_geometry$Point2d$pixels, model.screenSize.width, model.screenSize.height)),
-					point);
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				var _v2 = model.mouseDragging;
+				switch (_v2.$) {
+					case 'NoInteraction':
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					case 'InteractionStart':
+						var ray = A3(
+							$ianmackenzie$elm_3d_camera$Camera3d$ray,
+							$author$project$Main$editorCamera(model),
+							A2(
+								$ianmackenzie$elm_geometry$Rectangle2d$from,
+								A2($ianmackenzie$elm_geometry$Point2d$pixels, 0, model.screenSize.height),
+								A2($ianmackenzie$elm_geometry$Point2d$pixels, model.screenSize.width, 0)),
+							point);
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{board: model.board, mouseDragging: $author$project$Main$NoInteraction}),
+							$elm$core$Platform$Cmd$none);
+					default:
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{mouseDragging: $author$project$Main$NoInteraction}),
+							$elm$core$Platform$Cmd$none);
+				}
 			case 'MouseMove':
-				var pointer = msg.a;
-				var delta = msg.b;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							cameraRotation: A2(
-								$ianmackenzie$elm_units$Quantity$minus,
-								$ianmackenzie$elm_units$Angle$degrees(delta),
-								model.cameraRotation),
-							mouseDragging: $author$project$Main$InteractionMoving(pointer)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'PointerOver':
-				var point = msg.a;
-				var ray = A3(
-					$ianmackenzie$elm_3d_camera$Camera3d$ray,
-					$author$project$Main$editorCamera(model),
-					A2(
-						$ianmackenzie$elm_geometry$Rectangle2d$from,
-						A2($ianmackenzie$elm_geometry$Point2d$pixels, 0, 0),
-						A2($ianmackenzie$elm_geometry$Point2d$pixels, model.screenSize.width, model.screenSize.height)),
-					point);
-				var maybeIntersection = A3(
-					$elm$core$Array$foldl,
-					F2(
-						function (block, _v3) {
-							var index = _v3.a;
-							var maybeInter = _v3.b;
+				var pointerId = msg.a;
+				var offset = msg.b;
+				var movement = msg.c;
+				var _v3 = model.mouseDragging;
+				switch (_v3.$) {
+					case 'NoInteraction':
+						var ray = A3(
+							$ianmackenzie$elm_3d_camera$Camera3d$ray,
+							$author$project$Main$editorCamera(model),
+							A2(
+								$ianmackenzie$elm_geometry$Rectangle2d$from,
+								A2($ianmackenzie$elm_geometry$Point2d$pixels, 0, model.screenSize.height),
+								A2($ianmackenzie$elm_geometry$Point2d$pixels, model.screenSize.width, 0)),
+							offset);
+						var maybeIntersection = A2(
+							$elm$core$Debug$log,
+							'3d cursor',
+							A3(
+								$elm$core$Array$foldl,
+								F2(
+									function (block, _v5) {
+										var index = _v5.a;
+										var maybeInter = _v5.b;
+										return _Utils_Tuple2(
+											index + 1,
+											function () {
+												if (block.$ === 'Wall') {
+													var boundingBox = A2(
+														$ianmackenzie$elm_geometry$BoundingBox3d$withDimensions,
+														_Utils_Tuple3(
+															$ianmackenzie$elm_units$Length$meters(1),
+															$ianmackenzie$elm_units$Length$meters(1),
+															$ianmackenzie$elm_units$Length$meters(1)),
+														$author$project$Main$pointToPoint3d(
+															A2($author$project$Main$indexToPoint, model, index)));
+													var _v7 = A2($author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d, ray, boundingBox);
+													if (_v7.$ === 'Nothing') {
+														return maybeInter;
+													} else {
+														var intersection = _v7.a;
+														return $elm$core$Maybe$Just(intersection);
+													}
+												} else {
+													return maybeInter;
+												}
+											}());
+									}),
+								_Utils_Tuple2(0, $elm$core$Maybe$Nothing),
+								model.board).b);
+						if (maybeIntersection.$ === 'Nothing') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var intersection = maybeIntersection.a.intersection;
+							var normal = maybeIntersection.a.normal;
 							return _Utils_Tuple2(
-								index + 1,
-								function () {
-									if (block.$ === 'Wall') {
-										var boundingBox = A2(
-											$ianmackenzie$elm_geometry$BoundingBox3d$withDimensions,
-											_Utils_Tuple3(
-												$ianmackenzie$elm_units$Length$meters(1),
-												$ianmackenzie$elm_units$Length$meters(1),
-												$ianmackenzie$elm_units$Length$meters(1)),
-											$author$project$Main$pointToPoint3d(
-												A2($author$project$Main$indexToPoint, model, index)));
-										var _v5 = A2(
-											$elm$core$Debug$log,
-											'intersection?',
-											A2($author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d, ray, boundingBox));
-										if (_v5.$ === 'Nothing') {
-											return maybeInter;
-										} else {
-											var intersection = _v5.a;
-											return $elm$core$Maybe$Just(intersection);
-										}
-									} else {
-										return maybeInter;
-									}
-								}());
-						}),
-					_Utils_Tuple2(0, $elm$core$Maybe$Nothing),
-					model.board).b;
-				if (maybeIntersection.$ === 'Nothing') {
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-				} else {
-					var intersection = maybeIntersection.a.intersection;
-					var normal = maybeIntersection.a.normal;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								editorCursor: $author$project$Main$point3dToPoint(
-									A3(
-										$ianmackenzie$elm_geometry$Point3d$translateIn,
-										normal,
-										$ianmackenzie$elm_units$Length$meters(0.5),
-										intersection))
-							}),
-						$elm$core$Platform$Cmd$none);
+								_Utils_update(
+									model,
+									{
+										editorCursor: $author$project$Main$point3dToPoint(intersection)
+									}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'InteractionStart':
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									cameraRotation: A2(
+										$ianmackenzie$elm_units$Quantity$minus,
+										$ianmackenzie$elm_units$Angle$degrees(
+											$ianmackenzie$elm_units$Pixels$toFloat(
+												$ianmackenzie$elm_geometry$Point2d$xCoordinate(movement))),
+										model.cameraRotation),
+									mouseDragging: $author$project$Main$InteractionMoving(pointerId)
+								}),
+							$elm$core$Platform$Cmd$none);
+					default:
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									cameraRotation: A2(
+										$ianmackenzie$elm_units$Quantity$minus,
+										$ianmackenzie$elm_units$Angle$degrees(
+											$ianmackenzie$elm_units$Pixels$toFloat(
+												$ianmackenzie$elm_geometry$Point2d$xCoordinate(movement))),
+										model.cameraRotation),
+									mouseDragging: $author$project$Main$InteractionMoving(pointerId)
+								}),
+							$elm$core$Platform$Cmd$none);
 				}
 			case 'XLowerVisibleChanged':
 				var value = msg.a;
@@ -13035,8 +13064,8 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			default:
 				var key = msg.a;
-				var _v6 = model.mode;
-				if (_v6.$ === 'Editor') {
+				var _v8 = model.mode;
+				if (_v8.$ === 'Editor') {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				} else {
 					return A2($author$project$Main$handleGameKeyPressed, key, model);
@@ -13084,15 +13113,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor = function (color) {
 	return $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor(color);
 };
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
-var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
 		return g(
@@ -13109,19 +13129,6 @@ var $elm$core$List$append = F2(
 var $elm$core$List$concat = function (lists) {
 	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
 };
-var $author$project$Main$PointerOver = function (a) {
-	return {$: 'PointerOver', a: a};
-};
-var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $author$project$Main$decodeCursorMove = A3(
-	$elm$json$Json$Decode$map2,
-	F2(
-		function (x, y) {
-			return $author$project$Main$PointerOver(
-				A2($ianmackenzie$elm_geometry$Point2d$pixels, x, y));
-		}),
-	A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float),
-	A2($elm$json$Json$Decode$field, 'offsetY', $elm$json$Json$Decode$float));
 var $author$project$Main$MouseDown = function (a) {
 	return {$: 'MouseDown', a: a};
 };
@@ -13138,19 +13145,10 @@ var $author$project$Main$decodeMouseDown = A2(
 			A2($elm$json$Json$Decode$field, 'pointerId', $elm$json$Json$Decode$value)) : $elm$json$Json$Decode$fail('Non-primary mouse button');
 	},
 	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
-var $author$project$Main$MouseMove = F2(
-	function (a, b) {
-		return {$: 'MouseMove', a: a, b: b};
-	});
-var $author$project$Main$decodeMouseMove = function (pointer) {
-	return A2(
-		$elm$json$Json$Decode$map,
-		$author$project$Main$MouseMove(pointer),
-		A2($elm$json$Json$Decode$field, 'movementX', $elm$json$Json$Decode$float));
+var $author$project$Main$MouseUp = function (a) {
+	return {$: 'MouseUp', a: a};
 };
-var $author$project$Main$GameClicked = function (a) {
-	return {$: 'GameClicked', a: a};
-};
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $author$project$Main$decodeMouseUp = A2(
 	$elm$json$Json$Decode$andThen,
 	function (button) {
@@ -13158,13 +13156,34 @@ var $author$project$Main$decodeMouseUp = A2(
 			$elm$json$Json$Decode$map2,
 			F2(
 				function (x, y) {
-					return $author$project$Main$GameClicked(
+					return $author$project$Main$MouseUp(
 						A2($ianmackenzie$elm_geometry$Point2d$pixels, x, y));
 				}),
 			A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float),
 			A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float)) : $elm$json$Json$Decode$fail('Non-primary mouse button');
 	},
 	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
+var $author$project$Main$MouseMove = F3(
+	function (a, b, c) {
+		return {$: 'MouseMove', a: a, b: b, c: c};
+	});
+var $elm$json$Json$Decode$map4 = _Json_map4;
+var $author$project$Main$decodePointerMove = function (pointer) {
+	return A5(
+		$elm$json$Json$Decode$map4,
+		F4(
+			function (ox, oy, mx, my) {
+				return A3(
+					$author$project$Main$MouseMove,
+					pointer,
+					A2($ianmackenzie$elm_geometry$Point2d$pixels, ox, oy),
+					A2($ianmackenzie$elm_geometry$Point2d$pixels, mx, my));
+			}),
+		A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float),
+		A2($elm$json$Json$Decode$field, 'offsetY', $elm$json$Json$Decode$float),
+		A2($elm$json$Json$Decode$field, 'movementX', $elm$json$Json$Decode$float),
+		A2($elm$json$Json$Decode$field, 'movementY', $elm$json$Json$Decode$float));
+};
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var $elm$html$Html$form = _VirtualDom_node('form');
@@ -13350,6 +13369,14 @@ var $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt = function (_arguments) {
 		}
 	}
 };
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
 var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
 var $elm$html$Html$Attributes$min = $elm$html$Html$Attributes$stringProperty('min');
 var $elm$json$Json$Encode$null = _Json_encodeNull;
@@ -18462,66 +18489,67 @@ var $author$project$Main$view = function (model) {
 					[
 						A2(
 						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$Attributes$style,
-								'grid-column',
-								function () {
-									var _v1 = model.mode;
-									if (_v1.$ === 'Editor') {
-										return '1';
-									} else {
-										return '1 / 2';
-									}
-								}()),
-								A2($elm$html$Html$Attributes$style, 'grid-row', '1'),
-								function () {
+						_Utils_ap(
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$Attributes$style,
+									'grid-column',
+									function () {
+										var _v1 = model.mode;
+										if (_v1.$ === 'Editor') {
+											return '1';
+										} else {
+											return '1 / 2';
+										}
+									}()),
+									A2($elm$html$Html$Attributes$style, 'grid-row', '1')
+								]),
+							function () {
 								var _v2 = model.mouseDragging;
 								switch (_v2.$) {
 									case 'NoInteraction':
-										return A2($elm$html$Html$Events$on, 'pointerdown', $author$project$Main$decodeMouseDown);
+										return _List_fromArray(
+											[
+												A2($elm$html$Html$Events$on, 'pointerdown', $author$project$Main$decodeMouseDown),
+												A2(
+												$elm$html$Html$Events$on,
+												'pointermove',
+												$author$project$Main$decodePointerMove($elm$json$Json$Encode$null)),
+												A2($elm$html$Html$Attributes$property, '___setPointerCapture', $elm$json$Json$Encode$null)
+											]);
 									case 'InteractionStart':
 										var pointer = _v2.a;
-										return A2($elm$html$Html$Events$on, 'pointerup', $author$project$Main$decodeMouseUp);
+										return _List_fromArray(
+											[
+												A2($elm$html$Html$Events$on, 'pointerup', $author$project$Main$decodeMouseUp),
+												A2(
+												$elm$html$Html$Events$on,
+												'pointermove',
+												$author$project$Main$decodePointerMove(pointer)),
+												A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
+											]);
 									default:
 										var pointer = _v2.a;
-										return A2(
-											$elm$html$Html$Events$on,
-											'pointermove',
-											$author$project$Main$decodeMouseMove(pointer));
+										return _List_fromArray(
+											[
+												A2($elm$html$Html$Events$on, 'pointerup', $author$project$Main$decodeMouseUp),
+												A2(
+												$elm$html$Html$Events$on,
+												'pointermove',
+												$author$project$Main$decodePointerMove(pointer)),
+												A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
+											]);
 								}
-							}(),
-								function () {
-								var _v3 = model.mouseDragging;
-								if (_v3.$ === 'NoInteraction') {
-									return A2($elm$html$Html$Events$on, 'pointermove', $author$project$Main$decodeCursorMove);
-								} else {
-									return $elm$html$Html$Attributes$class('');
-								}
-							}(),
-								function () {
-								var _v4 = model.mouseDragging;
-								switch (_v4.$) {
-									case 'NoInteraction':
-										return A2($elm$html$Html$Attributes$property, '__setPointerCapture', $elm$json$Json$Encode$null);
-									case 'InteractionStart':
-										var pointer = _v4.a;
-										return A2($elm$html$Html$Attributes$property, '__setPointerCapture', pointer);
-									default:
-										var pointer = _v4.a;
-										return A2($elm$html$Html$Attributes$property, '__setPointerCapture', pointer);
-								}
-							}()
-							]),
+							}()),
 						_List_fromArray(
 							[
 								$ianmackenzie$elm_3d_scene$Scene3d$sunny(
 								{
 									background: $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor($avh4$elm_color$Color$gray),
 									camera: function () {
-										var _v5 = model.mode;
-										if (_v5.$ === 'Game') {
+										var _v3 = model.mode;
+										if (_v3.$ === 'Game') {
 											var cam = $ianmackenzie$elm_3d_camera$Camera3d$perspective(
 												{
 													verticalFieldOfView: $ianmackenzie$elm_units$Angle$degrees(30),
@@ -18556,8 +18584,8 @@ var $author$project$Main$view = function (model) {
 												$author$project$Main$viewBlock(model),
 												$elm$core$Array$toList(model.board)),
 												function () {
-												var _v6 = model.mode;
-												if (_v6.$ === 'Editor') {
+												var _v4 = model.mode;
+												if (_v4.$ === 'Editor') {
 													return _List_fromArray(
 														[
 															A2($author$project$Main$viewCursor, model.cursorBounce, model.editorCursor)
@@ -18567,8 +18595,8 @@ var $author$project$Main$view = function (model) {
 												}
 											}(),
 												function () {
-												var _v7 = model.mode;
-												if (_v7.$ === 'Editor') {
+												var _v5 = model.mode;
+												if (_v5.$ === 'Editor') {
 													return _List_Nil;
 												} else {
 													return _List_fromArray(
@@ -18595,8 +18623,8 @@ var $author$project$Main$view = function (model) {
 								})
 							])),
 						function () {
-						var _v8 = model.mode;
-						if (_v8.$ === 'Game') {
+						var _v6 = model.mode;
+						if (_v6.$ === 'Game') {
 							return A2(
 								$elm$html$Html$div,
 								_List_fromArray(

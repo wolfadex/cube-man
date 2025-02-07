@@ -266,10 +266,8 @@ type Msg
     = Tick Float
     | KeyPressed String
     | MouseDown Json.Decode.Value
-    | MouseUp
-    | GameClicked (Point2d Pixels ScreenCoordinates)
-    | MouseMove Json.Decode.Value Float
-    | PointerOver (Point2d Pixels ScreenCoordinates)
+    | MouseUp (Point2d Pixels ScreenCoordinates)
+    | MouseMove Json.Decode.Value (Point2d Pixels ScreenCoordinates) (Point2d Pixels ScreenCoordinates)
     | EncodingChanged String
     | LoadBoard
     | ChangeMode
@@ -311,93 +309,119 @@ update msg model =
             , Cmd.none
             )
 
-        MouseDown pointer ->
-            ( { model | mouseDragging = InteractionStart pointer }, Cmd.none )
+        MouseDown pointerId ->
+            ( { model | mouseDragging = InteractionStart pointerId }, Cmd.none )
 
-        MouseUp ->
-            ( { model | mouseDragging = NoInteraction }, Cmd.none )
-
-        GameClicked point ->
-            let
-                ray : Axis3d Length.Meters WorldCoordinates
-                ray =
-                    Camera3d.ray
-                        (editorCamera model)
-                        (Rectangle2d.from
-                            (Point2d.pixels 0 0)
-                            (Point2d.pixels
-                                (toFloat model.screenSize.width)
-                                (toFloat model.screenSize.height)
-                            )
-                        )
-                        point
-            in
-            ( model, Cmd.none )
-
-        MouseMove pointer delta ->
-            ( { model
-                | mouseDragging = InteractionMoving pointer
-                , cameraRotation =
-                    model.cameraRotation
-                        |> Quantity.minus
-                            (Angle.degrees delta)
-              }
-            , Cmd.none
-            )
-
-        PointerOver point ->
-            let
-                ray : Axis3d Length.Meters WorldCoordinates
-                ray =
-                    Camera3d.ray
-                        (editorCamera model)
-                        (Rectangle2d.from
-                            (Point2d.pixels 0 0)
-                            (Point2d.pixels
-                                (toFloat model.screenSize.width)
-                                (toFloat model.screenSize.height)
-                            )
-                        )
-                        point
-
-                maybeIntersection =
-                    Array.foldl
-                        (\block ( index, maybeInter ) ->
-                            ( index + 1
-                            , case block of
-                                Wall ->
-                                    let
-                                        boundingBox =
-                                            BoundingBox3d.withDimensions
-                                                ( Length.meters 1, Length.meters 1, Length.meters 1 )
-                                                (pointToPoint3d (indexToPoint model index))
-                                    in
-                                    case Axis3d.Extra.intersectionAxisAlignedBoundingBox3d ray boundingBox |> Debug.log "intersection?" of
-                                        Nothing ->
-                                            maybeInter
-
-                                        Just intersection ->
-                                            Just intersection
-
-                                _ ->
-                                    maybeInter
-                            )
-                        )
-                        ( 0, Nothing )
-                        model.board
-                        |> Tuple.second
-            in
-            case maybeIntersection of
-                Nothing ->
+        MouseUp point ->
+            case model.mouseDragging of
+                NoInteraction ->
                     ( model, Cmd.none )
 
-                Just { intersection, normal } ->
+                InteractionStart _ ->
+                    let
+                        ray : Axis3d Length.Meters WorldCoordinates
+                        ray =
+                            Camera3d.ray
+                                (editorCamera model)
+                                (Rectangle2d.from
+                                    (Point2d.pixels 0 (toFloat model.screenSize.height))
+                                    (Point2d.pixels (toFloat model.screenSize.width) 0)
+                                )
+                                point
+                    in
                     ( { model
-                        | editorCursor =
-                            intersection
-                                |> Point3d.translateIn normal
-                                    (Length.meters 0.5)
-                                |> point3dToPoint
+                        | mouseDragging = NoInteraction
+
+                        -- editorCursor
+                        , board = model.board
+                      }
+                    , Cmd.none
+                    )
+
+                InteractionMoving _ ->
+                    ( { model | mouseDragging = NoInteraction }, Cmd.none )
+
+        MouseMove pointerId offset movement ->
+            case model.mouseDragging of
+                NoInteraction ->
+                    let
+                        ray : Axis3d Length.Meters WorldCoordinates
+                        ray =
+                            Camera3d.ray
+                                (editorCamera model)
+                                (Rectangle2d.from
+                                    (Point2d.pixels 0 (toFloat model.screenSize.height))
+                                    (Point2d.pixels (toFloat model.screenSize.width) 0)
+                                )
+                                offset
+
+                        maybeIntersection =
+                            Array.foldl
+                                (\block ( index, maybeInter ) ->
+                                    ( index + 1
+                                    , case block of
+                                        Wall ->
+                                            let
+                                                boundingBox =
+                                                    BoundingBox3d.withDimensions
+                                                        ( Length.meters 1, Length.meters 1, Length.meters 1 )
+                                                        (pointToPoint3d (indexToPoint model index))
+                                            in
+                                            case Axis3d.Extra.intersectionAxisAlignedBoundingBox3d ray boundingBox of
+                                                Nothing ->
+                                                    maybeInter
+
+                                                Just intersection ->
+                                                    Just intersection
+
+                                        _ ->
+                                            maybeInter
+                                    )
+                                )
+                                ( 0, Nothing )
+                                model.board
+                                |> Tuple.second
+                                |> Debug.log "3d cursor"
+                    in
+                    case maybeIntersection of
+                        Nothing ->
+                            ( model, Cmd.none )
+
+                        Just { intersection, normal } ->
+                            ( { model
+                                | editorCursor =
+                                    intersection
+                                        -- |> Point3d.translateIn normal
+                                        --     (Length.meters 0.5)
+                                        |> point3dToPoint
+                              }
+                            , Cmd.none
+                            )
+
+                InteractionStart _ ->
+                    ( { model
+                        | mouseDragging = InteractionMoving pointerId
+                        , cameraRotation =
+                            model.cameraRotation
+                                |> Quantity.minus
+                                    (Point2d.xCoordinate movement
+                                        |> Pixels.toFloat
+                                        |> Angle.degrees
+                                    )
+                      }
+                    , Cmd.none
+                    )
+
+                InteractionMoving _ ->
+                    ( { model
+                        | mouseDragging = InteractionMoving pointerId
+                        , cameraRotation =
+                            model.cameraRotation
+                                |> Quantity.minus
+                                    (Point2d.xCoordinate movement
+                                        |> Pixels.toFloat
+                                        |> Angle.degrees
+                                    )
                       }
                     , Cmd.none
                     )
@@ -1001,7 +1025,7 @@ decodeMouseUp =
         |> Json.Decode.andThen
             (\button ->
                 if button == 0 then
-                    Json.Decode.map2 (\x y -> GameClicked (Point2d.pixels x y))
+                    Json.Decode.map2 (\x y -> MouseUp (Point2d.pixels x y))
                         (Json.Decode.field "offsetX" Json.Decode.float)
                         (Json.Decode.field "offsetX" Json.Decode.float)
 
@@ -1010,24 +1034,18 @@ decodeMouseUp =
             )
 
 
-decodeMouseMove : Json.Decode.Value -> Json.Decode.Decoder Msg
-decodeMouseMove pointer =
-    Json.Decode.map (MouseMove pointer)
+decodePointerMove : Json.Decode.Value -> Json.Decode.Decoder Msg
+decodePointerMove pointer =
+    Json.Decode.map4
+        (\ox oy mx my ->
+            MouseMove pointer
+                (Point2d.pixels ox oy)
+                (Point2d.pixels mx my)
+        )
+        (Json.Decode.field "offsetX" Json.Decode.float)
+        (Json.Decode.field "offsetY" Json.Decode.float)
         (Json.Decode.field "movementX" Json.Decode.float)
-
-
-decodeCursorMove : Json.Decode.Decoder Msg
-decodeCursorMove =
-    Json.Decode.map2 (\x y -> PointerOver (Point2d.pixels x y))
-        (Json.Decode.field "offsetX" Json.Decode.float)
-        (Json.Decode.field "offsetY" Json.Decode.float)
-
-
-decodePointerOver : Json.Decode.Decoder Msg
-decodePointerOver =
-    Json.Decode.map2 (\x y -> PointerOver (Point2d.pixels x y))
-        (Json.Decode.field "offsetX" Json.Decode.float)
-        (Json.Decode.field "offsetY" Json.Decode.float)
+        (Json.Decode.field "movementY" Json.Decode.float)
 
 
 view : Model -> Browser.Document Msg
@@ -1045,39 +1063,35 @@ view model =
                         "auto 8rem"
             ]
             [ Html.div
-                [ Html.Attributes.style "grid-column" <|
+                ([ Html.Attributes.style "grid-column" <|
                     case model.mode of
                         Editor ->
                             "1"
 
                         Game ->
                             "1 / 2"
-                , Html.Attributes.style "grid-row" "1"
-                , case model.mouseDragging of
-                    NoInteraction ->
-                        Html.Events.on "pointerdown" decodeMouseDown
+                 , Html.Attributes.style "grid-row" "1"
+                 ]
+                    ++ (case model.mouseDragging of
+                            NoInteraction ->
+                                [ Html.Events.on "pointerdown" decodeMouseDown
+                                , Html.Events.on "pointermove" (decodePointerMove Json.Encode.null)
+                                , Html.Attributes.property "___setPointerCapture" Json.Encode.null
+                                ]
 
-                    InteractionStart pointer ->
-                        Html.Events.on "pointerup" decodeMouseUp
+                            InteractionStart pointer ->
+                                [ Html.Events.on "pointerup" decodeMouseUp
+                                , Html.Events.on "pointermove" (decodePointerMove pointer)
+                                , Html.Attributes.property "___setPointerCapture" pointer
+                                ]
 
-                    InteractionMoving pointer ->
-                        Html.Events.on "pointermove" (decodeMouseMove pointer)
-                , case model.mouseDragging of
-                    NoInteraction ->
-                        Html.Events.on "pointermove" decodeCursorMove
-
-                    _ ->
-                        Html.Attributes.class ""
-                , case model.mouseDragging of
-                    NoInteraction ->
-                        Html.Attributes.property "__setPointerCapture" Json.Encode.null
-
-                    InteractionStart pointer ->
-                        Html.Attributes.property "__setPointerCapture" pointer
-
-                    InteractionMoving pointer ->
-                        Html.Attributes.property "__setPointerCapture" pointer
-                ]
+                            InteractionMoving pointer ->
+                                [ Html.Events.on "pointerup" decodeMouseUp
+                                , Html.Events.on "pointermove" (decodePointerMove pointer)
+                                , Html.Attributes.property "___setPointerCapture" pointer
+                                ]
+                       )
+                )
                 [ Scene3d.sunny
                     { clipDepth = Length.meters 1
                     , background = Scene3d.backgroundColor Color.gray
