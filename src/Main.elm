@@ -1148,68 +1148,23 @@ view model =
                                     |> Quantity.plus (Angle.degrees -60)
                                 )
                     , entities =
-                        List.concat
-                            [ model.board
-                                |> Array.toList
-                                |> List.indexedMap (viewBlock model)
-                            , case model.mode of
-                                Editor ->
-                                    [ viewCursor model.cursorBounce model.editorCursor ]
-
-                                Game ->
-                                    []
-                            , case model.mode of
-                                Editor ->
-                                    []
-
-                                Game ->
-                                    [ viewPlayer model.playerFacing model.playerFrame ]
-                            , [ Scene3d.group
-                                    [ Scene3d.lineSegment
-                                        (Scene3d.Material.color Color.red)
-                                        (LineSegment3d.from
-                                            (Point3d.meters -1 -1 -1)
-                                            (Point3d.meters 1 -1 -1)
-                                        )
-                                    , Scene3d.cone
-                                        (Scene3d.Material.matte Color.red)
-                                        (Cone3d.startingAt (Point3d.meters 1 -1 -1)
-                                            Direction3d.positiveX
-                                            { radius = Length.meters 0.125
-                                            , length = Length.meters 0.25
-                                            }
-                                        )
-                                    , Scene3d.lineSegment
-                                        (Scene3d.Material.color Color.green)
-                                        (LineSegment3d.from
-                                            (Point3d.meters -1 -1 -1)
-                                            (Point3d.meters -1 1 -1)
-                                        )
-                                    , Scene3d.cone
-                                        (Scene3d.Material.matte Color.green)
-                                        (Cone3d.startingAt (Point3d.meters -1 1 -1)
-                                            Direction3d.positiveY
-                                            { radius = Length.meters 0.125
-                                            , length = Length.meters 0.25
-                                            }
-                                        )
-                                    , Scene3d.lineSegment
-                                        (Scene3d.Material.color Color.blue)
-                                        (LineSegment3d.from
-                                            (Point3d.meters -1 -1 -1)
-                                            (Point3d.meters -1 -1 1)
-                                        )
-                                    , Scene3d.cone
-                                        (Scene3d.Material.matte Color.blue)
-                                        (Cone3d.startingAt (Point3d.meters -1 -1 1)
-                                            Direction3d.positiveZ
-                                            { radius = Length.meters 0.125
-                                            , length = Length.meters 0.25
-                                            }
-                                        )
+                        case model.mode of
+                            Editor ->
+                                List.concat
+                                    [ model.board
+                                        |> Array.toList
+                                        |> List.indexedMap (viewBlock model)
+                                    , [ viewCursor model.cursorBounce model.editorCursor ]
+                                    , [ viewOrientationArrows ]
                                     ]
-                              ]
-                            ]
+
+                            Game ->
+                                List.concat
+                                    [ model.board
+                                        |> Array.toList
+                                        |> List.indexedMap (viewBlock model)
+                                    , [ viewPlayer model.playerFacing model.playerFrame ]
+                                    ]
                     }
                 ]
             , case model.mode of
@@ -1387,6 +1342,54 @@ view model =
             ]
         ]
     }
+
+
+viewOrientationArrows : Scene3d.Entity WorldCoordinates
+viewOrientationArrows =
+    Scene3d.group
+        [ Scene3d.lineSegment
+            (Scene3d.Material.color Color.red)
+            (LineSegment3d.from
+                (Point3d.meters -1 -1 -1)
+                (Point3d.meters 1 -1 -1)
+            )
+        , Scene3d.cone
+            (Scene3d.Material.matte Color.red)
+            (Cone3d.startingAt (Point3d.meters 1 -1 -1)
+                Direction3d.positiveX
+                { radius = Length.meters 0.125
+                , length = Length.meters 0.25
+                }
+            )
+        , Scene3d.lineSegment
+            (Scene3d.Material.color Color.green)
+            (LineSegment3d.from
+                (Point3d.meters -1 -1 -1)
+                (Point3d.meters -1 1 -1)
+            )
+        , Scene3d.cone
+            (Scene3d.Material.matte Color.green)
+            (Cone3d.startingAt (Point3d.meters -1 1 -1)
+                Direction3d.positiveY
+                { radius = Length.meters 0.125
+                , length = Length.meters 0.25
+                }
+            )
+        , Scene3d.lineSegment
+            (Scene3d.Material.color Color.blue)
+            (LineSegment3d.from
+                (Point3d.meters -1 -1 -1)
+                (Point3d.meters -1 -1 1)
+            )
+        , Scene3d.cone
+            (Scene3d.Material.matte Color.blue)
+            (Cone3d.startingAt (Point3d.meters -1 -1 1)
+                Direction3d.positiveZ
+                { radius = Length.meters 0.125
+                , length = Length.meters 0.25
+                }
+            )
+        ]
 
 
 viewPlayer : Facing -> Frame3d Length.Meters WorldCoordinates { defines : {} } -> Scene3d.Entity WorldCoordinates
