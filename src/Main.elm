@@ -23,12 +23,14 @@ import Json.Decode
 import Json.Encode
 import Length
 import LineSegment3d
+import Luminance
 import Pixels exposing (Pixels)
 import Point2d exposing (Point2d)
 import Point3d exposing (Point3d)
 import Quantity
 import Rectangle2d
 import Scene3d
+import Scene3d.Light
 import Scene3d.Material
 import SketchPlane3d
 import Sphere3d
@@ -107,6 +109,7 @@ type Block
     = Empty
     | Wall
     | Edge
+    | PointPickup
 
 
 encodeBoard : Board -> String
@@ -122,6 +125,9 @@ encodeBoard board =
 
                 Edge ->
                     "2"
+
+                PointPickup ->
+                    "3"
             )
                 ++ enc
         )
@@ -142,6 +148,9 @@ decodeBoard enc =
 
                 '2' ->
                     Array.push Edge board
+
+                '3' ->
+                    Array.push PointPickup board
 
                 _ ->
                     board
@@ -245,7 +254,7 @@ init () =
 
 
 borgCube =
-    "11121111111011111110111111101111200000021110111111101111111211111110111111111111111111111111111101111110111111111111111111101111111011111111111111111111111111110111111011111111111111111110111120000002011111100111111001111110011111100111111001111110200000021110111111111111111111111111111101111110111111111111111111101111111011111111111111111111111111110111111011111111111111111110111111101111111111111111111111111111011111101111111111111111111011111112111111101111111011111110111120000002111011111110111111121111"
+    "11121111111311111113111111131111233333321113111111131111111211111113111111111111111111111111111131111113111111111111111111131111111311111111111111111111111111113111111311111111111111111113111123333332311111133111111331111113311111133111111331111113233333321113111111111111111111111111111131111113111111111111111111131111111311111111111111111111111111113111111311111111111111111113111111131111111111111111111111111111311111131111111111111111111311111112111111131111111311111113111123333332111311111113111111121111"
 
 
 subscriptions : Model -> Sub Msg
@@ -356,17 +365,25 @@ update msg model =
                                     , case block of
                                         Wall ->
                                             let
-                                                boundingBox =
-                                                    BoundingBox3d.withDimensions
-                                                        ( Length.meters 1, Length.meters 1, Length.meters 1 )
-                                                        (pointToPoint3d (indexToPoint model index))
+                                                ( x, y, z ) =
+                                                    indexToPoint model index
                                             in
-                                            case Axis3d.Extra.intersectionAxisAlignedBoundingBox3d ray boundingBox of
-                                                Nothing ->
-                                                    maybeInter
+                                            if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
+                                                Nothing
 
-                                                Just intersection ->
-                                                    Just intersection
+                                            else
+                                                let
+                                                    boundingBox =
+                                                        BoundingBox3d.withDimensions
+                                                            ( Length.meters 1, Length.meters 1, Length.meters 1 )
+                                                            (pointToPoint3d (indexToPoint model index))
+                                                in
+                                                case Axis3d.Extra.intersectionAxisAlignedBoundingBox3d ray boundingBox of
+                                                    Nothing ->
+                                                        maybeInter
+
+                                                    Just intersection ->
+                                                        Just intersection
 
                                         _ ->
                                             maybeInter
@@ -386,6 +403,10 @@ update msg model =
                                     case model.selectedBlockType of
                                         Empty ->
                                             Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
+                                                |> point3dToPoint
+
+                                        PointPickup ->
+                                            Point3d.along intersection (Length.meters 0.5)
                                                 |> point3dToPoint
 
                                         Wall ->
@@ -495,7 +516,6 @@ update msg model =
         KeyPressed key ->
             case model.mode of
                 Editor ->
-                    -- handleEditorKeyPressed key model
                     ( model, Cmd.none )
 
                 Game ->
@@ -647,6 +667,32 @@ movePlayer deltaMs model =
                     { model
                         | playerFrame = playerFrame
                         , playerMovingAcrossEdge = Just distMoved
+                    }
+
+                Just PointPickup ->
+                    { model
+                        | playerFrame =
+                            model.playerFrame
+                                |> Frame3d.translateIn
+                                    (case model.playerFacing of
+                                        Forward ->
+                                            Frame3d.xDirection model.playerFrame
+
+                                        Backward ->
+                                            Frame3d.xDirection model.playerFrame
+                                                |> Direction3d.reverse
+
+                                        Right ->
+                                            Frame3d.yDirection model.playerFrame
+                                                |> Direction3d.reverse
+
+                                        Left ->
+                                            Frame3d.yDirection model.playerFrame
+                                    )
+                                    (Length.meters 4
+                                        |> Quantity.per (Duration.seconds 1)
+                                        |> Quantity.for (Duration.milliseconds deltaMs)
+                                    )
                     }
 
                 Just Empty ->
@@ -805,6 +851,39 @@ setPlayerFacing model =
                                 Wall ->
                                     model
 
+                                PointPickup ->
+                                    { model
+                                        | playerFrame =
+                                            Frame3d.unsafe
+                                                { originPoint = pointToPoint3d playerBoardPoint
+                                                , xDirection =
+                                                    model.playerFrame
+                                                        |> Frame3d.xDirection
+                                                        |> Direction3d.toVector
+                                                        |> Vector3d.normalize
+                                                        |> Vector3d.direction
+                                                        |> Maybe.withDefault Direction3d.positiveX
+                                                        |> correctSizeDirection
+                                                , yDirection =
+                                                    model.playerFrame
+                                                        |> Frame3d.yDirection
+                                                        |> Direction3d.toVector
+                                                        |> Vector3d.normalize
+                                                        |> Vector3d.direction
+                                                        |> Maybe.withDefault Direction3d.positiveX
+                                                        |> correctSizeDirection
+                                                , zDirection =
+                                                    model.playerFrame
+                                                        |> Frame3d.zDirection
+                                                        |> Direction3d.toVector
+                                                        |> Vector3d.normalize
+                                                        |> Vector3d.direction
+                                                        |> Maybe.withDefault Direction3d.positiveX
+                                                        |> correctSizeDirection
+                                                }
+                                        , playerFacing = model.playerWantFacing
+                                    }
+
                                 Empty ->
                                     { model
                                         | playerFrame =
@@ -890,135 +969,6 @@ handleGameKeyPressed key model =
 
         _ ->
             ( model, Cmd.none )
-
-
-handleEditorKeyPressed : String -> Model -> ( Model, Cmd Msg )
-handleEditorKeyPressed key model =
-    case key of
-        " " ->
-            let
-                board =
-                    Array.Extra.update
-                        (pointToIndex model model.editorCursor)
-                        cycleBlockType
-                        model.board
-
-                cycleBlockType block =
-                    case block of
-                        Empty ->
-                            Edge
-
-                        Wall ->
-                            Empty
-
-                        Edge ->
-                            Wall
-            in
-            ( { model
-                | board = board
-                , boardEncoding = encodeBoard board
-              }
-            , Cmd.none
-            )
-
-        "w" ->
-            let
-                ( x, y, z ) =
-                    model.editorCursor
-            in
-            ( { model
-                | editorCursor =
-                    ( min (model.maxX - 1) (x + 1)
-                    , y
-                    , z
-                    )
-              }
-            , Cmd.none
-            )
-
-        "s" ->
-            let
-                ( x, y, z ) =
-                    model.editorCursor
-            in
-            ( { model
-                | editorCursor =
-                    ( max 0 (x - 1)
-                    , y
-                    , z
-                    )
-              }
-            , Cmd.none
-            )
-
-        "a" ->
-            let
-                ( x, y, z ) =
-                    model.editorCursor
-            in
-            ( { model
-                | editorCursor =
-                    ( x
-                    , min (model.maxY - 1) (y + 1)
-                    , z
-                    )
-              }
-            , Cmd.none
-            )
-
-        "d" ->
-            let
-                ( x, y, z ) =
-                    model.editorCursor
-            in
-            ( { model
-                | editorCursor =
-                    ( x
-                    , max 0 (y - 1)
-                    , z
-                    )
-              }
-            , Cmd.none
-            )
-
-        "e" ->
-            let
-                ( x, y, z ) =
-                    model.editorCursor
-            in
-            ( { model
-                | editorCursor =
-                    ( x
-                    , y
-                    , min (model.maxZ - 1) (z + 1)
-                    )
-              }
-            , Cmd.none
-            )
-
-        "q" ->
-            let
-                ( x, y, z ) =
-                    model.editorCursor
-            in
-            ( { model
-                | editorCursor =
-                    ( x
-                    , y
-                    , max 0 (z - 1)
-                    )
-              }
-            , Cmd.none
-            )
-
-        _ ->
-            let
-                _ =
-                    Debug.log "unhandled key" key
-            in
-            ( model
-            , Cmd.none
-            )
 
 
 decodeMouseDown : Json.Decode.Decoder Msg
@@ -1222,6 +1172,18 @@ view model =
                                 , Html.Events.onClick (BlockTypeSelected Edge)
                                 ]
                                 [ Html.text "Edge"
+                                ]
+                            , Html.button
+                                [ Html.Attributes.attribute "aria-current" <|
+                                    if model.selectedBlockType == PointPickup then
+                                        "true"
+
+                                    else
+                                        "false"
+                                , Html.Attributes.type_ "button"
+                                , Html.Events.onClick (BlockTypeSelected PointPickup)
+                                ]
+                                [ Html.text "Point Pickup"
                                 ]
                             , Html.button
                                 [ Html.Attributes.attribute "aria-current" <|
@@ -1477,6 +1439,31 @@ viewBlock model index block =
                             )
                         )
                         ( Length.meters 1, Length.meters 1, Length.meters 1 )
+                    )
+
+        PointPickup ->
+            let
+                ( x, y, z ) =
+                    indexToPoint
+                        model
+                        index
+            in
+            if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
+                Scene3d.nothing
+
+            else
+                Scene3d.sphereWithShadow
+                    (Scene3d.Material.emissive
+                        (Scene3d.Light.color Color.yellow)
+                        (Luminance.nits 30000)
+                    )
+                    (Sphere3d.atPoint
+                        (Point3d.meters
+                            (toFloat x)
+                            (toFloat y)
+                            (toFloat z)
+                        )
+                        (Length.meters 0.125)
                     )
 
         Empty ->
