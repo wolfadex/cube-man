@@ -22,6 +22,7 @@ import Html.Events
 import Json.Decode
 import Json.Encode
 import Length
+import LineSegment3d
 import Pixels exposing (Pixels)
 import Point2d exposing (Point2d)
 import Point3d exposing (Point3d)
@@ -29,6 +30,7 @@ import Quantity
 import Rectangle2d
 import Scene3d
 import Scene3d.Material
+import SketchPlane3d
 import Sphere3d
 import Vector3d
 import Viewpoint3d
@@ -59,6 +61,7 @@ type alias Model =
     , selectedBlockType : Block
     , editorCursor : Point
     , cameraRotation : Angle
+    , cameraElevation : Angle
     , mouseDragging : EditorMouseInteraction
     , cursorBounce : Animation Float
     , boardEncoding : String
@@ -211,6 +214,7 @@ init () =
       , screenSize = { width = 800, height = 600 }
       , editorCursor = ( 0, 0, 0 )
       , cameraRotation = Angle.degrees 225
+      , cameraElevation = Angle.degrees 15
       , mouseDragging = NoInteraction
       , cursorBounce =
             Animation.init 0
@@ -405,6 +409,13 @@ update msg model =
                                         |> Pixels.toFloat
                                         |> Angle.degrees
                                     )
+                        , cameraElevation =
+                            model.cameraElevation
+                                |> Quantity.minus
+                                    (Point2d.yCoordinate (Debug.log "move" movement)
+                                        |> Pixels.toFloat
+                                        |> Angle.degrees
+                                    )
                       }
                     , Cmd.none
                     )
@@ -416,6 +427,13 @@ update msg model =
                             model.cameraRotation
                                 |> Quantity.minus
                                     (Point2d.xCoordinate movement
+                                        |> Pixels.toFloat
+                                        |> Angle.degrees
+                                    )
+                        , cameraElevation =
+                            model.cameraElevation
+                                |> Quantity.plus
+                                    (Point2d.yCoordinate (Debug.log "move" movement)
                                         |> Pixels.toFloat
                                         |> Angle.degrees
                                     )
@@ -488,11 +506,12 @@ editorCamera : Model -> Camera3d Length.Meters WorldCoordinates
 editorCamera model =
     Camera3d.perspective
         { viewpoint =
-            Viewpoint3d.orbitZ
+            Viewpoint3d.orbit
                 { focalPoint = Point3d.meters 3.5 3.5 2
                 , azimuth = model.cameraRotation
-                , elevation = Angle.degrees 15
+                , elevation = model.cameraElevation
                 , distance = Length.meters 30
+                , groundPlane = SketchPlane3d.xy
                 }
         , verticalFieldOfView = Angle.degrees 30
         }
@@ -1145,6 +1164,51 @@ view model =
 
                                 Game ->
                                     [ viewPlayer model.playerFacing model.playerFrame ]
+                            , [ Scene3d.group
+                                    [ Scene3d.lineSegment
+                                        (Scene3d.Material.color Color.red)
+                                        (LineSegment3d.from
+                                            (Point3d.meters -1 -1 -1)
+                                            (Point3d.meters 1 -1 -1)
+                                        )
+                                    , Scene3d.cone
+                                        (Scene3d.Material.matte Color.red)
+                                        (Cone3d.startingAt (Point3d.meters 1 -1 -1)
+                                            Direction3d.positiveX
+                                            { radius = Length.meters 0.125
+                                            , length = Length.meters 0.25
+                                            }
+                                        )
+                                    , Scene3d.lineSegment
+                                        (Scene3d.Material.color Color.green)
+                                        (LineSegment3d.from
+                                            (Point3d.meters -1 -1 -1)
+                                            (Point3d.meters -1 1 -1)
+                                        )
+                                    , Scene3d.cone
+                                        (Scene3d.Material.matte Color.green)
+                                        (Cone3d.startingAt (Point3d.meters -1 1 -1)
+                                            Direction3d.positiveY
+                                            { radius = Length.meters 0.125
+                                            , length = Length.meters 0.25
+                                            }
+                                        )
+                                    , Scene3d.lineSegment
+                                        (Scene3d.Material.color Color.blue)
+                                        (LineSegment3d.from
+                                            (Point3d.meters -1 -1 -1)
+                                            (Point3d.meters -1 -1 1)
+                                        )
+                                    , Scene3d.cone
+                                        (Scene3d.Material.matte Color.blue)
+                                        (Cone3d.startingAt (Point3d.meters -1 -1 1)
+                                            Direction3d.positiveZ
+                                            { radius = Length.meters 0.125
+                                            , length = Length.meters 0.25
+                                            }
+                                        )
+                                    ]
+                              ]
                             ]
                     }
                 ]
