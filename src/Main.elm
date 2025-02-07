@@ -318,22 +318,12 @@ update msg model =
                     ( model, Cmd.none )
 
                 InteractionStart _ ->
-                    let
-                        ray : Axis3d Length.Meters WorldCoordinates
-                        ray =
-                            Camera3d.ray
-                                (editorCamera model)
-                                (Rectangle2d.from
-                                    (Point2d.pixels 0 (toFloat model.screenSize.height))
-                                    (Point2d.pixels (toFloat model.screenSize.width) 0)
-                                )
-                                point
-                    in
                     ( { model
                         | mouseDragging = NoInteraction
-
-                        -- editorCursor
-                        , board = model.board
+                        , board =
+                            Array.set (pointToIndex model model.editorCursor)
+                                model.selectedBlockType
+                                model.board
                       }
                     , Cmd.none
                     )
@@ -381,19 +371,26 @@ update msg model =
                                 ( 0, Nothing )
                                 model.board
                                 |> Tuple.second
-                                |> Debug.log "3d cursor"
                     in
                     case maybeIntersection of
                         Nothing ->
                             ( model, Cmd.none )
 
-                        Just { intersection, normal } ->
+                        Just intersection ->
                             ( { model
                                 | editorCursor =
-                                    intersection
-                                        -- |> Point3d.translateIn normal
-                                        --     (Length.meters 0.5)
-                                        |> point3dToPoint
+                                    case model.selectedBlockType of
+                                        Empty ->
+                                            Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
+                                                |> point3dToPoint
+
+                                        Wall ->
+                                            Point3d.along intersection (Length.meters 0.5)
+                                                |> point3dToPoint
+
+                                        Edge ->
+                                            Point3d.along intersection (Length.meters 0.5)
+                                                |> point3dToPoint
                               }
                             , Cmd.none
                             )

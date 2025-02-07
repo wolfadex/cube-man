@@ -6,135 +6,120 @@ import Direction3d exposing (Direction3d)
 import Length
 import Point3d exposing (Point3d)
 import Quantity exposing (Quantity(..))
+import Rectangle3d
+import SketchPlane3d
 import Vector3d exposing (Vector3d)
 
 
-intersectionAxisAlignedBoundingBox3d : Axis3d units coordinates -> BoundingBox3d units coordinates -> Maybe { t : Float, intersection : Point3d units coordinates, normal : Direction3d coordinates }
-intersectionAxisAlignedBoundingBox3d rayXX boundingBox =
+intersectionAxisAlignedBoundingBox3d : Axis3d units coordinates -> BoundingBox3d units coordinates -> Maybe (Axis3d units coordinates)
+intersectionAxisAlignedBoundingBox3d ray boundingBox =
     let
-        ray : Point3d units coordinates
-        ray =
-            Axis3d.originPoint rayXX
-
-        delta : Vector3d units coordinates
-        delta =
-            Axis3d.direction rayXX
-                |> Vector3d.withLength (Quantity 1000)
+        boxCenter =
+            BoundingBox3d.centerPoint boundingBox
 
         extrema =
             BoundingBox3d.extrema boundingBox
 
-        boxMin =
-            Point3d.xyz extrema.minX extrema.minY extrema.minZ
+        ( dimensionX, dimensionY, dimensionZ ) =
+            BoundingBox3d.dimensions boundingBox
 
-        boxMax =
-            Point3d.xyz extrema.maxX extrema.maxY extrema.maxZ
-
-        boxMin2 =
-            Point3d.unwrap boxMin
-
-        boxMax2 =
-            Point3d.unwrap boxMax
-
-        ray2 =
-            Point3d.unwrap ray
-
-        delta2 =
-            Vector3d.unwrap delta
-
-        t1 =
-            (boxMin2.x - ray2.x) / delta2.x
-
-        t2 =
-            (boxMax2.x - ray2.x) / delta2.x
-
-        txNear =
-            min t1 t2
-
-        txFar =
-            max t1 t2
-
-        t3 =
-            (boxMin2.y - ray2.y) / delta2.y
-
-        t4 =
-            (boxMax2.y - ray2.y) / delta2.y
-
-        tyNear =
-            min t3 t4
-
-        tyFar =
-            max t3 t4
-
-        t5 =
-            (boxMin2.z - ray2.z) / delta2.z
-
-        t6 =
-            (boxMax2.z - ray2.z) / delta2.z
-
-        tzNear =
-            min t5 t6
-
-        tzFar =
-            max t5 t6
-
-        tmin =
-            max (max txNear tyNear) tzNear
-
-        tmax =
-            min (min txFar tyFar) tzFar
-
-        normal =
-            if txNear > tyNear then
-                if tzNear > txNear then
-                    if ray2.z > (boxMax2.z + boxMin2.z) / 2 then
-                        Direction3d.positiveZ
-
-                    else
-                        Direction3d.negativeZ
-
-                else if ray2.x > (boxMax2.x + boxMin2.x) / 2 then
-                    Direction3d.positiveX
-
-                else
-                    Direction3d.negativeX
-
-            else if tzNear > tyNear then
-                if ray2.z > (boxMax2.z + boxMin2.z) / 2 then
+        positiveZRect =
+            Rectangle3d.centeredOn
+                (SketchPlane3d.through
+                    (Point3d.translateIn Direction3d.positiveZ
+                        (Quantity.half dimensionZ)
+                        boxCenter
+                    )
                     Direction3d.positiveZ
+                )
+                ( dimensionX, dimensionY )
 
-                else
+        negativeZRect =
+            Rectangle3d.centeredOn
+                (SketchPlane3d.through
+                    (Point3d.translateIn Direction3d.negativeZ
+                        (Quantity.half dimensionZ)
+                        boxCenter
+                    )
                     Direction3d.negativeZ
+                )
+                ( dimensionX, dimensionY )
 
-            else if ray2.y > (boxMax2.y + boxMin2.y) / 2 then
-                Direction3d.positiveY
+        positiveXRect =
+            Rectangle3d.centeredOn
+                (SketchPlane3d.through
+                    (Point3d.translateIn Direction3d.positiveX
+                        (Quantity.half dimensionX)
+                        boxCenter
+                    )
+                    Direction3d.positiveX
+                )
+                ( dimensionZ, dimensionY )
 
-            else
-                Direction3d.negativeY
+        negativeXRect =
+            Rectangle3d.centeredOn
+                (SketchPlane3d.through
+                    (Point3d.translateIn Direction3d.negativeX
+                        (Quantity.half dimensionX)
+                        boxCenter
+                    )
+                    Direction3d.negativeX
+                )
+                ( dimensionZ, dimensionY )
+
+        positiveYRect =
+            Rectangle3d.centeredOn
+                (SketchPlane3d.through
+                    (Point3d.translateIn Direction3d.positiveY
+                        (Quantity.half dimensionY)
+                        boxCenter
+                    )
+                    Direction3d.positiveY
+                )
+                ( dimensionZ, dimensionX )
+
+        negativeYRect =
+            Rectangle3d.centeredOn
+                (SketchPlane3d.through
+                    (Point3d.translateIn Direction3d.negativeY
+                        (Quantity.half dimensionY)
+                        boxCenter
+                    )
+                    Direction3d.negativeY
+                )
+                ( dimensionZ, dimensionX )
+
+        rayOrigin =
+            Axis3d.originPoint ray
     in
-    if tmax < 0 then
+    List.foldl
+        (\( rect, normalDir ) maybeIntersection ->
+            case Axis3d.intersectionWithRectangle rect ray of
+                Nothing ->
+                    maybeIntersection
+
+                Just intersectionPoint ->
+                    let
+                        newDist =
+                            Point3d.distanceFrom rayOrigin (Rectangle3d.centerPoint rect)
+                    in
+                    case maybeIntersection of
+                        Nothing ->
+                            Just ( intersectionPoint, normalDir, newDist )
+
+                        Just ( _, _, dist ) ->
+                            if newDist |> Quantity.lessThan dist then
+                                Just ( intersectionPoint, normalDir, newDist )
+
+                            else
+                                maybeIntersection
+        )
         Nothing
-
-    else if tmin > tmax then
-        Nothing
-
-    else if tmin < 0 then
-        if tmax < 1 then
-            Just
-                { intersection = Point3d.translateBy (Vector3d.scaleBy tmax delta) ray
-                , normal = normal
-                , t = tmax
-                }
-
-        else
-            Nothing
-
-    else if tmin < 1 then
-        Just
-            { intersection = Point3d.translateBy (Vector3d.scaleBy tmin delta) ray
-            , normal = normal
-            , t = tmin
-            }
-
-    else
-        Nothing
+        [ ( positiveZRect, Direction3d.positiveZ )
+        , ( negativeZRect, Direction3d.negativeZ )
+        , ( positiveXRect, Direction3d.positiveX )
+        , ( negativeXRect, Direction3d.negativeX )
+        , ( positiveYRect, Direction3d.positiveY )
+        , ( negativeYRect, Direction3d.negativeY )
+        ]
+        |> Maybe.map (\( intersectionPoint, normalDir, _ ) -> Axis3d.through intersectionPoint normalDir)
