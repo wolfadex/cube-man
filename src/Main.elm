@@ -18,6 +18,7 @@ import Frame3d exposing (Frame3d)
 import Geometry.Serialize
 import Html
 import Html.Attributes
+import Html.Attributes.Extra
 import Html.Events
 import Html.Range
 import Json.Decode
@@ -1245,6 +1246,8 @@ view model =
                                 [ Html.Attributes.type_ "button"
                                 , Html.Events.onClick Undo
                                 , Html.Attributes.title "Undo"
+                                , Html.Attributes.Extra.aria "disabled" <|
+                                    Html.Attributes.Extra.bool (not <| Undo.canUndo model.editorBoard)
                                 ]
                                 [ Phosphor.arrowCounterClockwise Phosphor.Regular
                                     |> Phosphor.toHtml []
@@ -1253,6 +1256,8 @@ view model =
                                 [ Html.Attributes.type_ "button"
                                 , Html.Events.onClick Redo
                                 , Html.Attributes.title "Redo"
+                                , Html.Attributes.Extra.aria "disabled" <|
+                                    Html.Attributes.Extra.bool (not <| Undo.canRedo model.editorBoard)
                                 ]
                                 [ Phosphor.arrowClockwise Phosphor.Regular
                                     |> Phosphor.toHtml []
@@ -1264,12 +1269,8 @@ view model =
                                 [ Html.Attributes.type_ "button"
                                 , Html.Events.onClick (SetEditMode Add)
                                 , Html.Attributes.title "Add block"
-                                , Html.Attributes.attribute "aria-current" <|
-                                    if model.editMode == Add then
-                                        "true"
-
-                                    else
-                                        "false"
+                                , Html.Attributes.Extra.aria "current" <|
+                                    Html.Attributes.Extra.bool (model.editMode == Add)
                                 ]
                                 [ Html.text "Add"
                                 ]
@@ -1277,12 +1278,8 @@ view model =
                                 [ Html.Attributes.type_ "button"
                                 , Html.Events.onClick (SetEditMode Remove)
                                 , Html.Attributes.title "Remove block"
-                                , Html.Attributes.attribute "aria-current" <|
-                                    if model.editMode == Remove then
-                                        "true"
-
-                                    else
-                                        "false"
+                                , Html.Attributes.Extra.aria "current" <|
+                                    Html.Attributes.Extra.bool (model.editMode == Remove)
                                 ]
                                 [ Html.text "Remove"
                                 ]
@@ -1291,48 +1288,32 @@ view model =
                             [ Html.Attributes.attribute "role" "group"
                             ]
                             [ Html.button
-                                [ Html.Attributes.attribute "aria-current" <|
-                                    if model.selectedBlockType == Wall then
-                                        "true"
-
-                                    else
-                                        "false"
+                                [ Html.Attributes.Extra.aria "current" <|
+                                    Html.Attributes.Extra.bool (model.selectedBlockType == Wall)
                                 , Html.Attributes.type_ "button"
                                 , Html.Events.onClick (BlockTypeSelected Wall)
                                 ]
                                 [ Html.text "Wall"
                                 ]
                             , Html.button
-                                [ Html.Attributes.attribute "aria-current" <|
-                                    if model.selectedBlockType == Edge then
-                                        "true"
-
-                                    else
-                                        "false"
+                                [ Html.Attributes.Extra.aria "current" <|
+                                    Html.Attributes.Extra.bool (model.selectedBlockType == Edge)
                                 , Html.Attributes.type_ "button"
                                 , Html.Events.onClick (BlockTypeSelected Edge)
                                 ]
                                 [ Html.text "Edge"
                                 ]
                             , Html.button
-                                [ Html.Attributes.attribute "aria-current" <|
-                                    if model.selectedBlockType == PointPickup False then
-                                        "true"
-
-                                    else
-                                        "false"
+                                [ Html.Attributes.Extra.aria "current" <|
+                                    Html.Attributes.Extra.bool (model.selectedBlockType == PointPickup False)
                                 , Html.Attributes.type_ "button"
                                 , Html.Events.onClick (BlockTypeSelected (PointPickup False))
                                 ]
                                 [ Html.text "Point\u{00A0}Pickup"
                                 ]
                             , Html.button
-                                [ Html.Attributes.attribute "aria-current" <|
-                                    if model.selectedBlockType == PlayerSpawn { forward = Direction3d.x, left = Direction3d.y } then
-                                        "true"
-
-                                    else
-                                        "false"
+                                [ Html.Attributes.Extra.aria "current" <|
+                                    Html.Attributes.Extra.bool (model.selectedBlockType == PlayerSpawn { forward = Direction3d.x, left = Direction3d.y })
                                 , Html.Attributes.type_ "button"
                                 , Html.Events.onClick (BlockTypeSelected (PlayerSpawn { forward = Direction3d.x, left = Direction3d.y }))
                                 ]
@@ -1364,9 +1345,8 @@ view model =
                         , Html.Attributes.style "overflow" "auto"
                         ]
                         [ Html.form []
-                            [ Html.fieldset
-                                []
-                                [ Html.label [] [ Html.span [] [ Html.text "X Visibility" ] ]
+                            [ Html.label []
+                                [ Html.span [] [ Html.text "X Visibility" ]
                                 , Html.Range.view
                                     { max = toFloat (model.maxX - 1)
                                     , min = 1
@@ -1376,8 +1356,8 @@ view model =
                                     , onHighChange = round >> XUpperVisibleChanged
                                     }
                                 ]
-                            , Html.fieldset []
-                                [ Html.label [] [ Html.span [] [ Html.text "Y Visibility" ] ]
+                            , Html.label []
+                                [ Html.span [] [ Html.text "Y Visibility" ]
                                 , Html.Range.view
                                     { max = toFloat (model.maxY - 1)
                                     , min = 1
@@ -1387,8 +1367,8 @@ view model =
                                     , onHighChange = round >> YUpperVisibleChanged
                                     }
                                 ]
-                            , Html.fieldset []
-                                [ Html.label [] [ Html.span [] [ Html.text "Z Visibility" ] ]
+                            , Html.label []
+                                [ Html.span [] [ Html.text "Z Visibility" ]
                                 , Html.Range.view
                                     { max = toFloat (model.maxZ - 1)
                                     , min = 1
@@ -1411,17 +1391,15 @@ view model =
                                 , Html.Attributes.style "align-items" "center"
                                 ]
                                 [ Html.span [] [ Html.text "Encoded Level:" ]
-                                ]
-                            , Html.fieldset [ Html.Attributes.attribute "role" "group" ]
-                                [ Html.input
+                                , Html.input
                                     [ Html.Attributes.value model.boardEncoding
                                     , Html.Events.onInput EncodingChanged
                                     ]
                                     []
-                                , Html.button
-                                    [ Html.Attributes.type_ "submit" ]
-                                    [ Html.text "Load" ]
                                 ]
+                            , Html.button
+                                [ Html.Attributes.type_ "submit" ]
+                                [ Html.text "Load" ]
                             , case model.boardLoadError of
                                 Nothing ->
                                     Html.text ""

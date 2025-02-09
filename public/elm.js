@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739128114773"
+    "1739129413449"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -14738,8 +14738,8 @@ var $author$project$Main$update = F2(
 						return _Debug_todo(
 							'Main',
 							{
-								start: {line: 385, column: 29},
-								end: {line: 385, column: 39}
+								start: {line: 386, column: 29},
+								end: {line: 386, column: 39}
 							})('No player spawn found');
 					} else {
 						var spawnFrame = _v4.a;
@@ -14971,6 +14971,18 @@ var $author$project$Main$ZLowerVisibleChanged = function (a) {
 var $author$project$Main$ZUpperVisibleChanged = function (a) {
 	return {$: 'ZUpperVisibleChanged', a: a};
 };
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
+var $author$project$Html$Attributes$Extra$aria = F2(
+	function (attrib, value) {
+		return A2($elm$html$Html$Attributes$attribute, 'aria-' + attrib, value);
+	});
 var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
 var $phosphor_icons$phosphor_elm$Phosphor$IconVariant = function (a) {
 	return {$: 'IconVariant', a: a};
@@ -15149,21 +15161,27 @@ var $phosphor_icons$phosphor_elm$Phosphor$arrowCounterClockwise = function (weig
 	}();
 	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
-var $elm$virtual_dom$VirtualDom$attribute = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_attribute,
-			_VirtualDom_noOnOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
-	});
-var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
 var $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor = function (a) {
 	return {$: 'BackgroundColor', a: a};
 };
 var $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor = function (color) {
 	return $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor(color);
 };
+var $author$project$Html$Attributes$Extra$bool = function (b) {
+	return b ? 'true' : 'false';
+};
 var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $author$project$Undo$canRedo = function (_v0) {
+	var _v1 = _v0.a;
+	var after = _v1.c;
+	return !_Utils_eq(after, _List_Nil);
+};
+var $author$project$Undo$canUndo = function (_v0) {
+	var _v1 = _v0.a;
+	var before = _v1.a;
+	return !_Utils_eq(before, _List_Nil);
+};
 var $elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -15217,7 +15235,6 @@ var $author$project$Main$decodePointerMove = function (pointer) {
 		A2($elm$json$Json$Decode$field, 'movementY', $elm$json$Json$Decode$float));
 };
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var $elm$html$Html$form = _VirtualDom_node('form');
 var $avh4$elm_color$Color$RgbaSpace = F4(
 	function (a, b, c, d) {
@@ -15395,6 +15412,7 @@ var $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt = function (_arguments) {
 		}
 	}
 };
+var $elm$core$Basics$not = _Basics_not;
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -17184,7 +17202,6 @@ var $myrho$elm_round$Round$funNum = F3(
 			$elm$core$String$toFloat(
 				A2(fun, s, fl)));
 	});
-var $elm$core$Basics$not = _Basics_not;
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -17206,7 +17223,6 @@ var $elm$core$List$any = F2(
 			}
 		}
 	});
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$String$foldr = _String_foldr;
 var $elm$core$String$toList = function (string) {
 	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
@@ -21669,7 +21685,12 @@ var $author$project$Main$view = function (model) {
 													[
 														$elm$html$Html$Attributes$type_('button'),
 														$elm$html$Html$Events$onClick($author$project$Main$Undo),
-														$elm$html$Html$Attributes$title('Undo')
+														$elm$html$Html$Attributes$title('Undo'),
+														A2(
+														$author$project$Html$Attributes$Extra$aria,
+														'disabled',
+														$author$project$Html$Attributes$Extra$bool(
+															!$author$project$Undo$canUndo(model.editorBoard)))
 													]),
 												_List_fromArray(
 													[
@@ -21684,7 +21705,12 @@ var $author$project$Main$view = function (model) {
 													[
 														$elm$html$Html$Attributes$type_('button'),
 														$elm$html$Html$Events$onClick($author$project$Main$Redo),
-														$elm$html$Html$Attributes$title('Redo')
+														$elm$html$Html$Attributes$title('Redo'),
+														A2(
+														$author$project$Html$Attributes$Extra$aria,
+														'disabled',
+														$author$project$Html$Attributes$Extra$bool(
+															!$author$project$Undo$canRedo(model.editorBoard)))
 													]),
 												_List_fromArray(
 													[
@@ -21711,9 +21737,10 @@ var $author$project$Main$view = function (model) {
 														$author$project$Main$SetEditMode($author$project$Main$Add)),
 														$elm$html$Html$Attributes$title('Add block'),
 														A2(
-														$elm$html$Html$Attributes$attribute,
-														'aria-current',
-														_Utils_eq(model.editMode, $author$project$Main$Add) ? 'true' : 'false')
+														$author$project$Html$Attributes$Extra$aria,
+														'current',
+														$author$project$Html$Attributes$Extra$bool(
+															_Utils_eq(model.editMode, $author$project$Main$Add)))
 													]),
 												_List_fromArray(
 													[
@@ -21728,9 +21755,10 @@ var $author$project$Main$view = function (model) {
 														$author$project$Main$SetEditMode($author$project$Main$Remove)),
 														$elm$html$Html$Attributes$title('Remove block'),
 														A2(
-														$elm$html$Html$Attributes$attribute,
-														'aria-current',
-														_Utils_eq(model.editMode, $author$project$Main$Remove) ? 'true' : 'false')
+														$author$project$Html$Attributes$Extra$aria,
+														'current',
+														$author$project$Html$Attributes$Extra$bool(
+															_Utils_eq(model.editMode, $author$project$Main$Remove)))
 													]),
 												_List_fromArray(
 													[
@@ -21750,9 +21778,10 @@ var $author$project$Main$view = function (model) {
 												_List_fromArray(
 													[
 														A2(
-														$elm$html$Html$Attributes$attribute,
-														'aria-current',
-														_Utils_eq(model.selectedBlockType, $author$project$Main$Wall) ? 'true' : 'false'),
+														$author$project$Html$Attributes$Extra$aria,
+														'current',
+														$author$project$Html$Attributes$Extra$bool(
+															_Utils_eq(model.selectedBlockType, $author$project$Main$Wall))),
 														$elm$html$Html$Attributes$type_('button'),
 														$elm$html$Html$Events$onClick(
 														$author$project$Main$BlockTypeSelected($author$project$Main$Wall))
@@ -21766,9 +21795,10 @@ var $author$project$Main$view = function (model) {
 												_List_fromArray(
 													[
 														A2(
-														$elm$html$Html$Attributes$attribute,
-														'aria-current',
-														_Utils_eq(model.selectedBlockType, $author$project$Main$Edge) ? 'true' : 'false'),
+														$author$project$Html$Attributes$Extra$aria,
+														'current',
+														$author$project$Html$Attributes$Extra$bool(
+															_Utils_eq(model.selectedBlockType, $author$project$Main$Edge))),
 														$elm$html$Html$Attributes$type_('button'),
 														$elm$html$Html$Events$onClick(
 														$author$project$Main$BlockTypeSelected($author$project$Main$Edge))
@@ -21782,11 +21812,12 @@ var $author$project$Main$view = function (model) {
 												_List_fromArray(
 													[
 														A2(
-														$elm$html$Html$Attributes$attribute,
-														'aria-current',
-														_Utils_eq(
-															model.selectedBlockType,
-															$author$project$Main$PointPickup(false)) ? 'true' : 'false'),
+														$author$project$Html$Attributes$Extra$aria,
+														'current',
+														$author$project$Html$Attributes$Extra$bool(
+															_Utils_eq(
+																model.selectedBlockType,
+																$author$project$Main$PointPickup(false)))),
 														$elm$html$Html$Attributes$type_('button'),
 														$elm$html$Html$Events$onClick(
 														$author$project$Main$BlockTypeSelected(
@@ -21801,12 +21832,13 @@ var $author$project$Main$view = function (model) {
 												_List_fromArray(
 													[
 														A2(
-														$elm$html$Html$Attributes$attribute,
-														'aria-current',
-														_Utils_eq(
-															model.selectedBlockType,
-															$author$project$Main$PlayerSpawn(
-																{forward: $ianmackenzie$elm_geometry$Direction3d$x, left: $ianmackenzie$elm_geometry$Direction3d$y})) ? 'true' : 'false'),
+														$author$project$Html$Attributes$Extra$aria,
+														'current',
+														$author$project$Html$Attributes$Extra$bool(
+															_Utils_eq(
+																model.selectedBlockType,
+																$author$project$Main$PlayerSpawn(
+																	{forward: $ianmackenzie$elm_geometry$Direction3d$x, left: $ianmackenzie$elm_geometry$Direction3d$y})))),
 														$elm$html$Html$Attributes$type_('button'),
 														$elm$html$Html$Events$onClick(
 														$author$project$Main$BlockTypeSelected(
@@ -21865,22 +21897,16 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2(
-												$elm$html$Html$fieldset,
+												$elm$html$Html$label,
 												_List_Nil,
 												_List_fromArray(
 													[
 														A2(
-														$elm$html$Html$label,
+														$elm$html$Html$span,
 														_List_Nil,
 														_List_fromArray(
 															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('X Visibility')
-																	]))
+																$elm$html$Html$text('X Visibility')
 															])),
 														$author$project$Html$Range$view(
 														{
@@ -21893,22 +21919,16 @@ var $author$project$Main$view = function (model) {
 														})
 													])),
 												A2(
-												$elm$html$Html$fieldset,
+												$elm$html$Html$label,
 												_List_Nil,
 												_List_fromArray(
 													[
 														A2(
-														$elm$html$Html$label,
+														$elm$html$Html$span,
 														_List_Nil,
 														_List_fromArray(
 															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Y Visibility')
-																	]))
+																$elm$html$Html$text('Y Visibility')
 															])),
 														$author$project$Html$Range$view(
 														{
@@ -21921,22 +21941,16 @@ var $author$project$Main$view = function (model) {
 														})
 													])),
 												A2(
-												$elm$html$Html$fieldset,
+												$elm$html$Html$label,
 												_List_Nil,
 												_List_fromArray(
 													[
 														A2(
-														$elm$html$Html$label,
+														$elm$html$Html$span,
 														_List_Nil,
 														_List_fromArray(
 															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Z Visibility')
-																	]))
+																$elm$html$Html$text('Z Visibility')
 															])),
 														$author$project$Html$Range$view(
 														{
@@ -21976,16 +21990,7 @@ var $author$project$Main$view = function (model) {
 														_List_fromArray(
 															[
 																$elm$html$Html$text('Encoded Level:')
-															]))
-													])),
-												A2(
-												$elm$html$Html$fieldset,
-												_List_fromArray(
-													[
-														A2($elm$html$Html$Attributes$attribute, 'role', 'group')
-													]),
-												_List_fromArray(
-													[
+															])),
 														A2(
 														$elm$html$Html$input,
 														_List_fromArray(
@@ -21993,17 +21998,17 @@ var $author$project$Main$view = function (model) {
 																$elm$html$Html$Attributes$value(model.boardEncoding),
 																$elm$html$Html$Events$onInput($author$project$Main$EncodingChanged)
 															]),
-														_List_Nil),
-														A2(
-														$elm$html$Html$button,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$type_('submit')
-															]),
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Load')
-															]))
+														_List_Nil)
+													])),
+												A2(
+												$elm$html$Html$button,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$type_('submit')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Load')
 													])),
 												function () {
 												var _v9 = model.boardLoadError;

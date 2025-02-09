@@ -13,6 +13,10 @@ button[aria-current="true"] {
     color: white;
 }
 
+button[aria-disabled="true"] {
+    color: gray;
+}
+
 /*  */
 
 .input-range-container {

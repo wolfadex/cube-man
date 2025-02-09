@@ -1,5 +1,7 @@
 module Undo exposing
     ( Stack
+    , canRedo
+    , canUndo
     , init
     , insert
     , redo
@@ -45,3 +47,13 @@ redo ((Stack ( before, v, after )) as stack) =
 
         a :: rest ->
             Stack ( v :: before, a, rest )
+
+
+canUndo : Stack a -> Bool
+canUndo (Stack ( before, _, _ )) =
+    before /= []
+
+
+canRedo : Stack a -> Bool
+canRedo (Stack ( _, _, after )) =
+    after /= []
