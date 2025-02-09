@@ -19,6 +19,7 @@ import Geometry.Serialize
 import Html
 import Html.Attributes
 import Html.Events
+import Html.Range
 import Json.Decode
 import Json.Encode
 import Length
@@ -1236,7 +1237,7 @@ view model =
                             [ Html.Attributes.type_ "button"
                             , Html.Events.onClick ChangeMode
                             ]
-                            [ Html.text "Play Level"
+                            [ Html.text "Play\u{00A0}Level"
                             ]
                         , Html.div
                             [ Html.Attributes.attribute "role" "group" ]
@@ -1323,7 +1324,7 @@ view model =
                                 , Html.Attributes.type_ "button"
                                 , Html.Events.onClick (BlockTypeSelected (PointPickup False))
                                 ]
-                                [ Html.text "Point Pickup"
+                                [ Html.text "Point\u{00A0}Pickup"
                                 ]
                             , Html.button
                                 [ Html.Attributes.attribute "aria-current" <|
@@ -1335,7 +1336,7 @@ view model =
                                 , Html.Attributes.type_ "button"
                                 , Html.Events.onClick (BlockTypeSelected (PlayerSpawn { forward = Direction3d.x, left = Direction3d.y }))
                                 ]
-                                [ Html.text "Player Spawn"
+                                [ Html.text "Player\u{00A0}Spawn"
                                 ]
                             ]
                         ]
@@ -1366,78 +1367,36 @@ view model =
                             [ Html.fieldset
                                 []
                                 [ Html.label [] [ Html.span [] [ Html.text "X Visibility" ] ]
-                                , Html.fieldset []
-                                    [ Html.label [] [ Html.span [] [ Html.text "Lower bound" ] ]
-                                    , Html.input
-                                        [ Html.Attributes.type_ "range"
-                                        , Html.Attributes.min "0"
-                                        , Html.Attributes.max (String.fromInt (model.maxX - 1))
-                                        , Html.Attributes.step "1"
-                                        , Html.Attributes.value (String.fromInt model.xLowerVisible)
-                                        , Html.Events.onInput (String.toInt >> Maybe.withDefault model.xLowerVisible >> XLowerVisibleChanged)
-                                        ]
-                                        []
-                                    , Html.label [] [ Html.span [] [ Html.text "Upper bound" ] ]
-                                    , Html.input
-                                        [ Html.Attributes.type_ "range"
-                                        , Html.Attributes.min "0"
-                                        , Html.Attributes.max (String.fromInt (model.maxX - 1))
-                                        , Html.Attributes.step "1"
-                                        , Html.Attributes.value (String.fromInt model.xUpperVisible)
-                                        , Html.Events.onInput (String.toInt >> Maybe.withDefault model.xLowerVisible >> XUpperVisibleChanged)
-                                        ]
-                                        []
-                                    ]
+                                , Html.Range.view
+                                    { max = toFloat (model.maxX - 1)
+                                    , min = 1
+                                    , lowValue = toFloat model.xLowerVisible
+                                    , highValue = toFloat model.xUpperVisible
+                                    , onLowChange = round >> XLowerVisibleChanged
+                                    , onHighChange = round >> XUpperVisibleChanged
+                                    }
                                 ]
                             , Html.fieldset []
                                 [ Html.label [] [ Html.span [] [ Html.text "Y Visibility" ] ]
-                                , Html.fieldset []
-                                    [ Html.label [] [ Html.span [] [ Html.text "Lower bound" ] ]
-                                    , Html.input
-                                        [ Html.Attributes.type_ "range"
-                                        , Html.Attributes.min "0"
-                                        , Html.Attributes.max (String.fromInt (model.maxY - 1))
-                                        , Html.Attributes.step "1"
-                                        , Html.Attributes.value (String.fromInt model.yLowerVisible)
-                                        , Html.Events.onInput (String.toInt >> Maybe.withDefault model.yLowerVisible >> YLowerVisibleChanged)
-                                        ]
-                                        []
-                                    , Html.label [] [ Html.span [] [ Html.text "Upper bound" ] ]
-                                    , Html.input
-                                        [ Html.Attributes.type_ "range"
-                                        , Html.Attributes.min "0"
-                                        , Html.Attributes.max (String.fromInt (model.maxY - 1))
-                                        , Html.Attributes.step "1"
-                                        , Html.Attributes.value (String.fromInt model.yUpperVisible)
-                                        , Html.Events.onInput (String.toInt >> Maybe.withDefault model.yLowerVisible >> YUpperVisibleChanged)
-                                        ]
-                                        []
-                                    ]
+                                , Html.Range.view
+                                    { max = toFloat (model.maxY - 1)
+                                    , min = 1
+                                    , lowValue = toFloat model.yLowerVisible
+                                    , highValue = toFloat model.yUpperVisible
+                                    , onLowChange = round >> YLowerVisibleChanged
+                                    , onHighChange = round >> YUpperVisibleChanged
+                                    }
                                 ]
                             , Html.fieldset []
                                 [ Html.label [] [ Html.span [] [ Html.text "Z Visibility" ] ]
-                                , Html.fieldset []
-                                    [ Html.label [] [ Html.span [] [ Html.text "Lower bound" ] ]
-                                    , Html.input
-                                        [ Html.Attributes.type_ "range"
-                                        , Html.Attributes.min "0"
-                                        , Html.Attributes.max (String.fromInt (model.maxZ - 1))
-                                        , Html.Attributes.step "1"
-                                        , Html.Attributes.value (String.fromInt model.zLowerVisible)
-                                        , Html.Events.onInput (String.toInt >> Maybe.withDefault model.zLowerVisible >> ZLowerVisibleChanged)
-                                        ]
-                                        []
-                                    , Html.label [] [ Html.span [] [ Html.text "Upper bound" ] ]
-                                    , Html.input
-                                        [ Html.Attributes.type_ "range"
-                                        , Html.Attributes.min "0"
-                                        , Html.Attributes.max (String.fromInt (model.maxZ - 1))
-                                        , Html.Attributes.step "1"
-                                        , Html.Attributes.value (String.fromInt model.zUpperVisible)
-                                        , Html.Events.onInput (String.toInt >> Maybe.withDefault model.zLowerVisible >> ZUpperVisibleChanged)
-                                        ]
-                                        []
-                                    ]
+                                , Html.Range.view
+                                    { max = toFloat (model.maxZ - 1)
+                                    , min = 1
+                                    , lowValue = toFloat model.zLowerVisible
+                                    , highValue = toFloat model.zUpperVisible
+                                    , onLowChange = round >> ZLowerVisibleChanged
+                                    , onHighChange = round >> ZUpperVisibleChanged
+                                    }
                                 ]
                             ]
                         , Html.hr [] []
