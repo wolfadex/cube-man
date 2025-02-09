@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739120863181"
+    "1739121284402"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -13024,12 +13024,10 @@ var $author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d = F2(
 		var maxZ = _v3.a;
 		var t6 = (maxZ - ray2.z) / delta2.z;
 		var tzFar = A2($elm$core$Basics$max, t5, t6);
-		var tzNear = A2($elm$core$Basics$min, t5, t6);
 		var _v4 = extrema.maxY;
 		var maxY = _v4.a;
 		var t4 = (maxY - ray2.y) / delta2.y;
 		var tyFar = A2($elm$core$Basics$max, t3, t4);
-		var tyNear = A2($elm$core$Basics$min, t3, t4);
 		var _v5 = extrema.maxX;
 		var maxX = _v5.a;
 		var t2 = (maxX - ray2.x) / delta2.x;
@@ -13038,27 +13036,37 @@ var $author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d = F2(
 			$elm$core$Basics$min,
 			A2($elm$core$Basics$min, txFar, tyFar),
 			tzFar);
-		var txNear = A2($elm$core$Basics$min, t1, t2);
-		var normal = (_Utils_cmp(txNear, tyNear) > 0) ? ((_Utils_cmp(tzNear, txNear) > 0) ? ((_Utils_cmp(ray2.z, (maxZ + minZ) / 2) > 0) ? $ianmackenzie$elm_geometry$Direction3d$positiveZ : $ianmackenzie$elm_geometry$Direction3d$negativeZ) : ((_Utils_cmp(ray2.x, (maxX + minX) / 2) > 0) ? $ianmackenzie$elm_geometry$Direction3d$positiveX : $ianmackenzie$elm_geometry$Direction3d$negativeX)) : ((_Utils_cmp(tzNear, tyNear) > 0) ? ((_Utils_cmp(ray2.z, (maxZ + minZ) / 2) > 0) ? $ianmackenzie$elm_geometry$Direction3d$positiveZ : $ianmackenzie$elm_geometry$Direction3d$negativeZ) : ((_Utils_cmp(ray2.y, (maxY + minY) / 2) > 0) ? $ianmackenzie$elm_geometry$Direction3d$positiveY : $ianmackenzie$elm_geometry$Direction3d$negativeY));
-		var tmin = A2(
-			$elm$core$Basics$max,
-			A2($elm$core$Basics$max, txNear, tyNear),
-			tzNear);
-		return (tmax < 0) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(tmin, tmax) > 0) ? $elm$core$Maybe$Nothing : ((tmin < 0) ? ((tmax < 1) ? $elm$core$Maybe$Just(
-			A2(
-				$ianmackenzie$elm_geometry$Axis3d$through,
-				A2(
-					$ianmackenzie$elm_geometry$Point3d$translateBy,
-					A2($ianmackenzie$elm_geometry$Vector3d$scaleBy, tmax, delta),
-					$ianmackenzie$elm_geometry$Axis3d$originPoint(ray)),
-				normal)) : $elm$core$Maybe$Nothing) : ((tmin < 1) ? $elm$core$Maybe$Just(
-			A2(
-				$ianmackenzie$elm_geometry$Axis3d$through,
-				A2(
-					$ianmackenzie$elm_geometry$Point3d$translateBy,
-					A2($ianmackenzie$elm_geometry$Vector3d$scaleBy, tmin, delta),
-					$ianmackenzie$elm_geometry$Axis3d$originPoint(ray)),
-				normal)) : $elm$core$Maybe$Nothing)));
+		if (tmax < 0) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var tzNear = A2($elm$core$Basics$min, t5, t6);
+			var tyNear = A2($elm$core$Basics$min, t3, t4);
+			var txNear = A2($elm$core$Basics$min, t1, t2);
+			var tmin = A2(
+				$elm$core$Basics$max,
+				A2($elm$core$Basics$max, txNear, tyNear),
+				tzNear);
+			if (_Utils_cmp(tmin, tmax) > 0) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var normal = (_Utils_cmp(txNear, tyNear) > 0) ? ((_Utils_cmp(tzNear, txNear) > 0) ? ((_Utils_cmp(ray2.z, (maxZ + minZ) / 2) > 0) ? $ianmackenzie$elm_geometry$Direction3d$positiveZ : $ianmackenzie$elm_geometry$Direction3d$negativeZ) : ((_Utils_cmp(ray2.x, (maxX + minX) / 2) > 0) ? $ianmackenzie$elm_geometry$Direction3d$positiveX : $ianmackenzie$elm_geometry$Direction3d$negativeX)) : ((_Utils_cmp(tzNear, tyNear) > 0) ? ((_Utils_cmp(ray2.z, (maxZ + minZ) / 2) > 0) ? $ianmackenzie$elm_geometry$Direction3d$positiveZ : $ianmackenzie$elm_geometry$Direction3d$negativeZ) : ((_Utils_cmp(ray2.y, (maxY + minY) / 2) > 0) ? $ianmackenzie$elm_geometry$Direction3d$positiveY : $ianmackenzie$elm_geometry$Direction3d$negativeY));
+				return (tmin < 0) ? ((tmax < 1) ? $elm$core$Maybe$Just(
+					A2(
+						$ianmackenzie$elm_geometry$Axis3d$through,
+						A2(
+							$ianmackenzie$elm_geometry$Point3d$translateBy,
+							A2($ianmackenzie$elm_geometry$Vector3d$scaleBy, tmax, delta),
+							$ianmackenzie$elm_geometry$Axis3d$originPoint(ray)),
+						normal)) : $elm$core$Maybe$Nothing) : ((tmin < 1) ? $elm$core$Maybe$Just(
+					A2(
+						$ianmackenzie$elm_geometry$Axis3d$through,
+						A2(
+							$ianmackenzie$elm_geometry$Point3d$translateBy,
+							A2($ianmackenzie$elm_geometry$Vector3d$scaleBy, tmin, delta),
+							$ianmackenzie$elm_geometry$Axis3d$originPoint(ray)),
+						normal)) : $elm$core$Maybe$Nothing);
+			}
+		}
 	});
 var $ianmackenzie$elm_units$Quantity$lessThan = F2(
 	function (_v0, _v1) {
