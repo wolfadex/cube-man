@@ -404,7 +404,7 @@ update msg model =
                                                     indexToPoint model index
                                             in
                                             if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
-                                                Nothing
+                                                maybeInter
 
                                             else
                                                 let
@@ -491,7 +491,7 @@ update msg model =
                         , cameraElevation =
                             model.cameraElevation
                                 |> Quantity.plus
-                                    (Point2d.yCoordinate (Debug.log "move" movement)
+                                    (Point2d.yCoordinate movement
                                         |> Pixels.toFloat
                                         |> Angle.degrees
                                     )
@@ -1526,7 +1526,7 @@ viewBlock model index block =
                     )
 
         PointPickup collected ->
-            if collected then
+            if collected && model.mode == Game then
                 Scene3d.nothing
 
             else

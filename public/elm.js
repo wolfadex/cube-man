@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739116470338"
+    "1739116757540"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -18005,7 +18005,6 @@ var $ianmackenzie$elm_units$Quantity$lessThan = F2(
 		var x = _v1.a;
 		return _Utils_cmp(x, y) < 0;
 	});
-var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Result$mapError = F2(
 	function (f, result) {
 		if (result.$ === 'Ok') {
@@ -18942,7 +18941,7 @@ var $author$project$Main$update = F2(
 												var y = _v12.b;
 												var z = _v12.c;
 												if ((_Utils_cmp(x, model.xLowerVisible) < 0) || ((_Utils_cmp(x, model.xUpperVisible) > 0) || ((_Utils_cmp(y, model.yLowerVisible) < 0) || ((_Utils_cmp(y, model.yUpperVisible) > 0) || ((_Utils_cmp(z, model.zLowerVisible) < 0) || (_Utils_cmp(z, model.zUpperVisible) > 0)))))) {
-													return $elm$core$Maybe$Nothing;
+													return maybeInter;
 												} else {
 													var boundingBox = A2(
 														$ianmackenzie$elm_geometry$BoundingBox3d$withDimensions,
@@ -19035,8 +19034,7 @@ var $author$project$Main$update = F2(
 										$ianmackenzie$elm_units$Quantity$plus,
 										$ianmackenzie$elm_units$Angle$degrees(
 											$ianmackenzie$elm_units$Pixels$toFloat(
-												$ianmackenzie$elm_geometry$Point2d$yCoordinate(
-													A2($elm$core$Debug$log, 'move', movement)))),
+												$ianmackenzie$elm_geometry$Point2d$yCoordinate(movement))),
 										model.cameraElevation),
 									cameraRotation: A2(
 										$ianmackenzie$elm_units$Quantity$minus,
@@ -23860,7 +23858,7 @@ var $author$project$Main$viewBlock = F3(
 							$ianmackenzie$elm_units$Length$meters(1))));
 			case 'PointPickup':
 				var collected = block.a;
-				if (collected) {
+				if (collected && _Utils_eq(model.mode, $author$project$Main$Game)) {
 					return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 				} else {
 					var _v2 = A2($author$project$Main$indexToPoint, model, index);
