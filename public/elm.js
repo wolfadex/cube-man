@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739129413449"
+    "1739129544560"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -21913,7 +21913,7 @@ var $author$project$Main$view = function (model) {
 															highValue: model.xUpperVisible,
 															lowValue: model.xLowerVisible,
 															max: model.maxX - 1,
-															min: 1,
+															min: 0,
 															onHighChange: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$XUpperVisibleChanged),
 															onLowChange: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$XLowerVisibleChanged)
 														})
@@ -21935,7 +21935,7 @@ var $author$project$Main$view = function (model) {
 															highValue: model.yUpperVisible,
 															lowValue: model.yLowerVisible,
 															max: model.maxY - 1,
-															min: 1,
+															min: 0,
 															onHighChange: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$YUpperVisibleChanged),
 															onLowChange: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$YLowerVisibleChanged)
 														})
@@ -21957,7 +21957,7 @@ var $author$project$Main$view = function (model) {
 															highValue: model.zUpperVisible,
 															lowValue: model.zLowerVisible,
 															max: model.maxZ - 1,
-															min: 1,
+															min: 0,
 															onHighChange: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$ZUpperVisibleChanged),
 															onLowChange: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$ZLowerVisibleChanged)
 														})

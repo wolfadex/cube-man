@@ -1349,7 +1349,7 @@ view model =
                                 [ Html.span [] [ Html.text "X Visibility" ]
                                 , Html.Range.view
                                     { max = toFloat (model.maxX - 1)
-                                    , min = 1
+                                    , min = 0
                                     , lowValue = toFloat model.xLowerVisible
                                     , highValue = toFloat model.xUpperVisible
                                     , onLowChange = round >> XLowerVisibleChanged
@@ -1360,7 +1360,7 @@ view model =
                                 [ Html.span [] [ Html.text "Y Visibility" ]
                                 , Html.Range.view
                                     { max = toFloat (model.maxY - 1)
-                                    , min = 1
+                                    , min = 0
                                     , lowValue = toFloat model.yLowerVisible
                                     , highValue = toFloat model.yUpperVisible
                                     , onLowChange = round >> YLowerVisibleChanged
@@ -1371,7 +1371,7 @@ view model =
                                 [ Html.span [] [ Html.text "Z Visibility" ]
                                 , Html.Range.view
                                     { max = toFloat (model.maxZ - 1)
-                                    , min = 1
+                                    , min = 0
                                     , lowValue = toFloat model.zLowerVisible
                                     , highValue = toFloat model.zUpperVisible
                                     , onLowChange = round >> ZLowerVisibleChanged

@@ -17,6 +17,10 @@ button[aria-disabled="true"] {
     color: gray;
 }
 
+hr {
+    margin: 1rem 0;
+}
+
 /*  */
 
 .input-range-container {
