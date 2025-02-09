@@ -395,7 +395,10 @@ update msg model =
                                 (\block ( index, maybeInter ) ->
                                     ( index + 1
                                     , case block of
-                                        Wall ->
+                                        Empty ->
+                                            maybeInter
+
+                                        _ ->
                                             let
                                                 ( x, y, z ) =
                                                     indexToPoint model index
@@ -429,9 +432,6 @@ update msg model =
 
                                                                 else
                                                                     maybeInter
-
-                                        _ ->
-                                            maybeInter
                                     )
                                 )
                                 ( 0, Nothing )
@@ -1247,13 +1247,13 @@ view model =
                                 ]
                             , Html.button
                                 [ Html.Attributes.attribute "aria-current" <|
-                                    if model.selectedBlockType == PointPickup True then
+                                    if model.selectedBlockType == PointPickup False then
                                         "true"
 
                                     else
                                         "false"
                                 , Html.Attributes.type_ "button"
-                                , Html.Events.onClick (BlockTypeSelected (PointPickup True))
+                                , Html.Events.onClick (BlockTypeSelected (PointPickup False))
                                 ]
                                 [ Html.text "Point Pickup"
                                 ]
