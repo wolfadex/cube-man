@@ -24,14 +24,18 @@ import Json.Encode
 import Length
 import LineSegment3d
 import Luminance
+import Phosphor
 import Pixels exposing (Pixels)
 import Point2d exposing (Point2d)
 import Point3d exposing (Point3d)
 import Quantity
 import Rectangle2d
+import Result.Extra
 import Scene3d
 import Scene3d.Light
 import Scene3d.Material
+import Serialize
+import Set exposing (Set)
 import SketchPlane3d
 import Sphere3d
 import Vector3d
@@ -62,12 +66,14 @@ type alias Model =
     , zUpperVisible : Int
     , selectedBlockType : Block
     , editorCursor : Point
+    , editorKeysDown : Set String
     , cameraRotation : Angle
     , cameraElevation : Angle
     , mouseDragging : EditorMouseInteraction
     , cursorBounce : Animation Float
     , boardEncoding : String
     , mode : Mode
+    , editMode : EditMode
     , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : {} }
     , playerFacing : Facing
     , playerWantFacing : Facing
@@ -84,6 +90,11 @@ type EditorMouseInteraction
 type Mode
     = Editor
     | Game
+
+
+type EditMode
+    = Add
+    | Remove
 
 
 type Facing
@@ -109,54 +120,36 @@ type Block
     = Empty
     | Wall
     | Edge
-    | PointPickup
+    | PointPickup Bool
 
 
-encodeBoard : Board -> String
-encodeBoard board =
-    Array.foldr
-        (\block enc ->
-            (case block of
+boardCodec : Serialize.Codec e Board
+boardCodec =
+    Serialize.array blockCodec
+
+
+blockCodec : Serialize.Codec e Block
+blockCodec =
+    Serialize.customType
+        (\emptyEncoder wallEncoder edgeEncoder pointPickupEncoder value ->
+            case value of
                 Empty ->
-                    "0"
+                    emptyEncoder
 
                 Wall ->
-                    "1"
+                    wallEncoder
 
                 Edge ->
-                    "2"
+                    edgeEncoder
 
-                PointPickup ->
-                    "3"
-            )
-                ++ enc
+                PointPickup collected ->
+                    pointPickupEncoder collected
         )
-        ""
-        board
-
-
-decodeBoard : String -> Board
-decodeBoard enc =
-    String.foldl
-        (\char board ->
-            case char of
-                '0' ->
-                    Array.push Empty board
-
-                '1' ->
-                    Array.push Wall board
-
-                '2' ->
-                    Array.push Edge board
-
-                '3' ->
-                    Array.push PointPickup board
-
-                _ ->
-                    board
-        )
-        Array.empty
-        enc
+        |> Serialize.variant0 Empty
+        |> Serialize.variant0 Wall
+        |> Serialize.variant0 Edge
+        |> Serialize.variant1 PointPickup Serialize.bool
+        |> Serialize.finishCustomType
 
 
 pointToIndex : { m | maxY : Int, maxZ : Int } -> Point -> Int
@@ -206,8 +199,7 @@ init () =
             8
 
         board =
-            -- Array.repeat (maxX * maxY * maxZ) True
-            decodeBoard borgCube
+            Array.repeat (maxX * maxY * maxZ) Wall
     in
     ( { maxX = maxX
       , maxY = maxY
@@ -218,10 +210,11 @@ init () =
       , yUpperVisible = maxY - 1
       , zLowerVisible = 0
       , zUpperVisible = maxZ - 1
-      , selectedBlockType = Empty
+      , selectedBlockType = Wall
       , board = board
       , screenSize = { width = 800, height = 600 }
       , editorCursor = ( 0, 0, 0 )
+      , editorKeysDown = Set.empty
       , cameraRotation = Angle.degrees 225
       , cameraElevation = Angle.degrees 15
       , mouseDragging = NoInteraction
@@ -239,7 +232,10 @@ init () =
                 ]
                 |> Animation.withLoop
       , mode = Editor
-      , boardEncoding = encodeBoard board
+      , editMode = Remove
+      , boardEncoding =
+            Serialize.encodeToJson boardCodec board
+                |> Json.Encode.encode 0
       , playerFrame = Frame3d.atPoint (Point3d.meters 1 4 7)
       , playerFacing = Forward
       , playerWantFacing = Forward
@@ -249,25 +245,31 @@ init () =
     )
 
 
-
--- Borg Cube board
-
-
-borgCube =
-    "11121111111311111113111111131111233333321113111111131111111211111113111111111111111111111111111131111113111111111111111111131111111311111111111111111111111111113111111311111111111111111113111123333332311111133111111331111113311111133111111331111113233333321113111111111111111111111111111131111113111111111111111111131111111311111111111111111111111111113111111311111111111111111113111111131111111111111111111111111111311111131111111111111111111311111112111111131111111311111113111123333332111311111113111111121111"
-
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Browser.Events.onAnimationFrameDelta Tick
         , Browser.Events.onKeyPress decodeKeyPressed
+        , Browser.Events.onKeyDown decodeKeyDown
+        , Browser.Events.onKeyUp decodeKeyUp
         ]
 
 
 decodeKeyPressed : Json.Decode.Decoder Msg
 decodeKeyPressed =
     Json.Decode.map KeyPressed
+        (Json.Decode.field "key" Json.Decode.string)
+
+
+decodeKeyDown : Json.Decode.Decoder Msg
+decodeKeyDown =
+    Json.Decode.map KeyDown
+        (Json.Decode.field "key" Json.Decode.string)
+
+
+decodeKeyUp : Json.Decode.Decoder Msg
+decodeKeyUp =
+    Json.Decode.map KeyUp
         (Json.Decode.field "key" Json.Decode.string)
 
 
@@ -278,12 +280,15 @@ type ScreenCoordinates
 type Msg
     = Tick Float
     | KeyPressed String
+    | KeyDown String
+    | KeyUp String
     | MouseDown Json.Decode.Value
     | MouseUp (Point2d Pixels ScreenCoordinates)
     | MouseMove Json.Decode.Value (Point2d Pixels ScreenCoordinates) (Point2d Pixels ScreenCoordinates)
     | EncodingChanged String
     | LoadBoard
     | ChangeMode
+    | SetEditMode EditMode
     | XLowerVisibleChanged Int
     | XUpperVisibleChanged Int
     | YLowerVisibleChanged Int
@@ -307,7 +312,19 @@ update msg model =
             ( { model | boardEncoding = boardEncoding }, Cmd.none )
 
         LoadBoard ->
-            ( { model | board = decodeBoard model.boardEncoding }, Cmd.none )
+            ( { model
+                | board =
+                    model.boardEncoding
+                        |> Json.Decode.decodeString Json.Decode.value
+                        -- TODO: Actually handle these errors
+                        |> Result.mapError (\_ -> Json.Encode.null)
+                        |> Result.Extra.merge
+                        |> Serialize.decodeFromJson boardCodec
+                        |> Result.mapError (\_ -> model.board)
+                        |> Result.Extra.merge
+              }
+            , Cmd.none
+            )
 
         ChangeMode ->
             ( { model
@@ -322,8 +339,17 @@ update msg model =
             , Cmd.none
             )
 
+        SetEditMode editMode ->
+            ( { model | editMode = editMode }, Cmd.none )
+
         MouseDown pointerId ->
             ( { model | mouseDragging = InteractionStart pointerId }, Cmd.none )
+
+        KeyDown key ->
+            ( { model | editorKeysDown = Set.insert key model.editorKeysDown }, Cmd.none )
+
+        KeyUp key ->
+            ( { model | editorKeysDown = Set.remove key model.editorKeysDown }, Cmd.none )
 
         MouseUp point ->
             case model.mouseDragging of
@@ -335,7 +361,13 @@ update msg model =
                         | mouseDragging = NoInteraction
                         , board =
                             Array.set (pointToIndex model model.editorCursor)
-                                model.selectedBlockType
+                                (case model.editMode of
+                                    Remove ->
+                                        Empty
+
+                                    Add ->
+                                        model.selectedBlockType
+                                )
                                 model.board
                       }
                     , Cmd.none
@@ -383,7 +415,20 @@ update msg model =
                                                         maybeInter
 
                                                     Just intersection ->
-                                                        Just intersection
+                                                        let
+                                                            newDist =
+                                                                Point3d.distanceFrom (Axis3d.originPoint ray) (Axis3d.originPoint intersection)
+                                                        in
+                                                        case maybeInter of
+                                                            Nothing ->
+                                                                Just ( intersection, newDist )
+
+                                                            Just ( prevInter, prevDist ) ->
+                                                                if newDist |> Quantity.lessThan prevDist then
+                                                                    Just ( intersection, newDist )
+
+                                                                else
+                                                                    maybeInter
 
                                         _ ->
                                             maybeInter
@@ -397,23 +442,15 @@ update msg model =
                         Nothing ->
                             ( model, Cmd.none )
 
-                        Just intersection ->
+                        Just ( intersection, _ ) ->
                             ( { model
                                 | editorCursor =
-                                    case model.selectedBlockType of
-                                        Empty ->
+                                    case model.editMode of
+                                        Remove ->
                                             Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
                                                 |> point3dToPoint
 
-                                        PointPickup ->
-                                            Point3d.along intersection (Length.meters 0.5)
-                                                |> point3dToPoint
-
-                                        Wall ->
-                                            Point3d.along intersection (Length.meters 0.5)
-                                                |> point3dToPoint
-
-                                        Edge ->
+                                        Add ->
                                             Point3d.along intersection (Length.meters 0.5)
                                                 |> point3dToPoint
                               }
@@ -433,7 +470,7 @@ update msg model =
                         , cameraElevation =
                             model.cameraElevation
                                 |> Quantity.minus
-                                    (Point2d.yCoordinate (Debug.log "move" movement)
+                                    (Point2d.yCoordinate movement
                                         |> Pixels.toFloat
                                         |> Angle.degrees
                                     )
@@ -669,7 +706,7 @@ movePlayer deltaMs model =
                         , playerMovingAcrossEdge = Just distMoved
                     }
 
-                Just PointPickup ->
+                Just (PointPickup collected) ->
                     { model
                         | playerFrame =
                             model.playerFrame
@@ -693,6 +730,7 @@ movePlayer deltaMs model =
                                         |> Quantity.per (Duration.seconds 1)
                                         |> Quantity.for (Duration.milliseconds deltaMs)
                                     )
+                        , board = model.board
                     }
 
                 Just Empty ->
@@ -851,7 +889,7 @@ setPlayerFacing model =
                                 Wall ->
                                     model
 
-                                PointPickup ->
+                                PointPickup _ ->
                                     { model
                                         | playerFrame =
                                             Frame3d.unsafe
@@ -1027,6 +1065,13 @@ view model =
 
                     Game ->
                         "auto 8rem"
+            , Html.Attributes.style "grid-template-rows" <|
+                case model.mode of
+                    Editor ->
+                        "auto auto"
+
+                    Game ->
+                        "auto"
             ]
             [ Html.div
                 ([ Html.Attributes.style "grid-column" <|
@@ -1036,7 +1081,13 @@ view model =
 
                         Game ->
                             "1 / 2"
-                 , Html.Attributes.style "grid-row" "1"
+                 , Html.Attributes.style "grid-row" <|
+                    case model.mode of
+                        Editor ->
+                            "2"
+
+                        Game ->
+                            "1"
                  ]
                     ++ (case model.mouseDragging of
                             NoInteraction ->
@@ -1119,25 +1170,16 @@ view model =
                 ]
             , case model.mode of
                 Game ->
-                    Html.div
-                        [ Html.Attributes.style "grid-column" "2"
-                        , Html.Attributes.style "grid-row" "1"
-                        , Html.Attributes.style "padding" "0.5rem"
-                        ]
-                        [ Html.button
-                            [ Html.Attributes.type_ "button"
-                            , Html.Events.onClick ChangeMode
-                            ]
-                            [ Html.text "Edit Level"
-                            ]
-                        ]
+                    Html.text ""
 
                 Editor ->
                     Html.div
-                        [ Html.Attributes.style "grid-column" "2"
+                        [ Html.Attributes.style "grid-column" "1 /3"
+                        , Html.Attributes.style "grid-row" "1"
+                        , Html.Attributes.style "display" "flex"
+                        , Html.Attributes.style "align-items" "center"
                         , Html.Attributes.style "padding" "0.5rem"
-                        , Html.Attributes.style "height" "100vh"
-                        , Html.Attributes.style "overflow" "auto"
+                        , Html.Attributes.style "gap" "1rem"
                         ]
                         [ Html.button
                             [ Html.Attributes.type_ "button"
@@ -1145,7 +1187,37 @@ view model =
                             ]
                             [ Html.text "Play Level"
                             ]
-                        , Html.hr [] []
+                        , Html.div
+                            [ Html.Attributes.attribute "role" "group" ]
+                            [ Html.button
+                                [ Html.Attributes.type_ "button"
+                                , Html.Events.onClick (SetEditMode Add)
+                                , Html.Attributes.title "Add block"
+                                , Html.Attributes.attribute "aria-current" <|
+                                    if model.editMode == Add then
+                                        "true"
+
+                                    else
+                                        "false"
+                                ]
+                                [ Phosphor.pencil Phosphor.Regular
+                                    |> Phosphor.toHtml []
+                                ]
+                            , Html.button
+                                [ Html.Attributes.type_ "button"
+                                , Html.Events.onClick (SetEditMode Remove)
+                                , Html.Attributes.title "Remove block"
+                                , Html.Attributes.attribute "aria-current" <|
+                                    if model.editMode == Remove then
+                                        "true"
+
+                                    else
+                                        "false"
+                                ]
+                                [ Phosphor.eraser Phosphor.Regular
+                                    |> Phosphor.toHtml []
+                                ]
+                            ]
                         , Html.div
                             [ Html.Attributes.attribute "role" "group"
                             ]
@@ -1175,30 +1247,42 @@ view model =
                                 ]
                             , Html.button
                                 [ Html.Attributes.attribute "aria-current" <|
-                                    if model.selectedBlockType == PointPickup then
+                                    if model.selectedBlockType == PointPickup True then
                                         "true"
 
                                     else
                                         "false"
                                 , Html.Attributes.type_ "button"
-                                , Html.Events.onClick (BlockTypeSelected PointPickup)
+                                , Html.Events.onClick (BlockTypeSelected (PointPickup True))
                                 ]
                                 [ Html.text "Point Pickup"
                                 ]
-                            , Html.button
-                                [ Html.Attributes.attribute "aria-current" <|
-                                    if model.selectedBlockType == Empty then
-                                        "true"
-
-                                    else
-                                        "false"
-                                , Html.Attributes.type_ "button"
-                                , Html.Events.onClick (BlockTypeSelected Empty)
-                                ]
-                                [ Html.text "Empty"
-                                ]
                             ]
-                        , Html.form []
+                        ]
+            , case model.mode of
+                Game ->
+                    Html.div
+                        [ Html.Attributes.style "grid-column" "2"
+                        , Html.Attributes.style "grid-row" "1"
+                        , Html.Attributes.style "padding" "0.5rem"
+                        ]
+                        [ Html.button
+                            [ Html.Attributes.type_ "button"
+                            , Html.Events.onClick ChangeMode
+                            ]
+                            [ Html.text "Edit Level"
+                            ]
+                        ]
+
+                Editor ->
+                    Html.div
+                        [ Html.Attributes.style "grid-column" "2"
+                        , Html.Attributes.style "grid-row" "2"
+                        , Html.Attributes.style "padding" "0.5rem"
+                        , Html.Attributes.style "height" "80vh"
+                        , Html.Attributes.style "overflow" "auto"
+                        ]
+                        [ Html.form []
                             [ Html.fieldset
                                 []
                                 [ Html.label [] [ Html.span [] [ Html.text "X Visibility" ] ]
@@ -1441,30 +1525,34 @@ viewBlock model index block =
                         ( Length.meters 1, Length.meters 1, Length.meters 1 )
                     )
 
-        PointPickup ->
-            let
-                ( x, y, z ) =
-                    indexToPoint
-                        model
-                        index
-            in
-            if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
+        PointPickup collected ->
+            if collected then
                 Scene3d.nothing
 
             else
-                Scene3d.sphereWithShadow
-                    (Scene3d.Material.emissive
-                        (Scene3d.Light.color Color.yellow)
-                        (Luminance.nits 30000)
-                    )
-                    (Sphere3d.atPoint
-                        (Point3d.meters
-                            (toFloat x)
-                            (toFloat y)
-                            (toFloat z)
+                let
+                    ( x, y, z ) =
+                        indexToPoint
+                            model
+                            index
+                in
+                if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
+                    Scene3d.nothing
+
+                else
+                    Scene3d.sphereWithShadow
+                        (Scene3d.Material.emissive
+                            (Scene3d.Light.color Color.yellow)
+                            (Luminance.nits 30000)
                         )
-                        (Length.meters 0.125)
-                    )
+                        (Sphere3d.atPoint
+                            (Point3d.meters
+                                (toFloat x)
+                                (toFloat y)
+                                (toFloat z)
+                            )
+                            (Length.meters 0.125)
+                        )
 
         Empty ->
             Scene3d.nothing
