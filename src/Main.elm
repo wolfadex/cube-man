@@ -368,51 +368,39 @@ update msg model =
             ( { model | editorKeysDown = Set.remove key model.editorKeysDown }, Cmd.none )
 
         MouseUp point ->
-            case model.mouseDragging of
-                NoInteraction ->
-                    ( model, Cmd.none )
+            if Set.member "Shift" model.editorKeysDown then
+                ( { model | mouseDragging = NoInteraction }, Cmd.none )
 
-                InteractionStart _ ->
-                    let
-                        editorBoard =
-                            model.editorBoard
-                                |> Undo.value
-                                |> Array.set (pointToIndex model model.editorCursor)
-                                    (case model.editMode of
-                                        Remove ->
-                                            Empty
+            else
+                let
+                    editorBoard =
+                        model.editorBoard
+                            |> Undo.value
+                            |> Array.set (pointToIndex model model.editorCursor)
+                                (case model.editMode of
+                                    Remove ->
+                                        Empty
 
-                                        Add ->
-                                            model.selectedBlockType
-                                    )
-                    in
-                    ( { model
-                        | mouseDragging = NoInteraction
-                        , editorBoard = Undo.insert editorBoard model.editorBoard
-                        , boardEncoding =
-                            Serialize.encodeToJson boardCodec editorBoard
-                                |> Json.Encode.encode 0
-                      }
-                    , Cmd.none
-                    )
-
-                InteractionMoving _ ->
-                    ( { model | mouseDragging = NoInteraction }, Cmd.none )
+                                    Add ->
+                                        model.selectedBlockType
+                                )
+                in
+                ( { model
+                    | mouseDragging = NoInteraction
+                    , editorBoard = Undo.insert editorBoard model.editorBoard
+                    , boardEncoding =
+                        Serialize.encodeToJson boardCodec editorBoard
+                            |> Json.Encode.encode 0
+                  }
+                , Cmd.none
+                )
 
         MouseMove pointerId offset movement ->
-            case model.mouseDragging of
-                NoInteraction ->
-                    moveCursorByMouse offset model
+            if Set.member "Shift" model.editorKeysDown then
+                moveCameraByMouse pointerId movement model
 
-                InteractionStart _ ->
-                    if Set.member "Shift" model.editorKeysDown then
-                        moveCameraByMouse pointerId movement model
-
-                    else
-                        moveCursorByMouse offset model
-
-                InteractionMoving _ ->
-                    moveCameraByMouse pointerId movement model
+            else
+                moveCursorByMouse offset model
 
         XLowerVisibleChanged value ->
             ( { model

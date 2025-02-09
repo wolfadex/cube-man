@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739120115184"
+    "1739120863181"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -14480,55 +14480,43 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'MouseUp':
 				var point = msg.a;
-				var _v4 = model.mouseDragging;
-				switch (_v4.$) {
-					case 'NoInteraction':
-						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-					case 'InteractionStart':
-						var editorBoard = A3(
-							$elm$core$Array$set,
-							A2($author$project$Main$pointToIndex, model, model.editorCursor),
-							function () {
-								var _v5 = model.editMode;
-								if (_v5.$ === 'Remove') {
-									return $author$project$Main$Empty;
-								} else {
-									return model.selectedBlockType;
-								}
-							}(),
-							$author$project$Undo$value(model.editorBoard));
-						return _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{
-									boardEncoding: A2(
-										$elm$json$Json$Encode$encode,
-										0,
-										A2($MartinSStewart$elm_serialize$Serialize$encodeToJson, $author$project$Main$boardCodec, editorBoard)),
-									editorBoard: A2($author$project$Undo$insert, editorBoard, model.editorBoard),
-									mouseDragging: $author$project$Main$NoInteraction
-								}),
-							$elm$core$Platform$Cmd$none);
-					default:
-						return _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{mouseDragging: $author$project$Main$NoInteraction}),
-							$elm$core$Platform$Cmd$none);
+				if (A2($elm$core$Set$member, 'Shift', model.editorKeysDown)) {
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{mouseDragging: $author$project$Main$NoInteraction}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					var editorBoard = A3(
+						$elm$core$Array$set,
+						A2($author$project$Main$pointToIndex, model, model.editorCursor),
+						function () {
+							var _v4 = model.editMode;
+							if (_v4.$ === 'Remove') {
+								return $author$project$Main$Empty;
+							} else {
+								return model.selectedBlockType;
+							}
+						}(),
+						$author$project$Undo$value(model.editorBoard));
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								boardEncoding: A2(
+									$elm$json$Json$Encode$encode,
+									0,
+									A2($MartinSStewart$elm_serialize$Serialize$encodeToJson, $author$project$Main$boardCodec, editorBoard)),
+								editorBoard: A2($author$project$Undo$insert, editorBoard, model.editorBoard),
+								mouseDragging: $author$project$Main$NoInteraction
+							}),
+						$elm$core$Platform$Cmd$none);
 				}
 			case 'MouseMove':
 				var pointerId = msg.a;
 				var offset = msg.b;
 				var movement = msg.c;
-				var _v6 = model.mouseDragging;
-				switch (_v6.$) {
-					case 'NoInteraction':
-						return A2($author$project$Main$moveCursorByMouse, offset, model);
-					case 'InteractionStart':
-						return A2($elm$core$Set$member, 'Shift', model.editorKeysDown) ? A3($author$project$Main$moveCameraByMouse, pointerId, movement, model) : A2($author$project$Main$moveCursorByMouse, offset, model);
-					default:
-						return A3($author$project$Main$moveCameraByMouse, pointerId, movement, model);
-				}
+				return A2($elm$core$Set$member, 'Shift', model.editorKeysDown) ? A3($author$project$Main$moveCameraByMouse, pointerId, movement, model) : A2($author$project$Main$moveCursorByMouse, offset, model);
 			case 'XLowerVisibleChanged':
 				var value = msg.a;
 				return _Utils_Tuple2(
@@ -14598,8 +14586,8 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			default:
 				var key = msg.a;
-				var _v7 = model.mode;
-				if (_v7.$ === 'Editor') {
+				var _v5 = model.mode;
+				if (_v5.$ === 'Editor') {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				} else {
 					return A2($author$project$Main$handleGameKeyPressed, key, model);
