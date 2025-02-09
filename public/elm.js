@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739116757540"
+    "1739117085105"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -17402,23 +17402,9 @@ var $author$project$Main$subscriptions = function (model) {
 			]));
 };
 var $author$project$Main$Game = {$: 'Game'};
-var $author$project$Main$InteractionMoving = function (a) {
-	return {$: 'InteractionMoving', a: a};
-};
 var $author$project$Main$InteractionStart = function (a) {
 	return {$: 'InteractionStart', a: a};
 };
-var $ianmackenzie$elm_geometry$Point3d$along = F2(
-	function (_v0, _v1) {
-		var axis = _v0.a;
-		var distance = _v1.a;
-		var _v2 = axis.originPoint;
-		var p0 = _v2.a;
-		var _v3 = axis.direction;
-		var d = _v3.a;
-		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
-			{x: p0.x + (distance * d.x), y: p0.y + (distance * d.y), z: p0.z + (distance * d.z)});
-	});
 var $MartinSStewart$elm_serialize$Serialize$SerializerOutOfDate = {$: 'SerializerOutOfDate'};
 var $MartinSStewart$elm_serialize$Serialize$decodeFromJson = F2(
 	function (codec, json) {
@@ -17440,6 +17426,144 @@ var $MartinSStewart$elm_serialize$Serialize$decodeFromJson = F2(
 		} else {
 			return $elm$core$Result$Err($MartinSStewart$elm_serialize$Serialize$DataCorrupted);
 		}
+	});
+var $author$project$Main$Backward = {$: 'Backward'};
+var $author$project$Main$Left = {$: 'Left'};
+var $author$project$Main$Right = {$: 'Right'};
+var $author$project$Main$handleGameKeyPressed = F2(
+	function (key, model) {
+		switch (key) {
+			case 'w':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{playerWantFacing: $author$project$Main$Forward}),
+					$elm$core$Platform$Cmd$none);
+			case 's':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{playerWantFacing: $author$project$Main$Backward}),
+					$elm$core$Platform$Cmd$none);
+			case 'd':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{playerWantFacing: $author$project$Main$Right}),
+					$elm$core$Platform$Cmd$none);
+			case 'a':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{playerWantFacing: $author$project$Main$Left}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		}
+	});
+var $elm$core$Set$insert = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
+	});
+var $elm$core$Result$mapError = F2(
+	function (f, result) {
+		if (result.$ === 'Ok') {
+			var v = result.a;
+			return $elm$core$Result$Ok(v);
+		} else {
+			var e = result.a;
+			return $elm$core$Result$Err(
+				f(e));
+		}
+	});
+var $elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$get, key, dict);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $elm$core$Set$member = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return A2($elm$core$Dict$member, key, dict);
+	});
+var $elmcraft$core_extra$Result$Extra$merge = function (r) {
+	if (r.$ === 'Ok') {
+		var rr = r.a;
+		return rr;
+	} else {
+		var rr = r.a;
+		return rr;
+	}
+};
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $author$project$Main$InteractionMoving = function (a) {
+	return {$: 'InteractionMoving', a: a};
+};
+var $ianmackenzie$elm_units$Quantity$minus = F2(
+	function (_v0, _v1) {
+		var y = _v0.a;
+		var x = _v1.a;
+		return $ianmackenzie$elm_units$Quantity$Quantity(x - y);
+	});
+var $ianmackenzie$elm_units$Quantity$plus = F2(
+	function (_v0, _v1) {
+		var y = _v0.a;
+		var x = _v1.a;
+		return $ianmackenzie$elm_units$Quantity$Quantity(x + y);
+	});
+var $ianmackenzie$elm_units$Pixels$toFloat = function (_v0) {
+	var numPixels = _v0.a;
+	return numPixels;
+};
+var $ianmackenzie$elm_geometry$Point2d$xCoordinate = function (_v0) {
+	var p = _v0.a;
+	return $ianmackenzie$elm_units$Quantity$Quantity(p.x);
+};
+var $ianmackenzie$elm_geometry$Point2d$yCoordinate = function (_v0) {
+	var p = _v0.a;
+	return $ianmackenzie$elm_units$Quantity$Quantity(p.y);
+};
+var $author$project$Main$moveCameraByMouse = F3(
+	function (pointerId, movement, model) {
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{
+					cameraElevation: A2(
+						$ianmackenzie$elm_units$Quantity$plus,
+						$ianmackenzie$elm_units$Angle$degrees(
+							$ianmackenzie$elm_units$Pixels$toFloat(
+								$ianmackenzie$elm_geometry$Point2d$yCoordinate(movement))),
+						model.cameraElevation),
+					cameraRotation: A2(
+						$ianmackenzie$elm_units$Quantity$minus,
+						$ianmackenzie$elm_units$Angle$degrees(
+							$ianmackenzie$elm_units$Pixels$toFloat(
+								$ianmackenzie$elm_geometry$Point2d$xCoordinate(movement))),
+						model.cameraRotation),
+					mouseDragging: $author$project$Main$InteractionMoving(pointerId)
+				}),
+			$elm$core$Platform$Cmd$none);
+	});
+var $ianmackenzie$elm_geometry$Point3d$along = F2(
+	function (_v0, _v1) {
+		var axis = _v0.a;
+		var distance = _v1.a;
+		var _v2 = axis.originPoint;
+		var p0 = _v2.a;
+		var _v3 = axis.direction;
+		var d = _v3.a;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
+			{x: p0.x + (distance * d.x), y: p0.y + (distance * d.y), z: p0.z + (distance * d.z)});
 	});
 var $elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
@@ -17782,12 +17906,6 @@ var $ianmackenzie$elm_units$Quantity$midpoint = F2(
 		var y = _v1.a;
 		return $ianmackenzie$elm_units$Quantity$Quantity(x + (0.5 * (y - x)));
 	});
-var $ianmackenzie$elm_units$Quantity$minus = F2(
-	function (_v0, _v1) {
-		var y = _v0.a;
-		var x = _v1.a;
-		return $ianmackenzie$elm_units$Quantity$Quantity(x - y);
-	});
 var $ianmackenzie$elm_geometry$Geometry$Types$Direction2d = function (a) {
 	return {$: 'Direction2d', a: a};
 };
@@ -17833,14 +17951,6 @@ var $ianmackenzie$elm_geometry$Rectangle2d$axisAligned = F4(
 		return $ianmackenzie$elm_geometry$Geometry$Types$Rectangle2d(
 			{axes: computedAxes, dimensions: computedDimensions});
 	});
-var $ianmackenzie$elm_geometry$Point2d$xCoordinate = function (_v0) {
-	var p = _v0.a;
-	return $ianmackenzie$elm_units$Quantity$Quantity(p.x);
-};
-var $ianmackenzie$elm_geometry$Point2d$yCoordinate = function (_v0) {
-	var p = _v0.a;
-	return $ianmackenzie$elm_units$Quantity$Quantity(p.y);
-};
 var $ianmackenzie$elm_geometry$Rectangle2d$from = F2(
 	function (p1, p2) {
 		return A4(
@@ -17849,40 +17959,6 @@ var $ianmackenzie$elm_geometry$Rectangle2d$from = F2(
 			$ianmackenzie$elm_geometry$Point2d$yCoordinate(p1),
 			$ianmackenzie$elm_geometry$Point2d$xCoordinate(p2),
 			$ianmackenzie$elm_geometry$Point2d$yCoordinate(p2));
-	});
-var $author$project$Main$Backward = {$: 'Backward'};
-var $author$project$Main$Left = {$: 'Left'};
-var $author$project$Main$Right = {$: 'Right'};
-var $author$project$Main$handleGameKeyPressed = F2(
-	function (key, model) {
-		switch (key) {
-			case 'w':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{playerWantFacing: $author$project$Main$Forward}),
-					$elm$core$Platform$Cmd$none);
-			case 's':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{playerWantFacing: $author$project$Main$Backward}),
-					$elm$core$Platform$Cmd$none);
-			case 'd':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{playerWantFacing: $author$project$Main$Right}),
-					$elm$core$Platform$Cmd$none);
-			case 'a':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{playerWantFacing: $author$project$Main$Left}),
-					$elm$core$Platform$Cmd$none);
-			default:
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		}
 	});
 var $author$project$Main$indexToPoint = F2(
 	function (_v0, index) {
@@ -17893,12 +17969,6 @@ var $author$project$Main$indexToPoint = F2(
 		var y = ((index - ((x * maxY) * maxZ)) / maxZ) | 0;
 		var z = (index - ((x * maxY) * maxZ)) - (y * maxZ);
 		return _Utils_Tuple3(x, y, z);
-	});
-var $elm$core$Set$insert = F2(
-	function (key, _v0) {
-		var dict = _v0.a;
-		return $elm$core$Set$Set_elm_builtin(
-			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
 	});
 var $ianmackenzie$elm_geometry$BoundingBox3d$extrema = function (boundingBox) {
 	var _v0 = boundingBox;
@@ -17912,10 +17982,6 @@ var $ianmackenzie$elm_geometry$BoundingBox3d$extrema = function (boundingBox) {
 		minZ: $ianmackenzie$elm_units$Quantity$Quantity(b.minZ)
 	};
 };
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
 var $ianmackenzie$elm_geometry$Direction3d$negativeX = $ianmackenzie$elm_geometry$Direction3d$unsafe(
 	{x: -1, y: 0, z: 0});
 var $ianmackenzie$elm_geometry$Direction3d$negativeY = $ianmackenzie$elm_geometry$Direction3d$unsafe(
@@ -18005,36 +18071,10 @@ var $ianmackenzie$elm_units$Quantity$lessThan = F2(
 		var x = _v1.a;
 		return _Utils_cmp(x, y) < 0;
 	});
-var $elm$core$Result$mapError = F2(
-	function (f, result) {
-		if (result.$ === 'Ok') {
-			var v = result.a;
-			return $elm$core$Result$Ok(v);
-		} else {
-			var e = result.a;
-			return $elm$core$Result$Err(
-				f(e));
-		}
-	});
-var $elmcraft$core_extra$Result$Extra$merge = function (r) {
-	if (r.$ === 'Ok') {
-		var rr = r.a;
-		return rr;
-	} else {
-		var rr = r.a;
-		return rr;
-	}
-};
 var $ianmackenzie$elm_geometry$Point2d$pixels = F2(
 	function (x, y) {
 		return $ianmackenzie$elm_geometry$Geometry$Types$Point2d(
 			{x: x, y: y});
-	});
-var $ianmackenzie$elm_units$Quantity$plus = F2(
-	function (_v0, _v1) {
-		var y = _v0.a;
-		var x = _v1.a;
-		return $ianmackenzie$elm_units$Quantity$Quantity(x + y);
 	});
 var $elm$core$Basics$round = _Basics_round;
 var $author$project$Main$point3dToPoint = function (point) {
@@ -18044,15 +18084,6 @@ var $author$project$Main$point3dToPoint = function (point) {
 		$elm$core$Basics$round(parts.y),
 		$elm$core$Basics$round(parts.z));
 };
-var $author$project$Main$pointToIndex = F2(
-	function (_v0, _v1) {
-		var maxY = _v0.maxY;
-		var maxZ = _v0.maxZ;
-		var x = _v1.a;
-		var y = _v1.b;
-		var z = _v1.c;
-		return (((x * maxY) * maxZ) + (y * maxZ)) + z;
-	});
 var $author$project$Main$pointToPoint3d = function (_v0) {
 	var x = _v0.a;
 	var y = _v0.b;
@@ -18237,12 +18268,6 @@ var $ianmackenzie$elm_3d_camera$Camera3d$ray = F3(
 				$ianmackenzie$elm_3d_camera$Viewpoint3d$viewDirection(camera.viewpoint));
 		}
 	});
-var $elm$core$Set$remove = F2(
-	function (key, _v0) {
-		var dict = _v0.a;
-		return $elm$core$Set$Set_elm_builtin(
-			A2($elm$core$Dict$remove, key, dict));
-	});
 var $ianmackenzie$elm_geometry$Axis3d$reverse = function (_v0) {
 	var axis = _v0.a;
 	return A2(
@@ -18250,6 +18275,132 @@ var $ianmackenzie$elm_geometry$Axis3d$reverse = function (_v0) {
 		axis.originPoint,
 		$ianmackenzie$elm_geometry$Direction3d$reverse(axis.direction));
 };
+var $ianmackenzie$elm_geometry$Geometry$Types$BoundingBox3d = function (a) {
+	return {$: 'BoundingBox3d', a: a};
+};
+var $ianmackenzie$elm_geometry$BoundingBox3d$withDimensions = F2(
+	function (givenDimensions, givenCenterPoint) {
+		var _v0 = givenCenterPoint;
+		var x = _v0.a.x;
+		var y = _v0.a.y;
+		var z = _v0.a.z;
+		var _v1 = givenDimensions;
+		var dx = _v1.a.a;
+		var dy = _v1.b.a;
+		var dz = _v1.c.a;
+		var halfDx = $elm$core$Basics$abs(dx) / 2;
+		var halfDy = $elm$core$Basics$abs(dy) / 2;
+		var halfDz = $elm$core$Basics$abs(dz) / 2;
+		return $ianmackenzie$elm_geometry$Geometry$Types$BoundingBox3d(
+			{maxX: x + halfDx, maxY: y + halfDy, maxZ: z + halfDz, minX: x - halfDx, minY: y - halfDy, minZ: z - halfDz});
+	});
+var $author$project$Main$moveCursorByMouse = F2(
+	function (offset, model) {
+		var ray = A3(
+			$ianmackenzie$elm_3d_camera$Camera3d$ray,
+			$author$project$Main$editorCamera(model),
+			A2(
+				$ianmackenzie$elm_geometry$Rectangle2d$from,
+				A2($ianmackenzie$elm_geometry$Point2d$pixels, 0, model.screenSize.height),
+				A2($ianmackenzie$elm_geometry$Point2d$pixels, model.screenSize.width, 0)),
+			offset);
+		var maybeIntersection = A3(
+			$elm$core$Array$foldl,
+			F2(
+				function (block, _v3) {
+					var index = _v3.a;
+					var maybeInter = _v3.b;
+					return _Utils_Tuple2(
+						index + 1,
+						function () {
+							if (block.$ === 'Empty') {
+								return maybeInter;
+							} else {
+								var _v5 = A2($author$project$Main$indexToPoint, model, index);
+								var x = _v5.a;
+								var y = _v5.b;
+								var z = _v5.c;
+								if ((_Utils_cmp(x, model.xLowerVisible) < 0) || ((_Utils_cmp(x, model.xUpperVisible) > 0) || ((_Utils_cmp(y, model.yLowerVisible) < 0) || ((_Utils_cmp(y, model.yUpperVisible) > 0) || ((_Utils_cmp(z, model.zLowerVisible) < 0) || (_Utils_cmp(z, model.zUpperVisible) > 0)))))) {
+									return maybeInter;
+								} else {
+									var boundingBox = A2(
+										$ianmackenzie$elm_geometry$BoundingBox3d$withDimensions,
+										_Utils_Tuple3(
+											$ianmackenzie$elm_units$Length$meters(1),
+											$ianmackenzie$elm_units$Length$meters(1),
+											$ianmackenzie$elm_units$Length$meters(1)),
+										$author$project$Main$pointToPoint3d(
+											A2($author$project$Main$indexToPoint, model, index)));
+									var _v6 = A2($author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d, ray, boundingBox);
+									if (_v6.$ === 'Nothing') {
+										return maybeInter;
+									} else {
+										var intersection = _v6.a;
+										var newDist = A2(
+											$ianmackenzie$elm_geometry$Point3d$distanceFrom,
+											$ianmackenzie$elm_geometry$Axis3d$originPoint(ray),
+											$ianmackenzie$elm_geometry$Axis3d$originPoint(intersection));
+										if (maybeInter.$ === 'Nothing') {
+											return $elm$core$Maybe$Just(
+												_Utils_Tuple2(intersection, newDist));
+										} else {
+											var _v8 = maybeInter.a;
+											var prevInter = _v8.a;
+											var prevDist = _v8.b;
+											return A2($ianmackenzie$elm_units$Quantity$lessThan, prevDist, newDist) ? $elm$core$Maybe$Just(
+												_Utils_Tuple2(intersection, newDist)) : maybeInter;
+										}
+									}
+								}
+							}
+						}());
+				}),
+			_Utils_Tuple2(0, $elm$core$Maybe$Nothing),
+			model.board).b;
+		if (maybeIntersection.$ === 'Nothing') {
+			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		} else {
+			var _v1 = maybeIntersection.a;
+			var intersection = _v1.a;
+			return _Utils_Tuple2(
+				_Utils_update(
+					model,
+					{
+						editorCursor: function () {
+							var _v2 = model.editMode;
+							if (_v2.$ === 'Remove') {
+								return $author$project$Main$point3dToPoint(
+									A2(
+										$ianmackenzie$elm_geometry$Point3d$along,
+										$ianmackenzie$elm_geometry$Axis3d$reverse(intersection),
+										$ianmackenzie$elm_units$Length$meters(0.5)));
+							} else {
+								return $author$project$Main$point3dToPoint(
+									A2(
+										$ianmackenzie$elm_geometry$Point3d$along,
+										intersection,
+										$ianmackenzie$elm_units$Length$meters(0.5)));
+							}
+						}()
+					}),
+				$elm$core$Platform$Cmd$none);
+		}
+	});
+var $author$project$Main$pointToIndex = F2(
+	function (_v0, _v1) {
+		var maxY = _v0.maxY;
+		var maxZ = _v0.maxZ;
+		var x = _v1.a;
+		var y = _v1.b;
+		var z = _v1.c;
+		return (((x * maxY) * maxZ) + (y * maxZ)) + z;
+	});
+var $elm$core$Set$remove = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A2($elm$core$Dict$remove, key, dict));
+	});
 var $elm$core$Array$setHelp = F4(
 	function (shift, index, value, tree) {
 		var pos = $elm$core$Array$bitMask & (index >>> shift);
@@ -18766,29 +18917,6 @@ var $author$project$Main$tickPlayer = F2(
 				$author$project$Main$setPlayerFacing(model));
 		}
 	});
-var $ianmackenzie$elm_units$Pixels$toFloat = function (_v0) {
-	var numPixels = _v0.a;
-	return numPixels;
-};
-var $ianmackenzie$elm_geometry$Geometry$Types$BoundingBox3d = function (a) {
-	return {$: 'BoundingBox3d', a: a};
-};
-var $ianmackenzie$elm_geometry$BoundingBox3d$withDimensions = F2(
-	function (givenDimensions, givenCenterPoint) {
-		var _v0 = givenCenterPoint;
-		var x = _v0.a.x;
-		var y = _v0.a.y;
-		var z = _v0.a.z;
-		var _v1 = givenDimensions;
-		var dx = _v1.a.a;
-		var dy = _v1.b.a;
-		var dz = _v1.c.a;
-		var halfDx = $elm$core$Basics$abs(dx) / 2;
-		var halfDy = $elm$core$Basics$abs(dy) / 2;
-		var halfDz = $elm$core$Basics$abs(dz) / 2;
-		return $ianmackenzie$elm_geometry$Geometry$Types$BoundingBox3d(
-			{maxX: x + halfDx, maxY: y + halfDy, maxZ: z + halfDz, minX: x - halfDx, minY: y - halfDy, minZ: z - halfDz});
-	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -18916,135 +19044,11 @@ var $author$project$Main$update = F2(
 				var _v6 = model.mouseDragging;
 				switch (_v6.$) {
 					case 'NoInteraction':
-						var ray = A3(
-							$ianmackenzie$elm_3d_camera$Camera3d$ray,
-							$author$project$Main$editorCamera(model),
-							A2(
-								$ianmackenzie$elm_geometry$Rectangle2d$from,
-								A2($ianmackenzie$elm_geometry$Point2d$pixels, 0, model.screenSize.height),
-								A2($ianmackenzie$elm_geometry$Point2d$pixels, model.screenSize.width, 0)),
-							offset);
-						var maybeIntersection = A3(
-							$elm$core$Array$foldl,
-							F2(
-								function (block, _v10) {
-									var index = _v10.a;
-									var maybeInter = _v10.b;
-									return _Utils_Tuple2(
-										index + 1,
-										function () {
-											if (block.$ === 'Empty') {
-												return maybeInter;
-											} else {
-												var _v12 = A2($author$project$Main$indexToPoint, model, index);
-												var x = _v12.a;
-												var y = _v12.b;
-												var z = _v12.c;
-												if ((_Utils_cmp(x, model.xLowerVisible) < 0) || ((_Utils_cmp(x, model.xUpperVisible) > 0) || ((_Utils_cmp(y, model.yLowerVisible) < 0) || ((_Utils_cmp(y, model.yUpperVisible) > 0) || ((_Utils_cmp(z, model.zLowerVisible) < 0) || (_Utils_cmp(z, model.zUpperVisible) > 0)))))) {
-													return maybeInter;
-												} else {
-													var boundingBox = A2(
-														$ianmackenzie$elm_geometry$BoundingBox3d$withDimensions,
-														_Utils_Tuple3(
-															$ianmackenzie$elm_units$Length$meters(1),
-															$ianmackenzie$elm_units$Length$meters(1),
-															$ianmackenzie$elm_units$Length$meters(1)),
-														$author$project$Main$pointToPoint3d(
-															A2($author$project$Main$indexToPoint, model, index)));
-													var _v13 = A2($author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d, ray, boundingBox);
-													if (_v13.$ === 'Nothing') {
-														return maybeInter;
-													} else {
-														var intersection = _v13.a;
-														var newDist = A2(
-															$ianmackenzie$elm_geometry$Point3d$distanceFrom,
-															$ianmackenzie$elm_geometry$Axis3d$originPoint(ray),
-															$ianmackenzie$elm_geometry$Axis3d$originPoint(intersection));
-														if (maybeInter.$ === 'Nothing') {
-															return $elm$core$Maybe$Just(
-																_Utils_Tuple2(intersection, newDist));
-														} else {
-															var _v15 = maybeInter.a;
-															var prevInter = _v15.a;
-															var prevDist = _v15.b;
-															return A2($ianmackenzie$elm_units$Quantity$lessThan, prevDist, newDist) ? $elm$core$Maybe$Just(
-																_Utils_Tuple2(intersection, newDist)) : maybeInter;
-														}
-													}
-												}
-											}
-										}());
-								}),
-							_Utils_Tuple2(0, $elm$core$Maybe$Nothing),
-							model.board).b;
-						if (maybeIntersection.$ === 'Nothing') {
-							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-						} else {
-							var _v8 = maybeIntersection.a;
-							var intersection = _v8.a;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{
-										editorCursor: function () {
-											var _v9 = model.editMode;
-											if (_v9.$ === 'Remove') {
-												return $author$project$Main$point3dToPoint(
-													A2(
-														$ianmackenzie$elm_geometry$Point3d$along,
-														$ianmackenzie$elm_geometry$Axis3d$reverse(intersection),
-														$ianmackenzie$elm_units$Length$meters(0.5)));
-											} else {
-												return $author$project$Main$point3dToPoint(
-													A2(
-														$ianmackenzie$elm_geometry$Point3d$along,
-														intersection,
-														$ianmackenzie$elm_units$Length$meters(0.5)));
-											}
-										}()
-									}),
-								$elm$core$Platform$Cmd$none);
-						}
+						return A2($author$project$Main$moveCursorByMouse, offset, model);
 					case 'InteractionStart':
-						return _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{
-									cameraElevation: A2(
-										$ianmackenzie$elm_units$Quantity$minus,
-										$ianmackenzie$elm_units$Angle$degrees(
-											$ianmackenzie$elm_units$Pixels$toFloat(
-												$ianmackenzie$elm_geometry$Point2d$yCoordinate(movement))),
-										model.cameraElevation),
-									cameraRotation: A2(
-										$ianmackenzie$elm_units$Quantity$minus,
-										$ianmackenzie$elm_units$Angle$degrees(
-											$ianmackenzie$elm_units$Pixels$toFloat(
-												$ianmackenzie$elm_geometry$Point2d$xCoordinate(movement))),
-										model.cameraRotation),
-									mouseDragging: $author$project$Main$InteractionMoving(pointerId)
-								}),
-							$elm$core$Platform$Cmd$none);
+						return A2($elm$core$Set$member, 'Shift', model.editorKeysDown) ? A3($author$project$Main$moveCameraByMouse, pointerId, movement, model) : A2($author$project$Main$moveCursorByMouse, offset, model);
 					default:
-						return _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{
-									cameraElevation: A2(
-										$ianmackenzie$elm_units$Quantity$plus,
-										$ianmackenzie$elm_units$Angle$degrees(
-											$ianmackenzie$elm_units$Pixels$toFloat(
-												$ianmackenzie$elm_geometry$Point2d$yCoordinate(movement))),
-										model.cameraElevation),
-									cameraRotation: A2(
-										$ianmackenzie$elm_units$Quantity$minus,
-										$ianmackenzie$elm_units$Angle$degrees(
-											$ianmackenzie$elm_units$Pixels$toFloat(
-												$ianmackenzie$elm_geometry$Point2d$xCoordinate(movement))),
-										model.cameraRotation),
-									mouseDragging: $author$project$Main$InteractionMoving(pointerId)
-								}),
-							$elm$core$Platform$Cmd$none);
+						return A3($author$project$Main$moveCameraByMouse, pointerId, movement, model);
 				}
 			case 'XLowerVisibleChanged':
 				var value = msg.a;
@@ -19115,8 +19119,8 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			default:
 				var key = msg.a;
-				var _v16 = model.mode;
-				if (_v16.$ === 'Editor') {
+				var _v7 = model.mode;
+				if (_v7.$ === 'Editor') {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				} else {
 					return A2($author$project$Main$handleGameKeyPressed, key, model);

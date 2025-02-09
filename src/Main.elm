@@ -379,125 +379,17 @@ update msg model =
         MouseMove pointerId offset movement ->
             case model.mouseDragging of
                 NoInteraction ->
-                    let
-                        ray : Axis3d Length.Meters WorldCoordinates
-                        ray =
-                            Camera3d.ray
-                                (editorCamera model)
-                                (Rectangle2d.from
-                                    (Point2d.pixels 0 (toFloat model.screenSize.height))
-                                    (Point2d.pixels (toFloat model.screenSize.width) 0)
-                                )
-                                offset
-
-                        maybeIntersection =
-                            Array.foldl
-                                (\block ( index, maybeInter ) ->
-                                    ( index + 1
-                                    , case block of
-                                        Empty ->
-                                            maybeInter
-
-                                        _ ->
-                                            let
-                                                ( x, y, z ) =
-                                                    indexToPoint model index
-                                            in
-                                            if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
-                                                maybeInter
-
-                                            else
-                                                let
-                                                    boundingBox =
-                                                        BoundingBox3d.withDimensions
-                                                            ( Length.meters 1, Length.meters 1, Length.meters 1 )
-                                                            (pointToPoint3d (indexToPoint model index))
-                                                in
-                                                case Axis3d.Extra.intersectionAxisAlignedBoundingBox3d ray boundingBox of
-                                                    Nothing ->
-                                                        maybeInter
-
-                                                    Just intersection ->
-                                                        let
-                                                            newDist =
-                                                                Point3d.distanceFrom (Axis3d.originPoint ray) (Axis3d.originPoint intersection)
-                                                        in
-                                                        case maybeInter of
-                                                            Nothing ->
-                                                                Just ( intersection, newDist )
-
-                                                            Just ( prevInter, prevDist ) ->
-                                                                if newDist |> Quantity.lessThan prevDist then
-                                                                    Just ( intersection, newDist )
-
-                                                                else
-                                                                    maybeInter
-                                    )
-                                )
-                                ( 0, Nothing )
-                                model.board
-                                |> Tuple.second
-                    in
-                    case maybeIntersection of
-                        Nothing ->
-                            ( model, Cmd.none )
-
-                        Just ( intersection, _ ) ->
-                            ( { model
-                                | editorCursor =
-                                    case model.editMode of
-                                        Remove ->
-                                            Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
-                                                |> point3dToPoint
-
-                                        Add ->
-                                            Point3d.along intersection (Length.meters 0.5)
-                                                |> point3dToPoint
-                              }
-                            , Cmd.none
-                            )
+                    moveCursorByMouse offset model
 
                 InteractionStart _ ->
-                    ( { model
-                        | mouseDragging = InteractionMoving pointerId
-                        , cameraRotation =
-                            model.cameraRotation
-                                |> Quantity.minus
-                                    (Point2d.xCoordinate movement
-                                        |> Pixels.toFloat
-                                        |> Angle.degrees
-                                    )
-                        , cameraElevation =
-                            model.cameraElevation
-                                |> Quantity.minus
-                                    (Point2d.yCoordinate movement
-                                        |> Pixels.toFloat
-                                        |> Angle.degrees
-                                    )
-                      }
-                    , Cmd.none
-                    )
+                    if Set.member "Shift" model.editorKeysDown then
+                        moveCameraByMouse pointerId movement model
+
+                    else
+                        moveCursorByMouse offset model
 
                 InteractionMoving _ ->
-                    ( { model
-                        | mouseDragging = InteractionMoving pointerId
-                        , cameraRotation =
-                            model.cameraRotation
-                                |> Quantity.minus
-                                    (Point2d.xCoordinate movement
-                                        |> Pixels.toFloat
-                                        |> Angle.degrees
-                                    )
-                        , cameraElevation =
-                            model.cameraElevation
-                                |> Quantity.plus
-                                    (Point2d.yCoordinate movement
-                                        |> Pixels.toFloat
-                                        |> Angle.degrees
-                                    )
-                      }
-                    , Cmd.none
-                    )
+                    moveCameraByMouse pointerId movement model
 
         XLowerVisibleChanged value ->
             ( { model
@@ -557,6 +449,110 @@ update msg model =
 
                 Game ->
                     handleGameKeyPressed key model
+
+
+moveCameraByMouse : Json.Encode.Value -> Point2d Pixels ScreenCoordinates -> Model -> ( Model, Cmd Msg )
+moveCameraByMouse pointerId movement model =
+    ( { model
+        | mouseDragging = InteractionMoving pointerId
+        , cameraRotation =
+            model.cameraRotation
+                |> Quantity.minus
+                    (Point2d.xCoordinate movement
+                        |> Pixels.toFloat
+                        |> Angle.degrees
+                    )
+        , cameraElevation =
+            model.cameraElevation
+                |> Quantity.plus
+                    (Point2d.yCoordinate movement
+                        |> Pixels.toFloat
+                        |> Angle.degrees
+                    )
+      }
+    , Cmd.none
+    )
+
+
+moveCursorByMouse : Point2d Pixels ScreenCoordinates -> Model -> ( Model, Cmd Msg )
+moveCursorByMouse offset model =
+    let
+        ray : Axis3d Length.Meters WorldCoordinates
+        ray =
+            Camera3d.ray
+                (editorCamera model)
+                (Rectangle2d.from
+                    (Point2d.pixels 0 (toFloat model.screenSize.height))
+                    (Point2d.pixels (toFloat model.screenSize.width) 0)
+                )
+                offset
+
+        maybeIntersection =
+            Array.foldl
+                (\block ( index, maybeInter ) ->
+                    ( index + 1
+                    , case block of
+                        Empty ->
+                            maybeInter
+
+                        _ ->
+                            let
+                                ( x, y, z ) =
+                                    indexToPoint model index
+                            in
+                            if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
+                                maybeInter
+
+                            else
+                                let
+                                    boundingBox =
+                                        BoundingBox3d.withDimensions
+                                            ( Length.meters 1, Length.meters 1, Length.meters 1 )
+                                            (pointToPoint3d (indexToPoint model index))
+                                in
+                                case Axis3d.Extra.intersectionAxisAlignedBoundingBox3d ray boundingBox of
+                                    Nothing ->
+                                        maybeInter
+
+                                    Just intersection ->
+                                        let
+                                            newDist =
+                                                Point3d.distanceFrom (Axis3d.originPoint ray) (Axis3d.originPoint intersection)
+                                        in
+                                        case maybeInter of
+                                            Nothing ->
+                                                Just ( intersection, newDist )
+
+                                            Just ( prevInter, prevDist ) ->
+                                                if newDist |> Quantity.lessThan prevDist then
+                                                    Just ( intersection, newDist )
+
+                                                else
+                                                    maybeInter
+                    )
+                )
+                ( 0, Nothing )
+                model.board
+                |> Tuple.second
+    in
+    case maybeIntersection of
+        Nothing ->
+            ( model, Cmd.none )
+
+        Just ( intersection, _ ) ->
+            ( { model
+                | editorCursor =
+                    case model.editMode of
+                        Remove ->
+                            Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
+                                |> point3dToPoint
+
+                        Add ->
+                            Point3d.along intersection (Length.meters 0.5)
+                                |> point3dToPoint
+              }
+            , Cmd.none
+            )
 
 
 editorCamera : Model -> Camera3d Length.Meters WorldCoordinates
