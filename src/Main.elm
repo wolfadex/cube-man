@@ -30,7 +30,6 @@ import Point2d exposing (Point2d)
 import Point3d exposing (Point3d)
 import Quantity
 import Rectangle2d
-import Result.Extra
 import Scene3d
 import Scene3d.Light
 import Scene3d.Material
@@ -59,6 +58,7 @@ type alias Model =
     , maxZ : Int
     , board : Board
     , editorBoard : Undo.Stack Board
+    , boardLoadError : Maybe BoardLoadError
     , screenSize : { width : Int, height : Int }
     , xLowerVisible : Int
     , xUpperVisible : Int
@@ -228,6 +228,7 @@ init () =
       , selectedBlockType = Wall
       , board = board
       , editorBoard = Undo.init board
+      , boardLoadError = Nothing
       , screenSize = { width = 800, height = 600 }
       , editorCursor = ( 0, 0, 0 )
       , editorKeysDown = Set.empty
@@ -259,6 +260,12 @@ init () =
       }
     , Cmd.none
     )
+
+
+type BoardLoadError
+    = DataCorrupted
+    | SerializerOutOfDate
+    | OtherError
 
 
 subscriptions : Model -> Sub Msg
@@ -321,7 +328,6 @@ update msg model =
     case msg of
         Tick deltaMs ->
             ( model
-                -- |> animateCursor deltaMs
                 |> tickPlayer deltaMs
             , Cmd.none
             )
@@ -330,20 +336,41 @@ update msg model =
             ( { model | boardEncoding = boardEncoding }, Cmd.none )
 
         LoadBoard ->
-            ( { model
-                | editorBoard =
+            let
+                loadedBoard =
                     model.boardEncoding
                         |> Json.Decode.decodeString Json.Decode.value
-                        -- TODO: Actually handle these errors
-                        |> Result.mapError (\_ -> Json.Encode.null)
-                        |> Result.Extra.merge
+                        |> Result.withDefault Json.Encode.null
                         |> Serialize.decodeFromJson boardCodec
                         |> Result.map Undo.init
-                        |> Result.mapError (\_ -> model.editorBoard)
-                        |> Result.Extra.merge
-              }
-            , Cmd.none
-            )
+                        |> Result.mapError
+                            (\error ->
+                                case error of
+                                    Serialize.CustomError _ ->
+                                        OtherError
+
+                                    Serialize.DataCorrupted ->
+                                        DataCorrupted
+
+                                    Serialize.SerializerOutOfDate ->
+                                        SerializerOutOfDate
+                            )
+            in
+            case loadedBoard of
+                Ok editorBoard ->
+                    ( { model
+                        | editorBoard = editorBoard
+                        , boardLoadError = Nothing
+                      }
+                    , Cmd.none
+                    )
+
+                Err error ->
+                    ( { model
+                        | boardLoadError = Just error
+                      }
+                    , Cmd.none
+                    )
 
         ChangeMode ->
             case model.mode of
@@ -1436,6 +1463,23 @@ view model =
                                     [ Html.Attributes.type_ "submit" ]
                                     [ Html.text "Load" ]
                                 ]
+                            , case model.boardLoadError of
+                                Nothing ->
+                                    Html.text ""
+
+                                Just error ->
+                                    Html.small []
+                                        [ Html.text <|
+                                            case error of
+                                                DataCorrupted ->
+                                                    "Board data is corrupted"
+
+                                                SerializerOutOfDate ->
+                                                    "Board data is from a different version of the game"
+
+                                                OtherError ->
+                                                    "Unexpected error"
+                                        ]
                             ]
                         ]
             ]

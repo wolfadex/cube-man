@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739123501630"
+    "1739124421818"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -11993,6 +11993,7 @@ var $author$project$Main$init = function (_v0) {
 				$elm$json$Json$Encode$encode,
 				0,
 				A2($MartinSStewart$elm_serialize$Serialize$encodeToJson, $author$project$Main$boardCodec, board)),
+			boardLoadError: $elm$core$Maybe$Nothing,
 			cameraElevation: $ianmackenzie$elm_units$Angle$degrees(15),
 			cameraRotation: $ianmackenzie$elm_units$Angle$degrees(225),
 			cursorBounce: $author$project$Animation$withLoop(
@@ -12600,10 +12601,13 @@ var $author$project$Main$subscriptions = function (_v0) {
 				$elm$browser$Browser$Events$onKeyUp($author$project$Main$decodeKeyUp)
 			]));
 };
+var $author$project$Main$DataCorrupted = {$: 'DataCorrupted'};
 var $author$project$Main$Game = {$: 'Game'};
 var $author$project$Main$InteractionStart = function (a) {
 	return {$: 'InteractionStart', a: a};
 };
+var $author$project$Main$OtherError = {$: 'OtherError'};
+var $author$project$Main$SerializerOutOfDate = {$: 'SerializerOutOfDate'};
 var $MartinSStewart$elm_serialize$Serialize$SerializerOutOfDate = {$: 'SerializerOutOfDate'};
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $MartinSStewart$elm_serialize$Serialize$decodeFromJson = F2(
@@ -12875,15 +12879,6 @@ var $elm$core$Set$member = F2(
 		var dict = _v0.a;
 		return A2($elm$core$Dict$member, key, dict);
 	});
-var $elmcraft$core_extra$Result$Extra$merge = function (r) {
-	if (r.$ === 'Ok') {
-		var rr = r.a;
-		return rr;
-	} else {
-		var rr = r.a;
-		return rr;
-	}
-};
 var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
@@ -14670,6 +14665,15 @@ var $author$project$Undo$undo = function (stack) {
 	}
 };
 var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $elm$core$Result$withDefault = F2(
+	function (def, result) {
+		if (result.$ === 'Ok') {
+			var a = result.a;
+			return a;
+		} else {
+			return def;
+		}
+	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -14686,31 +14690,45 @@ var $author$project$Main$update = F2(
 						{boardEncoding: boardEncoding}),
 					$elm$core$Platform$Cmd$none);
 			case 'LoadBoard':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							editorBoard: $elmcraft$core_extra$Result$Extra$merge(
-								A2(
-									$elm$core$Result$mapError,
-									function (_v2) {
-										return model.editorBoard;
-									},
-									A2(
-										$elm$core$Result$map,
-										$author$project$Undo$init,
-										A2(
-											$MartinSStewart$elm_serialize$Serialize$decodeFromJson,
-											$author$project$Main$boardCodec,
-											$elmcraft$core_extra$Result$Extra$merge(
-												A2(
-													$elm$core$Result$mapError,
-													function (_v1) {
-														return $elm$json$Json$Encode$null;
-													},
-													A2($elm$json$Json$Decode$decodeString, $elm$json$Json$Decode$value, model.boardEncoding)))))))
-						}),
-					$elm$core$Platform$Cmd$none);
+				var loadedBoard = A2(
+					$elm$core$Result$mapError,
+					function (error) {
+						switch (error.$) {
+							case 'CustomError':
+								return $author$project$Main$OtherError;
+							case 'DataCorrupted':
+								return $author$project$Main$DataCorrupted;
+							default:
+								return $author$project$Main$SerializerOutOfDate;
+						}
+					},
+					A2(
+						$elm$core$Result$map,
+						$author$project$Undo$init,
+						A2(
+							$MartinSStewart$elm_serialize$Serialize$decodeFromJson,
+							$author$project$Main$boardCodec,
+							A2(
+								$elm$core$Result$withDefault,
+								$elm$json$Json$Encode$null,
+								A2($elm$json$Json$Decode$decodeString, $elm$json$Json$Decode$value, model.boardEncoding)))));
+				if (loadedBoard.$ === 'Ok') {
+					var editorBoard = loadedBoard.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{boardLoadError: $elm$core$Maybe$Nothing, editorBoard: editorBoard}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					var error = loadedBoard.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								boardLoadError: $elm$core$Maybe$Just(error)
+							}),
+						$elm$core$Platform$Cmd$none);
+				}
 			case 'ChangeMode':
 				var _v3 = model.mode;
 				if (_v3.$ === 'Editor') {
@@ -14720,8 +14738,8 @@ var $author$project$Main$update = F2(
 						return _Debug_todo(
 							'Main',
 							{
-								start: {line: 357, column: 29},
-								end: {line: 357, column: 39}
+								start: {line: 384, column: 29},
+								end: {line: 384, column: 39}
 							})('No player spawn found');
 					} else {
 						var spawnFrame = _v4.a;
@@ -15465,6 +15483,7 @@ var $elm$virtual_dom$VirtualDom$property = F2(
 			_VirtualDom_noJavaScriptOrHtmlJson(value));
 	});
 var $elm$html$Html$Attributes$property = $elm$virtual_dom$VirtualDom$property;
+var $elm$html$Html$small = _VirtualDom_node('small');
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$html$Html$Attributes$step = function (n) {
 	return A2($elm$html$Html$Attributes$stringProperty, 'step', n);
@@ -21550,7 +21569,32 @@ var $author$project$Main$view = function (model) {
 															[
 																$elm$html$Html$text('Load')
 															]))
-													]))
+													])),
+												function () {
+												var _v9 = model.boardLoadError;
+												if (_v9.$ === 'Nothing') {
+													return $elm$html$Html$text('');
+												} else {
+													var error = _v9.a;
+													return A2(
+														$elm$html$Html$small,
+														_List_Nil,
+														_List_fromArray(
+															[
+																$elm$html$Html$text(
+																function () {
+																	switch (error.$) {
+																		case 'DataCorrupted':
+																			return 'Board data is corrupted';
+																		case 'SerializerOutOfDate':
+																			return 'Board data is from a different version of the game';
+																		default:
+																			return 'Unexpected error';
+																	}
+																}())
+															]));
+												}
+											}()
 											]))
 									]));
 						}
