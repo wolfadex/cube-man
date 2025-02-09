@@ -3,7 +3,6 @@ module Main exposing (main)
 import Angle exposing (Angle)
 import Animation exposing (Animation)
 import Array exposing (Array)
-import Array.Extra
 import Axis3d exposing (Axis3d)
 import Axis3d.Extra
 import Block3d
@@ -16,7 +15,7 @@ import Cone3d
 import Direction3d exposing (Direction3d)
 import Duration
 import Frame3d exposing (Frame3d)
-import Html exposing (Html)
+import Html
 import Html.Attributes
 import Html.Events
 import Json.Decode
@@ -160,7 +159,7 @@ pointToIndex { maxY, maxZ } ( x, y, z ) =
 
 
 indexToPoint : { m | maxX : Int, maxY : Int, maxZ : Int } -> Int -> Point
-indexToPoint { maxX, maxY, maxZ } index =
+indexToPoint { maxY, maxZ } index =
     let
         x =
             index // (maxY * maxZ)
@@ -249,7 +248,7 @@ init () =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.batch
         [ Browser.Events.onAnimationFrameDelta Tick
         , Browser.Events.onKeyPress decodeKeyPressed
@@ -286,7 +285,7 @@ type Msg
     | KeyDown String
     | KeyUp String
     | MouseDown Json.Decode.Value
-    | MouseUp (Point2d Pixels ScreenCoordinates)
+    | MouseUp
     | MouseMove Json.Decode.Value (Point2d Pixels ScreenCoordinates) (Point2d Pixels ScreenCoordinates)
     | EncodingChanged String
     | LoadBoard
@@ -367,7 +366,7 @@ update msg model =
         KeyUp key ->
             ( { model | editorKeysDown = Set.remove key model.editorKeysDown }, Cmd.none )
 
-        MouseUp point ->
+        MouseUp ->
             if Set.member "Shift" model.editorKeysDown then
                 ( { model | mouseDragging = NoInteraction }, Cmd.none )
 
@@ -534,7 +533,7 @@ moveCursorByMouse offset model =
                                             Nothing ->
                                                 Just ( intersection, newDist )
 
-                                            Just ( prevInter, prevDist ) ->
+                                            Just ( _, prevDist ) ->
                                                 if newDist |> Quantity.lessThan prevDist then
                                                     Just ( intersection, newDist )
 
@@ -579,39 +578,6 @@ editorCamera model =
                 }
         , verticalFieldOfView = Angle.degrees 30
         }
-
-
-animateCursor : Float -> Model -> Model
-animateCursor deltaMs model =
-    case model.mode of
-        Game ->
-            model
-
-        Editor ->
-            { model
-                | cursorBounce =
-                    case model.mode of
-                        Editor ->
-                            let
-                                ( _, anim ) =
-                                    Animation.step
-                                        { easing = identity
-                                        , interpolate =
-                                            \a b dist ->
-                                                Quantity.interpolateFrom
-                                                    (Quantity.float a)
-                                                    (Quantity.float b)
-                                                    dist
-                                                    |> Quantity.toFloat
-                                        }
-                                        deltaMs
-                                        model.cursorBounce
-                            in
-                            anim
-
-                        Game ->
-                            model.cursorBounce
-            }
 
 
 tickPlayer : Float -> Model -> Model
@@ -713,7 +679,7 @@ movePlayer deltaMs model =
                         , playerMovingAcrossEdge = Just distMoved
                     }
 
-                Just (PointPickup collected) ->
+                Just (PointPickup _) ->
                     { model
                         | playerFrame =
                             model.playerFrame
@@ -737,7 +703,6 @@ movePlayer deltaMs model =
                                         |> Quantity.per (Duration.seconds 1)
                                         |> Quantity.for (Duration.milliseconds deltaMs)
                                     )
-                        , board = model.board
                     }
 
                 Just Empty ->
@@ -851,131 +816,133 @@ setPlayerFacing model =
                 model
 
             Nothing ->
-                let
-                    playerBoardPoint =
-                        model.playerFrame
-                            |> Frame3d.originPoint
-                            |> point3dToPoint
-
-                    targetBoardPoint =
-                        playerBoardPoint
-                            |> pointToPoint3d
-                            |> Point3d.translateIn
-                                (case model.playerWantFacing of
-                                    Forward ->
-                                        Frame3d.xDirection model.playerFrame
-
-                                    Backward ->
-                                        Frame3d.xDirection model.playerFrame
-                                            |> Direction3d.reverse
-
-                                    Left ->
-                                        Frame3d.yDirection model.playerFrame
-
-                                    Right ->
-                                        Frame3d.yDirection model.playerFrame
-                                            |> Direction3d.reverse
-                                )
-                                (Length.meters 1)
-                            |> point3dToPoint
-                in
                 if oppositeFacings model.playerFacing model.playerWantFacing then
                     { model | playerFacing = model.playerWantFacing }
 
-                else if
-                    Quantity.equalWithin (Length.meters 0.1)
-                        (Point3d.distanceFrom (pointToPoint3d playerBoardPoint) (Frame3d.originPoint model.playerFrame))
-                        (Length.meters 0)
-                then
-                    case Array.get (pointToIndex model targetBoardPoint) model.board of
-                        Nothing ->
-                            model
-
-                        Just black ->
-                            case black of
-                                Wall ->
-                                    model
-
-                                PointPickup _ ->
-                                    { model
-                                        | playerFrame =
-                                            Frame3d.unsafe
-                                                { originPoint = pointToPoint3d playerBoardPoint
-                                                , xDirection =
-                                                    model.playerFrame
-                                                        |> Frame3d.xDirection
-                                                        |> Direction3d.toVector
-                                                        |> Vector3d.normalize
-                                                        |> Vector3d.direction
-                                                        |> Maybe.withDefault Direction3d.positiveX
-                                                        |> correctSizeDirection
-                                                , yDirection =
-                                                    model.playerFrame
-                                                        |> Frame3d.yDirection
-                                                        |> Direction3d.toVector
-                                                        |> Vector3d.normalize
-                                                        |> Vector3d.direction
-                                                        |> Maybe.withDefault Direction3d.positiveX
-                                                        |> correctSizeDirection
-                                                , zDirection =
-                                                    model.playerFrame
-                                                        |> Frame3d.zDirection
-                                                        |> Direction3d.toVector
-                                                        |> Vector3d.normalize
-                                                        |> Vector3d.direction
-                                                        |> Maybe.withDefault Direction3d.positiveX
-                                                        |> correctSizeDirection
-                                                }
-                                        , playerFacing = model.playerWantFacing
-                                    }
-
-                                Empty ->
-                                    { model
-                                        | playerFrame =
-                                            Frame3d.unsafe
-                                                { originPoint = pointToPoint3d playerBoardPoint
-                                                , xDirection =
-                                                    model.playerFrame
-                                                        |> Frame3d.xDirection
-                                                        |> Direction3d.toVector
-                                                        |> Vector3d.normalize
-                                                        |> Vector3d.direction
-                                                        |> Maybe.withDefault Direction3d.positiveX
-                                                        |> correctSizeDirection
-                                                , yDirection =
-                                                    model.playerFrame
-                                                        |> Frame3d.yDirection
-                                                        |> Direction3d.toVector
-                                                        |> Vector3d.normalize
-                                                        |> Vector3d.direction
-                                                        |> Maybe.withDefault Direction3d.positiveX
-                                                        |> correctSizeDirection
-                                                , zDirection =
-                                                    model.playerFrame
-                                                        |> Frame3d.zDirection
-                                                        |> Direction3d.toVector
-                                                        |> Vector3d.normalize
-                                                        |> Vector3d.direction
-                                                        |> Maybe.withDefault Direction3d.positiveX
-                                                        |> correctSizeDirection
-                                                }
-                                        , playerFacing = model.playerWantFacing
-                                    }
-
-                                Edge ->
-                                    { model
-                                        | playerFrame =
-                                            Frame3d.unsafe
-                                                { originPoint = pointToPoint3d playerBoardPoint
-                                                , xDirection = Frame3d.xDirection model.playerFrame
-                                                , yDirection = Frame3d.yDirection model.playerFrame
-                                                , zDirection = Frame3d.zDirection model.playerFrame
-                                                }
-                                        , playerFacing = model.playerWantFacing
-                                    }
-
                 else
-                    model
+                    let
+                        playerBoardPoint =
+                            model.playerFrame
+                                |> Frame3d.originPoint
+                                |> point3dToPoint
+                    in
+                    if
+                        Quantity.equalWithin (Length.meters 0.1)
+                            (Point3d.distanceFrom (pointToPoint3d playerBoardPoint) (Frame3d.originPoint model.playerFrame))
+                            (Length.meters 0)
+                    then
+                        let
+                            targetBoardPoint =
+                                playerBoardPoint
+                                    |> pointToPoint3d
+                                    |> Point3d.translateIn
+                                        (case model.playerWantFacing of
+                                            Forward ->
+                                                Frame3d.xDirection model.playerFrame
+
+                                            Backward ->
+                                                Frame3d.xDirection model.playerFrame
+                                                    |> Direction3d.reverse
+
+                                            Left ->
+                                                Frame3d.yDirection model.playerFrame
+
+                                            Right ->
+                                                Frame3d.yDirection model.playerFrame
+                                                    |> Direction3d.reverse
+                                        )
+                                        (Length.meters 1)
+                                    |> point3dToPoint
+                        in
+                        case Array.get (pointToIndex model targetBoardPoint) model.board of
+                            Nothing ->
+                                model
+
+                            Just black ->
+                                case black of
+                                    Wall ->
+                                        model
+
+                                    PointPickup _ ->
+                                        { model
+                                            | playerFrame =
+                                                Frame3d.unsafe
+                                                    { originPoint = pointToPoint3d playerBoardPoint
+                                                    , xDirection =
+                                                        model.playerFrame
+                                                            |> Frame3d.xDirection
+                                                            |> Direction3d.toVector
+                                                            |> Vector3d.normalize
+                                                            |> Vector3d.direction
+                                                            |> Maybe.withDefault Direction3d.positiveX
+                                                            |> correctSizeDirection
+                                                    , yDirection =
+                                                        model.playerFrame
+                                                            |> Frame3d.yDirection
+                                                            |> Direction3d.toVector
+                                                            |> Vector3d.normalize
+                                                            |> Vector3d.direction
+                                                            |> Maybe.withDefault Direction3d.positiveX
+                                                            |> correctSizeDirection
+                                                    , zDirection =
+                                                        model.playerFrame
+                                                            |> Frame3d.zDirection
+                                                            |> Direction3d.toVector
+                                                            |> Vector3d.normalize
+                                                            |> Vector3d.direction
+                                                            |> Maybe.withDefault Direction3d.positiveX
+                                                            |> correctSizeDirection
+                                                    }
+                                            , playerFacing = model.playerWantFacing
+                                        }
+
+                                    Empty ->
+                                        { model
+                                            | playerFrame =
+                                                Frame3d.unsafe
+                                                    { originPoint = pointToPoint3d playerBoardPoint
+                                                    , xDirection =
+                                                        model.playerFrame
+                                                            |> Frame3d.xDirection
+                                                            |> Direction3d.toVector
+                                                            |> Vector3d.normalize
+                                                            |> Vector3d.direction
+                                                            |> Maybe.withDefault Direction3d.positiveX
+                                                            |> correctSizeDirection
+                                                    , yDirection =
+                                                        model.playerFrame
+                                                            |> Frame3d.yDirection
+                                                            |> Direction3d.toVector
+                                                            |> Vector3d.normalize
+                                                            |> Vector3d.direction
+                                                            |> Maybe.withDefault Direction3d.positiveX
+                                                            |> correctSizeDirection
+                                                    , zDirection =
+                                                        model.playerFrame
+                                                            |> Frame3d.zDirection
+                                                            |> Direction3d.toVector
+                                                            |> Vector3d.normalize
+                                                            |> Vector3d.direction
+                                                            |> Maybe.withDefault Direction3d.positiveX
+                                                            |> correctSizeDirection
+                                                    }
+                                            , playerFacing = model.playerWantFacing
+                                        }
+
+                                    Edge ->
+                                        { model
+                                            | playerFrame =
+                                                Frame3d.unsafe
+                                                    { originPoint = pointToPoint3d playerBoardPoint
+                                                    , xDirection = Frame3d.xDirection model.playerFrame
+                                                    , yDirection = Frame3d.yDirection model.playerFrame
+                                                    , zDirection = Frame3d.zDirection model.playerFrame
+                                                    }
+                                            , playerFacing = model.playerWantFacing
+                                        }
+
+                    else
+                        model
 
 
 oppositeFacings : Facing -> Facing -> Bool
@@ -1036,9 +1003,7 @@ decodeMouseUp =
         |> Json.Decode.andThen
             (\button ->
                 if button == 0 then
-                    Json.Decode.map2 (\x y -> MouseUp (Point2d.pixels x y))
-                        (Json.Decode.field "offsetX" Json.Decode.float)
-                        (Json.Decode.field "offsetX" Json.Decode.float)
+                    Json.Decode.succeed MouseUp
 
                 else
                     Json.Decode.fail "Non-primary mouse button"
@@ -1125,26 +1090,21 @@ view model =
                     , camera =
                         case model.mode of
                             Game ->
-                                let
-                                    cam : Camera3d Length.Meters WorldCoordinates
-                                    cam =
-                                        Camera3d.perspective
-                                            { viewpoint =
-                                                let
-                                                    targetPos =
-                                                        Frame3d.originPoint model.playerFrame
-                                                in
-                                                Viewpoint3d.lookAt
-                                                    { focalPoint = targetPos
-                                                    , eyePoint =
-                                                        targetPos
-                                                            |> Point3d.translateIn (Frame3d.zDirection model.playerFrame) (Length.meters 15)
-                                                    , upDirection = Frame3d.xDirection model.playerFrame
-                                                    }
-                                            , verticalFieldOfView = Angle.degrees 30
+                                Camera3d.perspective
+                                    { viewpoint =
+                                        let
+                                            targetPos =
+                                                Frame3d.originPoint model.playerFrame
+                                        in
+                                        Viewpoint3d.lookAt
+                                            { focalPoint = targetPos
+                                            , eyePoint =
+                                                targetPos
+                                                    |> Point3d.translateIn (Frame3d.zDirection model.playerFrame) (Length.meters 15)
+                                            , upDirection = Frame3d.xDirection model.playerFrame
                                             }
-                                in
-                                cam
+                                    , verticalFieldOfView = Angle.degrees 30
+                                    }
 
                             Editor ->
                                 editorCamera model
@@ -1163,8 +1123,9 @@ view model =
                                         |> Undo.value
                                         |> Array.toList
                                         |> List.indexedMap (viewBlock model)
-                                    , [ viewCursor model.cursorBounce model.editorCursor ]
-                                    , [ viewOrientationArrows ]
+                                    , [ viewCursor model.cursorBounce model.editorCursor
+                                      , viewOrientationArrows
+                                      ]
                                     ]
 
                             Game ->

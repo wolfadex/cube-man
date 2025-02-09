@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739121284402"
+    "1739121504017"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -12316,7 +12316,7 @@ var $elm$browser$Browser$Events$on = F3(
 var $elm$browser$Browser$Events$onKeyDown = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keydown');
 var $elm$browser$Browser$Events$onKeyPress = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keypress');
 var $elm$browser$Browser$Events$onKeyUp = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keyup');
-var $author$project$Main$subscriptions = function (model) {
+var $author$project$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$batch(
 		_List_fromArray(
 			[
@@ -12399,7 +12399,6 @@ var $author$project$Undo$insert = F2(
 		var _v1 = _v0.a;
 		var before = _v1.a;
 		var oldV = _v1.b;
-		var after = _v1.c;
 		return $author$project$Undo$Stack(
 			_Utils_Tuple3(
 				A2($elm$core$List$cons, oldV, before),
@@ -12957,7 +12956,6 @@ var $ianmackenzie$elm_geometry$Rectangle2d$from = F2(
 	});
 var $author$project$Main$indexToPoint = F2(
 	function (_v0, index) {
-		var maxX = _v0.maxX;
 		var maxY = _v0.maxY;
 		var maxZ = _v0.maxZ;
 		var x = (index / (maxY * maxZ)) | 0;
@@ -13366,7 +13364,6 @@ var $author$project$Main$moveCursorByMouse = F2(
 												_Utils_Tuple2(intersection, newDist));
 										} else {
 											var _v8 = maybeInter.a;
-											var prevInter = _v8.a;
 											var prevDist = _v8.b;
 											return A2($ianmackenzie$elm_units$Quantity$lessThan, prevDist, newDist) ? $elm$core$Maybe$Just(
 												_Utils_Tuple2(intersection, newDist)) : maybeInter;
@@ -14049,11 +14046,9 @@ var $author$project$Main$movePlayer = F2(
 								playerMovingAcrossEdge: $elm$core$Maybe$Just(distMoved)
 							});
 					case 'PointPickup':
-						var collected = nearBlock.a.a;
 						return _Utils_update(
 							model,
 							{
-								board: model.board,
 								playerFrame: A3(
 									$ianmackenzie$elm_geometry$Frame3d$translateIn,
 									function () {
@@ -14211,33 +14206,13 @@ var $author$project$Main$setPlayerFacing = function (model) {
 		if (_v0.$ === 'Just') {
 			return model;
 		} else {
-			var playerBoardPoint = $author$project$Main$point3dToPoint(
-				$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame));
-			var targetBoardPoint = $author$project$Main$point3dToPoint(
-				A3(
-					$ianmackenzie$elm_geometry$Point3d$translateIn,
-					function () {
-						var _v3 = model.playerWantFacing;
-						switch (_v3.$) {
-							case 'Forward':
-								return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
-							case 'Backward':
-								return $ianmackenzie$elm_geometry$Direction3d$reverse(
-									$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame));
-							case 'Left':
-								return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
-							default:
-								return $ianmackenzie$elm_geometry$Direction3d$reverse(
-									$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame));
-						}
-					}(),
-					$ianmackenzie$elm_units$Length$meters(1),
-					$author$project$Main$pointToPoint3d(playerBoardPoint)));
 			if (A2($author$project$Main$oppositeFacings, model.playerFacing, model.playerWantFacing)) {
 				return _Utils_update(
 					model,
 					{playerFacing: model.playerWantFacing});
 			} else {
+				var playerBoardPoint = $author$project$Main$point3dToPoint(
+					$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame));
 				if (A3(
 					$ianmackenzie$elm_units$Quantity$equalWithin,
 					$ianmackenzie$elm_units$Length$meters(0.1),
@@ -14246,6 +14221,26 @@ var $author$project$Main$setPlayerFacing = function (model) {
 						$author$project$Main$pointToPoint3d(playerBoardPoint),
 						$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame)),
 					$ianmackenzie$elm_units$Length$meters(0))) {
+					var targetBoardPoint = $author$project$Main$point3dToPoint(
+						A3(
+							$ianmackenzie$elm_geometry$Point3d$translateIn,
+							function () {
+								var _v3 = model.playerWantFacing;
+								switch (_v3.$) {
+									case 'Forward':
+										return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
+									case 'Backward':
+										return $ianmackenzie$elm_geometry$Direction3d$reverse(
+											$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame));
+									case 'Left':
+										return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
+									default:
+										return $ianmackenzie$elm_geometry$Direction3d$reverse(
+											$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame));
+								}
+							}(),
+							$ianmackenzie$elm_units$Length$meters(1),
+							$author$project$Main$pointToPoint3d(playerBoardPoint)));
 					var _v1 = A2(
 						$elm$core$Array$get,
 						A2($author$project$Main$pointToIndex, model, targetBoardPoint),
@@ -14487,7 +14482,6 @@ var $author$project$Main$update = F2(
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MouseUp':
-				var point = msg.a;
 				if (A2($elm$core$Set$member, 'Shift', model.editorKeysDown)) {
 					return _Utils_Tuple2(
 						_Utils_update(
@@ -14852,28 +14846,18 @@ var $author$project$Main$decodeMouseDown = A2(
 			A2($elm$json$Json$Decode$field, 'pointerId', $elm$json$Json$Decode$value)) : $elm$json$Json$Decode$fail('Non-primary mouse button');
 	},
 	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
-var $author$project$Main$MouseUp = function (a) {
-	return {$: 'MouseUp', a: a};
-};
-var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $author$project$Main$MouseUp = {$: 'MouseUp'};
 var $author$project$Main$decodeMouseUp = A2(
 	$elm$json$Json$Decode$andThen,
 	function (button) {
-		return (!button) ? A3(
-			$elm$json$Json$Decode$map2,
-			F2(
-				function (x, y) {
-					return $author$project$Main$MouseUp(
-						A2($ianmackenzie$elm_geometry$Point2d$pixels, x, y));
-				}),
-			A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float),
-			A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float)) : $elm$json$Json$Decode$fail('Non-primary mouse button');
+		return (!button) ? $elm$json$Json$Decode$succeed($author$project$Main$MouseUp) : $elm$json$Json$Decode$fail('Non-primary mouse button');
 	},
 	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
 var $author$project$Main$MouseMove = F3(
 	function (a, b, c) {
 		return {$: 'MouseMove', a: a, b: b, c: c};
 	});
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $elm$json$Json$Decode$map4 = _Json_map4;
 var $author$project$Main$decodePointerMove = function (pointer) {
 	return A5(
@@ -20695,7 +20679,7 @@ var $author$project$Main$view = function (model) {
 									camera: function () {
 										var _v5 = model.mode;
 										if (_v5.$ === 'Game') {
-											var cam = $ianmackenzie$elm_3d_camera$Camera3d$perspective(
+											return $ianmackenzie$elm_3d_camera$Camera3d$perspective(
 												{
 													verticalFieldOfView: $ianmackenzie$elm_units$Angle$degrees(30),
 													viewpoint: function () {
@@ -20712,7 +20696,6 @@ var $author$project$Main$view = function (model) {
 															});
 													}()
 												});
-											return cam;
 										} else {
 											return $author$project$Main$editorCamera(model);
 										}
@@ -20734,10 +20717,9 @@ var $author$project$Main$view = function (model) {
 															$author$project$Undo$value(model.editorBoard))),
 														_List_fromArray(
 														[
-															A2($author$project$Main$viewCursor, model.cursorBounce, model.editorCursor)
-														]),
-														_List_fromArray(
-														[$author$project$Main$viewOrientationArrows])
+															A2($author$project$Main$viewCursor, model.cursorBounce, model.editorCursor),
+															$author$project$Main$viewOrientationArrows
+														])
 													]));
 										} else {
 											return $elm$core$List$concat(

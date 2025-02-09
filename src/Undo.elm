@@ -18,7 +18,7 @@ init v =
 
 
 insert : a -> Stack a -> Stack a
-insert newV (Stack ( before, oldV, after )) =
+insert newV (Stack ( before, oldV, _ )) =
     Stack ( oldV :: before, newV, [] )
 
 
