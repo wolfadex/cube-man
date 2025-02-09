@@ -15,6 +15,7 @@ import Cone3d
 import Direction3d exposing (Direction3d)
 import Duration
 import Frame3d exposing (Frame3d)
+import Geometry.Serialize
 import Html
 import Html.Attributes
 import Html.Events
@@ -122,6 +123,7 @@ type Block
     | Wall
     | Edge
     | PointPickup Bool
+    | PlayerSpawn { forward : Direction3d WorldCoordinates, left : Direction3d WorldCoordinates }
 
 
 boardCodec : Serialize.Codec e Board
@@ -129,10 +131,18 @@ boardCodec =
     Serialize.array blockCodec
 
 
+playerSpawnDetailsCodec : Serialize.Codec e { forward : Direction3d WorldCoordinates, left : Direction3d WorldCoordinates }
+playerSpawnDetailsCodec =
+    Serialize.record (\forward left -> { forward = forward, left = left })
+        |> Serialize.field .forward Geometry.Serialize.direction3d
+        |> Serialize.field .left Geometry.Serialize.direction3d
+        |> Serialize.finishRecord
+
+
 blockCodec : Serialize.Codec e Block
 blockCodec =
     Serialize.customType
-        (\emptyEncoder wallEncoder edgeEncoder pointPickupEncoder value ->
+        (\emptyEncoder wallEncoder edgeEncoder pointPickupEncoder playerSpawnEncoder value ->
             case value of
                 Empty ->
                     emptyEncoder
@@ -145,11 +155,15 @@ blockCodec =
 
                 PointPickup collected ->
                     pointPickupEncoder collected
+
+                PlayerSpawn details ->
+                    playerSpawnEncoder details
         )
         |> Serialize.variant0 Empty
         |> Serialize.variant0 Wall
         |> Serialize.variant0 Edge
         |> Serialize.variant1 PointPickup Serialize.bool
+        |> Serialize.variant1 PlayerSpawn playerSpawnDetailsCodec
         |> Serialize.finishCustomType
 
 
@@ -334,12 +348,22 @@ update msg model =
         ChangeMode ->
             case model.mode of
                 Editor ->
-                    ( { model
-                        | mode = Game
-                        , board = Undo.value model.editorBoard
-                      }
-                    , Cmd.none
-                    )
+                    let
+                        board =
+                            Undo.value model.editorBoard
+                    in
+                    case findSpawn model board of
+                        Nothing ->
+                            Debug.todo "No player spawn found"
+
+                        Just spawnFrame ->
+                            ( { model
+                                | mode = Game
+                                , board = board
+                                , playerFrame = spawnFrame
+                              }
+                            , Cmd.none
+                            )
 
                 Game ->
                     ( { model
@@ -375,6 +399,23 @@ update msg model =
                     editorBoard =
                         model.editorBoard
                             |> Undo.value
+                            |> (\board ->
+                                    case model.selectedBlockType of
+                                        PlayerSpawn _ ->
+                                            Array.map
+                                                (\block ->
+                                                    case block of
+                                                        PlayerSpawn _ ->
+                                                            Empty
+
+                                                        _ ->
+                                                            block
+                                                )
+                                                board
+
+                                        _ ->
+                                            board
+                               )
                             |> Array.set (pointToIndex model model.editorCursor)
                                 (case model.editMode of
                                     Remove ->
@@ -459,6 +500,34 @@ update msg model =
 
                 Game ->
                     handleGameKeyPressed key model
+
+
+findSpawn : Model -> Board -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : {} })
+findSpawn model board =
+    findSpawnHelper model (Array.toIndexedList board)
+
+
+findSpawnHelper : Model -> List ( Int, Block ) -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : {} })
+findSpawnHelper model board =
+    case board of
+        [] ->
+            Nothing
+
+        ( index, block ) :: rest ->
+            case block of
+                PlayerSpawn details ->
+                    SketchPlane3d.unsafe
+                        { originPoint =
+                            indexToPoint model index
+                                |> pointToPoint3d
+                        , xDirection = details.forward
+                        , yDirection = details.left
+                        }
+                        |> SketchPlane3d.toFrame
+                        |> Just
+
+                _ ->
+                    findSpawnHelper model rest
 
 
 moveCameraByMouse : Json.Encode.Value -> Point2d Pixels ScreenCoordinates -> Model -> ( Model, Cmd Msg )
@@ -632,6 +701,32 @@ movePlayer deltaMs model =
                     edgeMovement
             , edgeMovement
             )
+
+        treatAsEmpty () =
+            { model
+                | playerFrame =
+                    model.playerFrame
+                        |> Frame3d.translateIn
+                            (case model.playerFacing of
+                                Forward ->
+                                    Frame3d.xDirection model.playerFrame
+
+                                Backward ->
+                                    Frame3d.xDirection model.playerFrame
+                                        |> Direction3d.reverse
+
+                                Right ->
+                                    Frame3d.yDirection model.playerFrame
+                                        |> Direction3d.reverse
+
+                                Left ->
+                                    Frame3d.yDirection model.playerFrame
+                            )
+                            (Length.meters 4
+                                |> Quantity.per (Duration.seconds 1)
+                                |> Quantity.for (Duration.milliseconds deltaMs)
+                            )
+            }
     in
     case model.playerMovingAcrossEdge of
         Nothing ->
@@ -679,57 +774,41 @@ movePlayer deltaMs model =
                         , playerMovingAcrossEdge = Just distMoved
                     }
 
-                Just (PointPickup _) ->
-                    { model
-                        | playerFrame =
-                            model.playerFrame
-                                |> Frame3d.translateIn
-                                    (case model.playerFacing of
-                                        Forward ->
-                                            Frame3d.xDirection model.playerFrame
+                Just (PointPickup collected) ->
+                    if collected then
+                        treatAsEmpty ()
 
-                                        Backward ->
-                                            Frame3d.xDirection model.playerFrame
-                                                |> Direction3d.reverse
+                    else
+                        { model
+                            | playerFrame =
+                                model.playerFrame
+                                    |> Frame3d.translateIn
+                                        (case model.playerFacing of
+                                            Forward ->
+                                                Frame3d.xDirection model.playerFrame
 
-                                        Right ->
-                                            Frame3d.yDirection model.playerFrame
-                                                |> Direction3d.reverse
+                                            Backward ->
+                                                Frame3d.xDirection model.playerFrame
+                                                    |> Direction3d.reverse
 
-                                        Left ->
-                                            Frame3d.yDirection model.playerFrame
-                                    )
-                                    (Length.meters 4
-                                        |> Quantity.per (Duration.seconds 1)
-                                        |> Quantity.for (Duration.milliseconds deltaMs)
-                                    )
-                    }
+                                            Right ->
+                                                Frame3d.yDirection model.playerFrame
+                                                    |> Direction3d.reverse
+
+                                            Left ->
+                                                Frame3d.yDirection model.playerFrame
+                                        )
+                                        (Length.meters 4
+                                            |> Quantity.per (Duration.seconds 1)
+                                            |> Quantity.for (Duration.milliseconds deltaMs)
+                                        )
+                        }
 
                 Just Empty ->
-                    { model
-                        | playerFrame =
-                            model.playerFrame
-                                |> Frame3d.translateIn
-                                    (case model.playerFacing of
-                                        Forward ->
-                                            Frame3d.xDirection model.playerFrame
+                    treatAsEmpty ()
 
-                                        Backward ->
-                                            Frame3d.xDirection model.playerFrame
-                                                |> Direction3d.reverse
-
-                                        Right ->
-                                            Frame3d.yDirection model.playerFrame
-                                                |> Direction3d.reverse
-
-                                        Left ->
-                                            Frame3d.yDirection model.playerFrame
-                                    )
-                                    (Length.meters 4
-                                        |> Quantity.per (Duration.seconds 1)
-                                        |> Quantity.for (Duration.milliseconds deltaMs)
-                                    )
-                    }
+                Just (PlayerSpawn _) ->
+                    treatAsEmpty ()
 
         Just edgeDistTraveled ->
             let
@@ -853,81 +932,57 @@ setPlayerFacing model =
                                         )
                                         (Length.meters 1)
                                     |> point3dToPoint
+
+                            treatAsEmpty () =
+                                { model
+                                    | playerFrame =
+                                        Frame3d.unsafe
+                                            { originPoint = pointToPoint3d playerBoardPoint
+                                            , xDirection =
+                                                model.playerFrame
+                                                    |> Frame3d.xDirection
+                                                    |> Direction3d.toVector
+                                                    |> Vector3d.normalize
+                                                    |> Vector3d.direction
+                                                    |> Maybe.withDefault Direction3d.positiveX
+                                                    |> correctSizeDirection
+                                            , yDirection =
+                                                model.playerFrame
+                                                    |> Frame3d.yDirection
+                                                    |> Direction3d.toVector
+                                                    |> Vector3d.normalize
+                                                    |> Vector3d.direction
+                                                    |> Maybe.withDefault Direction3d.positiveX
+                                                    |> correctSizeDirection
+                                            , zDirection =
+                                                model.playerFrame
+                                                    |> Frame3d.zDirection
+                                                    |> Direction3d.toVector
+                                                    |> Vector3d.normalize
+                                                    |> Vector3d.direction
+                                                    |> Maybe.withDefault Direction3d.positiveX
+                                                    |> correctSizeDirection
+                                            }
+                                    , playerFacing = model.playerWantFacing
+                                }
                         in
                         case Array.get (pointToIndex model targetBoardPoint) model.board of
                             Nothing ->
                                 model
 
-                            Just black ->
-                                case black of
+                            Just block ->
+                                case block of
                                     Wall ->
                                         model
 
                                     PointPickup _ ->
-                                        { model
-                                            | playerFrame =
-                                                Frame3d.unsafe
-                                                    { originPoint = pointToPoint3d playerBoardPoint
-                                                    , xDirection =
-                                                        model.playerFrame
-                                                            |> Frame3d.xDirection
-                                                            |> Direction3d.toVector
-                                                            |> Vector3d.normalize
-                                                            |> Vector3d.direction
-                                                            |> Maybe.withDefault Direction3d.positiveX
-                                                            |> correctSizeDirection
-                                                    , yDirection =
-                                                        model.playerFrame
-                                                            |> Frame3d.yDirection
-                                                            |> Direction3d.toVector
-                                                            |> Vector3d.normalize
-                                                            |> Vector3d.direction
-                                                            |> Maybe.withDefault Direction3d.positiveX
-                                                            |> correctSizeDirection
-                                                    , zDirection =
-                                                        model.playerFrame
-                                                            |> Frame3d.zDirection
-                                                            |> Direction3d.toVector
-                                                            |> Vector3d.normalize
-                                                            |> Vector3d.direction
-                                                            |> Maybe.withDefault Direction3d.positiveX
-                                                            |> correctSizeDirection
-                                                    }
-                                            , playerFacing = model.playerWantFacing
-                                        }
+                                        treatAsEmpty ()
 
                                     Empty ->
-                                        { model
-                                            | playerFrame =
-                                                Frame3d.unsafe
-                                                    { originPoint = pointToPoint3d playerBoardPoint
-                                                    , xDirection =
-                                                        model.playerFrame
-                                                            |> Frame3d.xDirection
-                                                            |> Direction3d.toVector
-                                                            |> Vector3d.normalize
-                                                            |> Vector3d.direction
-                                                            |> Maybe.withDefault Direction3d.positiveX
-                                                            |> correctSizeDirection
-                                                    , yDirection =
-                                                        model.playerFrame
-                                                            |> Frame3d.yDirection
-                                                            |> Direction3d.toVector
-                                                            |> Vector3d.normalize
-                                                            |> Vector3d.direction
-                                                            |> Maybe.withDefault Direction3d.positiveX
-                                                            |> correctSizeDirection
-                                                    , zDirection =
-                                                        model.playerFrame
-                                                            |> Frame3d.zDirection
-                                                            |> Direction3d.toVector
-                                                            |> Vector3d.normalize
-                                                            |> Vector3d.direction
-                                                            |> Maybe.withDefault Direction3d.positiveX
-                                                            |> correctSizeDirection
-                                                    }
-                                            , playerFacing = model.playerWantFacing
-                                        }
+                                        treatAsEmpty ()
+
+                                    PlayerSpawn _ ->
+                                        treatAsEmpty ()
 
                                     Edge ->
                                         { model
@@ -1188,8 +1243,7 @@ view model =
                                     else
                                         "false"
                                 ]
-                                [ Phosphor.pencil Phosphor.Regular
-                                    |> Phosphor.toHtml []
+                                [ Html.text "Add"
                                 ]
                             , Html.button
                                 [ Html.Attributes.type_ "button"
@@ -1202,8 +1256,7 @@ view model =
                                     else
                                         "false"
                                 ]
-                                [ Phosphor.eraser Phosphor.Regular
-                                    |> Phosphor.toHtml []
+                                [ Html.text "Remove"
                                 ]
                             ]
                         , Html.div
@@ -1244,6 +1297,18 @@ view model =
                                 , Html.Events.onClick (BlockTypeSelected (PointPickup False))
                                 ]
                                 [ Html.text "Point Pickup"
+                                ]
+                            , Html.button
+                                [ Html.Attributes.attribute "aria-current" <|
+                                    if model.selectedBlockType == PlayerSpawn { forward = Direction3d.x, left = Direction3d.y } then
+                                        "true"
+
+                                    else
+                                        "false"
+                                , Html.Attributes.type_ "button"
+                                , Html.Events.onClick (BlockTypeSelected (PlayerSpawn { forward = Direction3d.x, left = Direction3d.y }))
+                                ]
+                                [ Html.text "Player Spawn"
                                 ]
                             ]
                         ]
@@ -1482,18 +1547,18 @@ viewPlayer facing frame =
 
 viewBlock : Model -> Int -> Block -> Scene3d.Entity WorldCoordinates
 viewBlock model index block =
-    case block of
-        Wall ->
-            let
-                ( x, y, z ) =
-                    indexToPoint
-                        model
-                        index
-            in
-            if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
-                Scene3d.nothing
+    let
+        ( x, y, z ) =
+            indexToPoint
+                model
+                index
+    in
+    if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
+        Scene3d.nothing
 
-            else
+    else
+        case block of
+            Wall ->
                 Scene3d.blockWithShadow
                     (Scene3d.Material.matte
                         (Color.rgb
@@ -1513,18 +1578,8 @@ viewBlock model index block =
                         ( Length.meters 1, Length.meters 1, Length.meters 1 )
                     )
 
-        PointPickup collected ->
-            if collected && model.mode == Game then
-                Scene3d.nothing
-
-            else
-                let
-                    ( x, y, z ) =
-                        indexToPoint
-                            model
-                            index
-                in
-                if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
+            PointPickup collected ->
+                if collected && model.mode == Game then
                     Scene3d.nothing
 
                 else
@@ -1542,25 +1597,80 @@ viewBlock model index block =
                             (Length.meters 0.125)
                         )
 
-        Empty ->
-            Scene3d.nothing
-
-        Edge ->
-            case model.mode of
-                Game ->
-                    Scene3d.nothing
-
-                Editor ->
-                    let
-                        ( x, y, z ) =
-                            indexToPoint
-                                model
-                                index
-                    in
-                    if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
+            PlayerSpawn { forward, left } ->
+                case model.mode of
+                    Game ->
                         Scene3d.nothing
 
-                    else
+                    Editor ->
+                        let
+                            center =
+                                Point3d.meters
+                                    (toFloat x)
+                                    (toFloat y)
+                                    (toFloat z)
+
+                            carl =
+                                SketchPlane3d.unsafe
+                                    { originPoint =
+                                        indexToPoint model index
+                                            |> pointToPoint3d
+                                    , xDirection = forward
+                                    , yDirection = left
+                                    }
+                                    |> SketchPlane3d.toFrame
+                        in
+                        Scene3d.group
+                            [ Scene3d.sphereWithShadow
+                                (Scene3d.Material.emissive
+                                    (Scene3d.Light.color Color.white)
+                                    (Luminance.nits 100000)
+                                )
+                                (Sphere3d.atPoint
+                                    center
+                                    (Length.meters 0.25)
+                                )
+                            , Scene3d.coneWithShadow
+                                (Scene3d.Material.emissive (Scene3d.Light.color Color.red)
+                                    (Luminance.nits 10000)
+                                )
+                                (Cone3d.startingAt center
+                                    (Frame3d.xDirection carl)
+                                    { radius = Length.meters 0.125
+                                    , length = Length.meters 0.75
+                                    }
+                                )
+                            , Scene3d.coneWithShadow
+                                (Scene3d.Material.emissive (Scene3d.Light.color Color.green)
+                                    (Luminance.nits 10000)
+                                )
+                                (Cone3d.startingAt center
+                                    (Frame3d.yDirection carl)
+                                    { radius = Length.meters 0.125
+                                    , length = Length.meters 0.75
+                                    }
+                                )
+                            , Scene3d.coneWithShadow
+                                (Scene3d.Material.emissive (Scene3d.Light.color Color.blue)
+                                    (Luminance.nits 10000)
+                                )
+                                (Cone3d.startingAt center
+                                    (Frame3d.zDirection carl)
+                                    { radius = Length.meters 0.125
+                                    , length = Length.meters 0.75
+                                    }
+                                )
+                            ]
+
+            Empty ->
+                Scene3d.nothing
+
+            Edge ->
+                case model.mode of
+                    Game ->
+                        Scene3d.nothing
+
+                    Editor ->
                         Scene3d.blockWithShadow
                             (Scene3d.Material.metal
                                 { baseColor = Color.orange
