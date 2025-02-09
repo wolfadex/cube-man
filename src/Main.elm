@@ -38,6 +38,7 @@ import Serialize
 import Set exposing (Set)
 import SketchPlane3d
 import Sphere3d
+import Undo
 import Vector3d
 import Viewpoint3d
 
@@ -57,6 +58,7 @@ type alias Model =
     , maxY : Int
     , maxZ : Int
     , board : Board
+    , editorBoard : Undo.Stack Board
     , screenSize : { width : Int, height : Int }
     , xLowerVisible : Int
     , xUpperVisible : Int
@@ -212,6 +214,7 @@ init () =
       , zUpperVisible = maxZ - 1
       , selectedBlockType = Wall
       , board = board
+      , editorBoard = Undo.init board
       , screenSize = { width = 800, height = 600 }
       , editorCursor = ( 0, 0, 0 )
       , editorKeysDown = Set.empty
@@ -289,6 +292,8 @@ type Msg
     | LoadBoard
     | ChangeMode
     | SetEditMode EditMode
+    | Undo
+    | Redo
     | XLowerVisibleChanged Int
     | XUpperVisibleChanged Int
     | YLowerVisibleChanged Int
@@ -313,34 +318,45 @@ update msg model =
 
         LoadBoard ->
             ( { model
-                | board =
+                | editorBoard =
                     model.boardEncoding
                         |> Json.Decode.decodeString Json.Decode.value
                         -- TODO: Actually handle these errors
                         |> Result.mapError (\_ -> Json.Encode.null)
                         |> Result.Extra.merge
                         |> Serialize.decodeFromJson boardCodec
-                        |> Result.mapError (\_ -> model.board)
+                        |> Result.map Undo.init
+                        |> Result.mapError (\_ -> model.editorBoard)
                         |> Result.Extra.merge
               }
             , Cmd.none
             )
 
         ChangeMode ->
-            ( { model
-                | mode =
-                    case model.mode of
-                        Editor ->
-                            Game
+            case model.mode of
+                Editor ->
+                    ( { model
+                        | mode = Game
+                        , board = Undo.value model.editorBoard
+                      }
+                    , Cmd.none
+                    )
 
-                        Game ->
-                            Editor
-              }
-            , Cmd.none
-            )
+                Game ->
+                    ( { model
+                        | mode = Editor
+                      }
+                    , Cmd.none
+                    )
 
         SetEditMode editMode ->
             ( { model | editMode = editMode }, Cmd.none )
+
+        Undo ->
+            ( { model | editorBoard = Undo.undo model.editorBoard }, Cmd.none )
+
+        Redo ->
+            ( { model | editorBoard = Undo.redo model.editorBoard }, Cmd.none )
 
         MouseDown pointerId ->
             ( { model | mouseDragging = InteractionStart pointerId }, Cmd.none )
@@ -357,18 +373,25 @@ update msg model =
                     ( model, Cmd.none )
 
                 InteractionStart _ ->
+                    let
+                        editorBoard =
+                            model.editorBoard
+                                |> Undo.value
+                                |> Array.set (pointToIndex model model.editorCursor)
+                                    (case model.editMode of
+                                        Remove ->
+                                            Empty
+
+                                        Add ->
+                                            model.selectedBlockType
+                                    )
+                    in
                     ( { model
                         | mouseDragging = NoInteraction
-                        , board =
-                            Array.set (pointToIndex model model.editorCursor)
-                                (case model.editMode of
-                                    Remove ->
-                                        Empty
-
-                                    Add ->
-                                        model.selectedBlockType
-                                )
-                                model.board
+                        , editorBoard = Undo.insert editorBoard model.editorBoard
+                        , boardEncoding =
+                            Serialize.encodeToJson boardCodec editorBoard
+                                |> Json.Encode.encode 0
                       }
                     , Cmd.none
                     )
@@ -532,7 +555,7 @@ moveCursorByMouse offset model =
                     )
                 )
                 ( 0, Nothing )
-                model.board
+                (Undo.value model.editorBoard)
                 |> Tuple.second
     in
     case maybeIntersection of
@@ -1148,7 +1171,8 @@ view model =
                         case model.mode of
                             Editor ->
                                 List.concat
-                                    [ model.board
+                                    [ model.editorBoard
+                                        |> Undo.value
                                         |> Array.toList
                                         |> List.indexedMap (viewBlock model)
                                     , [ viewCursor model.cursorBounce model.editorCursor ]
@@ -1182,6 +1206,25 @@ view model =
                             , Html.Events.onClick ChangeMode
                             ]
                             [ Html.text "Play Level"
+                            ]
+                        , Html.div
+                            [ Html.Attributes.attribute "role" "group" ]
+                            [ Html.button
+                                [ Html.Attributes.type_ "button"
+                                , Html.Events.onClick Undo
+                                , Html.Attributes.title "Undo"
+                                ]
+                                [ Phosphor.arrowCounterClockwise Phosphor.Regular
+                                    |> Phosphor.toHtml []
+                                ]
+                            , Html.button
+                                [ Html.Attributes.type_ "button"
+                                , Html.Events.onClick Redo
+                                , Html.Attributes.title "Redo"
+                                ]
+                                [ Phosphor.arrowClockwise Phosphor.Regular
+                                    |> Phosphor.toHtml []
+                                ]
                             ]
                         , Html.div
                             [ Html.Attributes.attribute "role" "group" ]
