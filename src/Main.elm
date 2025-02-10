@@ -23,7 +23,7 @@ import Html.Extra
 import Html.Range
 import Json.Decode
 import Json.Encode
-import Length
+import Length exposing (Length)
 import LineSegment3d
 import List.Cartesian
 import Luminance
@@ -71,11 +71,14 @@ type alias Model =
     , editorKeysDown : Set String
     , cameraRotation : Angle
     , cameraElevation : Angle
+    , cameraDistance : Length
+    , cameraFocalPoint : Point2d Length.Meters ScreenCoordinates
     , mouseDragging : EditorMouseInteraction
     , cursorBounce : Animation Float
     , boardEncoding : String
     , mode : Mode
     , editMode : EditMode
+    , cameraMode : CameraMode
     , showBoardBounds : Bool
     , selectedBlock : Maybe ( Point, Block )
     , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : {} }
@@ -103,6 +106,12 @@ type EditMode
     = Add
     | Remove
     | Select
+
+
+type CameraMode
+    = Orbit
+    | Pan
+    | Zoom
 
 
 type Facing
@@ -300,6 +309,8 @@ init () =
       , editorKeysDown = Set.empty
       , cameraRotation = Angle.degrees 225
       , cameraElevation = Angle.degrees 15
+      , cameraDistance = Length.meters 30
+      , cameraFocalPoint = Point2d.meters 3.5 3.5
       , mouseDragging = NoInteraction
       , cursorBounce =
             Animation.init 0
@@ -316,6 +327,7 @@ init () =
                 |> Animation.withLoop
       , mode = Editor
       , editMode = Select
+      , cameraMode = Orbit
       , showBoardBounds = True
       , selectedBlock = Nothing
       , boardEncoding =
@@ -384,6 +396,7 @@ type Msg
     | LoadBoard
     | ChangeMode
     | SetEditMode EditMode
+    | SetCameraMode CameraMode
     | Undo
     | Redo
     | XLowerVisibleChanged Int
@@ -484,6 +497,9 @@ update msg model =
 
         SetEditMode editMode ->
             ( { model | editMode = editMode }, Cmd.none )
+
+        SetCameraMode cameraMode ->
+            ( { model | cameraMode = cameraMode }, Cmd.none )
 
         Undo ->
             ( { model
@@ -836,25 +852,47 @@ findSpawnHelper blocks =
 
 moveCameraByMouse : Json.Encode.Value -> Point2d Pixels ScreenCoordinates -> Model -> ( Model, Cmd Msg )
 moveCameraByMouse pointerId movement model =
-    ( { model
-        | mouseDragging = InteractionMoving pointerId
-        , cameraRotation =
-            model.cameraRotation
-                |> Quantity.minus
-                    (Point2d.xCoordinate movement
-                        |> Pixels.toFloat
-                        |> Angle.degrees
-                    )
-        , cameraElevation =
-            model.cameraElevation
-                |> Quantity.plus
-                    (Point2d.yCoordinate movement
-                        |> Pixels.toFloat
-                        |> Angle.degrees
-                    )
-      }
-    , Cmd.none
-    )
+    case model.cameraMode of
+        Orbit ->
+            ( { model
+                | mouseDragging = InteractionMoving pointerId
+                , cameraRotation =
+                    model.cameraRotation
+                        |> Quantity.minus
+                            (Point2d.xCoordinate movement
+                                |> Pixels.toFloat
+                                |> Angle.degrees
+                            )
+                , cameraElevation =
+                    model.cameraElevation
+                        |> Quantity.plus
+                            (Point2d.yCoordinate movement
+                                |> Pixels.toFloat
+                                |> Angle.degrees
+                            )
+              }
+            , Cmd.none
+            )
+
+        Pan ->
+            ( model
+            , Cmd.none
+            )
+
+        Zoom ->
+            ( { model
+                | cameraDistance =
+                    model.cameraDistance
+                        |> Quantity.plus
+                            (Point2d.yCoordinate movement
+                                |> Pixels.toFloat
+                                |> Length.meters
+                            )
+                        |> Quantity.min (Length.meters 116)
+                        |> Quantity.max (Length.meters 6)
+              }
+            , Cmd.none
+            )
 
 
 moveCursorByMouse : Point2d Pixels ScreenCoordinates -> Model -> ( Model, Cmd Msg )
@@ -947,10 +985,13 @@ editorCamera model =
     Camera3d.perspective
         { viewpoint =
             Viewpoint3d.orbit
-                { focalPoint = Point3d.meters 3.5 3.5 2
+                { focalPoint =
+                    model.cameraFocalPoint
+                        |> Point3d.on SketchPlane3d.xy
+                        |> Point3d.translateIn Direction3d.positiveZ (Length.meters 2)
                 , azimuth = model.cameraRotation
                 , elevation = model.cameraElevation
-                , distance = Length.meters 30
+                , distance = model.cameraDistance
                 , groundPlane = SketchPlane3d.xy
                 }
         , verticalFieldOfView = Angle.degrees 30
@@ -1779,6 +1820,39 @@ viewEditorHeader model =
                             Html.Attributes.Extra.bool (not <| Undo.canRedo model.editorBoard)
                         ]
                         [ Phosphor.arrowClockwise Phosphor.Regular
+                            |> Phosphor.toHtml []
+                        ]
+                    ]
+                , Html.div
+                    [ Html.Attributes.attribute "role" "group" ]
+                    [ Html.button
+                        [ Html.Attributes.type_ "button"
+                        , Html.Events.onClick (SetCameraMode Orbit)
+                        , Html.Attributes.title "Camera orbit"
+                        , Html.Attributes.Extra.aria "current" <|
+                            Html.Attributes.Extra.bool (model.cameraMode == Orbit)
+                        ]
+                        [ Phosphor.arrowsClockwise Phosphor.Regular
+                            |> Phosphor.toHtml []
+                        ]
+                    , Html.button
+                        [ Html.Attributes.type_ "button"
+                        , Html.Events.onClick (SetCameraMode Pan)
+                        , Html.Attributes.title "Camera pan"
+                        , Html.Attributes.Extra.aria "current" <|
+                            Html.Attributes.Extra.bool (model.cameraMode == Pan)
+                        ]
+                        [ Phosphor.arrowsOutCardinal Phosphor.Regular
+                            |> Phosphor.toHtml []
+                        ]
+                    , Html.button
+                        [ Html.Attributes.type_ "button"
+                        , Html.Events.onClick (SetCameraMode Zoom)
+                        , Html.Attributes.title "Camera zoom"
+                        , Html.Attributes.Extra.aria "current" <|
+                            Html.Attributes.Extra.bool (model.cameraMode == Zoom)
+                        ]
+                        [ Phosphor.arrowsVertical Phosphor.Regular
                             |> Phosphor.toHtml []
                         ]
                     ]
