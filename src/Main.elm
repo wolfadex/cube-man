@@ -15,7 +15,7 @@ import Cone3d
 import Direction3d exposing (Direction3d)
 import Duration
 import Frame3d exposing (Frame3d)
-import Html
+import Html exposing (Html)
 import Html.Attributes
 import Html.Attributes.Extra
 import Html.Events
@@ -75,6 +75,7 @@ type alias Model =
     , boardEncoding : String
     , mode : Mode
     , editMode : EditMode
+    , showBoardBounds : Bool
     , selectedBlock : Maybe ( Point, Block )
     , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : {} }
     , playerFacing : Facing
@@ -293,6 +294,7 @@ init () =
                 |> Animation.withLoop
       , mode = Editor
       , editMode = Select
+      , showBoardBounds = True
       , selectedBlock = Nothing
       , boardEncoding =
             board
@@ -367,6 +369,10 @@ type Msg
     | ZUpperVisibleChanged Int
     | BlockTypeSelected Block
     | SetBlock Point Block
+    | MaxXChanged Int
+    | MaxYChanged Int
+    | MaxZChanged Int
+    | ShowBoardBounds Bool
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -642,6 +648,39 @@ update msg model =
               }
             , Cmd.none
             )
+
+        MaxXChanged maxX ->
+            ( { model
+                | editorBoard =
+                    Undo.insertWith
+                        (\editorBoard -> { editorBoard | maxX = maxX })
+                        model.editorBoard
+              }
+            , Cmd.none
+            )
+
+        MaxYChanged maxY ->
+            ( { model
+                | editorBoard =
+                    Undo.insertWith
+                        (\editorBoard -> { editorBoard | maxY = maxY })
+                        model.editorBoard
+              }
+            , Cmd.none
+            )
+
+        MaxZChanged maxZ ->
+            ( { model
+                | editorBoard =
+                    Undo.insertWith
+                        (\editorBoard -> { editorBoard | maxZ = maxZ })
+                        model.editorBoard
+              }
+            , Cmd.none
+            )
+
+        ShowBoardBounds show ->
+            ( { model | showBoardBounds = show }, Cmd.none )
 
         KeyPressed key ->
             case model.mode of
@@ -1347,6 +1386,11 @@ view model =
 
                                             Just ( point, _ ) ->
                                                 viewCursor Color.yellow model.cursorBounce point
+                                      , if model.showBoardBounds then
+                                            viewBounds editorBoard
+
+                                        else
+                                            Scene3d.nothing
                                       ]
                                     ]
 
@@ -1359,118 +1403,7 @@ view model =
                                     ]
                     }
                 ]
-            , case model.mode of
-                Game ->
-                    Html.text ""
-
-                Editor ->
-                    Html.div
-                        [ Html.Attributes.style "grid-column" "1 /3"
-                        , Html.Attributes.style "grid-row" "1"
-                        , Html.Attributes.style "display" "flex"
-                        , Html.Attributes.style "align-items" "center"
-                        , Html.Attributes.style "padding" "0.5rem"
-                        , Html.Attributes.style "gap" "1rem"
-                        ]
-                        [ Html.button
-                            [ Html.Attributes.type_ "button"
-                            , Html.Events.onClick ChangeMode
-                            ]
-                            [ Html.text "Play\u{00A0}Level"
-                            ]
-                        , Html.div
-                            [ Html.Attributes.attribute "role" "group" ]
-                            [ Html.button
-                                [ Html.Attributes.type_ "button"
-                                , Html.Events.onClick Undo
-                                , Html.Attributes.title "Undo"
-                                , Html.Attributes.Extra.aria "disabled" <|
-                                    Html.Attributes.Extra.bool (not <| Undo.canUndo model.editorBoard)
-                                ]
-                                [ Phosphor.arrowCounterClockwise Phosphor.Regular
-                                    |> Phosphor.toHtml []
-                                ]
-                            , Html.button
-                                [ Html.Attributes.type_ "button"
-                                , Html.Events.onClick Redo
-                                , Html.Attributes.title "Redo"
-                                , Html.Attributes.Extra.aria "disabled" <|
-                                    Html.Attributes.Extra.bool (not <| Undo.canRedo model.editorBoard)
-                                ]
-                                [ Phosphor.arrowClockwise Phosphor.Regular
-                                    |> Phosphor.toHtml []
-                                ]
-                            ]
-                        , Html.div
-                            [ Html.Attributes.attribute "role" "group" ]
-                            [ Html.button
-                                [ Html.Attributes.type_ "button"
-                                , Html.Events.onClick (SetEditMode Select)
-                                , Html.Attributes.title "Select block"
-                                , Html.Attributes.Extra.aria "current" <|
-                                    Html.Attributes.Extra.bool (model.editMode == Select)
-                                ]
-                                [ Phosphor.cursor Phosphor.Regular
-                                    |> Phosphor.toHtml []
-                                ]
-                            , Html.button
-                                [ Html.Attributes.type_ "button"
-                                , Html.Events.onClick (SetEditMode Add)
-                                , Html.Attributes.title "Add block"
-                                , Html.Attributes.Extra.aria "current" <|
-                                    Html.Attributes.Extra.bool (model.editMode == Add)
-                                ]
-                                [ Phosphor.plus Phosphor.Regular
-                                    |> Phosphor.toHtml []
-                                ]
-                            , Html.button
-                                [ Html.Attributes.type_ "button"
-                                , Html.Events.onClick (SetEditMode Remove)
-                                , Html.Attributes.title "Remove block"
-                                , Html.Attributes.Extra.aria "current" <|
-                                    Html.Attributes.Extra.bool (model.editMode == Remove)
-                                ]
-                                [ Phosphor.x Phosphor.Regular
-                                    |> Phosphor.toHtml []
-                                ]
-                            ]
-                        , Html.div
-                            [ Html.Attributes.attribute "role" "group"
-                            ]
-                            [ Html.button
-                                [ Html.Attributes.Extra.aria "current" <|
-                                    Html.Attributes.Extra.bool (model.selectedBlockType == Wall)
-                                , Html.Attributes.type_ "button"
-                                , Html.Events.onClick (BlockTypeSelected Wall)
-                                ]
-                                [ Html.text "Wall"
-                                ]
-                            , Html.button
-                                [ Html.Attributes.Extra.aria "current" <|
-                                    Html.Attributes.Extra.bool (model.selectedBlockType == Edge)
-                                , Html.Attributes.type_ "button"
-                                , Html.Events.onClick (BlockTypeSelected Edge)
-                                ]
-                                [ Html.text "Edge"
-                                ]
-                            , Html.button
-                                [ Html.Attributes.Extra.aria "current" <|
-                                    Html.Attributes.Extra.bool (model.selectedBlockType == PointPickup False)
-                                , Html.Attributes.type_ "button"
-                                , Html.Events.onClick (BlockTypeSelected (PointPickup False))
-                                ]
-                                [ Html.text "Point\u{00A0}Pickup"
-                                ]
-                            , Html.button
-                                [ Html.Attributes.Extra.aria "current" <|
-                                    Html.Attributes.Extra.bool (model.selectedBlockType == PlayerSpawn { forward = PositiveX, left = PositiveY })
-                                , Html.Attributes.type_ "button"
-                                , Html.Events.onClick (BlockTypeSelected (PlayerSpawn { forward = PositiveX, left = PositiveY }))
-                                ]
-                                [ Html.text "Player\u{00A0}Spawn"
-                                ]
-                            ]
-                        ]
+            , viewEditorHeader model
             , case model.mode of
                 Game ->
                     Html.div
@@ -1515,7 +1448,7 @@ view model =
                                         Html.span [] [ Html.text "Wall" ]
 
                                     PointPickup _ ->
-                                        Html.span [] [ Html.text "PointPickup" ]
+                                        Html.span [] [ Html.text "Point Pickup" ]
 
                                     PlayerSpawn details ->
                                         Html.form
@@ -1577,6 +1510,21 @@ view model =
                         , Html.hr [] []
                         , Html.form []
                             [ Html.label []
+                                [ Html.span [] [ Html.text "X Size " ]
+                                , Html.input
+                                    [ Html.Attributes.type_ "number"
+                                    , Html.Attributes.value (String.fromInt editorBoard.maxX)
+                                    , Html.Attributes.min "1"
+                                    , Html.Attributes.max "20"
+                                    , Html.Attributes.step "1"
+                                    , Html.Events.on "blur" <|
+                                        Json.Decode.map MaxXChanged
+                                            (Json.Decode.at [ "target", "value" ] Json.Decode.int)
+                                    ]
+                                    []
+                                ]
+                            , Html.br [] []
+                            , Html.label []
                                 [ Html.span [] [ Html.text "X Visibility" ]
                                 , Html.Range.view
                                     { max = toFloat (editorBoard.maxX - 1)
@@ -1588,6 +1536,21 @@ view model =
                                     }
                                 ]
                             , Html.label []
+                                [ Html.span [] [ Html.text "Y Size " ]
+                                , Html.input
+                                    [ Html.Attributes.type_ "number"
+                                    , Html.Attributes.value (String.fromInt editorBoard.maxY)
+                                    , Html.Attributes.min "1"
+                                    , Html.Attributes.max "20"
+                                    , Html.Attributes.step "1"
+                                    , Html.Events.on "blur" <|
+                                        Json.Decode.map MaxYChanged
+                                            (Json.Decode.at [ "target", "value" ] Json.Decode.int)
+                                    ]
+                                    []
+                                ]
+                            , Html.br [] []
+                            , Html.label []
                                 [ Html.span [] [ Html.text "Y Visibility" ]
                                 , Html.Range.view
                                     { max = toFloat (editorBoard.maxY - 1)
@@ -1598,6 +1561,21 @@ view model =
                                     , onHighChange = round >> YUpperVisibleChanged
                                     }
                                 ]
+                            , Html.label []
+                                [ Html.span [] [ Html.text "Z Size " ]
+                                , Html.input
+                                    [ Html.Attributes.type_ "number"
+                                    , Html.Attributes.value (String.fromInt editorBoard.maxZ)
+                                    , Html.Attributes.min "1"
+                                    , Html.Attributes.max "20"
+                                    , Html.Attributes.step "1"
+                                    , Html.Events.on "blur" <|
+                                        Json.Decode.map MaxZChanged
+                                            (Json.Decode.at [ "target", "value" ] Json.Decode.int)
+                                    ]
+                                    []
+                                ]
+                            , Html.br [] []
                             , Html.label []
                                 [ Html.span [] [ Html.text "Z Visibility" ]
                                 , Html.Range.view
@@ -1655,18 +1633,221 @@ view model =
     }
 
 
+viewEditorHeader : Model -> Html Msg
+viewEditorHeader model =
+    case model.mode of
+        Game ->
+            Html.text ""
+
+        Editor ->
+            Html.div
+                [ Html.Attributes.style "grid-column" "1 /3"
+                , Html.Attributes.style "grid-row" "1"
+                , Html.Attributes.style "display" "flex"
+                , Html.Attributes.style "align-items" "center"
+                , Html.Attributes.style "padding" "0.5rem"
+                , Html.Attributes.style "gap" "1rem"
+                ]
+                [ Html.button
+                    [ Html.Attributes.type_ "button"
+                    , Html.Events.onClick ChangeMode
+                    ]
+                    [ Html.text "Play Level"
+                    ]
+                , Html.div
+                    [ Html.Attributes.attribute "role" "group" ]
+                    [ Html.button
+                        [ Html.Attributes.type_ "button"
+                        , Html.Events.onClick Undo
+                        , Html.Attributes.title "Undo"
+                        , Html.Attributes.Extra.aria "disabled" <|
+                            Html.Attributes.Extra.bool (not <| Undo.canUndo model.editorBoard)
+                        ]
+                        [ Phosphor.arrowCounterClockwise Phosphor.Regular
+                            |> Phosphor.toHtml []
+                        ]
+                    , Html.button
+                        [ Html.Attributes.type_ "button"
+                        , Html.Events.onClick Redo
+                        , Html.Attributes.title "Redo"
+                        , Html.Attributes.Extra.aria "disabled" <|
+                            Html.Attributes.Extra.bool (not <| Undo.canRedo model.editorBoard)
+                        ]
+                        [ Phosphor.arrowClockwise Phosphor.Regular
+                            |> Phosphor.toHtml []
+                        ]
+                    ]
+                , Html.div
+                    [ Html.Attributes.attribute "role" "group" ]
+                    [ Html.button
+                        [ Html.Attributes.type_ "button"
+                        , Html.Events.onClick (SetEditMode Select)
+                        , Html.Attributes.title "Select block"
+                        , Html.Attributes.Extra.aria "current" <|
+                            Html.Attributes.Extra.bool (model.editMode == Select)
+                        ]
+                        [ Phosphor.cursor Phosphor.Regular
+                            |> Phosphor.toHtml []
+                        ]
+                    , Html.button
+                        [ Html.Attributes.type_ "button"
+                        , Html.Events.onClick (SetEditMode Add)
+                        , Html.Attributes.title "Add block"
+                        , Html.Attributes.Extra.aria "current" <|
+                            Html.Attributes.Extra.bool (model.editMode == Add)
+                        ]
+                        [ Phosphor.plus Phosphor.Regular
+                            |> Phosphor.toHtml []
+                        ]
+                    , Html.button
+                        [ Html.Attributes.type_ "button"
+                        , Html.Events.onClick (SetEditMode Remove)
+                        , Html.Attributes.title "Remove block"
+                        , Html.Attributes.Extra.aria "current" <|
+                            Html.Attributes.Extra.bool (model.editMode == Remove)
+                        ]
+                        [ Phosphor.x Phosphor.Regular
+                            |> Phosphor.toHtml []
+                        ]
+                    ]
+                , Html.div
+                    [ Html.Attributes.attribute "role" "group"
+                    ]
+                    [ Html.button
+                        [ Html.Attributes.Extra.aria "current" <|
+                            Html.Attributes.Extra.bool (model.selectedBlockType == Wall)
+                        , Html.Attributes.type_ "button"
+                        , Html.Events.onClick (BlockTypeSelected Wall)
+                        ]
+                        [ Html.text "Wall"
+                        ]
+                    , Html.button
+                        [ Html.Attributes.Extra.aria "current" <|
+                            Html.Attributes.Extra.bool (model.selectedBlockType == Edge)
+                        , Html.Attributes.type_ "button"
+                        , Html.Events.onClick (BlockTypeSelected Edge)
+                        ]
+                        [ Html.text "Edge"
+                        ]
+                    , Html.button
+                        [ Html.Attributes.Extra.aria "current" <|
+                            Html.Attributes.Extra.bool (model.selectedBlockType == PointPickup False)
+                        , Html.Attributes.type_ "button"
+                        , Html.Events.onClick (BlockTypeSelected (PointPickup False))
+                        ]
+                        [ Html.text "Point Pickup"
+                        ]
+                    , Html.button
+                        [ Html.Attributes.Extra.aria "current" <|
+                            Html.Attributes.Extra.bool (model.selectedBlockType == PlayerSpawn { forward = PositiveX, left = PositiveY })
+                        , Html.Attributes.type_ "button"
+                        , Html.Events.onClick (BlockTypeSelected (PlayerSpawn { forward = PositiveX, left = PositiveY }))
+                        ]
+                        [ Html.text "Player Spawn"
+                        ]
+                    ]
+                , Html.button
+                    [ Html.Attributes.Extra.aria "pressed" <|
+                        Html.Attributes.Extra.bool model.showBoardBounds
+                    , Html.Attributes.type_ "button"
+                    , Html.Events.onClick (ShowBoardBounds (not model.showBoardBounds))
+                    , Html.Attributes.title "Show board bounds"
+                    ]
+                    [ Phosphor.gridNine Phosphor.Regular
+                        |> Phosphor.toHtml []
+                    ]
+                ]
+
+
+viewBounds : Board -> Scene3d.Entity WorldCoordinates
+viewBounds board =
+    Scene3d.group
+        (List.concat
+            [ List.map
+                (\y ->
+                    Scene3d.lineSegment
+                        (Scene3d.Material.color Color.orange)
+                        (LineSegment3d.from
+                            (Point3d.meters -0.5 (toFloat y - 0.5) -0.5)
+                            (Point3d.meters (toFloat board.maxX - 0.5) (toFloat y - 0.5) -0.5)
+                        )
+                )
+                (List.range 0 board.maxY)
+            , List.map
+                (\x ->
+                    Scene3d.lineSegment
+                        (Scene3d.Material.color Color.orange)
+                        (LineSegment3d.from
+                            (Point3d.meters (toFloat x - 0.5) -0.5 -0.5)
+                            (Point3d.meters (toFloat x - 0.5) (toFloat board.maxY - 0.5) -0.5)
+                        )
+                )
+                (List.range 0 board.maxX)
+            , [ Scene3d.lineSegment
+                    (Scene3d.Material.color Color.orange)
+                    (LineSegment3d.from
+                        (Point3d.meters -0.5 -0.5 (toFloat board.maxZ - 0.5))
+                        (Point3d.meters (toFloat board.maxX - 0.5) -0.5 (toFloat board.maxZ - 0.5))
+                    )
+              , Scene3d.lineSegment
+                    (Scene3d.Material.color Color.orange)
+                    (LineSegment3d.from
+                        (Point3d.meters -0.5 (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                        (Point3d.meters (toFloat board.maxX - 0.5) (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                    )
+              , Scene3d.lineSegment
+                    (Scene3d.Material.color Color.orange)
+                    (LineSegment3d.from
+                        (Point3d.meters -0.5 -0.5 (toFloat board.maxZ - 0.5))
+                        (Point3d.meters -0.5 (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                    )
+              , Scene3d.lineSegment
+                    (Scene3d.Material.color Color.orange)
+                    (LineSegment3d.from
+                        (Point3d.meters (toFloat board.maxX - 0.5) -0.5 (toFloat board.maxZ - 0.5))
+                        (Point3d.meters (toFloat board.maxX - 0.5) (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                    )
+              , Scene3d.lineSegment
+                    (Scene3d.Material.color Color.orange)
+                    (LineSegment3d.from
+                        (Point3d.meters -0.5 -0.5 -0.5)
+                        (Point3d.meters -0.5 -0.5 (toFloat board.maxZ - 0.5))
+                    )
+              , Scene3d.lineSegment
+                    (Scene3d.Material.color Color.orange)
+                    (LineSegment3d.from
+                        (Point3d.meters (toFloat board.maxX - 0.5) -0.5 -0.5)
+                        (Point3d.meters (toFloat board.maxX - 0.5) -0.5 (toFloat board.maxZ - 0.5))
+                    )
+              , Scene3d.lineSegment
+                    (Scene3d.Material.color Color.orange)
+                    (LineSegment3d.from
+                        (Point3d.meters -0.5 (toFloat board.maxY - 0.5) -0.5)
+                        (Point3d.meters -0.5 (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                    )
+              , Scene3d.lineSegment
+                    (Scene3d.Material.color Color.orange)
+                    (LineSegment3d.from
+                        (Point3d.meters (toFloat board.maxX - 0.5) (toFloat board.maxY - 0.5) -0.5)
+                        (Point3d.meters (toFloat board.maxX - 0.5) (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                    )
+              ]
+            ]
+        )
+
+
 viewOrientationArrows : Scene3d.Entity WorldCoordinates
 viewOrientationArrows =
     Scene3d.group
         [ Scene3d.lineSegment
             (Scene3d.Material.color Color.red)
             (LineSegment3d.from
-                (Point3d.meters -1 -1 -1)
-                (Point3d.meters 1 -1 -1)
+                (Point3d.meters -1 -1 -0.5)
+                (Point3d.meters 1 -1 -0.5)
             )
         , Scene3d.cone
             (Scene3d.Material.matte Color.red)
-            (Cone3d.startingAt (Point3d.meters 1 -1 -1)
+            (Cone3d.startingAt (Point3d.meters 1 -1 -0.5)
                 Direction3d.positiveX
                 { radius = Length.meters 0.125
                 , length = Length.meters 0.25
@@ -1675,12 +1856,12 @@ viewOrientationArrows =
         , Scene3d.lineSegment
             (Scene3d.Material.color Color.green)
             (LineSegment3d.from
-                (Point3d.meters -1 -1 -1)
-                (Point3d.meters -1 1 -1)
+                (Point3d.meters -1 -1 -0.5)
+                (Point3d.meters -1 1 -0.5)
             )
         , Scene3d.cone
             (Scene3d.Material.matte Color.green)
-            (Cone3d.startingAt (Point3d.meters -1 1 -1)
+            (Cone3d.startingAt (Point3d.meters -1 1 -0.5)
                 Direction3d.positiveY
                 { radius = Length.meters 0.125
                 , length = Length.meters 0.25
@@ -1689,12 +1870,12 @@ viewOrientationArrows =
         , Scene3d.lineSegment
             (Scene3d.Material.color Color.blue)
             (LineSegment3d.from
-                (Point3d.meters -1 -1 -1)
-                (Point3d.meters -1 -1 1)
+                (Point3d.meters -1 -1 -0.5)
+                (Point3d.meters -1 -1 1.5)
             )
         , Scene3d.cone
             (Scene3d.Material.matte Color.blue)
-            (Cone3d.startingAt (Point3d.meters -1 -1 1)
+            (Cone3d.startingAt (Point3d.meters -1 -1 1.5)
                 Direction3d.positiveZ
                 { radius = Length.meters 0.125
                 , length = Length.meters 0.25

@@ -47,3 +47,9 @@ selectChangeHelper toKey options key =
 
             else
                 selectChangeHelper toKey rest key
+
+
+
+-- nonBreakingSpace : String
+-- nonBreakingSpace =
+--     "\u{00A0}"

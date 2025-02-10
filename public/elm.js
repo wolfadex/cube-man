@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739157240617"
+    "1739159218128"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -12003,6 +12003,7 @@ var $author$project$Main$init = function (_v0) {
 			screenSize: {height: 600, width: 800},
 			selectedBlock: $elm$core$Maybe$Nothing,
 			selectedBlockType: $author$project$Main$Wall,
+			showBoardBounds: true,
 			xLowerVisible: 0,
 			xUpperVisible: maxX - 1,
 			yLowerVisible: 0,
@@ -14803,8 +14804,8 @@ var $author$project$Main$update = F2(
 						return _Debug_todo(
 							'Main',
 							{
-								start: {line: 431, column: 29},
-								end: {line: 431, column: 39}
+								start: {line: 437, column: 29},
+								end: {line: 437, column: 39}
 							})('No player spawn found');
 					} else {
 						var spawnFrame = _v4.a;
@@ -15095,6 +15096,61 @@ var $author$project$Main$update = F2(
 								_Utils_Tuple2(point, block))
 						}),
 					$elm$core$Platform$Cmd$none);
+			case 'MaxXChanged':
+				var maxX = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							editorBoard: A2(
+								$author$project$Undo$insertWith,
+								function (editorBoard) {
+									return _Utils_update(
+										editorBoard,
+										{maxX: maxX});
+								},
+								model.editorBoard)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'MaxYChanged':
+				var maxY = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							editorBoard: A2(
+								$author$project$Undo$insertWith,
+								function (editorBoard) {
+									return _Utils_update(
+										editorBoard,
+										{maxY: maxY});
+								},
+								model.editorBoard)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'MaxZChanged':
+				var maxZ = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							editorBoard: A2(
+								$author$project$Undo$insertWith,
+								function (editorBoard) {
+									return _Utils_update(
+										editorBoard,
+										{maxZ: maxZ});
+								},
+								model.editorBoard)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'ShowBoardBounds':
+				var show = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{showBoardBounds: show}),
+					$elm$core$Platform$Cmd$none);
 			default:
 				var key = msg.a;
 				var _v8 = model.mode;
@@ -15105,26 +15161,24 @@ var $author$project$Main$update = F2(
 				}
 		}
 	});
-var $author$project$Main$Add = {$: 'Add'};
-var $author$project$Main$BlockTypeSelected = function (a) {
-	return {$: 'BlockTypeSelected', a: a};
-};
 var $author$project$Main$ChangeMode = {$: 'ChangeMode'};
 var $author$project$Main$EncodingChanged = function (a) {
 	return {$: 'EncodingChanged', a: a};
 };
 var $author$project$Main$LoadBoard = {$: 'LoadBoard'};
-var $author$project$Main$Redo = {$: 'Redo'};
-var $phosphor_icons$phosphor_elm$Phosphor$Regular = {$: 'Regular'};
-var $author$project$Main$Remove = {$: 'Remove'};
+var $author$project$Main$MaxXChanged = function (a) {
+	return {$: 'MaxXChanged', a: a};
+};
+var $author$project$Main$MaxYChanged = function (a) {
+	return {$: 'MaxYChanged', a: a};
+};
+var $author$project$Main$MaxZChanged = function (a) {
+	return {$: 'MaxZChanged', a: a};
+};
 var $author$project$Main$SetBlock = F2(
 	function (a, b) {
 		return {$: 'SetBlock', a: a, b: b};
 	});
-var $author$project$Main$SetEditMode = function (a) {
-	return {$: 'SetEditMode', a: a};
-};
-var $author$project$Main$Undo = {$: 'Undo'};
 var $author$project$Main$XLowerVisibleChanged = function (a) {
 	return {$: 'XLowerVisibleChanged', a: a};
 };
@@ -15143,196 +15197,10 @@ var $author$project$Main$ZLowerVisibleChanged = function (a) {
 var $author$project$Main$ZUpperVisibleChanged = function (a) {
 	return {$: 'ZUpperVisibleChanged', a: a};
 };
-var $elm$virtual_dom$VirtualDom$attribute = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_attribute,
-			_VirtualDom_noOnOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
 	});
-var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
-var $author$project$Html$Attributes$Extra$aria = F2(
-	function (attrib, value) {
-		return A2($elm$html$Html$Attributes$attribute, 'aria-' + attrib, value);
-	});
-var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
-var $phosphor_icons$phosphor_elm$Phosphor$IconVariant = function (a) {
-	return {$: 'IconVariant', a: a};
-};
-var $phosphor_icons$phosphor_elm$Phosphor$defaultAttributes = {
-	_class: $elm$core$Maybe$Just('ph-icon'),
-	size: 1,
-	sizeUnit: 'em'
-};
-var $phosphor_icons$phosphor_elm$Phosphor$makeBuilder = function (src) {
-	return $phosphor_icons$phosphor_elm$Phosphor$IconVariant(
-		{attrs: $phosphor_icons$phosphor_elm$Phosphor$defaultAttributes, src: src});
-};
-var $elm$svg$Svg$Attributes$opacity = _VirtualDom_attribute('opacity');
-var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var $elm$svg$Svg$path = $elm$svg$Svg$trustedNode('path');
-var $phosphor_icons$phosphor_elm$Phosphor$arrowClockwise = function (weight) {
-	var elements = function () {
-		switch (weight.$) {
-			case 'Bold':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M244,56v48a12,12,0,0,1-12,12H184a12,12,0,1,1,0-24H201.1l-19-17.38c-.13-.12-.26-.24-.38-.37A76,76,0,1,0,127,204h1a75.53,75.53,0,0,0,52.15-20.72,12,12,0,0,1,16.49,17.45A99.45,99.45,0,0,1,128,228h-1.37A100,100,0,1,1,198.51,57.06L220,76.72V56a12,12,0,0,1,24,0Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Duotone':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M216,128a88,88,0,1,1-88-88A88,88,0,0,1,216,128Z'),
-								$elm$svg$Svg$Attributes$opacity('0.2')
-							]),
-						_List_Nil),
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,85.8V56a8,8,0,1,1,16,0Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Fill':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1-5.66-13.66l17-17-10.55-9.65-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,1,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60l10.93,10L226.34,50.3A8,8,0,0,1,240,56Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Light':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M238,56v48a6,6,0,0,1-6,6H184a6,6,0,0,1,0-12h32.55l-30.38-27.8c-.06-.06-.12-.13-.19-.19a82,82,0,1,0-1.7,117.65,6,6,0,0,1,8.24,8.73A93.46,93.46,0,0,1,128,222h-1.28A94,94,0,1,1,194.37,61.4L226,90.35V56a6,6,0,1,1,12,0Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Regular':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,85.8V56a8,8,0,1,1,16,0Z')
-							]),
-						_List_Nil)
-					]);
-			default:
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M236,56v48a4,4,0,0,1-4,4H184a4,4,0,0,1,0-8h37.7L187.53,68.69l-.13-.12a84,84,0,1,0-1.75,120.51,4,4,0,0,1,5.5,5.82A91.43,91.43,0,0,1,128,220h-1.26A92,92,0,1,1,193,62.84l35,32.05V56a4,4,0,1,1,8,0Z')
-							]),
-						_List_Nil)
-					]);
-		}
-	}();
-	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
-};
-var $phosphor_icons$phosphor_elm$Phosphor$arrowCounterClockwise = function (weight) {
-	var elements = function () {
-		switch (weight.$) {
-			case 'Bold':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M228,128a100,100,0,0,1-98.66,100H128a99.39,99.39,0,0,1-68.62-27.29,12,12,0,0,1,16.48-17.45,76,76,0,1,0-1.57-109c-.13.13-.25.25-.39.37L54.89,92H72a12,12,0,0,1,0,24H24a12,12,0,0,1-12-12V56a12,12,0,0,1,24,0V76.72L57.48,57.06A100,100,0,0,1,228,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Duotone':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M216,128a88,88,0,1,1-88-88A88,88,0,0,1,216,128Z'),
-								$elm$svg$Svg$Attributes$opacity('0.2')
-							]),
-						_List_Nil),
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Fill':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L60.63,81.29l17,17A8,8,0,0,1,72,112H24a8,8,0,0,1-8-8V56A8,8,0,0,1,29.66,50.3L49.31,70,60.25,60A96,96,0,0,1,224,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Light':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M222,128a94,94,0,0,1-92.74,94H128a93.43,93.43,0,0,1-64.5-25.65,6,6,0,1,1,8.24-8.72A82,82,0,1,0,70,70l-.19.19L39.44,98H72a6,6,0,0,1,0,12H24a6,6,0,0,1-6-6V56a6,6,0,0,1,12,0V90.34L61.63,61.4A94,94,0,0,1,222,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Regular':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z')
-							]),
-						_List_Nil)
-					]);
-			default:
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M220,128a92,92,0,0,1-90.77,92H128a91.47,91.47,0,0,1-63.13-25.1,4,4,0,1,1,5.5-5.82A84,84,0,1,0,68.6,68.57l-.13.12L34.3,100H72a4,4,0,0,1,0,8H24a4,4,0,0,1-4-4V56a4,4,0,0,1,8,0V94.89l35-32A92,92,0,0,1,220,128Z')
-							]),
-						_List_Nil)
-					]);
-		}
-	}();
-	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
-};
 var $author$project$Main$axisToLabel = function (axis) {
 	switch (axis.$) {
 		case 'PositiveX':
@@ -15355,22 +15223,8 @@ var $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor = function (a) {
 var $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor = function (color) {
 	return $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor(color);
 };
-var $author$project$Html$Attributes$Extra$bool = function (b) {
-	return b ? 'true' : 'false';
-};
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$core$Basics$neq = _Utils_notEqual;
-var $author$project$Undo$canRedo = function (_v0) {
-	var _v1 = _v0.a;
-	var after = _v1.c;
-	return !_Utils_eq(after, _List_Nil);
-};
-var $author$project$Undo$canUndo = function (_v0) {
-	var _v1 = _v0.a;
-	var before = _v1.a;
-	return !_Utils_eq(before, _List_Nil);
-};
 var $elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -15381,87 +15235,6 @@ var $elm$core$List$append = F2(
 	});
 var $elm$core$List$concat = function (lists) {
 	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $phosphor_icons$phosphor_elm$Phosphor$cursor = function (weight) {
-	var elements = function () {
-		switch (weight.$) {
-			case 'Bold':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M224.15,179.17l-46.83-46.82,37.93-13.51.76-.3a20,20,0,0,0-1.76-37.27L54.16,29A20,20,0,0,0,29,54.16L81.27,214.24A20,20,0,0,0,118.54,216c.11-.25.21-.5.3-.76l13.51-37.92,46.83,46.82a20,20,0,0,0,28.28,0l16.69-16.68A20,20,0,0,0,224.15,179.17Zm-30.83,25.17-48.48-48.48A20,20,0,0,0,130.7,150a20.66,20.66,0,0,0-3.74.35A20,20,0,0,0,112.35,162c-.11.25-.21.5-.3.76L100.4,195.5,54.29,54.29l141.21,46.1-32.71,11.66c-.26.09-.51.19-.76.3a20,20,0,0,0-6.17,32.48h0l48.49,48.48Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Duotone':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M213.66,201,201,213.66a8,8,0,0,1-11.31,0l-51.31-51.31a8,8,0,0,0-13,2.46l-17.82,46.41a8,8,0,0,1-14.85-.71L40.41,50.44a8,8,0,0,1,10-10L210.51,92.68a8,8,0,0,1,.71,14.85l-46.41,17.82a8,8,0,0,0-2.46,13l51.31,51.31A8,8,0,0,1,213.66,201Z'),
-								$elm$svg$Svg$Attributes$opacity('0.2')
-							]),
-						_List_Nil),
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M168,132.69,214.08,115l.33-.13A16,16,0,0,0,213,85.07L52.92,32.8A15.95,15.95,0,0,0,32.8,52.92L85.07,213a15.82,15.82,0,0,0,14.41,11l.78,0a15.84,15.84,0,0,0,14.61-9.59l.13-.33L132.69,168,184,219.31a16,16,0,0,0,22.63,0l12.68-12.68a16,16,0,0,0,0-22.63ZM195.31,208,144,156.69a16,16,0,0,0-26,4.93c0,.11-.09.22-.13.32l-17.65,46L48,48l159.85,52.2-45.95,17.64-.32.13a16,16,0,0,0-4.93,26h0L208,195.31Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Fill':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M220.49,207.8,207.8,220.49a12,12,0,0,1-17,0l-56.57-56.57L115,214.08l-.13.33A15.84,15.84,0,0,1,100.26,224l-.78,0a15.82,15.82,0,0,1-14.41-11L32.8,52.92A15.95,15.95,0,0,1,52.92,32.8L213,85.07a16,16,0,0,1,1.41,29.8l-.33.13-50.16,19.27,56.57,56.56A12,12,0,0,1,220.49,207.8Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Light':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M166.59,134.1a1.91,1.91,0,0,1-.55-1.79,2,2,0,0,1,1.08-1.42l46.25-17.76.24-.1A14,14,0,0,0,212.38,87L52.29,34.7A13.95,13.95,0,0,0,34.7,52.29L87,212.38a13.82,13.82,0,0,0,12.6,9.6c.23,0,.46,0,.69,0A13.84,13.84,0,0,0,113,213.61a2.44,2.44,0,0,0,.1-.24l17.76-46.25a2,2,0,0,1,3.21-.53l51.31,51.31a14,14,0,0,0,19.8,0l12.69-12.69a14,14,0,0,0,0-19.8Zm42.82,62.63-12.68,12.68a2,2,0,0,1-2.83,0L142.59,158.1a14,14,0,0,0-22.74,4.32,2.44,2.44,0,0,0-.1.24L102,208.91a2,2,0,0,1-3.61-.26L46.11,48.57a1.87,1.87,0,0,1,.47-2A1.92,1.92,0,0,1,47.93,46a2.22,2.22,0,0,1,.64.1L208.65,98.38a2,2,0,0,1,.26,3.61l-46.25,17.76-.24.1a14,14,0,0,0-4.32,22.74h0l51.31,51.31A2,2,0,0,1,209.41,196.73Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Regular':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M168,132.69,214.08,115l.33-.13A16,16,0,0,0,213,85.07L52.92,32.8A15.95,15.95,0,0,0,32.8,52.92L85.07,213a15.82,15.82,0,0,0,14.41,11l.78,0a15.84,15.84,0,0,0,14.61-9.59l.13-.33L132.69,168,184,219.31a16,16,0,0,0,22.63,0l12.68-12.68a16,16,0,0,0,0-22.63ZM195.31,208,144,156.69a16,16,0,0,0-26,4.93c0,.11-.09.22-.13.32l-17.65,46L48,48l159.85,52.2-45.95,17.64-.32.13a16,16,0,0,0-4.93,26h0L208,195.31Z')
-							]),
-						_List_Nil)
-					]);
-			default:
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M165.17,135.51a4,4,0,0,1,1.17-6.46l46.31-17.79.16-.06a12,12,0,0,0-1.05-22.33L51.67,36.6A12,12,0,0,0,36.6,51.67L88.87,211.76A11.86,11.86,0,0,0,99.67,220h.58a11.86,11.86,0,0,0,11-7.19l.06-.16,17.79-46.31a4,4,0,0,1,6.47-1.17l51.31,51.32a12,12,0,0,0,17,0l12.69-12.69a12,12,0,0,0,0-17Zm45.66,62.63-12.69,12.69a4,4,0,0,1-5.66,0l-51.31-51.31a12,12,0,0,0-8.48-3.52,12.13,12.13,0,0,0-2.24.21,12,12,0,0,0-8.77,7l-.06.16-17.79,46.31a4,4,0,0,1-7.36-.42L44.2,49.19a4,4,0,0,1,5-5L209.27,96.47a4,4,0,0,1,.42,7.36l-46.31,17.78-.16.07a12,12,0,0,0-3.71,19.49l51.32,51.31A4,4,0,0,1,210.83,198.14Z')
-							]),
-						_List_Nil)
-					]);
-		}
-	}();
-	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
 var $author$project$Main$MouseDown = function (a) {
 	return {$: 'MouseDown', a: a};
@@ -15673,7 +15446,16 @@ var $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt = function (_arguments) {
 		}
 	}
 };
-var $elm$core$Basics$not = _Basics_not;
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
+var $elm$html$Html$Attributes$min = $elm$html$Html$Attributes$stringProperty('min');
 var $ianmackenzie$elm_3d_scene$Scene3d$Types$EmptyNode = {$: 'EmptyNode'};
 var $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity = function (a) {
 	return {$: 'Entity', a: a};
@@ -15710,10 +15492,6 @@ var $elm$html$Html$Events$stopPropagationOn = F2(
 			event,
 			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
 	});
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
 var $elm$html$Html$Events$targetValue = A2(
 	$elm$json$Json$Decode$at,
 	_List_fromArray(
@@ -15749,87 +15527,6 @@ var $elm$html$Html$Events$onSubmit = function (msg) {
 			$elm$json$Json$Decode$map,
 			$elm$html$Html$Events$alwaysPreventDefault,
 			$elm$json$Json$Decode$succeed(msg)));
-};
-var $phosphor_icons$phosphor_elm$Phosphor$plus = function (weight) {
-	var elements = function () {
-		switch (weight.$) {
-			case 'Bold':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Duotone':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M216,56V200a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V56A16,16,0,0,1,56,40H200A16,16,0,0,1,216,56Z'),
-								$elm$svg$Svg$Attributes$opacity('0.2')
-							]),
-						_List_Nil),
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Fill':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM184,136H136v48a8,8,0,0,1-16,0V136H72a8,8,0,0,1,0-16h48V72a8,8,0,0,1,16,0v48h48a8,8,0,0,1,0,16Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Light':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M222,128a6,6,0,0,1-6,6H134v82a6,6,0,0,1-12,0V134H40a6,6,0,0,1,0-12h82V40a6,6,0,0,1,12,0v82h82A6,6,0,0,1,222,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Regular':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z')
-							]),
-						_List_Nil)
-					]);
-			default:
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M220,128a4,4,0,0,1-4,4H132v84a4,4,0,0,1-8,0V132H40a4,4,0,0,1,0-8h84V40a4,4,0,0,1,8,0v84h84A4,4,0,0,1,220,128Z')
-							]),
-						_List_Nil)
-					]);
-		}
-	}();
-	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
 var $elm$virtual_dom$VirtualDom$property = F2(
 	function (key, value) {
@@ -15868,14 +15565,6 @@ var $author$project$Html$Extra$selectChangeHelper = F3(
 	});
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$Html$Extra$select = F2(
 	function (attributes, config) {
@@ -15911,6 +15600,9 @@ var $author$project$Html$Extra$select = F2(
 	});
 var $elm$html$Html$small = _VirtualDom_node('small');
 var $elm$html$Html$span = _VirtualDom_node('span');
+var $elm$html$Html$Attributes$step = function (n) {
+	return A2($elm$html$Html$Attributes$stringProperty, 'step', n);
+};
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $ianmackenzie$elm_3d_scene$Scene3d$Light$CastsShadows = function (a) {
@@ -17408,64 +17100,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$sunny = function (_arguments) {
 			whiteBalance: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight
 		});
 };
-var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
-var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
-var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
-var $elm$svg$Svg$map = $elm$virtual_dom$VirtualDom$map;
-var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
-var $elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
-var $elm$svg$Svg$Attributes$strokeLinejoin = _VirtualDom_attribute('stroke-linejoin');
-var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
-var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $phosphor_icons$phosphor_elm$Phosphor$xmlns = function (s) {
-	return A2(
-		$elm$virtual_dom$VirtualDom$property,
-		'xmlns',
-		$elm$json$Json$Encode$string(s));
-};
-var $phosphor_icons$phosphor_elm$Phosphor$toHtml = F2(
-	function (attributes, _v0) {
-		var src = _v0.a.src;
-		var attrs = _v0.a.attrs;
-		var strSize = $elm$core$String$fromFloat(attrs.size);
-		var baseAttributes = _List_fromArray(
-			[
-				$phosphor_icons$phosphor_elm$Phosphor$xmlns('http://www.w3.org/2000/svg'),
-				$elm$svg$Svg$Attributes$fill('currentColor'),
-				$elm$svg$Svg$Attributes$height(
-				_Utils_ap(strSize, attrs.sizeUnit)),
-				$elm$svg$Svg$Attributes$width(
-				_Utils_ap(strSize, attrs.sizeUnit)),
-				$elm$svg$Svg$Attributes$stroke('currentColor'),
-				$elm$svg$Svg$Attributes$strokeLinecap('round'),
-				$elm$svg$Svg$Attributes$strokeLinejoin('round'),
-				$elm$svg$Svg$Attributes$viewBox('0 0 256 256')
-			]);
-		var combinedAttributes = _Utils_ap(
-			function () {
-				var _v1 = attrs._class;
-				if (_v1.$ === 'Just') {
-					var c = _v1.a;
-					return A2(
-						$elm$core$List$cons,
-						$elm$svg$Svg$Attributes$class(c),
-						baseAttributes);
-				} else {
-					return baseAttributes;
-				}
-			}(),
-			attributes);
-		return A2(
-			$elm$svg$Svg$svg,
-			combinedAttributes,
-			A2(
-				$elm$core$List$map,
-				$elm$svg$Svg$map($elm$core$Basics$never),
-				src));
-	});
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $author$project$Html$Range$High = {$: 'High'};
 var $author$project$Html$Range$Low = {$: 'Low'};
@@ -17607,6 +17241,7 @@ var $myrho$elm_round$Round$funNum = F3(
 			$elm$core$String$toFloat(
 				A2(fun, s, fl)));
 	});
+var $elm$core$Basics$not = _Basics_not;
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -17628,6 +17263,7 @@ var $elm$core$List$any = F2(
 			}
 		}
 	});
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$String$foldr = _String_foldr;
 var $elm$core$String$toList = function (string) {
 	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
@@ -18002,11 +17638,6 @@ var $elm$html$Html$Attributes$classList = function (classes) {
 				$elm$core$List$map,
 				$elm$core$Tuple$first,
 				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
-};
-var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
-var $elm$html$Html$Attributes$min = $elm$html$Html$Attributes$stringProperty('min');
-var $elm$html$Html$Attributes$step = function (n) {
-	return A2($elm$html$Html$Attributes$stringProperty, 'step', n);
 };
 var $author$project$Html$Range$sliderInputView = F5(
 	function (onChange, value, config, input, extraClasses) {
@@ -21112,10 +20743,6 @@ var $author$project$Main$viewBlock = F4(
 			}
 		}
 	});
-var $ianmackenzie$elm_3d_scene$Scene3d$block = F2(
-	function (givenMaterial, givenBlock) {
-		return A4($ianmackenzie$elm_3d_scene$Scene3d$Entity$block, true, false, givenMaterial, givenBlock);
-	});
 var $ianmackenzie$elm_3d_scene$Scene3d$Types$UnlitMaterial = F2(
 	function (a, b) {
 		return {$: 'UnlitMaterial', a: a, b: b};
@@ -21134,6 +20761,243 @@ var $ianmackenzie$elm_3d_scene$Scene3d$Material$color = function (givenColor) {
 		$ianmackenzie$elm_3d_scene$Scene3d$Types$Constant(
 			$ianmackenzie$elm_3d_scene$Scene3d$Material$toVec3(givenColor)));
 };
+var $ianmackenzie$elm_geometry$Geometry$Types$LineSegment3d = function (a) {
+	return {$: 'LineSegment3d', a: a};
+};
+var $ianmackenzie$elm_geometry$LineSegment3d$fromEndpoints = function (givenEndpoints) {
+	return $ianmackenzie$elm_geometry$Geometry$Types$LineSegment3d(givenEndpoints);
+};
+var $ianmackenzie$elm_geometry$LineSegment3d$from = F2(
+	function (givenStartPoint, givenEndPoint) {
+		return $ianmackenzie$elm_geometry$LineSegment3d$fromEndpoints(
+			_Utils_Tuple2(givenStartPoint, givenEndPoint));
+	});
+var $ianmackenzie$elm_geometry$LineSegment3d$endpoints = function (_v0) {
+	var lineSegmentEndpoints = _v0.a;
+	return lineSegmentEndpoints;
+};
+var $ianmackenzie$elm_geometry$BoundingBox3d$from = F2(
+	function (firstPoint, secondPoint) {
+		var _v0 = secondPoint;
+		var p2 = _v0.a;
+		var x2 = p2.x;
+		var y2 = p2.y;
+		var z2 = p2.z;
+		var _v1 = firstPoint;
+		var p1 = _v1.a;
+		var x1 = p1.x;
+		var y1 = p1.y;
+		var z1 = p1.z;
+		return $ianmackenzie$elm_geometry$Geometry$Types$BoundingBox3d(
+			{
+				maxX: A2($elm$core$Basics$max, x1, x2),
+				maxY: A2($elm$core$Basics$max, y1, y2),
+				maxZ: A2($elm$core$Basics$max, z1, z2),
+				minX: A2($elm$core$Basics$min, x1, x2),
+				minY: A2($elm$core$Basics$min, y1, y2),
+				minZ: A2($elm$core$Basics$min, z1, z2)
+			});
+	});
+var $ianmackenzie$elm_geometry$LineSegment3d$boundingBox = function (lineSegment) {
+	var _v0 = $ianmackenzie$elm_geometry$LineSegment3d$endpoints(lineSegment);
+	var p1 = _v0.a;
+	var p2 = _v0.b;
+	return A2($ianmackenzie$elm_geometry$BoundingBox3d$from, p1, p2);
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$UnoptimizedShaders$lineSegmentVertex = {
+	src: '\n        precision highp float;\n        \n        attribute lowp float lineSegmentVertex;\n        \n        uniform highp vec4 modelScale;\n        uniform highp mat4 modelMatrix;\n        uniform highp mat4 viewMatrix;\n        uniform highp mat4 projectionMatrix;\n        uniform highp mat4 sceneProperties;\n        uniform highp vec3 lineSegmentStartPoint;\n        uniform highp vec3 lineSegmentEndPoint;\n        \n        vec4 getWorldPosition(vec3 modelPosition, vec4 modelScale, mat4 modelMatrix) {\n            vec4 scaledPosition = vec4(modelScale.xyz * modelPosition, 1.0);\n            return modelMatrix * scaledPosition;\n        }\n        \n        void main() {\n            vec3 position = (1.0 - lineSegmentVertex) * lineSegmentStartPoint + lineSegmentVertex * lineSegmentEndPoint;\n            vec4 worldPosition = getWorldPosition(position, modelScale, modelMatrix);\n            gl_Position = projectionMatrix * (viewMatrix * worldPosition);\n        }\n    ',
+	attributes: {lineSegmentVertex: 'lineSegmentVertex'},
+	uniforms: {lineSegmentEndPoint: 'lineSegmentEndPoint', lineSegmentStartPoint: 'lineSegmentStartPoint', modelMatrix: 'modelMatrix', modelScale: 'modelScale', projectionMatrix: 'projectionMatrix', sceneProperties: 'sceneProperties', viewMatrix: 'viewMatrix'}
+};
+var $elm_explorations$webgl$WebGL$Mesh2 = F2(
+	function (a, b) {
+		return {$: 'Mesh2', a: a, b: b};
+	});
+var $elm_explorations$webgl$WebGL$lines = $elm_explorations$webgl$WebGL$Mesh2(
+	{elemSize: 2, indexSize: 0, mode: 1});
+var $ianmackenzie$elm_3d_scene$Scene3d$Entity$lineSegmentVertices = $elm_explorations$webgl$WebGL$lines(
+	_List_fromArray(
+		[
+			_Utils_Tuple2(
+			{lineSegmentVertex: 0},
+			{lineSegmentVertex: 1})
+		]));
+var $ianmackenzie$elm_3d_scene$Scene3d$Entity$lineSegment = F2(
+	function (givenMaterial, givenLineSegment) {
+		var boundingBox = $ianmackenzie$elm_geometry$LineSegment3d$boundingBox(givenLineSegment);
+		var bounds = $ianmackenzie$elm_3d_scene$Scene3d$Entity$toBounds(boundingBox);
+		var _v0 = $ianmackenzie$elm_geometry$LineSegment3d$endpoints(givenLineSegment);
+		var p1 = _v0.a;
+		var p2 = _v0.b;
+		switch (givenMaterial.$) {
+			case 'UnlitMaterial':
+				if (givenMaterial.b.$ === 'Constant') {
+					var color = givenMaterial.b.a;
+					return $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity(
+						A2(
+							$ianmackenzie$elm_3d_scene$Scene3d$Types$MeshNode,
+							bounds,
+							F8(
+								function (sceneProperties, modelScale, modelMatrix, isRightHanded, viewMatrix, projectionMatrix, lights, settings) {
+									return A5(
+										$elm_explorations$webgl$WebGL$entityWith,
+										settings,
+										$ianmackenzie$elm_3d_scene$Scene3d$UnoptimizedShaders$lineSegmentVertex,
+										$ianmackenzie$elm_3d_scene$Scene3d$UnoptimizedShaders$constantFragment,
+										$ianmackenzie$elm_3d_scene$Scene3d$Entity$lineSegmentVertices,
+										{
+											constantColor: color,
+											lineSegmentEndPoint: $ianmackenzie$elm_geometry_linear_algebra_interop$Geometry$Interop$LinearAlgebra$Point3d$toVec3(p2),
+											lineSegmentStartPoint: $ianmackenzie$elm_geometry_linear_algebra_interop$Geometry$Interop$LinearAlgebra$Point3d$toVec3(p1),
+											modelMatrix: modelMatrix,
+											modelScale: modelScale,
+											projectionMatrix: projectionMatrix,
+											sceneProperties: sceneProperties,
+											viewMatrix: viewMatrix
+										});
+								})));
+				} else {
+					var _v2 = givenMaterial.a;
+					var data = givenMaterial.b.a.data;
+					return $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
+				}
+			case 'EmissiveMaterial':
+				if (givenMaterial.b.$ === 'Constant') {
+					var color = givenMaterial.b.a.a;
+					var backlight = givenMaterial.c;
+					return $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity(
+						A2(
+							$ianmackenzie$elm_3d_scene$Scene3d$Types$MeshNode,
+							bounds,
+							F8(
+								function (sceneProperties, modelScale, modelMatrix, isRightHanded, viewMatrix, projectionMatrix, lights, settings) {
+									return A5(
+										$elm_explorations$webgl$WebGL$entityWith,
+										settings,
+										$ianmackenzie$elm_3d_scene$Scene3d$UnoptimizedShaders$lineSegmentVertex,
+										$ianmackenzie$elm_3d_scene$Scene3d$UnoptimizedShaders$emissiveFragment,
+										$ianmackenzie$elm_3d_scene$Scene3d$Entity$lineSegmentVertices,
+										{
+											emissiveColor: A2(
+												$elm_explorations$linear_algebra$Math$Vector3$scale,
+												$ianmackenzie$elm_units$Luminance$inNits(backlight),
+												color),
+											lineSegmentEndPoint: $ianmackenzie$elm_geometry_linear_algebra_interop$Geometry$Interop$LinearAlgebra$Point3d$toVec3(p2),
+											lineSegmentStartPoint: $ianmackenzie$elm_geometry_linear_algebra_interop$Geometry$Interop$LinearAlgebra$Point3d$toVec3(p1),
+											modelMatrix: modelMatrix,
+											modelScale: modelScale,
+											projectionMatrix: projectionMatrix,
+											sceneProperties: sceneProperties,
+											viewMatrix: viewMatrix
+										});
+								})));
+				} else {
+					return $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
+				}
+			case 'LambertianMaterial':
+				return $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
+			default:
+				return $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
+		}
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$lineSegment = F2(
+	function (givenMaterial, givenLineSegment) {
+		return A2($ianmackenzie$elm_3d_scene$Scene3d$Entity$lineSegment, givenMaterial, givenLineSegment);
+	});
+var $author$project$Main$viewBounds = function (board) {
+	return $ianmackenzie$elm_3d_scene$Scene3d$group(
+		$elm$core$List$concat(
+			_List_fromArray(
+				[
+					A2(
+					$elm$core$List$map,
+					function (y) {
+						return A2(
+							$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
+							$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
+							A2(
+								$ianmackenzie$elm_geometry$LineSegment3d$from,
+								A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, y - 0.5, -0.5),
+								A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, y - 0.5, -0.5)));
+					},
+					A2($elm$core$List$range, 0, board.maxY)),
+					A2(
+					$elm$core$List$map,
+					function (x) {
+						return A2(
+							$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
+							$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
+							A2(
+								$ianmackenzie$elm_geometry$LineSegment3d$from,
+								A3($ianmackenzie$elm_geometry$Point3d$meters, x - 0.5, -0.5, -0.5),
+								A3($ianmackenzie$elm_geometry$Point3d$meters, x - 0.5, board.maxY - 0.5, -0.5)));
+					},
+					A2($elm$core$List$range, 0, board.maxX)),
+					_List_fromArray(
+					[
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
+						A2(
+							$ianmackenzie$elm_geometry$LineSegment3d$from,
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, -0.5, board.maxZ - 0.5),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, -0.5, board.maxZ - 0.5))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
+						A2(
+							$ianmackenzie$elm_geometry$LineSegment3d$from,
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, board.maxY - 0.5, board.maxZ - 0.5),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, board.maxY - 0.5, board.maxZ - 0.5))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
+						A2(
+							$ianmackenzie$elm_geometry$LineSegment3d$from,
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, -0.5, board.maxZ - 0.5),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, board.maxY - 0.5, board.maxZ - 0.5))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
+						A2(
+							$ianmackenzie$elm_geometry$LineSegment3d$from,
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, -0.5, board.maxZ - 0.5),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, board.maxY - 0.5, board.maxZ - 0.5))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
+						A2(
+							$ianmackenzie$elm_geometry$LineSegment3d$from,
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, -0.5, -0.5),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, -0.5, board.maxZ - 0.5))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
+						A2(
+							$ianmackenzie$elm_geometry$LineSegment3d$from,
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, -0.5, -0.5),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, -0.5, board.maxZ - 0.5))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
+						A2(
+							$ianmackenzie$elm_geometry$LineSegment3d$from,
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, board.maxY - 0.5, -0.5),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, board.maxY - 0.5, board.maxZ - 0.5))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
+						A2(
+							$ianmackenzie$elm_geometry$LineSegment3d$from,
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, board.maxY - 0.5, -0.5),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, board.maxY - 0.5, board.maxZ - 0.5)))
+					])
+				])));
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$block = F2(
+	function (givenMaterial, givenBlock) {
+		return A4($ianmackenzie$elm_3d_scene$Scene3d$Entity$block, true, false, givenMaterial, givenBlock);
+	});
 var $author$project$Animation$stepHelper = F4(
 	function (_default, interpolate, frames, elapsedTime) {
 		stepHelper:
@@ -21492,152 +21356,866 @@ var $author$project$Main$viewCursor = F3(
 							$ianmackenzie$elm_units$Length$meters(0.1))))
 				]));
 	});
+var $author$project$Main$Add = {$: 'Add'};
+var $author$project$Main$BlockTypeSelected = function (a) {
+	return {$: 'BlockTypeSelected', a: a};
+};
+var $author$project$Main$Redo = {$: 'Redo'};
+var $phosphor_icons$phosphor_elm$Phosphor$Regular = {$: 'Regular'};
+var $author$project$Main$Remove = {$: 'Remove'};
+var $author$project$Main$SetEditMode = function (a) {
+	return {$: 'SetEditMode', a: a};
+};
+var $author$project$Main$ShowBoardBounds = function (a) {
+	return {$: 'ShowBoardBounds', a: a};
+};
+var $author$project$Main$Undo = {$: 'Undo'};
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
+var $author$project$Html$Attributes$Extra$aria = F2(
+	function (attrib, value) {
+		return A2($elm$html$Html$Attributes$attribute, 'aria-' + attrib, value);
+	});
+var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
+var $phosphor_icons$phosphor_elm$Phosphor$IconVariant = function (a) {
+	return {$: 'IconVariant', a: a};
+};
+var $phosphor_icons$phosphor_elm$Phosphor$defaultAttributes = {
+	_class: $elm$core$Maybe$Just('ph-icon'),
+	size: 1,
+	sizeUnit: 'em'
+};
+var $phosphor_icons$phosphor_elm$Phosphor$makeBuilder = function (src) {
+	return $phosphor_icons$phosphor_elm$Phosphor$IconVariant(
+		{attrs: $phosphor_icons$phosphor_elm$Phosphor$defaultAttributes, src: src});
+};
+var $elm$svg$Svg$Attributes$opacity = _VirtualDom_attribute('opacity');
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$path = $elm$svg$Svg$trustedNode('path');
+var $phosphor_icons$phosphor_elm$Phosphor$arrowClockwise = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M244,56v48a12,12,0,0,1-12,12H184a12,12,0,1,1,0-24H201.1l-19-17.38c-.13-.12-.26-.24-.38-.37A76,76,0,1,0,127,204h1a75.53,75.53,0,0,0,52.15-20.72,12,12,0,0,1,16.49,17.45A99.45,99.45,0,0,1,128,228h-1.37A100,100,0,1,1,198.51,57.06L220,76.72V56a12,12,0,0,1,24,0Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M216,128a88,88,0,1,1-88-88A88,88,0,0,1,216,128Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,85.8V56a8,8,0,1,1,16,0Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1-5.66-13.66l17-17-10.55-9.65-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,1,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60l10.93,10L226.34,50.3A8,8,0,0,1,240,56Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M238,56v48a6,6,0,0,1-6,6H184a6,6,0,0,1,0-12h32.55l-30.38-27.8c-.06-.06-.12-.13-.19-.19a82,82,0,1,0-1.7,117.65,6,6,0,0,1,8.24,8.73A93.46,93.46,0,0,1,128,222h-1.28A94,94,0,1,1,194.37,61.4L226,90.35V56a6,6,0,1,1,12,0Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,85.8V56a8,8,0,1,1,16,0Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M236,56v48a4,4,0,0,1-4,4H184a4,4,0,0,1,0-8h37.7L187.53,68.69l-.13-.12a84,84,0,1,0-1.75,120.51,4,4,0,0,1,5.5,5.82A91.43,91.43,0,0,1,128,220h-1.26A92,92,0,1,1,193,62.84l35,32.05V56a4,4,0,1,1,8,0Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
+};
+var $phosphor_icons$phosphor_elm$Phosphor$arrowCounterClockwise = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M228,128a100,100,0,0,1-98.66,100H128a99.39,99.39,0,0,1-68.62-27.29,12,12,0,0,1,16.48-17.45,76,76,0,1,0-1.57-109c-.13.13-.25.25-.39.37L54.89,92H72a12,12,0,0,1,0,24H24a12,12,0,0,1-12-12V56a12,12,0,0,1,24,0V76.72L57.48,57.06A100,100,0,0,1,228,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M216,128a88,88,0,1,1-88-88A88,88,0,0,1,216,128Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L60.63,81.29l17,17A8,8,0,0,1,72,112H24a8,8,0,0,1-8-8V56A8,8,0,0,1,29.66,50.3L49.31,70,60.25,60A96,96,0,0,1,224,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M222,128a94,94,0,0,1-92.74,94H128a93.43,93.43,0,0,1-64.5-25.65,6,6,0,1,1,8.24-8.72A82,82,0,1,0,70,70l-.19.19L39.44,98H72a6,6,0,0,1,0,12H24a6,6,0,0,1-6-6V56a6,6,0,0,1,12,0V90.34L61.63,61.4A94,94,0,0,1,222,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M220,128a92,92,0,0,1-90.77,92H128a91.47,91.47,0,0,1-63.13-25.1,4,4,0,1,1,5.5-5.82A84,84,0,1,0,68.6,68.57l-.13.12L34.3,100H72a4,4,0,0,1,0,8H24a4,4,0,0,1-4-4V56a4,4,0,0,1,8,0V94.89l35-32A92,92,0,0,1,220,128Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
+};
+var $author$project$Html$Attributes$Extra$bool = function (b) {
+	return b ? 'true' : 'false';
+};
+var $author$project$Undo$canRedo = function (_v0) {
+	var _v1 = _v0.a;
+	var after = _v1.c;
+	return !_Utils_eq(after, _List_Nil);
+};
+var $author$project$Undo$canUndo = function (_v0) {
+	var _v1 = _v0.a;
+	var before = _v1.a;
+	return !_Utils_eq(before, _List_Nil);
+};
+var $phosphor_icons$phosphor_elm$Phosphor$cursor = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M224.15,179.17l-46.83-46.82,37.93-13.51.76-.3a20,20,0,0,0-1.76-37.27L54.16,29A20,20,0,0,0,29,54.16L81.27,214.24A20,20,0,0,0,118.54,216c.11-.25.21-.5.3-.76l13.51-37.92,46.83,46.82a20,20,0,0,0,28.28,0l16.69-16.68A20,20,0,0,0,224.15,179.17Zm-30.83,25.17-48.48-48.48A20,20,0,0,0,130.7,150a20.66,20.66,0,0,0-3.74.35A20,20,0,0,0,112.35,162c-.11.25-.21.5-.3.76L100.4,195.5,54.29,54.29l141.21,46.1-32.71,11.66c-.26.09-.51.19-.76.3a20,20,0,0,0-6.17,32.48h0l48.49,48.48Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M213.66,201,201,213.66a8,8,0,0,1-11.31,0l-51.31-51.31a8,8,0,0,0-13,2.46l-17.82,46.41a8,8,0,0,1-14.85-.71L40.41,50.44a8,8,0,0,1,10-10L210.51,92.68a8,8,0,0,1,.71,14.85l-46.41,17.82a8,8,0,0,0-2.46,13l51.31,51.31A8,8,0,0,1,213.66,201Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M168,132.69,214.08,115l.33-.13A16,16,0,0,0,213,85.07L52.92,32.8A15.95,15.95,0,0,0,32.8,52.92L85.07,213a15.82,15.82,0,0,0,14.41,11l.78,0a15.84,15.84,0,0,0,14.61-9.59l.13-.33L132.69,168,184,219.31a16,16,0,0,0,22.63,0l12.68-12.68a16,16,0,0,0,0-22.63ZM195.31,208,144,156.69a16,16,0,0,0-26,4.93c0,.11-.09.22-.13.32l-17.65,46L48,48l159.85,52.2-45.95,17.64-.32.13a16,16,0,0,0-4.93,26h0L208,195.31Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M220.49,207.8,207.8,220.49a12,12,0,0,1-17,0l-56.57-56.57L115,214.08l-.13.33A15.84,15.84,0,0,1,100.26,224l-.78,0a15.82,15.82,0,0,1-14.41-11L32.8,52.92A15.95,15.95,0,0,1,52.92,32.8L213,85.07a16,16,0,0,1,1.41,29.8l-.33.13-50.16,19.27,56.57,56.56A12,12,0,0,1,220.49,207.8Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M166.59,134.1a1.91,1.91,0,0,1-.55-1.79,2,2,0,0,1,1.08-1.42l46.25-17.76.24-.1A14,14,0,0,0,212.38,87L52.29,34.7A13.95,13.95,0,0,0,34.7,52.29L87,212.38a13.82,13.82,0,0,0,12.6,9.6c.23,0,.46,0,.69,0A13.84,13.84,0,0,0,113,213.61a2.44,2.44,0,0,0,.1-.24l17.76-46.25a2,2,0,0,1,3.21-.53l51.31,51.31a14,14,0,0,0,19.8,0l12.69-12.69a14,14,0,0,0,0-19.8Zm42.82,62.63-12.68,12.68a2,2,0,0,1-2.83,0L142.59,158.1a14,14,0,0,0-22.74,4.32,2.44,2.44,0,0,0-.1.24L102,208.91a2,2,0,0,1-3.61-.26L46.11,48.57a1.87,1.87,0,0,1,.47-2A1.92,1.92,0,0,1,47.93,46a2.22,2.22,0,0,1,.64.1L208.65,98.38a2,2,0,0,1,.26,3.61l-46.25,17.76-.24.1a14,14,0,0,0-4.32,22.74h0l51.31,51.31A2,2,0,0,1,209.41,196.73Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M168,132.69,214.08,115l.33-.13A16,16,0,0,0,213,85.07L52.92,32.8A15.95,15.95,0,0,0,32.8,52.92L85.07,213a15.82,15.82,0,0,0,14.41,11l.78,0a15.84,15.84,0,0,0,14.61-9.59l.13-.33L132.69,168,184,219.31a16,16,0,0,0,22.63,0l12.68-12.68a16,16,0,0,0,0-22.63ZM195.31,208,144,156.69a16,16,0,0,0-26,4.93c0,.11-.09.22-.13.32l-17.65,46L48,48l159.85,52.2-45.95,17.64-.32.13a16,16,0,0,0-4.93,26h0L208,195.31Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M165.17,135.51a4,4,0,0,1,1.17-6.46l46.31-17.79.16-.06a12,12,0,0,0-1.05-22.33L51.67,36.6A12,12,0,0,0,36.6,51.67L88.87,211.76A11.86,11.86,0,0,0,99.67,220h.58a11.86,11.86,0,0,0,11-7.19l.06-.16,17.79-46.31a4,4,0,0,1,6.47-1.17l51.31,51.32a12,12,0,0,0,17,0l12.69-12.69a12,12,0,0,0,0-17Zm45.66,62.63-12.69,12.69a4,4,0,0,1-5.66,0l-51.31-51.31a12,12,0,0,0-8.48-3.52,12.13,12.13,0,0,0-2.24.21,12,12,0,0,0-8.77,7l-.06.16-17.79,46.31a4,4,0,0,1-7.36-.42L44.2,49.19a4,4,0,0,1,5-5L209.27,96.47a4,4,0,0,1,.42,7.36l-46.31,17.78-.16.07a12,12,0,0,0-3.71,19.49l51.32,51.31A4,4,0,0,1,210.83,198.14Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
+};
+var $phosphor_icons$phosphor_elm$Phosphor$gridNine = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M216,44H40A20,20,0,0,0,20,64V192a20,20,0,0,0,20,20H216a20,20,0,0,0,20-20V64A20,20,0,0,0,216,44ZM108,140V116h40v24Zm40,24v24H108V164ZM44,116H84v24H44Zm64-24V68h40V92Zm64,24h40v24H172Zm40-24H172V68h40ZM84,68V92H44V68ZM44,164H84v24H44Zm128,24V164h40v24Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M224,64V192a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V64a8,8,0,0,1,8-8H216A8,8,0,0,1,224,64Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M216,48H40A16,16,0,0,0,24,64V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V64A16,16,0,0,0,216,48ZM104,144V112h48v32Zm48,16v32H104V160ZM40,112H88v32H40Zm64-16V64h48V96Zm64,16h48v32H168Zm48-16H168V64h48ZM88,64V96H40V64ZM40,160H88v32H40Zm176,32H168V160h48v32Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M84,52V92H28a4,4,0,0,1-4-4V64A16,16,0,0,1,40,48H80A4,4,0,0,1,84,52Zm16,152a4,4,0,0,0,4,4h48a4,4,0,0,0,4-4V164H100ZM24,168v24a16,16,0,0,0,16,16H80a4,4,0,0,0,4-4V164H28A4,4,0,0,0,24,168Zm0-56v32a4,4,0,0,0,4,4H84V108H28A4,4,0,0,0,24,112ZM152,48H104a4,4,0,0,0-4,4V92h56V52A4,4,0,0,0,152,48Zm76,60H172v40h56a4,4,0,0,0,4-4V112A4,4,0,0,0,228,108ZM100,148h56V108H100ZM216,48H176a4,4,0,0,0-4,4V92h56a4,4,0,0,0,4-4V64A16,16,0,0,0,216,48Zm12,116H172v40a4,4,0,0,0,4,4h40a16,16,0,0,0,16-16V168A4,4,0,0,0,228,164Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M216,50H40A14,14,0,0,0,26,64V192a14,14,0,0,0,14,14H216a14,14,0,0,0,14-14V64A14,14,0,0,0,216,50ZM102,146V110h52v36Zm52,12v36H102V158ZM38,110H90v36H38Zm64-12V62h52V98Zm64,12h52v36H166Zm52-46V98H166V62h50A2,2,0,0,1,218,64ZM40,62H90V98H38V64A2,2,0,0,1,40,62ZM38,192V158H90v36H40A2,2,0,0,1,38,192Zm178,2H166V158h52v34A2,2,0,0,1,216,194Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M216,48H40A16,16,0,0,0,24,64V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V64A16,16,0,0,0,216,48ZM104,144V112h48v32Zm48,16v32H104V160ZM40,112H88v32H40Zm64-16V64h48V96Zm64,16h48v32H168Zm48-16H168V64h48ZM88,64V96H40V64ZM40,160H88v32H40Zm176,32H168V160h48v32Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M216,52H40A12,12,0,0,0,28,64V192a12,12,0,0,0,12,12H216a12,12,0,0,0,12-12V64A12,12,0,0,0,216,52ZM100,148V108h56v40Zm56,8v40H100V156ZM36,108H92v40H36Zm64-8V60h56v40Zm64,8h56v40H164Zm56-44v36H164V60h52A4,4,0,0,1,220,64ZM40,60H92v40H36V64A4,4,0,0,1,40,60ZM36,192V156H92v40H40A4,4,0,0,1,36,192Zm180,4H164V156h56v36A4,4,0,0,1,216,196Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
+};
+var $phosphor_icons$phosphor_elm$Phosphor$plus = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M216,56V200a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V56A16,16,0,0,1,56,40H200A16,16,0,0,1,216,56Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM184,136H136v48a8,8,0,0,1-16,0V136H72a8,8,0,0,1,0-16h48V72a8,8,0,0,1,16,0v48h48a8,8,0,0,1,0,16Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M222,128a6,6,0,0,1-6,6H134v82a6,6,0,0,1-12,0V134H40a6,6,0,0,1,0-12h82V40a6,6,0,0,1,12,0v82h82A6,6,0,0,1,222,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M220,128a4,4,0,0,1-4,4H132v84a4,4,0,0,1-8,0V132H40a4,4,0,0,1,0-8h84V40a4,4,0,0,1,8,0v84h84A4,4,0,0,1,220,128Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
+};
+var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
+var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
+var $elm$svg$Svg$map = $elm$virtual_dom$VirtualDom$map;
+var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+var $elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
+var $elm$svg$Svg$Attributes$strokeLinejoin = _VirtualDom_attribute('stroke-linejoin');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $phosphor_icons$phosphor_elm$Phosphor$xmlns = function (s) {
+	return A2(
+		$elm$virtual_dom$VirtualDom$property,
+		'xmlns',
+		$elm$json$Json$Encode$string(s));
+};
+var $phosphor_icons$phosphor_elm$Phosphor$toHtml = F2(
+	function (attributes, _v0) {
+		var src = _v0.a.src;
+		var attrs = _v0.a.attrs;
+		var strSize = $elm$core$String$fromFloat(attrs.size);
+		var baseAttributes = _List_fromArray(
+			[
+				$phosphor_icons$phosphor_elm$Phosphor$xmlns('http://www.w3.org/2000/svg'),
+				$elm$svg$Svg$Attributes$fill('currentColor'),
+				$elm$svg$Svg$Attributes$height(
+				_Utils_ap(strSize, attrs.sizeUnit)),
+				$elm$svg$Svg$Attributes$width(
+				_Utils_ap(strSize, attrs.sizeUnit)),
+				$elm$svg$Svg$Attributes$stroke('currentColor'),
+				$elm$svg$Svg$Attributes$strokeLinecap('round'),
+				$elm$svg$Svg$Attributes$strokeLinejoin('round'),
+				$elm$svg$Svg$Attributes$viewBox('0 0 256 256')
+			]);
+		var combinedAttributes = _Utils_ap(
+			function () {
+				var _v1 = attrs._class;
+				if (_v1.$ === 'Just') {
+					var c = _v1.a;
+					return A2(
+						$elm$core$List$cons,
+						$elm$svg$Svg$Attributes$class(c),
+						baseAttributes);
+				} else {
+					return baseAttributes;
+				}
+			}(),
+			attributes);
+		return A2(
+			$elm$svg$Svg$svg,
+			combinedAttributes,
+			A2(
+				$elm$core$List$map,
+				$elm$svg$Svg$map($elm$core$Basics$never),
+				src));
+	});
+var $phosphor_icons$phosphor_elm$Phosphor$x = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M216,56V200a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V56A16,16,0,0,1,56,40H200A16,16,0,0,1,216,56Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM181.66,170.34a8,8,0,0,1-11.32,11.32L128,139.31,85.66,181.66a8,8,0,0,1-11.32-11.32L116.69,128,74.34,85.66A8,8,0,0,1,85.66,74.34L128,116.69l42.34-42.35a8,8,0,0,1,11.32,11.32L139.31,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M204.24,195.76a6,6,0,1,1-8.48,8.48L128,136.49,60.24,204.24a6,6,0,0,1-8.48-8.48L119.51,128,51.76,60.24a6,6,0,0,1,8.48-8.48L128,119.51l67.76-67.75a6,6,0,0,1,8.48,8.48L136.49,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M202.83,197.17a4,4,0,0,1-5.66,5.66L128,133.66,58.83,202.83a4,4,0,0,1-5.66-5.66L122.34,128,53.17,58.83a4,4,0,0,1,5.66-5.66L128,122.34l69.17-69.17a4,4,0,1,1,5.66,5.66L133.66,128Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
+};
+var $author$project$Main$viewEditorHeader = function (model) {
+	var _v0 = model.mode;
+	if (_v0.$ === 'Game') {
+		return $elm$html$Html$text('');
+	} else {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'grid-column', '1 /3'),
+					A2($elm$html$Html$Attributes$style, 'grid-row', '1'),
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+					A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
+					A2($elm$html$Html$Attributes$style, 'gap', '1rem')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$type_('button'),
+							$elm$html$Html$Events$onClick($author$project$Main$ChangeMode)
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Play Level')
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$attribute, 'role', 'group')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$type_('button'),
+									$elm$html$Html$Events$onClick($author$project$Main$Undo),
+									$elm$html$Html$Attributes$title('Undo'),
+									A2(
+									$author$project$Html$Attributes$Extra$aria,
+									'disabled',
+									$author$project$Html$Attributes$Extra$bool(
+										!$author$project$Undo$canUndo(model.editorBoard)))
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+									_List_Nil,
+									$phosphor_icons$phosphor_elm$Phosphor$arrowCounterClockwise($phosphor_icons$phosphor_elm$Phosphor$Regular))
+								])),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$type_('button'),
+									$elm$html$Html$Events$onClick($author$project$Main$Redo),
+									$elm$html$Html$Attributes$title('Redo'),
+									A2(
+									$author$project$Html$Attributes$Extra$aria,
+									'disabled',
+									$author$project$Html$Attributes$Extra$bool(
+										!$author$project$Undo$canRedo(model.editorBoard)))
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+									_List_Nil,
+									$phosphor_icons$phosphor_elm$Phosphor$arrowClockwise($phosphor_icons$phosphor_elm$Phosphor$Regular))
+								]))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$attribute, 'role', 'group')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$type_('button'),
+									$elm$html$Html$Events$onClick(
+									$author$project$Main$SetEditMode($author$project$Main$Select)),
+									$elm$html$Html$Attributes$title('Select block'),
+									A2(
+									$author$project$Html$Attributes$Extra$aria,
+									'current',
+									$author$project$Html$Attributes$Extra$bool(
+										_Utils_eq(model.editMode, $author$project$Main$Select)))
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+									_List_Nil,
+									$phosphor_icons$phosphor_elm$Phosphor$cursor($phosphor_icons$phosphor_elm$Phosphor$Regular))
+								])),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$type_('button'),
+									$elm$html$Html$Events$onClick(
+									$author$project$Main$SetEditMode($author$project$Main$Add)),
+									$elm$html$Html$Attributes$title('Add block'),
+									A2(
+									$author$project$Html$Attributes$Extra$aria,
+									'current',
+									$author$project$Html$Attributes$Extra$bool(
+										_Utils_eq(model.editMode, $author$project$Main$Add)))
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+									_List_Nil,
+									$phosphor_icons$phosphor_elm$Phosphor$plus($phosphor_icons$phosphor_elm$Phosphor$Regular))
+								])),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$type_('button'),
+									$elm$html$Html$Events$onClick(
+									$author$project$Main$SetEditMode($author$project$Main$Remove)),
+									$elm$html$Html$Attributes$title('Remove block'),
+									A2(
+									$author$project$Html$Attributes$Extra$aria,
+									'current',
+									$author$project$Html$Attributes$Extra$bool(
+										_Utils_eq(model.editMode, $author$project$Main$Remove)))
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+									_List_Nil,
+									$phosphor_icons$phosphor_elm$Phosphor$x($phosphor_icons$phosphor_elm$Phosphor$Regular))
+								]))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$attribute, 'role', 'group')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									A2(
+									$author$project$Html$Attributes$Extra$aria,
+									'current',
+									$author$project$Html$Attributes$Extra$bool(
+										_Utils_eq(model.selectedBlockType, $author$project$Main$Wall))),
+									$elm$html$Html$Attributes$type_('button'),
+									$elm$html$Html$Events$onClick(
+									$author$project$Main$BlockTypeSelected($author$project$Main$Wall))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Wall')
+								])),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									A2(
+									$author$project$Html$Attributes$Extra$aria,
+									'current',
+									$author$project$Html$Attributes$Extra$bool(
+										_Utils_eq(model.selectedBlockType, $author$project$Main$Edge))),
+									$elm$html$Html$Attributes$type_('button'),
+									$elm$html$Html$Events$onClick(
+									$author$project$Main$BlockTypeSelected($author$project$Main$Edge))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Edge')
+								])),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									A2(
+									$author$project$Html$Attributes$Extra$aria,
+									'current',
+									$author$project$Html$Attributes$Extra$bool(
+										_Utils_eq(
+											model.selectedBlockType,
+											$author$project$Main$PointPickup(false)))),
+									$elm$html$Html$Attributes$type_('button'),
+									$elm$html$Html$Events$onClick(
+									$author$project$Main$BlockTypeSelected(
+										$author$project$Main$PointPickup(false)))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Point Pickup')
+								])),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									A2(
+									$author$project$Html$Attributes$Extra$aria,
+									'current',
+									$author$project$Html$Attributes$Extra$bool(
+										_Utils_eq(
+											model.selectedBlockType,
+											$author$project$Main$PlayerSpawn(
+												{forward: $author$project$Main$PositiveX, left: $author$project$Main$PositiveY})))),
+									$elm$html$Html$Attributes$type_('button'),
+									$elm$html$Html$Events$onClick(
+									$author$project$Main$BlockTypeSelected(
+										$author$project$Main$PlayerSpawn(
+											{forward: $author$project$Main$PositiveX, left: $author$project$Main$PositiveY})))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Player Spawn')
+								]))
+						])),
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							A2(
+							$author$project$Html$Attributes$Extra$aria,
+							'pressed',
+							$author$project$Html$Attributes$Extra$bool(model.showBoardBounds)),
+							$elm$html$Html$Attributes$type_('button'),
+							$elm$html$Html$Events$onClick(
+							$author$project$Main$ShowBoardBounds(!model.showBoardBounds)),
+							$elm$html$Html$Attributes$title('Show board bounds')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+							_List_Nil,
+							$phosphor_icons$phosphor_elm$Phosphor$gridNine($phosphor_icons$phosphor_elm$Phosphor$Regular))
+						]))
+				]));
+	}
+};
 var $ianmackenzie$elm_3d_scene$Scene3d$cone = F2(
 	function (givenMaterial, givenCone) {
 		return A4($ianmackenzie$elm_3d_scene$Scene3d$Entity$cone, true, false, givenMaterial, givenCone);
-	});
-var $ianmackenzie$elm_geometry$Geometry$Types$LineSegment3d = function (a) {
-	return {$: 'LineSegment3d', a: a};
-};
-var $ianmackenzie$elm_geometry$LineSegment3d$fromEndpoints = function (givenEndpoints) {
-	return $ianmackenzie$elm_geometry$Geometry$Types$LineSegment3d(givenEndpoints);
-};
-var $ianmackenzie$elm_geometry$LineSegment3d$from = F2(
-	function (givenStartPoint, givenEndPoint) {
-		return $ianmackenzie$elm_geometry$LineSegment3d$fromEndpoints(
-			_Utils_Tuple2(givenStartPoint, givenEndPoint));
-	});
-var $ianmackenzie$elm_geometry$LineSegment3d$endpoints = function (_v0) {
-	var lineSegmentEndpoints = _v0.a;
-	return lineSegmentEndpoints;
-};
-var $ianmackenzie$elm_geometry$BoundingBox3d$from = F2(
-	function (firstPoint, secondPoint) {
-		var _v0 = secondPoint;
-		var p2 = _v0.a;
-		var x2 = p2.x;
-		var y2 = p2.y;
-		var z2 = p2.z;
-		var _v1 = firstPoint;
-		var p1 = _v1.a;
-		var x1 = p1.x;
-		var y1 = p1.y;
-		var z1 = p1.z;
-		return $ianmackenzie$elm_geometry$Geometry$Types$BoundingBox3d(
-			{
-				maxX: A2($elm$core$Basics$max, x1, x2),
-				maxY: A2($elm$core$Basics$max, y1, y2),
-				maxZ: A2($elm$core$Basics$max, z1, z2),
-				minX: A2($elm$core$Basics$min, x1, x2),
-				minY: A2($elm$core$Basics$min, y1, y2),
-				minZ: A2($elm$core$Basics$min, z1, z2)
-			});
-	});
-var $ianmackenzie$elm_geometry$LineSegment3d$boundingBox = function (lineSegment) {
-	var _v0 = $ianmackenzie$elm_geometry$LineSegment3d$endpoints(lineSegment);
-	var p1 = _v0.a;
-	var p2 = _v0.b;
-	return A2($ianmackenzie$elm_geometry$BoundingBox3d$from, p1, p2);
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$UnoptimizedShaders$lineSegmentVertex = {
-	src: '\n        precision highp float;\n        \n        attribute lowp float lineSegmentVertex;\n        \n        uniform highp vec4 modelScale;\n        uniform highp mat4 modelMatrix;\n        uniform highp mat4 viewMatrix;\n        uniform highp mat4 projectionMatrix;\n        uniform highp mat4 sceneProperties;\n        uniform highp vec3 lineSegmentStartPoint;\n        uniform highp vec3 lineSegmentEndPoint;\n        \n        vec4 getWorldPosition(vec3 modelPosition, vec4 modelScale, mat4 modelMatrix) {\n            vec4 scaledPosition = vec4(modelScale.xyz * modelPosition, 1.0);\n            return modelMatrix * scaledPosition;\n        }\n        \n        void main() {\n            vec3 position = (1.0 - lineSegmentVertex) * lineSegmentStartPoint + lineSegmentVertex * lineSegmentEndPoint;\n            vec4 worldPosition = getWorldPosition(position, modelScale, modelMatrix);\n            gl_Position = projectionMatrix * (viewMatrix * worldPosition);\n        }\n    ',
-	attributes: {lineSegmentVertex: 'lineSegmentVertex'},
-	uniforms: {lineSegmentEndPoint: 'lineSegmentEndPoint', lineSegmentStartPoint: 'lineSegmentStartPoint', modelMatrix: 'modelMatrix', modelScale: 'modelScale', projectionMatrix: 'projectionMatrix', sceneProperties: 'sceneProperties', viewMatrix: 'viewMatrix'}
-};
-var $elm_explorations$webgl$WebGL$Mesh2 = F2(
-	function (a, b) {
-		return {$: 'Mesh2', a: a, b: b};
-	});
-var $elm_explorations$webgl$WebGL$lines = $elm_explorations$webgl$WebGL$Mesh2(
-	{elemSize: 2, indexSize: 0, mode: 1});
-var $ianmackenzie$elm_3d_scene$Scene3d$Entity$lineSegmentVertices = $elm_explorations$webgl$WebGL$lines(
-	_List_fromArray(
-		[
-			_Utils_Tuple2(
-			{lineSegmentVertex: 0},
-			{lineSegmentVertex: 1})
-		]));
-var $ianmackenzie$elm_3d_scene$Scene3d$Entity$lineSegment = F2(
-	function (givenMaterial, givenLineSegment) {
-		var boundingBox = $ianmackenzie$elm_geometry$LineSegment3d$boundingBox(givenLineSegment);
-		var bounds = $ianmackenzie$elm_3d_scene$Scene3d$Entity$toBounds(boundingBox);
-		var _v0 = $ianmackenzie$elm_geometry$LineSegment3d$endpoints(givenLineSegment);
-		var p1 = _v0.a;
-		var p2 = _v0.b;
-		switch (givenMaterial.$) {
-			case 'UnlitMaterial':
-				if (givenMaterial.b.$ === 'Constant') {
-					var color = givenMaterial.b.a;
-					return $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity(
-						A2(
-							$ianmackenzie$elm_3d_scene$Scene3d$Types$MeshNode,
-							bounds,
-							F8(
-								function (sceneProperties, modelScale, modelMatrix, isRightHanded, viewMatrix, projectionMatrix, lights, settings) {
-									return A5(
-										$elm_explorations$webgl$WebGL$entityWith,
-										settings,
-										$ianmackenzie$elm_3d_scene$Scene3d$UnoptimizedShaders$lineSegmentVertex,
-										$ianmackenzie$elm_3d_scene$Scene3d$UnoptimizedShaders$constantFragment,
-										$ianmackenzie$elm_3d_scene$Scene3d$Entity$lineSegmentVertices,
-										{
-											constantColor: color,
-											lineSegmentEndPoint: $ianmackenzie$elm_geometry_linear_algebra_interop$Geometry$Interop$LinearAlgebra$Point3d$toVec3(p2),
-											lineSegmentStartPoint: $ianmackenzie$elm_geometry_linear_algebra_interop$Geometry$Interop$LinearAlgebra$Point3d$toVec3(p1),
-											modelMatrix: modelMatrix,
-											modelScale: modelScale,
-											projectionMatrix: projectionMatrix,
-											sceneProperties: sceneProperties,
-											viewMatrix: viewMatrix
-										});
-								})));
-				} else {
-					var _v2 = givenMaterial.a;
-					var data = givenMaterial.b.a.data;
-					return $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
-				}
-			case 'EmissiveMaterial':
-				if (givenMaterial.b.$ === 'Constant') {
-					var color = givenMaterial.b.a.a;
-					var backlight = givenMaterial.c;
-					return $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity(
-						A2(
-							$ianmackenzie$elm_3d_scene$Scene3d$Types$MeshNode,
-							bounds,
-							F8(
-								function (sceneProperties, modelScale, modelMatrix, isRightHanded, viewMatrix, projectionMatrix, lights, settings) {
-									return A5(
-										$elm_explorations$webgl$WebGL$entityWith,
-										settings,
-										$ianmackenzie$elm_3d_scene$Scene3d$UnoptimizedShaders$lineSegmentVertex,
-										$ianmackenzie$elm_3d_scene$Scene3d$UnoptimizedShaders$emissiveFragment,
-										$ianmackenzie$elm_3d_scene$Scene3d$Entity$lineSegmentVertices,
-										{
-											emissiveColor: A2(
-												$elm_explorations$linear_algebra$Math$Vector3$scale,
-												$ianmackenzie$elm_units$Luminance$inNits(backlight),
-												color),
-											lineSegmentEndPoint: $ianmackenzie$elm_geometry_linear_algebra_interop$Geometry$Interop$LinearAlgebra$Point3d$toVec3(p2),
-											lineSegmentStartPoint: $ianmackenzie$elm_geometry_linear_algebra_interop$Geometry$Interop$LinearAlgebra$Point3d$toVec3(p1),
-											modelMatrix: modelMatrix,
-											modelScale: modelScale,
-											projectionMatrix: projectionMatrix,
-											sceneProperties: sceneProperties,
-											viewMatrix: viewMatrix
-										});
-								})));
-				} else {
-					return $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
-				}
-			case 'LambertianMaterial':
-				return $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
-			default:
-				return $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
-		}
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$lineSegment = F2(
-	function (givenMaterial, givenLineSegment) {
-		return A2($ianmackenzie$elm_3d_scene$Scene3d$Entity$lineSegment, givenMaterial, givenLineSegment);
 	});
 var $author$project$Main$viewOrientationArrows = $ianmackenzie$elm_3d_scene$Scene3d$group(
 	_List_fromArray(
@@ -21647,14 +22225,14 @@ var $author$project$Main$viewOrientationArrows = $ianmackenzie$elm_3d_scene$Scen
 			$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
 			A2(
 				$ianmackenzie$elm_geometry$LineSegment3d$from,
-				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, -1),
-				A3($ianmackenzie$elm_geometry$Point3d$meters, 1, -1, -1))),
+				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, -0.5),
+				A3($ianmackenzie$elm_geometry$Point3d$meters, 1, -1, -0.5))),
 			A2(
 			$ianmackenzie$elm_3d_scene$Scene3d$cone,
 			$ianmackenzie$elm_3d_scene$Scene3d$Material$matte($avh4$elm_color$Color$red),
 			A3(
 				$ianmackenzie$elm_geometry$Cone3d$startingAt,
-				A3($ianmackenzie$elm_geometry$Point3d$meters, 1, -1, -1),
+				A3($ianmackenzie$elm_geometry$Point3d$meters, 1, -1, -0.5),
 				$ianmackenzie$elm_geometry$Direction3d$positiveX,
 				{
 					length: $ianmackenzie$elm_units$Length$meters(0.25),
@@ -21665,14 +22243,14 @@ var $author$project$Main$viewOrientationArrows = $ianmackenzie$elm_3d_scene$Scen
 			$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$green),
 			A2(
 				$ianmackenzie$elm_geometry$LineSegment3d$from,
-				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, -1),
-				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, 1, -1))),
+				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, -0.5),
+				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, 1, -0.5))),
 			A2(
 			$ianmackenzie$elm_3d_scene$Scene3d$cone,
 			$ianmackenzie$elm_3d_scene$Scene3d$Material$matte($avh4$elm_color$Color$green),
 			A3(
 				$ianmackenzie$elm_geometry$Cone3d$startingAt,
-				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, 1, -1),
+				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, 1, -0.5),
 				$ianmackenzie$elm_geometry$Direction3d$positiveY,
 				{
 					length: $ianmackenzie$elm_units$Length$meters(0.25),
@@ -21683,14 +22261,14 @@ var $author$project$Main$viewOrientationArrows = $ianmackenzie$elm_3d_scene$Scen
 			$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$blue),
 			A2(
 				$ianmackenzie$elm_geometry$LineSegment3d$from,
-				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, -1),
-				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, 1))),
+				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, -0.5),
+				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, 1.5))),
 			A2(
 			$ianmackenzie$elm_3d_scene$Scene3d$cone,
 			$ianmackenzie$elm_3d_scene$Scene3d$Material$matte($avh4$elm_color$Color$blue),
 			A3(
 				$ianmackenzie$elm_geometry$Cone3d$startingAt,
-				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, 1),
+				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, 1.5),
 				$ianmackenzie$elm_geometry$Direction3d$positiveZ,
 				{
 					length: $ianmackenzie$elm_units$Length$meters(0.25),
@@ -21863,87 +22441,6 @@ var $author$project$Main$viewPlayer = F2(
 					])));
 	});
 var $ianmackenzie$elm_geometry$Axis3d$x = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$x);
-var $phosphor_icons$phosphor_elm$Phosphor$x = function (weight) {
-	var elements = function () {
-		switch (weight.$) {
-			case 'Bold':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Duotone':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M216,56V200a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V56A16,16,0,0,1,56,40H200A16,16,0,0,1,216,56Z'),
-								$elm$svg$Svg$Attributes$opacity('0.2')
-							]),
-						_List_Nil),
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Fill':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM181.66,170.34a8,8,0,0,1-11.32,11.32L128,139.31,85.66,181.66a8,8,0,0,1-11.32-11.32L116.69,128,74.34,85.66A8,8,0,0,1,85.66,74.34L128,116.69l42.34-42.35a8,8,0,0,1,11.32,11.32L139.31,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Light':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M204.24,195.76a6,6,0,1,1-8.48,8.48L128,136.49,60.24,204.24a6,6,0,0,1-8.48-8.48L119.51,128,51.76,60.24a6,6,0,0,1,8.48-8.48L128,119.51l67.76-67.75a6,6,0,0,1,8.48,8.48L136.49,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Regular':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z')
-							]),
-						_List_Nil)
-					]);
-			default:
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M202.83,197.17a4,4,0,0,1-5.66,5.66L128,133.66,58.83,202.83a4,4,0,0,1-5.66-5.66L122.34,128,53.17,58.83a4,4,0,0,1,5.66-5.66L128,122.34l69.17-69.17a4,4,0,1,1,5.66,5.66L133.66,128Z')
-							]),
-						_List_Nil)
-					]);
-		}
-	}();
-	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
-};
 var $ianmackenzie$elm_geometry$Axis3d$z = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$z);
 var $author$project$Main$view = function (model) {
 	return {
@@ -22101,7 +22598,8 @@ var $author$project$Main$view = function (model) {
 																var point = _v8.a;
 																return A3($author$project$Main$viewCursor, $avh4$elm_color$Color$yellow, model.cursorBounce, point);
 															}
-														}()
+														}(),
+															model.showBoardBounds ? $author$project$Main$viewBounds(editorBoard) : $ianmackenzie$elm_3d_scene$Scene3d$nothing
 														])
 													]));
 										} else {
@@ -22135,247 +22633,10 @@ var $author$project$Main$view = function (model) {
 									upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
 								})
 							])),
+						$author$project$Main$viewEditorHeader(model),
 						function () {
 						var _v9 = model.mode;
 						if (_v9.$ === 'Game') {
-							return $elm$html$Html$text('');
-						} else {
-							return A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										A2($elm$html$Html$Attributes$style, 'grid-column', '1 /3'),
-										A2($elm$html$Html$Attributes$style, 'grid-row', '1'),
-										A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-										A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-										A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
-										A2($elm$html$Html$Attributes$style, 'gap', '1rem')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$button,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$type_('button'),
-												$elm$html$Html$Events$onClick($author$project$Main$ChangeMode)
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Play\u00A0Level')
-											])),
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												A2($elm$html$Html$Attributes$attribute, 'role', 'group')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$type_('button'),
-														$elm$html$Html$Events$onClick($author$project$Main$Undo),
-														$elm$html$Html$Attributes$title('Undo'),
-														A2(
-														$author$project$Html$Attributes$Extra$aria,
-														'disabled',
-														$author$project$Html$Attributes$Extra$bool(
-															!$author$project$Undo$canUndo(model.editorBoard)))
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$phosphor_icons$phosphor_elm$Phosphor$toHtml,
-														_List_Nil,
-														$phosphor_icons$phosphor_elm$Phosphor$arrowCounterClockwise($phosphor_icons$phosphor_elm$Phosphor$Regular))
-													])),
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$type_('button'),
-														$elm$html$Html$Events$onClick($author$project$Main$Redo),
-														$elm$html$Html$Attributes$title('Redo'),
-														A2(
-														$author$project$Html$Attributes$Extra$aria,
-														'disabled',
-														$author$project$Html$Attributes$Extra$bool(
-															!$author$project$Undo$canRedo(model.editorBoard)))
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$phosphor_icons$phosphor_elm$Phosphor$toHtml,
-														_List_Nil,
-														$phosphor_icons$phosphor_elm$Phosphor$arrowClockwise($phosphor_icons$phosphor_elm$Phosphor$Regular))
-													]))
-											])),
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												A2($elm$html$Html$Attributes$attribute, 'role', 'group')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$type_('button'),
-														$elm$html$Html$Events$onClick(
-														$author$project$Main$SetEditMode($author$project$Main$Select)),
-														$elm$html$Html$Attributes$title('Select block'),
-														A2(
-														$author$project$Html$Attributes$Extra$aria,
-														'current',
-														$author$project$Html$Attributes$Extra$bool(
-															_Utils_eq(model.editMode, $author$project$Main$Select)))
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$phosphor_icons$phosphor_elm$Phosphor$toHtml,
-														_List_Nil,
-														$phosphor_icons$phosphor_elm$Phosphor$cursor($phosphor_icons$phosphor_elm$Phosphor$Regular))
-													])),
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$type_('button'),
-														$elm$html$Html$Events$onClick(
-														$author$project$Main$SetEditMode($author$project$Main$Add)),
-														$elm$html$Html$Attributes$title('Add block'),
-														A2(
-														$author$project$Html$Attributes$Extra$aria,
-														'current',
-														$author$project$Html$Attributes$Extra$bool(
-															_Utils_eq(model.editMode, $author$project$Main$Add)))
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$phosphor_icons$phosphor_elm$Phosphor$toHtml,
-														_List_Nil,
-														$phosphor_icons$phosphor_elm$Phosphor$plus($phosphor_icons$phosphor_elm$Phosphor$Regular))
-													])),
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$type_('button'),
-														$elm$html$Html$Events$onClick(
-														$author$project$Main$SetEditMode($author$project$Main$Remove)),
-														$elm$html$Html$Attributes$title('Remove block'),
-														A2(
-														$author$project$Html$Attributes$Extra$aria,
-														'current',
-														$author$project$Html$Attributes$Extra$bool(
-															_Utils_eq(model.editMode, $author$project$Main$Remove)))
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$phosphor_icons$phosphor_elm$Phosphor$toHtml,
-														_List_Nil,
-														$phosphor_icons$phosphor_elm$Phosphor$x($phosphor_icons$phosphor_elm$Phosphor$Regular))
-													]))
-											])),
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												A2($elm$html$Html$Attributes$attribute, 'role', 'group')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														A2(
-														$author$project$Html$Attributes$Extra$aria,
-														'current',
-														$author$project$Html$Attributes$Extra$bool(
-															_Utils_eq(model.selectedBlockType, $author$project$Main$Wall))),
-														$elm$html$Html$Attributes$type_('button'),
-														$elm$html$Html$Events$onClick(
-														$author$project$Main$BlockTypeSelected($author$project$Main$Wall))
-													]),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Wall')
-													])),
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														A2(
-														$author$project$Html$Attributes$Extra$aria,
-														'current',
-														$author$project$Html$Attributes$Extra$bool(
-															_Utils_eq(model.selectedBlockType, $author$project$Main$Edge))),
-														$elm$html$Html$Attributes$type_('button'),
-														$elm$html$Html$Events$onClick(
-														$author$project$Main$BlockTypeSelected($author$project$Main$Edge))
-													]),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Edge')
-													])),
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														A2(
-														$author$project$Html$Attributes$Extra$aria,
-														'current',
-														$author$project$Html$Attributes$Extra$bool(
-															_Utils_eq(
-																model.selectedBlockType,
-																$author$project$Main$PointPickup(false)))),
-														$elm$html$Html$Attributes$type_('button'),
-														$elm$html$Html$Events$onClick(
-														$author$project$Main$BlockTypeSelected(
-															$author$project$Main$PointPickup(false)))
-													]),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Point\u00A0Pickup')
-													])),
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														A2(
-														$author$project$Html$Attributes$Extra$aria,
-														'current',
-														$author$project$Html$Attributes$Extra$bool(
-															_Utils_eq(
-																model.selectedBlockType,
-																$author$project$Main$PlayerSpawn(
-																	{forward: $author$project$Main$PositiveX, left: $author$project$Main$PositiveY})))),
-														$elm$html$Html$Attributes$type_('button'),
-														$elm$html$Html$Events$onClick(
-														$author$project$Main$BlockTypeSelected(
-															$author$project$Main$PlayerSpawn(
-																{forward: $author$project$Main$PositiveX, left: $author$project$Main$PositiveY})))
-													]),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Player\u00A0Spawn')
-													]))
-											]))
-									]));
-						}
-					}(),
-						function () {
-						var _v10 = model.mode;
-						if (_v10.$ === 'Game') {
 							return A2(
 								$elm$html$Html$div,
 								_List_fromArray(
@@ -22413,8 +22674,8 @@ var $author$project$Main$view = function (model) {
 								_List_fromArray(
 									[
 										function () {
-										var _v11 = model.selectedBlock;
-										if (_v11.$ === 'Nothing') {
+										var _v10 = model.selectedBlock;
+										if (_v10.$ === 'Nothing') {
 											return A2(
 												$elm$html$Html$span,
 												_List_Nil,
@@ -22423,9 +22684,9 @@ var $author$project$Main$view = function (model) {
 														$elm$html$Html$text('No block selected')
 													]));
 										} else {
-											var _v12 = _v11.a;
-											var point = _v12.a;
-											var block = _v12.b;
+											var _v11 = _v10.a;
+											var point = _v11.a;
+											var block = _v11.b;
 											switch (block.$) {
 												case 'Empty':
 													return A2(
@@ -22457,7 +22718,7 @@ var $author$project$Main$view = function (model) {
 														_List_Nil,
 														_List_fromArray(
 															[
-																$elm$html$Html$text('PointPickup')
+																$elm$html$Html$text('Point Pickup')
 															]));
 												default:
 													var details = block.a;
@@ -22575,6 +22836,43 @@ var $author$project$Main$view = function (model) {
 														_List_Nil,
 														_List_fromArray(
 															[
+																$elm$html$Html$text('X Size ')
+															])),
+														A2(
+														$elm$html$Html$input,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$type_('number'),
+																$elm$html$Html$Attributes$value(
+																$elm$core$String$fromInt(editorBoard.maxX)),
+																$elm$html$Html$Attributes$min('1'),
+																$elm$html$Html$Attributes$max('20'),
+																$elm$html$Html$Attributes$step('1'),
+																A2(
+																$elm$html$Html$Events$on,
+																'blur',
+																A2(
+																	$elm$json$Json$Decode$map,
+																	$author$project$Main$MaxXChanged,
+																	A2(
+																		$elm$json$Json$Decode$at,
+																		_List_fromArray(
+																			['target', 'value']),
+																		$elm$json$Json$Decode$int)))
+															]),
+														_List_Nil)
+													])),
+												A2($elm$html$Html$br, _List_Nil, _List_Nil),
+												A2(
+												$elm$html$Html$label,
+												_List_Nil,
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$span,
+														_List_Nil,
+														_List_fromArray(
+															[
 																$elm$html$Html$text('X Visibility')
 															])),
 														$author$project$Html$Range$view(
@@ -22597,6 +22895,43 @@ var $author$project$Main$view = function (model) {
 														_List_Nil,
 														_List_fromArray(
 															[
+																$elm$html$Html$text('Y Size ')
+															])),
+														A2(
+														$elm$html$Html$input,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$type_('number'),
+																$elm$html$Html$Attributes$value(
+																$elm$core$String$fromInt(editorBoard.maxY)),
+																$elm$html$Html$Attributes$min('1'),
+																$elm$html$Html$Attributes$max('20'),
+																$elm$html$Html$Attributes$step('1'),
+																A2(
+																$elm$html$Html$Events$on,
+																'blur',
+																A2(
+																	$elm$json$Json$Decode$map,
+																	$author$project$Main$MaxYChanged,
+																	A2(
+																		$elm$json$Json$Decode$at,
+																		_List_fromArray(
+																			['target', 'value']),
+																		$elm$json$Json$Decode$int)))
+															]),
+														_List_Nil)
+													])),
+												A2($elm$html$Html$br, _List_Nil, _List_Nil),
+												A2(
+												$elm$html$Html$label,
+												_List_Nil,
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$span,
+														_List_Nil,
+														_List_fromArray(
+															[
 																$elm$html$Html$text('Y Visibility')
 															])),
 														$author$project$Html$Range$view(
@@ -22609,6 +22944,43 @@ var $author$project$Main$view = function (model) {
 															onLowChange: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$YLowerVisibleChanged)
 														})
 													])),
+												A2(
+												$elm$html$Html$label,
+												_List_Nil,
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$span,
+														_List_Nil,
+														_List_fromArray(
+															[
+																$elm$html$Html$text('Z Size ')
+															])),
+														A2(
+														$elm$html$Html$input,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$type_('number'),
+																$elm$html$Html$Attributes$value(
+																$elm$core$String$fromInt(editorBoard.maxZ)),
+																$elm$html$Html$Attributes$min('1'),
+																$elm$html$Html$Attributes$max('20'),
+																$elm$html$Html$Attributes$step('1'),
+																A2(
+																$elm$html$Html$Events$on,
+																'blur',
+																A2(
+																	$elm$json$Json$Decode$map,
+																	$author$project$Main$MaxZChanged,
+																	A2(
+																		$elm$json$Json$Decode$at,
+																		_List_fromArray(
+																			['target', 'value']),
+																		$elm$json$Json$Decode$int)))
+															]),
+														_List_Nil)
+													])),
+												A2($elm$html$Html$br, _List_Nil, _List_Nil),
 												A2(
 												$elm$html$Html$label,
 												_List_Nil,
@@ -22680,11 +23052,11 @@ var $author$project$Main$view = function (model) {
 														$elm$html$Html$text('Load')
 													])),
 												function () {
-												var _v16 = model.boardLoadError;
-												if (_v16.$ === 'Nothing') {
+												var _v15 = model.boardLoadError;
+												if (_v15.$ === 'Nothing') {
 													return $elm$html$Html$text('');
 												} else {
-													var error = _v16.a;
+													var error = _v15.a;
 													return A2(
 														$elm$html$Html$small,
 														_List_Nil,
