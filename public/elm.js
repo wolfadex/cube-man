@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739160078625"
+    "1739161310502"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -8223,43 +8223,6 @@ var _Bytes_read_string = F3(function(len, bytes, offset)
 var _Bytes_decodeFailure = F2(function() { throw 0; });
 
 
-
-var _Bitwise_and = F2(function(a, b)
-{
-	return a & b;
-});
-
-var _Bitwise_or = F2(function(a, b)
-{
-	return a | b;
-});
-
-var _Bitwise_xor = F2(function(a, b)
-{
-	return a ^ b;
-});
-
-function _Bitwise_complement(a)
-{
-	return ~a;
-};
-
-var _Bitwise_shiftLeftBy = F2(function(offset, a)
-{
-	return a << offset;
-});
-
-var _Bitwise_shiftRightBy = F2(function(offset, a)
-{
-	return a >> offset;
-});
-
-var _Bitwise_shiftRightZfBy = F2(function(offset, a)
-{
-	return a >>> offset;
-});
-
-
 var _WebGL_guid = 0;
 
 function _WebGL_listEach(fn, list) {
@@ -10113,6 +10076,43 @@ var _MJS_m4x4makeBasis = F3(function(vx, vy, vz) {
 
     return r;
 });
+
+
+
+var _Bitwise_and = F2(function(a, b)
+{
+	return a & b;
+});
+
+var _Bitwise_or = F2(function(a, b)
+{
+	return a | b;
+});
+
+var _Bitwise_xor = F2(function(a, b)
+{
+	return a ^ b;
+});
+
+function _Bitwise_complement(a)
+{
+	return ~a;
+};
+
+var _Bitwise_shiftLeftBy = F2(function(offset, a)
+{
+	return a << offset;
+});
+
+var _Bitwise_shiftRightBy = F2(function(offset, a)
+{
+	return a >> offset;
+});
+
+var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+{
+	return a >>> offset;
+});
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -10936,58 +10936,17 @@ var $author$project$Main$Board = F4(
 	function (maxX, maxY, maxZ, blocks) {
 		return {blocks: blocks, maxX: maxX, maxY: maxY, maxZ: maxZ};
 	});
-var $elm$core$Array$fromListHelp = F3(
-	function (list, nodeList, nodeListSize) {
-		fromListHelp:
-		while (true) {
-			var _v0 = A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, list);
-			var jsArray = _v0.a;
-			var remainingItems = _v0.b;
-			if (_Utils_cmp(
-				$elm$core$Elm$JsArray$length(jsArray),
-				$elm$core$Array$branchFactor) < 0) {
-				return A2(
-					$elm$core$Array$builderToArray,
-					true,
-					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
-			} else {
-				var $temp$list = remainingItems,
-					$temp$nodeList = A2(
-					$elm$core$List$cons,
-					$elm$core$Array$Leaf(jsArray),
-					nodeList),
-					$temp$nodeListSize = nodeListSize + 1;
-				list = $temp$list;
-				nodeList = $temp$nodeList;
-				nodeListSize = $temp$nodeListSize;
-				continue fromListHelp;
-			}
-		}
-	});
-var $elm$core$Array$fromList = function (list) {
-	if (!list.b) {
-		return $elm$core$Array$empty;
-	} else {
-		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
-	}
+var $author$project$Main$Edge = {$: 'Edge'};
+var $author$project$Main$Empty = {$: 'Empty'};
+var $author$project$Main$PlayerSpawn = function (a) {
+	return {$: 'PlayerSpawn', a: a};
 };
-var $elm$bytes$Bytes$Decode$Decoder = function (a) {
-	return {$: 'Decoder', a: a};
+var $author$project$Main$PointPickup = function (a) {
+	return {$: 'PointPickup', a: a};
 };
-var $elm$bytes$Bytes$Decode$andThen = F2(
-	function (callback, _v0) {
-		var decodeA = _v0.a;
-		return $elm$bytes$Bytes$Decode$Decoder(
-			F2(
-				function (bites, offset) {
-					var _v1 = A2(decodeA, bites, offset);
-					var newOffset = _v1.a;
-					var a = _v1.b;
-					var _v2 = callback(a);
-					var decodeB = _v2.a;
-					return A2(decodeB, bites, newOffset);
-				}));
-	});
+var $MartinSStewart$elm_serialize$Serialize$DataCorrupted = {$: 'DataCorrupted'};
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $elm$json$Json$Encode$bool = _Json_wrap;
 var $MartinSStewart$elm_serialize$Serialize$Codec = function (a) {
 	return {$: 'Codec', a: a};
 };
@@ -10996,38 +10955,52 @@ var $MartinSStewart$elm_serialize$Serialize$build = F4(
 		return $MartinSStewart$elm_serialize$Serialize$Codec(
 			{decoder: decoder_, encoder: encoder_, jsonDecoder: jsonDecoder, jsonEncoder: jsonEncoder});
 	});
-var $elm$bytes$Bytes$BE = {$: 'BE'};
-var $MartinSStewart$elm_serialize$Serialize$endian = $elm$bytes$Bytes$BE;
-var $MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper = function (_v0) {
-	var m = _v0.a;
-	return m.decoder;
+var $elm$bytes$Bytes$Decode$Decoder = function (a) {
+	return {$: 'Decoder', a: a};
 };
-var $MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper = function (_v0) {
-	var m = _v0.a;
-	return m.encoder;
-};
-var $MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper = function (_v0) {
-	var m = _v0.a;
-	return m.jsonDecoder;
-};
-var $MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper = function (_v0) {
-	var m = _v0.a;
-	return m.jsonEncoder;
-};
-var $elm$json$Json$Decode$list = _Json_decodeList;
-var $elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				$elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(_Utils_Tuple0),
-				entries));
+var $elm$bytes$Bytes$Decode$map = F2(
+	function (func, _v0) {
+		var decodeA = _v0.a;
+		return $elm$bytes$Bytes$Decode$Decoder(
+			F2(
+				function (bites, offset) {
+					var _v1 = A2(decodeA, bites, offset);
+					var aOffset = _v1.a;
+					var a = _v1.b;
+					return _Utils_Tuple2(
+						aOffset,
+						func(a));
+				}));
 	});
-var $elm$bytes$Bytes$Encode$Seq = F2(
-	function (a, b) {
-		return {$: 'Seq', a: a, b: b};
-	});
+var $elm$bytes$Bytes$Encode$getWidth = function (builder) {
+	switch (builder.$) {
+		case 'I8':
+			return 1;
+		case 'I16':
+			return 2;
+		case 'I32':
+			return 4;
+		case 'U8':
+			return 1;
+		case 'U16':
+			return 2;
+		case 'U32':
+			return 4;
+		case 'F32':
+			return 4;
+		case 'F64':
+			return 8;
+		case 'Seq':
+			var w = builder.a;
+			return w;
+		case 'Utf8':
+			var w = builder.a;
+			return w;
+		default:
+			var bs = builder.a;
+			return _Bytes_width(bs);
+	}
+};
 var $elm$bytes$Bytes$LE = {$: 'LE'};
 var $elm$bytes$Bytes$Encode$write = F3(
 	function (builder, mb, offset) {
@@ -11122,257 +11095,6 @@ var $elm$bytes$Bytes$Encode$writeSequence = F3(
 			}
 		}
 	});
-var $elm$bytes$Bytes$Encode$getWidth = function (builder) {
-	switch (builder.$) {
-		case 'I8':
-			return 1;
-		case 'I16':
-			return 2;
-		case 'I32':
-			return 4;
-		case 'U8':
-			return 1;
-		case 'U16':
-			return 2;
-		case 'U32':
-			return 4;
-		case 'F32':
-			return 4;
-		case 'F64':
-			return 8;
-		case 'Seq':
-			var w = builder.a;
-			return w;
-		case 'Utf8':
-			var w = builder.a;
-			return w;
-		default:
-			var bs = builder.a;
-			return _Bytes_width(bs);
-	}
-};
-var $elm$bytes$Bytes$Encode$getWidths = F2(
-	function (width, builders) {
-		getWidths:
-		while (true) {
-			if (!builders.b) {
-				return width;
-			} else {
-				var b = builders.a;
-				var bs = builders.b;
-				var $temp$width = width + $elm$bytes$Bytes$Encode$getWidth(b),
-					$temp$builders = bs;
-				width = $temp$width;
-				builders = $temp$builders;
-				continue getWidths;
-			}
-		}
-	});
-var $elm$bytes$Bytes$Encode$sequence = function (builders) {
-	return A2(
-		$elm$bytes$Bytes$Encode$Seq,
-		A2($elm$bytes$Bytes$Encode$getWidths, 0, builders),
-		builders);
-};
-var $elm$bytes$Bytes$Encode$U32 = F2(
-	function (a, b) {
-		return {$: 'U32', a: a, b: b};
-	});
-var $elm$bytes$Bytes$Encode$unsignedInt32 = $elm$bytes$Bytes$Encode$U32;
-var $MartinSStewart$elm_serialize$Serialize$listEncode = F2(
-	function (encoder_, list_) {
-		return $elm$bytes$Bytes$Encode$sequence(
-			A2(
-				$elm$core$List$cons,
-				A2(
-					$elm$bytes$Bytes$Encode$unsignedInt32,
-					$MartinSStewart$elm_serialize$Serialize$endian,
-					$elm$core$List$length(list_)),
-				A2($elm$core$List$map, encoder_, list_)));
-	});
-var $elm$bytes$Bytes$Decode$Done = function (a) {
-	return {$: 'Done', a: a};
-};
-var $elm$bytes$Bytes$Decode$Loop = function (a) {
-	return {$: 'Loop', a: a};
-};
-var $elm$bytes$Bytes$Decode$map = F2(
-	function (func, _v0) {
-		var decodeA = _v0.a;
-		return $elm$bytes$Bytes$Decode$Decoder(
-			F2(
-				function (bites, offset) {
-					var _v1 = A2(decodeA, bites, offset);
-					var aOffset = _v1.a;
-					var a = _v1.b;
-					return _Utils_Tuple2(
-						aOffset,
-						func(a));
-				}));
-	});
-var $elm$bytes$Bytes$Decode$succeed = function (a) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		F2(
-			function (_v0, offset) {
-				return _Utils_Tuple2(offset, a);
-			}));
-};
-var $MartinSStewart$elm_serialize$Serialize$listStep = F2(
-	function (decoder_, _v0) {
-		var n = _v0.a;
-		var xs = _v0.b;
-		return (n <= 0) ? $elm$bytes$Bytes$Decode$succeed(
-			$elm$bytes$Bytes$Decode$Done(
-				$elm$core$Result$Ok(
-					$elm$core$List$reverse(xs)))) : A2(
-			$elm$bytes$Bytes$Decode$map,
-			function (x) {
-				if (x.$ === 'Ok') {
-					var ok = x.a;
-					return $elm$bytes$Bytes$Decode$Loop(
-						_Utils_Tuple2(
-							n - 1,
-							A2($elm$core$List$cons, ok, xs)));
-				} else {
-					var err = x.a;
-					return $elm$bytes$Bytes$Decode$Done(
-						$elm$core$Result$Err(err));
-				}
-			},
-			decoder_);
-	});
-var $elm$bytes$Bytes$Decode$loopHelp = F4(
-	function (state, callback, bites, offset) {
-		loopHelp:
-		while (true) {
-			var _v0 = callback(state);
-			var decoder = _v0.a;
-			var _v1 = A2(decoder, bites, offset);
-			var newOffset = _v1.a;
-			var step = _v1.b;
-			if (step.$ === 'Loop') {
-				var newState = step.a;
-				var $temp$state = newState,
-					$temp$callback = callback,
-					$temp$bites = bites,
-					$temp$offset = newOffset;
-				state = $temp$state;
-				callback = $temp$callback;
-				bites = $temp$bites;
-				offset = $temp$offset;
-				continue loopHelp;
-			} else {
-				var result = step.a;
-				return _Utils_Tuple2(newOffset, result);
-			}
-		}
-	});
-var $elm$bytes$Bytes$Decode$loop = F2(
-	function (state, callback) {
-		return $elm$bytes$Bytes$Decode$Decoder(
-			A2($elm$bytes$Bytes$Decode$loopHelp, state, callback));
-	});
-var $elm$bytes$Bytes$Decode$unsignedInt32 = function (endianness) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		_Bytes_read_u32(
-			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
-};
-var $MartinSStewart$elm_serialize$Serialize$list = function (codec) {
-	return A4(
-		$MartinSStewart$elm_serialize$Serialize$build,
-		$MartinSStewart$elm_serialize$Serialize$listEncode(
-			$MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper(codec)),
-		A2(
-			$elm$bytes$Bytes$Decode$andThen,
-			function (length) {
-				return A2(
-					$elm$bytes$Bytes$Decode$loop,
-					_Utils_Tuple2(length, _List_Nil),
-					$MartinSStewart$elm_serialize$Serialize$listStep(
-						$MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper(codec)));
-			},
-			$elm$bytes$Bytes$Decode$unsignedInt32($MartinSStewart$elm_serialize$Serialize$endian)),
-		$elm$json$Json$Encode$list(
-			$MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper(codec)),
-		A2(
-			$elm$json$Json$Decode$map,
-			A2(
-				$elm$core$List$foldr,
-				F2(
-					function (value, state) {
-						var _v0 = _Utils_Tuple2(value, state);
-						if (_v0.b.$ === 'Err') {
-							return state;
-						} else {
-							if (_v0.a.$ === 'Ok') {
-								var ok = _v0.a.a;
-								var okState = _v0.b.a;
-								return $elm$core$Result$Ok(
-									A2($elm$core$List$cons, ok, okState));
-							} else {
-								var error = _v0.a.a;
-								return $elm$core$Result$Err(error);
-							}
-						}
-					}),
-				$elm$core$Result$Ok(_List_Nil)),
-			$elm$json$Json$Decode$list(
-				$MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper(codec))));
-};
-var $elm$core$Result$map = F2(
-	function (func, ra) {
-		if (ra.$ === 'Ok') {
-			var a = ra.a;
-			return $elm$core$Result$Ok(
-				func(a));
-		} else {
-			var e = ra.a;
-			return $elm$core$Result$Err(e);
-		}
-	});
-var $MartinSStewart$elm_serialize$Serialize$mapHelper = F3(
-	function (fromBytes_, toBytes_, codec) {
-		return A4(
-			$MartinSStewart$elm_serialize$Serialize$build,
-			function (v) {
-				return A2(
-					$MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper,
-					codec,
-					toBytes_(v));
-			},
-			A2(
-				$elm$bytes$Bytes$Decode$map,
-				fromBytes_,
-				$MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper(codec)),
-			function (v) {
-				return A2(
-					$MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper,
-					codec,
-					toBytes_(v));
-			},
-			A2(
-				$elm$json$Json$Decode$map,
-				fromBytes_,
-				$MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper(codec)));
-	});
-var $MartinSStewart$elm_serialize$Serialize$array = function (codec) {
-	return A3(
-		$MartinSStewart$elm_serialize$Serialize$mapHelper,
-		$elm$core$Result$map($elm$core$Array$fromList),
-		$elm$core$Array$toList,
-		$MartinSStewart$elm_serialize$Serialize$list(codec));
-};
-var $author$project$Main$Edge = {$: 'Edge'};
-var $author$project$Main$Empty = {$: 'Empty'};
-var $author$project$Main$PlayerSpawn = function (a) {
-	return {$: 'PlayerSpawn', a: a};
-};
-var $author$project$Main$PointPickup = function (a) {
-	return {$: 'PointPickup', a: a};
-};
-var $MartinSStewart$elm_serialize$Serialize$DataCorrupted = {$: 'DataCorrupted'};
-var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$bytes$Bytes$Decode$unsignedInt8 = $elm$bytes$Bytes$Decode$Decoder(_Bytes_read_u8);
 var $elm$bytes$Bytes$Encode$U8 = function (a) {
 	return {$: 'U8', a: a};
@@ -11419,14 +11141,37 @@ var $MartinSStewart$elm_serialize$Serialize$customType = function (match) {
 			match: match
 		});
 };
+var $elm$bytes$Bytes$Decode$andThen = F2(
+	function (callback, _v0) {
+		var decodeA = _v0.a;
+		return $elm$bytes$Bytes$Decode$Decoder(
+			F2(
+				function (bites, offset) {
+					var _v1 = A2(decodeA, bites, offset);
+					var newOffset = _v1.a;
+					var a = _v1.b;
+					var _v2 = callback(a);
+					var decodeB = _v2.a;
+					return A2(decodeB, bites, newOffset);
+				}));
+	});
 var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
 		return g(
 			f(x));
 	});
+var $elm$bytes$Bytes$BE = {$: 'BE'};
+var $MartinSStewart$elm_serialize$Serialize$endian = $elm$bytes$Bytes$BE;
 var $elm$json$Json$Decode$index = _Json_decodeIndex;
 var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$bytes$Bytes$Decode$succeed = function (a) {
+	return $elm$bytes$Bytes$Decode$Decoder(
+		F2(
+			function (_v0, offset) {
+				return _Utils_Tuple2(offset, a);
+			}));
+};
 var $elm$bytes$Bytes$Decode$unsignedInt16 = function (endianness) {
 	return $elm$bytes$Bytes$Decode$Decoder(
 		_Bytes_read_u16(
@@ -11483,7 +11228,43 @@ var $MartinSStewart$elm_serialize$Serialize$VariantEncoder = function (a) {
 	return {$: 'VariantEncoder', a: a};
 };
 var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
 var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $elm$bytes$Bytes$Encode$Seq = F2(
+	function (a, b) {
+		return {$: 'Seq', a: a, b: b};
+	});
+var $elm$bytes$Bytes$Encode$getWidths = F2(
+	function (width, builders) {
+		getWidths:
+		while (true) {
+			if (!builders.b) {
+				return width;
+			} else {
+				var b = builders.a;
+				var bs = builders.b;
+				var $temp$width = width + $elm$bytes$Bytes$Encode$getWidth(b),
+					$temp$builders = bs;
+				width = $temp$width;
+				builders = $temp$builders;
+				continue getWidths;
+			}
+		}
+	});
+var $elm$bytes$Bytes$Encode$sequence = function (builders) {
+	return A2(
+		$elm$bytes$Bytes$Encode$Seq,
+		A2($elm$bytes$Bytes$Encode$getWidths, 0, builders),
+		builders);
+};
 var $elm$bytes$Bytes$Encode$U16 = F2(
 	function (a, b) {
 		return {$: 'U16', a: a, b: b};
@@ -11586,6 +11367,22 @@ var $author$project$Main$axisCodex = $MartinSStewart$elm_serialize$Serialize$fin
 									})))))))));
 var $MartinSStewart$elm_serialize$Serialize$RecordCodec = function (a) {
 	return {$: 'RecordCodec', a: a};
+};
+var $MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper = function (_v0) {
+	var m = _v0.a;
+	return m.decoder;
+};
+var $MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper = function (_v0) {
+	var m = _v0.a;
+	return m.encoder;
+};
+var $MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper = function (_v0) {
+	var m = _v0.a;
+	return m.jsonDecoder;
+};
+var $MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper = function (_v0) {
+	var m = _v0.a;
+	return m.jsonEncoder;
 };
 var $elm$bytes$Bytes$Decode$map2 = F3(
 	function (func, _v0, _v1) {
@@ -11810,6 +11607,320 @@ var $author$project$Main$blockCodec = $MartinSStewart$elm_serialize$Serialize$fi
 											return playerSpawnEncoder(details);
 									}
 								}))))))));
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $elm$core$Dict$Black = {$: 'Black'};
+var $elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var $elm$core$Dict$Red = {$: 'Red'};
+var $elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _v1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _v3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					key,
+					value,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _v5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _v6 = left.d;
+				var _v7 = _v6.a;
+				var llK = _v6.b;
+				var llV = _v6.c;
+				var llLeft = _v6.d;
+				var llRight = _v6.e;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					lK,
+					lV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var $elm$core$Basics$compare = _Utils_compare;
+var $elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _v1 = A2($elm$core$Basics$compare, key, nKey);
+			switch (_v1.$) {
+				case 'LT':
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3($elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3($elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var $elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, dict) {
+				var key = _v0.a;
+				var value = _v0.b;
+				return A3($elm$core$Dict$insert, key, value, dict);
+			}),
+		$elm$core$Dict$empty,
+		assocs);
+};
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $elm$bytes$Bytes$Encode$U32 = F2(
+	function (a, b) {
+		return {$: 'U32', a: a, b: b};
+	});
+var $elm$bytes$Bytes$Encode$unsignedInt32 = $elm$bytes$Bytes$Encode$U32;
+var $MartinSStewart$elm_serialize$Serialize$listEncode = F2(
+	function (encoder_, list_) {
+		return $elm$bytes$Bytes$Encode$sequence(
+			A2(
+				$elm$core$List$cons,
+				A2(
+					$elm$bytes$Bytes$Encode$unsignedInt32,
+					$MartinSStewart$elm_serialize$Serialize$endian,
+					$elm$core$List$length(list_)),
+				A2($elm$core$List$map, encoder_, list_)));
+	});
+var $elm$bytes$Bytes$Decode$Done = function (a) {
+	return {$: 'Done', a: a};
+};
+var $elm$bytes$Bytes$Decode$Loop = function (a) {
+	return {$: 'Loop', a: a};
+};
+var $MartinSStewart$elm_serialize$Serialize$listStep = F2(
+	function (decoder_, _v0) {
+		var n = _v0.a;
+		var xs = _v0.b;
+		return (n <= 0) ? $elm$bytes$Bytes$Decode$succeed(
+			$elm$bytes$Bytes$Decode$Done(
+				$elm$core$Result$Ok(
+					$elm$core$List$reverse(xs)))) : A2(
+			$elm$bytes$Bytes$Decode$map,
+			function (x) {
+				if (x.$ === 'Ok') {
+					var ok = x.a;
+					return $elm$bytes$Bytes$Decode$Loop(
+						_Utils_Tuple2(
+							n - 1,
+							A2($elm$core$List$cons, ok, xs)));
+				} else {
+					var err = x.a;
+					return $elm$bytes$Bytes$Decode$Done(
+						$elm$core$Result$Err(err));
+				}
+			},
+			decoder_);
+	});
+var $elm$bytes$Bytes$Decode$loopHelp = F4(
+	function (state, callback, bites, offset) {
+		loopHelp:
+		while (true) {
+			var _v0 = callback(state);
+			var decoder = _v0.a;
+			var _v1 = A2(decoder, bites, offset);
+			var newOffset = _v1.a;
+			var step = _v1.b;
+			if (step.$ === 'Loop') {
+				var newState = step.a;
+				var $temp$state = newState,
+					$temp$callback = callback,
+					$temp$bites = bites,
+					$temp$offset = newOffset;
+				state = $temp$state;
+				callback = $temp$callback;
+				bites = $temp$bites;
+				offset = $temp$offset;
+				continue loopHelp;
+			} else {
+				var result = step.a;
+				return _Utils_Tuple2(newOffset, result);
+			}
+		}
+	});
+var $elm$bytes$Bytes$Decode$loop = F2(
+	function (state, callback) {
+		return $elm$bytes$Bytes$Decode$Decoder(
+			A2($elm$bytes$Bytes$Decode$loopHelp, state, callback));
+	});
+var $elm$bytes$Bytes$Decode$unsignedInt32 = function (endianness) {
+	return $elm$bytes$Bytes$Decode$Decoder(
+		_Bytes_read_u32(
+			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
+};
+var $MartinSStewart$elm_serialize$Serialize$list = function (codec) {
+	return A4(
+		$MartinSStewart$elm_serialize$Serialize$build,
+		$MartinSStewart$elm_serialize$Serialize$listEncode(
+			$MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper(codec)),
+		A2(
+			$elm$bytes$Bytes$Decode$andThen,
+			function (length) {
+				return A2(
+					$elm$bytes$Bytes$Decode$loop,
+					_Utils_Tuple2(length, _List_Nil),
+					$MartinSStewart$elm_serialize$Serialize$listStep(
+						$MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper(codec)));
+			},
+			$elm$bytes$Bytes$Decode$unsignedInt32($MartinSStewart$elm_serialize$Serialize$endian)),
+		$elm$json$Json$Encode$list(
+			$MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper(codec)),
+		A2(
+			$elm$json$Json$Decode$map,
+			A2(
+				$elm$core$List$foldr,
+				F2(
+					function (value, state) {
+						var _v0 = _Utils_Tuple2(value, state);
+						if (_v0.b.$ === 'Err') {
+							return state;
+						} else {
+							if (_v0.a.$ === 'Ok') {
+								var ok = _v0.a.a;
+								var okState = _v0.b.a;
+								return $elm$core$Result$Ok(
+									A2($elm$core$List$cons, ok, okState));
+							} else {
+								var error = _v0.a.a;
+								return $elm$core$Result$Err(error);
+							}
+						}
+					}),
+				$elm$core$Result$Ok(_List_Nil)),
+			$elm$json$Json$Decode$list(
+				$MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper(codec))));
+};
+var $elm$core$Result$map = F2(
+	function (func, ra) {
+		if (ra.$ === 'Ok') {
+			var a = ra.a;
+			return $elm$core$Result$Ok(
+				func(a));
+		} else {
+			var e = ra.a;
+			return $elm$core$Result$Err(e);
+		}
+	});
+var $MartinSStewart$elm_serialize$Serialize$mapHelper = F3(
+	function (fromBytes_, toBytes_, codec) {
+		return A4(
+			$MartinSStewart$elm_serialize$Serialize$build,
+			function (v) {
+				return A2(
+					$MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper,
+					codec,
+					toBytes_(v));
+			},
+			A2(
+				$elm$bytes$Bytes$Decode$map,
+				fromBytes_,
+				$MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper(codec)),
+			function (v) {
+				return A2(
+					$MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper,
+					codec,
+					toBytes_(v));
+			},
+			A2(
+				$elm$json$Json$Decode$map,
+				fromBytes_,
+				$MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper(codec)));
+	});
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $MartinSStewart$elm_serialize$Serialize$tuple = F2(
+	function (codecFirst, codecSecond) {
+		return $MartinSStewart$elm_serialize$Serialize$finishRecord(
+			A3(
+				$MartinSStewart$elm_serialize$Serialize$field,
+				$elm$core$Tuple$second,
+				codecSecond,
+				A3(
+					$MartinSStewart$elm_serialize$Serialize$field,
+					$elm$core$Tuple$first,
+					codecFirst,
+					$MartinSStewart$elm_serialize$Serialize$record($elm$core$Tuple$pair))));
+	});
+var $MartinSStewart$elm_serialize$Serialize$dict = F2(
+	function (keyCodec, valueCodec) {
+		return A3(
+			$MartinSStewart$elm_serialize$Serialize$mapHelper,
+			$elm$core$Result$map($elm$core$Dict$fromList),
+			$elm$core$Dict$toList,
+			$MartinSStewart$elm_serialize$Serialize$list(
+				A2($MartinSStewart$elm_serialize$Serialize$tuple, keyCodec, valueCodec)));
+	});
 var $elm$bytes$Bytes$Decode$float64 = function (endianness) {
 	return $elm$bytes$Bytes$Decode$Decoder(
 		_Bytes_read_f64(
@@ -11833,13 +11944,44 @@ var $MartinSStewart$elm_serialize$Serialize$int = A4(
 		$elm$bytes$Bytes$Decode$float64($MartinSStewart$elm_serialize$Serialize$endian)),
 	$elm$json$Json$Encode$int,
 	A2($elm$json$Json$Decode$map, $elm$core$Result$Ok, $elm$json$Json$Decode$int));
+var $MartinSStewart$elm_serialize$Serialize$triple = F3(
+	function (codecFirst, codecSecond, codecThird) {
+		return $MartinSStewart$elm_serialize$Serialize$finishRecord(
+			A3(
+				$MartinSStewart$elm_serialize$Serialize$field,
+				function (_v2) {
+					var c = _v2.c;
+					return c;
+				},
+				codecThird,
+				A3(
+					$MartinSStewart$elm_serialize$Serialize$field,
+					function (_v1) {
+						var b = _v1.b;
+						return b;
+					},
+					codecSecond,
+					A3(
+						$MartinSStewart$elm_serialize$Serialize$field,
+						function (_v0) {
+							var a = _v0.a;
+							return a;
+						},
+						codecFirst,
+						$MartinSStewart$elm_serialize$Serialize$record(
+							F3(
+								function (a, b, c) {
+									return _Utils_Tuple3(a, b, c);
+								}))))));
+	});
+var $author$project$Main$pointCodec = A3($MartinSStewart$elm_serialize$Serialize$triple, $MartinSStewart$elm_serialize$Serialize$int, $MartinSStewart$elm_serialize$Serialize$int, $MartinSStewart$elm_serialize$Serialize$int);
 var $author$project$Main$boardCodec = $MartinSStewart$elm_serialize$Serialize$finishRecord(
 	A3(
 		$MartinSStewart$elm_serialize$Serialize$field,
 		function ($) {
 			return $.blocks;
 		},
-		$MartinSStewart$elm_serialize$Serialize$array($author$project$Main$blockCodec),
+		A2($MartinSStewart$elm_serialize$Serialize$dict, $author$project$Main$pointCodec, $author$project$Main$blockCodec),
 		A3(
 			$MartinSStewart$elm_serialize$Serialize$field,
 			function ($) {
@@ -11872,8 +12014,6 @@ var $ianmackenzie$elm_units$Angle$degrees = function (numDegrees) {
 var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
 };
-var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
 var $MartinSStewart$elm_serialize$Serialize$version = 1;
 var $MartinSStewart$elm_serialize$Serialize$encodeToJson = F2(
@@ -11886,6 +12026,15 @@ var $MartinSStewart$elm_serialize$Serialize$encodeToJson = F2(
 					$elm$json$Json$Encode$int($MartinSStewart$elm_serialize$Serialize$version),
 					A2($MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper, codec, value)
 				]));
+	});
+var $author$project$Main$indexToPoint = F2(
+	function (_v0, index) {
+		var maxY = _v0.maxY;
+		var maxZ = _v0.maxZ;
+		var x = (index / (maxY * maxZ)) | 0;
+		var y = ((index - ((x * maxY) * maxZ)) / maxZ) | 0;
+		var z = (index - ((x * maxY) * maxZ)) - (y * maxZ);
+		return _Utils_Tuple3(x, y, z);
 	});
 var $author$project$Animation$Animating = function (a) {
 	return {$: 'Animating', a: a};
@@ -11943,14 +12092,26 @@ var $ianmackenzie$elm_geometry$Point3d$meters = F3(
 	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $elm$core$Array$repeat = F2(
-	function (n, e) {
-		return A2(
-			$elm$core$Array$initialize,
-			n,
-			function (_v0) {
-				return e;
-			});
+var $elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2($elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var $elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
 	});
 var $author$project$Animation$withLoop = function (_v0) {
 	var anim = _v0.a;
@@ -11963,8 +12124,24 @@ var $author$project$Main$init = function (_v0) {
 	var maxZ = 8;
 	var maxY = 8;
 	var maxX = 8;
+	var sizeHelper = {maxX: maxX, maxY: maxY, maxZ: maxZ};
 	var board = {
-		blocks: A2($elm$core$Array$repeat, (maxX * maxY) * maxZ, $author$project$Main$Wall),
+		blocks: A3(
+			$elm$core$List$foldl,
+			F2(
+				function (block, _v1) {
+					var index = _v1.a;
+					var blocks = _v1.b;
+					return _Utils_Tuple2(
+						index + 1,
+						A3(
+							$elm$core$Dict$insert,
+							A2($author$project$Main$indexToPoint, sizeHelper, index),
+							block,
+							blocks));
+				}),
+			_Utils_Tuple2(0, $elm$core$Dict$empty),
+			A2($elm$core$List$repeat, (maxX * maxY) * maxZ, $author$project$Main$Wall)).b,
 		maxX: maxX,
 		maxY: maxY,
 		maxZ: maxZ
@@ -12203,127 +12380,6 @@ var $elm$browser$Browser$Events$addKey = function (sub) {
 			$elm$browser$Browser$Events$nodeToKey(node),
 			name),
 		sub);
-};
-var $elm$core$Dict$Black = {$: 'Black'};
-var $elm$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
-	});
-var $elm$core$Dict$Red = {$: 'Red'};
-var $elm$core$Dict$balance = F5(
-	function (color, key, value, left, right) {
-		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
-			var _v1 = right.a;
-			var rK = right.b;
-			var rV = right.c;
-			var rLeft = right.d;
-			var rRight = right.e;
-			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-				var _v3 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var lLeft = left.d;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					key,
-					value,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					rK,
-					rV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
-					rRight);
-			}
-		} else {
-			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
-				var _v5 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var _v6 = left.d;
-				var _v7 = _v6.a;
-				var llK = _v6.b;
-				var llV = _v6.c;
-				var llLeft = _v6.d;
-				var llRight = _v6.e;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					lK,
-					lV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
-			} else {
-				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
-			}
-		}
-	});
-var $elm$core$Basics$compare = _Utils_compare;
-var $elm$core$Dict$insertHelp = F3(
-	function (key, value, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
-		} else {
-			var nColor = dict.a;
-			var nKey = dict.b;
-			var nValue = dict.c;
-			var nLeft = dict.d;
-			var nRight = dict.e;
-			var _v1 = A2($elm$core$Basics$compare, key, nKey);
-			switch (_v1.$) {
-				case 'LT':
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						A3($elm$core$Dict$insertHelp, key, value, nLeft),
-						nRight);
-				case 'EQ':
-					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
-				default:
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						nLeft,
-						A3($elm$core$Dict$insertHelp, key, value, nRight));
-			}
-		}
-	});
-var $elm$core$Dict$insert = F3(
-	function (key, value, dict) {
-		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
-	});
-var $elm$core$Dict$fromList = function (assocs) {
-	return A3(
-		$elm$core$List$foldl,
-		F2(
-			function (_v0, dict) {
-				var key = _v0.a;
-				var value = _v0.b;
-				return A3($elm$core$Dict$insert, key, value, dict);
-			}),
-		$elm$core$Dict$empty,
-		assocs);
 };
 var $elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
@@ -12642,15 +12698,6 @@ var $author$project$Main$axisToDirection3d = function (axis) {
 			return $ianmackenzie$elm_geometry$Direction3d$negativeZ;
 	}
 };
-var $author$project$Main$indexToPoint = F2(
-	function (_v0, index) {
-		var maxY = _v0.maxY;
-		var maxZ = _v0.maxZ;
-		var x = (index / (maxY * maxZ)) | 0;
-		var y = ((index - ((x * maxY) * maxZ)) / maxZ) | 0;
-		var z = (index - ((x * maxY) * maxZ)) - (y * maxZ);
-		return _Utils_Tuple3(x, y, z);
-	});
 var $author$project$Main$pointToPoint3d = function (_v0) {
 	var x = _v0.a;
 	var y = _v0.b;
@@ -12695,108 +12742,68 @@ var $ianmackenzie$elm_geometry$Geometry$Types$SketchPlane3d = function (a) {
 	return {$: 'SketchPlane3d', a: a};
 };
 var $ianmackenzie$elm_geometry$SketchPlane3d$unsafe = $ianmackenzie$elm_geometry$Geometry$Types$SketchPlane3d;
-var $author$project$Main$findSpawnHelper = F2(
-	function (board, blocks) {
-		findSpawnHelper:
+var $author$project$Main$findSpawnHelper = function (blocks) {
+	findSpawnHelper:
+	while (true) {
+		if (!blocks.b) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var _v1 = blocks.a;
+			var point = _v1.a;
+			var block = _v1.b;
+			var rest = blocks.b;
+			if (block.$ === 'PlayerSpawn') {
+				var details = block.a;
+				return $elm$core$Maybe$Just(
+					$ianmackenzie$elm_geometry$SketchPlane3d$toFrame(
+						$ianmackenzie$elm_geometry$SketchPlane3d$unsafe(
+							{
+								originPoint: $author$project$Main$pointToPoint3d(point),
+								xDirection: $author$project$Main$axisToDirection3d(details.forward),
+								yDirection: $author$project$Main$axisToDirection3d(details.left)
+							})));
+			} else {
+				var $temp$blocks = rest;
+				blocks = $temp$blocks;
+				continue findSpawnHelper;
+			}
+		}
+	}
+};
+var $author$project$Main$findSpawn = function (board) {
+	return $author$project$Main$findSpawnHelper(
+		$elm$core$Dict$toList(board.blocks));
+};
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
 		while (true) {
-			if (!blocks.b) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
 				return $elm$core$Maybe$Nothing;
 			} else {
-				var _v1 = blocks.a;
-				var index = _v1.a;
-				var block = _v1.b;
-				var rest = blocks.b;
-				if (block.$ === 'PlayerSpawn') {
-					var details = block.a;
-					return $elm$core$Maybe$Just(
-						$ianmackenzie$elm_geometry$SketchPlane3d$toFrame(
-							$ianmackenzie$elm_geometry$SketchPlane3d$unsafe(
-								{
-									originPoint: $author$project$Main$pointToPoint3d(
-										A2($author$project$Main$indexToPoint, board, index)),
-									xDirection: $author$project$Main$axisToDirection3d(details.forward),
-									yDirection: $author$project$Main$axisToDirection3d(details.left)
-								})));
-				} else {
-					var $temp$board = board,
-						$temp$blocks = rest;
-					board = $temp$board;
-					blocks = $temp$blocks;
-					continue findSpawnHelper;
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
 				}
 			}
 		}
-	});
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
-var $elm$core$Array$toIndexedList = function (array) {
-	var len = array.a;
-	var helper = F2(
-		function (entry, _v0) {
-			var index = _v0.a;
-			var list = _v0.b;
-			return _Utils_Tuple2(
-				index - 1,
-				A2(
-					$elm$core$List$cons,
-					_Utils_Tuple2(index, entry),
-					list));
-		});
-	return A3(
-		$elm$core$Array$foldr,
-		helper,
-		_Utils_Tuple2(len - 1, _List_Nil),
-		array).b;
-};
-var $author$project$Main$findSpawn = function (board) {
-	return A2(
-		$author$project$Main$findSpawnHelper,
-		board,
-		$elm$core$Array$toIndexedList(board.blocks));
-};
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
-var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
-var $elm$core$Basics$ge = _Utils_ge;
-var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
-var $elm$core$Array$getHelp = F3(
-	function (shift, index, tree) {
-		getHelp:
-		while (true) {
-			var pos = $elm$core$Array$bitMask & (index >>> shift);
-			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (_v0.$ === 'SubTree') {
-				var subTree = _v0.a;
-				var $temp$shift = shift - $elm$core$Array$shiftStep,
-					$temp$index = index,
-					$temp$tree = subTree;
-				shift = $temp$shift;
-				index = $temp$index;
-				tree = $temp$tree;
-				continue getHelp;
-			} else {
-				var values = _v0.a;
-				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
-			}
-		}
-	});
-var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
-var $elm$core$Array$tailIndex = function (len) {
-	return (len >>> 5) << 5;
-};
-var $elm$core$Array$get = F2(
-	function (index, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
-			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
-			A3($elm$core$Array$getHelp, startShift, index, tree)));
 	});
 var $author$project$Main$Backward = {$: 'Backward'};
 var $author$project$Main$Left = {$: 'Left'};
@@ -12849,30 +12856,24 @@ var $author$project$Undo$insertWith = F2(
 				fn(v),
 				_List_Nil));
 	});
-var $elm$core$Elm$JsArray$map = _JsArray_map;
-var $elm$core$Array$map = F2(
-	function (func, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		var helper = function (node) {
-			if (node.$ === 'SubTree') {
-				var subTree = node.a;
-				return $elm$core$Array$SubTree(
-					A2($elm$core$Elm$JsArray$map, helper, subTree));
-			} else {
-				var values = node.a;
-				return $elm$core$Array$Leaf(
-					A2($elm$core$Elm$JsArray$map, func, values));
-			}
-		};
-		return A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			A2($elm$core$Elm$JsArray$map, helper, tree),
-			A2($elm$core$Elm$JsArray$map, func, tail));
+var $elm$core$Dict$map = F2(
+	function (func, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2($elm$core$Dict$map, func, left),
+				A2($elm$core$Dict$map, func, right));
+		}
 	});
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
@@ -12884,6 +12885,39 @@ var $elm$core$Maybe$map = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
+var $Janiczek$elm_list_cartesian$List$Cartesian$map3 = F4(
+	function (fn, as_, bs, cs) {
+		return A2(
+			$elm$core$List$concatMap,
+			function (a) {
+				return A2(
+					$elm$core$List$concatMap,
+					function (b) {
+						return A2(
+							$elm$core$List$map,
+							A2(fn, a, b),
+							cs);
+					},
+					bs);
+			},
+			as_);
+	});
 var $elm$core$Result$mapError = F2(
 	function (f, result) {
 		if (result.$ === 'Ok') {
@@ -12893,37 +12927,6 @@ var $elm$core$Result$mapError = F2(
 			var e = result.a;
 			return $elm$core$Result$Err(
 				f(e));
-		}
-	});
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
 		}
 	});
 var $elm$core$Dict$member = F2(
@@ -13305,30 +13308,10 @@ var $author$project$Main$editorCamera = function (model) {
 				})
 		});
 };
-var $elm$core$Elm$JsArray$foldl = _JsArray_foldl;
-var $elm$core$Array$foldl = F3(
-	function (func, baseCase, _v0) {
-		var tree = _v0.c;
-		var tail = _v0.d;
-		var helper = F2(
-			function (node, acc) {
-				if (node.$ === 'SubTree') {
-					var subTree = node.a;
-					return A3($elm$core$Elm$JsArray$foldl, helper, acc, subTree);
-				} else {
-					var values = node.a;
-					return A3($elm$core$Elm$JsArray$foldl, func, acc, values);
-				}
-			});
-		return A3(
-			$elm$core$Elm$JsArray$foldl,
-			func,
-			A3($elm$core$Elm$JsArray$foldl, helper, baseCase, tree),
-			tail);
-	});
 var $ianmackenzie$elm_geometry$Geometry$Types$Rectangle2d = function (a) {
 	return {$: 'Rectangle2d', a: a};
 };
+var $elm$core$Basics$ge = _Utils_ge;
 var $ianmackenzie$elm_units$Quantity$greaterThanOrEqualTo = F2(
 	function (_v0, _v1) {
 		var y = _v0.a;
@@ -13740,57 +13723,50 @@ var $author$project$Main$moveCursorByMouse = F2(
 			offset);
 		var editorBoard = $author$project$Undo$value(model.editorBoard);
 		var maybeIntersection = A3(
-			$elm$core$Array$foldl,
-			F2(
-				function (block, _v3) {
-					var index = _v3.a;
-					var maybeInter = _v3.b;
-					return _Utils_Tuple2(
-						index + 1,
-						function () {
-							if (block.$ === 'Empty') {
+			$elm$core$Dict$foldl,
+			F3(
+				function (point, block, maybeInter) {
+					if (block.$ === 'Empty') {
+						return maybeInter;
+					} else {
+						var _v4 = point;
+						var x = _v4.a;
+						var y = _v4.b;
+						var z = _v4.c;
+						if ((_Utils_cmp(x, model.xLowerVisible) < 0) || ((_Utils_cmp(x, model.xUpperVisible) > 0) || ((_Utils_cmp(y, model.yLowerVisible) < 0) || ((_Utils_cmp(y, model.yUpperVisible) > 0) || ((_Utils_cmp(z, model.zLowerVisible) < 0) || (_Utils_cmp(z, model.zUpperVisible) > 0)))))) {
+							return maybeInter;
+						} else {
+							var boundingBox = A2(
+								$ianmackenzie$elm_geometry$BoundingBox3d$withDimensions,
+								_Utils_Tuple3(
+									$ianmackenzie$elm_units$Length$meters(1),
+									$ianmackenzie$elm_units$Length$meters(1),
+									$ianmackenzie$elm_units$Length$meters(1)),
+								$author$project$Main$pointToPoint3d(point));
+							var _v5 = A2($author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d, ray, boundingBox);
+							if (_v5.$ === 'Nothing') {
 								return maybeInter;
 							} else {
-								var _v5 = A2($author$project$Main$indexToPoint, editorBoard, index);
-								var x = _v5.a;
-								var y = _v5.b;
-								var z = _v5.c;
-								if ((_Utils_cmp(x, model.xLowerVisible) < 0) || ((_Utils_cmp(x, model.xUpperVisible) > 0) || ((_Utils_cmp(y, model.yLowerVisible) < 0) || ((_Utils_cmp(y, model.yUpperVisible) > 0) || ((_Utils_cmp(z, model.zLowerVisible) < 0) || (_Utils_cmp(z, model.zUpperVisible) > 0)))))) {
-									return maybeInter;
+								var intersection = _v5.a;
+								var newDist = A2(
+									$ianmackenzie$elm_geometry$Point3d$distanceFrom,
+									$ianmackenzie$elm_geometry$Axis3d$originPoint(ray),
+									$ianmackenzie$elm_geometry$Axis3d$originPoint(intersection));
+								if (maybeInter.$ === 'Nothing') {
+									return $elm$core$Maybe$Just(
+										_Utils_Tuple2(intersection, newDist));
 								} else {
-									var boundingBox = A2(
-										$ianmackenzie$elm_geometry$BoundingBox3d$withDimensions,
-										_Utils_Tuple3(
-											$ianmackenzie$elm_units$Length$meters(1),
-											$ianmackenzie$elm_units$Length$meters(1),
-											$ianmackenzie$elm_units$Length$meters(1)),
-										$author$project$Main$pointToPoint3d(
-											A2($author$project$Main$indexToPoint, editorBoard, index)));
-									var _v6 = A2($author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d, ray, boundingBox);
-									if (_v6.$ === 'Nothing') {
-										return maybeInter;
-									} else {
-										var intersection = _v6.a;
-										var newDist = A2(
-											$ianmackenzie$elm_geometry$Point3d$distanceFrom,
-											$ianmackenzie$elm_geometry$Axis3d$originPoint(ray),
-											$ianmackenzie$elm_geometry$Axis3d$originPoint(intersection));
-										if (maybeInter.$ === 'Nothing') {
-											return $elm$core$Maybe$Just(
-												_Utils_Tuple2(intersection, newDist));
-										} else {
-											var _v8 = maybeInter.a;
-											var prevDist = _v8.b;
-											return A2($ianmackenzie$elm_units$Quantity$lessThan, prevDist, newDist) ? $elm$core$Maybe$Just(
-												_Utils_Tuple2(intersection, newDist)) : maybeInter;
-										}
-									}
+									var _v7 = maybeInter.a;
+									var prevDist = _v7.b;
+									return A2($ianmackenzie$elm_units$Quantity$lessThan, prevDist, newDist) ? $elm$core$Maybe$Just(
+										_Utils_Tuple2(intersection, newDist)) : maybeInter;
 								}
 							}
-						}());
+						}
+					}
 				}),
-			_Utils_Tuple2(0, $elm$core$Maybe$Nothing),
-			editorBoard.blocks).b;
+			$elm$core$Maybe$Nothing,
+			editorBoard.blocks);
 		if (maybeIntersection.$ === 'Nothing') {
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		} else {
@@ -13826,15 +13802,6 @@ var $author$project$Main$moveCursorByMouse = F2(
 					}),
 				$elm$core$Platform$Cmd$none);
 		}
-	});
-var $author$project$Main$pointToIndex = F2(
-	function (_v0, _v1) {
-		var maxY = _v0.maxY;
-		var maxZ = _v0.maxZ;
-		var x = _v1.a;
-		var y = _v1.b;
-		var z = _v1.c;
-		return (((x * maxY) * maxZ) + (y * maxZ)) + z;
 	});
 var $author$project$Undo$redo = function (stack) {
 	var _v0 = stack.a;
@@ -14221,49 +14188,6 @@ var $elm$core$Set$remove = F2(
 		return $elm$core$Set$Set_elm_builtin(
 			A2($elm$core$Dict$remove, key, dict));
 	});
-var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
-var $elm$core$Array$setHelp = F4(
-	function (shift, index, value, tree) {
-		var pos = $elm$core$Array$bitMask & (index >>> shift);
-		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-		if (_v0.$ === 'SubTree') {
-			var subTree = _v0.a;
-			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
-			return A3(
-				$elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				$elm$core$Array$SubTree(newSub),
-				tree);
-		} else {
-			var values = _v0.a;
-			var newLeaf = A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, values);
-			return A3(
-				$elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				$elm$core$Array$Leaf(newLeaf),
-				tree);
-		}
-	});
-var $elm$core$Array$set = F3(
-	function (index, value, array) {
-		var len = array.a;
-		var startShift = array.b;
-		var tree = array.c;
-		var tail = array.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			tree,
-			A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, tail)) : A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			A4($elm$core$Array$setHelp, startShift, index, value, tree),
-			tail));
-	});
 var $ianmackenzie$elm_geometry$Direction3d$unwrap = function (_v0) {
 	var coordinates = _v0.a;
 	return coordinates;
@@ -14414,31 +14338,28 @@ var $author$project$Main$movePlayer = F2(
 		var _v0 = model.playerMovingAcrossEdge;
 		if (_v0.$ === 'Nothing') {
 			var nearBlock = A2(
-				$elm$core$Array$get,
-				A2(
-					$author$project$Main$pointToIndex,
-					model.board,
-					$author$project$Main$point3dToPoint(
-						$ianmackenzie$elm_geometry$Frame3d$originPoint(
-							A3(
-								$ianmackenzie$elm_geometry$Frame3d$translateIn,
-								function () {
-									var _v7 = model.playerFacing;
-									switch (_v7.$) {
-										case 'Forward':
-											return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
-										case 'Backward':
-											return $ianmackenzie$elm_geometry$Direction3d$reverse(
-												$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame));
-										case 'Right':
-											return $ianmackenzie$elm_geometry$Direction3d$reverse(
-												$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame));
-										default:
-											return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
-									}
-								}(),
-								$ianmackenzie$elm_units$Length$meters(0.6),
-								model.playerFrame)))),
+				$elm$core$Dict$get,
+				$author$project$Main$point3dToPoint(
+					$ianmackenzie$elm_geometry$Frame3d$originPoint(
+						A3(
+							$ianmackenzie$elm_geometry$Frame3d$translateIn,
+							function () {
+								var _v7 = model.playerFacing;
+								switch (_v7.$) {
+									case 'Forward':
+										return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
+									case 'Backward':
+										return $ianmackenzie$elm_geometry$Direction3d$reverse(
+											$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame));
+									case 'Right':
+										return $ianmackenzie$elm_geometry$Direction3d$reverse(
+											$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame));
+									default:
+										return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
+								}
+							}(),
+							$ianmackenzie$elm_units$Length$meters(0.6),
+							model.playerFrame))),
 				model.board.blocks);
 			if (nearBlock.$ === 'Nothing') {
 				return model;
@@ -14664,10 +14585,7 @@ var $author$project$Main$setPlayerFacing = function (model) {
 							}(),
 							$ianmackenzie$elm_units$Length$meters(1),
 							$author$project$Main$pointToPoint3d(playerBoardPoint)));
-					var _v1 = A2(
-						$elm$core$Array$get,
-						A2($author$project$Main$pointToIndex, model.board, targetBoardPoint),
-						model.board.blocks);
+					var _v1 = A2($elm$core$Dict$get, targetBoardPoint, model.board.blocks);
 					if (_v1.$ === 'Nothing') {
 						return model;
 					} else {
@@ -14807,8 +14725,8 @@ var $author$project$Main$update = F2(
 						return _Debug_todo(
 							'Main',
 							{
-								start: {line: 443, column: 29},
-								end: {line: 443, column: 39}
+								start: {line: 462, column: 29},
+								end: {line: 462, column: 39}
 							})('No player spawn found');
 					} else {
 						var spawnFrame = _v4.a;
@@ -14894,11 +14812,7 @@ var $author$project$Main$update = F2(
 									return _Utils_update(
 										board,
 										{
-											blocks: A3(
-												$elm$core$Array$set,
-												A2($author$project$Main$pointToIndex, board, model.editorCursor),
-												$author$project$Main$Empty,
-												board.blocks)
+											blocks: A3($elm$core$Dict$insert, model.editorCursor, $author$project$Main$Empty, board.blocks)
 										});
 								},
 								model.editorBoard);
@@ -14929,25 +14843,22 @@ var $author$project$Main$update = F2(
 												var _v6 = model.selectedBlockType;
 												if (_v6.$ === 'PlayerSpawn') {
 													return A3(
-														$elm$core$Array$set,
-														A2($author$project$Main$pointToIndex, board, model.editorCursor),
+														$elm$core$Dict$insert,
+														model.editorCursor,
 														model.selectedBlockType,
 														A2(
-															$elm$core$Array$map,
-															function (block) {
-																if (block.$ === 'PlayerSpawn') {
-																	return $author$project$Main$Empty;
-																} else {
-																	return block;
-																}
-															},
+															$elm$core$Dict$map,
+															F2(
+																function (_v7, block) {
+																	if (block.$ === 'PlayerSpawn') {
+																		return $author$project$Main$Empty;
+																	} else {
+																		return block;
+																	}
+																}),
 															board.blocks));
 												} else {
-													return A3(
-														$elm$core$Array$set,
-														A2($author$project$Main$pointToIndex, board, model.editorCursor),
-														model.selectedBlockType,
-														board.blocks);
+													return A3($elm$core$Dict$insert, model.editorCursor, model.selectedBlockType, board.blocks);
 												}
 											}()
 										});
@@ -14973,10 +14884,7 @@ var $author$project$Main$update = F2(
 												function (block) {
 													return _Utils_Tuple2(model.editorCursor, block);
 												},
-												A2(
-													$elm$core$Array$get,
-													A2($author$project$Main$pointToIndex, board, model.editorCursor),
-													board.blocks));
+												A2($elm$core$Dict$get, model.editorCursor, board.blocks));
 										}()
 									}),
 								$elm$core$Platform$Cmd$none);
@@ -14993,10 +14901,7 @@ var $author$project$Main$update = F2(
 												function (block) {
 													return _Utils_Tuple2(model.editorCursor, block);
 												},
-												A2(
-													$elm$core$Array$get,
-													A2($author$project$Main$pointToIndex, editorBoard, model.editorCursor),
-													editorBoard.blocks));
+												A2($elm$core$Dict$get, model.editorCursor, editorBoard.blocks));
 										}()
 									}),
 								$elm$core$Platform$Cmd$none);
@@ -15087,11 +14992,7 @@ var $author$project$Main$update = F2(
 									return _Utils_update(
 										board,
 										{
-											blocks: A3(
-												$elm$core$Array$set,
-												A2($author$project$Main$pointToIndex, board, point),
-												block,
-												board.blocks)
+											blocks: A3($elm$core$Dict$insert, point, block, board.blocks)
 										});
 								},
 								model.editorBoard),
@@ -15100,16 +15001,16 @@ var $author$project$Main$update = F2(
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MaxXChanged':
-				var maxX = msg.a;
+				var maxXStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v8 = $elm$core$String$toInt(maxX);
-						if (_v8.$ === 'Nothing') {
+						var _v9 = $elm$core$String$toInt(maxXStr);
+						if (_v9.$ === 'Nothing') {
 							return _Utils_update(
 								model,
-								{editorMaxXRaw: maxX});
+								{editorMaxXRaw: maxXStr});
 						} else {
-							var x = _v8.a;
+							var maxX = _v9.a;
 							return _Utils_update(
 								model,
 								{
@@ -15118,29 +15019,44 @@ var $author$project$Main$update = F2(
 										function (editorBoard) {
 											return _Utils_update(
 												editorBoard,
-												{maxX: x});
+												{
+													blocks: (_Utils_cmp(maxX, editorBoard.maxX + 1) < 0) ? A3(
+														$elm$core$List$foldl,
+														$elm$core$Dict$remove,
+														editorBoard.blocks,
+														A4(
+															$Janiczek$elm_list_cartesian$List$Cartesian$map3,
+															F3(
+																function (x, y, z) {
+																	return _Utils_Tuple3(x, y, z);
+																}),
+															A2($elm$core$List$range, maxX, editorBoard.maxX + 1),
+															A2($elm$core$List$range, 0, editorBoard.maxY),
+															A2($elm$core$List$range, 0, editorBoard.maxZ))) : editorBoard.blocks,
+													maxX: maxX
+												});
 										},
 										model.editorBoard),
-									editorMaxXRaw: maxX,
-									xLowerVisible: A2($elm$core$Basics$min, model.xLowerVisible, x),
+									editorMaxXRaw: maxXStr,
+									xLowerVisible: A2($elm$core$Basics$min, model.xLowerVisible, maxX),
 									xUpperVisible: _Utils_eq(
 										model.xUpperVisible + 1,
-										$author$project$Undo$value(model.editorBoard).maxX) ? (x - 1) : A2($elm$core$Basics$min, model.xUpperVisible, x - 1)
+										$author$project$Undo$value(model.editorBoard).maxX) ? (maxX - 1) : A2($elm$core$Basics$min, model.xUpperVisible, maxX - 1)
 								});
 						}
 					}(),
 					$elm$core$Platform$Cmd$none);
 			case 'MaxYChanged':
-				var maxY = msg.a;
+				var maxYStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v9 = $elm$core$String$toInt(maxY);
-						if (_v9.$ === 'Nothing') {
+						var _v10 = $elm$core$String$toInt(maxYStr);
+						if (_v10.$ === 'Nothing') {
 							return _Utils_update(
 								model,
-								{editorMaxYRaw: maxY});
+								{editorMaxYRaw: maxYStr});
 						} else {
-							var y = _v9.a;
+							var maxY = _v10.a;
 							return _Utils_update(
 								model,
 								{
@@ -15149,29 +15065,44 @@ var $author$project$Main$update = F2(
 										function (editorBoard) {
 											return _Utils_update(
 												editorBoard,
-												{maxY: y});
+												{
+													blocks: (_Utils_cmp(maxY, editorBoard.maxY + 1) < 0) ? A3(
+														$elm$core$List$foldl,
+														$elm$core$Dict$remove,
+														editorBoard.blocks,
+														A4(
+															$Janiczek$elm_list_cartesian$List$Cartesian$map3,
+															F3(
+																function (x, y, z) {
+																	return _Utils_Tuple3(x, y, z);
+																}),
+															A2($elm$core$List$range, 0, editorBoard.maxX),
+															A2($elm$core$List$range, maxY, editorBoard.maxY + 1),
+															A2($elm$core$List$range, 0, editorBoard.maxZ))) : editorBoard.blocks,
+													maxY: maxY
+												});
 										},
 										model.editorBoard),
-									editorMaxYRaw: maxY,
-									yLowerVisible: A2($elm$core$Basics$min, model.yLowerVisible, y),
+									editorMaxYRaw: maxYStr,
+									yLowerVisible: A2($elm$core$Basics$min, model.yLowerVisible, maxY),
 									yUpperVisible: _Utils_eq(
 										model.yUpperVisible + 1,
-										$author$project$Undo$value(model.editorBoard).maxY) ? (y - 1) : A2($elm$core$Basics$min, model.yUpperVisible, y - 1)
+										$author$project$Undo$value(model.editorBoard).maxY) ? (maxY - 1) : A2($elm$core$Basics$min, model.yUpperVisible, maxY - 1)
 								});
 						}
 					}(),
 					$elm$core$Platform$Cmd$none);
 			case 'MaxZChanged':
-				var maxZ = msg.a;
+				var maxZStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v10 = $elm$core$String$toInt(maxZ);
-						if (_v10.$ === 'Nothing') {
+						var _v11 = $elm$core$String$toInt(maxZStr);
+						if (_v11.$ === 'Nothing') {
 							return _Utils_update(
 								model,
-								{editorMaxZRaw: maxZ});
+								{editorMaxZRaw: maxZStr});
 						} else {
-							var z = _v10.a;
+							var maxZ = _v11.a;
 							return _Utils_update(
 								model,
 								{
@@ -15180,14 +15111,29 @@ var $author$project$Main$update = F2(
 										function (editorBoard) {
 											return _Utils_update(
 												editorBoard,
-												{maxZ: z});
+												{
+													blocks: (_Utils_cmp(maxZ, editorBoard.maxZ + 1) < 0) ? A3(
+														$elm$core$List$foldl,
+														$elm$core$Dict$remove,
+														editorBoard.blocks,
+														A4(
+															$Janiczek$elm_list_cartesian$List$Cartesian$map3,
+															F3(
+																function (x, y, z) {
+																	return _Utils_Tuple3(x, y, z);
+																}),
+															A2($elm$core$List$range, 0, editorBoard.maxX),
+															A2($elm$core$List$range, 0, editorBoard.maxY),
+															A2($elm$core$List$range, maxZ, editorBoard.maxZ + 1))) : editorBoard.blocks,
+													maxZ: maxZ
+												});
 										},
 										model.editorBoard),
-									editorMaxZRaw: maxZ,
-									zLowerVisible: A2($elm$core$Basics$min, model.zLowerVisible, z),
+									editorMaxZRaw: maxZStr,
+									zLowerVisible: A2($elm$core$Basics$min, model.zLowerVisible, maxZ),
 									zUpperVisible: _Utils_eq(
 										model.zUpperVisible + 1,
-										$author$project$Undo$value(model.editorBoard).maxZ) ? (z - 1) : A2($elm$core$Basics$min, model.zUpperVisible, z - 1)
+										$author$project$Undo$value(model.editorBoard).maxZ) ? (maxZ - 1) : A2($elm$core$Basics$min, model.zUpperVisible, maxZ - 1)
 								});
 						}
 					}(),
@@ -15201,8 +15147,8 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			default:
 				var key = msg.a;
-				var _v11 = model.mode;
-				if (_v11.$ === 'Editor') {
+				var _v12 = model.mode;
+				if (_v12.$ === 'Editor') {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				} else {
 					return A2($author$project$Main$handleGameKeyPressed, key, model);
@@ -15269,17 +15215,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor = function (color) {
 };
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
 var $author$project$Main$MouseDown = function (a) {
 	return {$: 'MouseDown', a: a};
 };
@@ -15670,11 +15605,6 @@ var $elm_explorations$webgl$WebGL$Internal$ClearColor = F4(
 		return {$: 'ClearColor', a: a, b: b, c: c, d: d};
 	});
 var $elm_explorations$webgl$WebGL$clearColor = $elm_explorations$webgl$WebGL$Internal$ClearColor;
-var $elm$core$List$concatMap = F2(
-	function (f, list) {
-		return $elm$core$List$concat(
-			A2($elm$core$List$map, f, list));
-	});
 var $elm_explorations$webgl$WebGL$Internal$Depth = function (a) {
 	return {$: 'Depth', a: a};
 };
@@ -16549,6 +16479,7 @@ var $ianmackenzie$elm_3d_camera$WebGL$Matrices$projectionMatrix = F2(
 				{m11: 2 / (aspectRatio * viewportHeight), m12: 0, m13: 0, m14: 0, m21: 0, m22: 2 / viewportHeight, m23: 0, m24: 0, m31: 0, m32: 0, m33: (-2) / (f - n), m34: (-(f + n)) / (f - n), m41: 0, m42: 0, m43: 0, m44: 1});
 		}
 	});
+var $elm$core$Bitwise$and = _Bitwise_and;
 var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
 var $ianmackenzie$elm_3d_scene$Scene3d$enabledFlag = F2(
 	function (lightMask, lightIndex) {
@@ -16565,6 +16496,7 @@ var $ianmackenzie$elm_3d_scene$Scene3d$insideStencil = function (lightMask) {
 			]),
 		$ianmackenzie$elm_3d_scene$Scene3d$commonSettings);
 };
+var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
 var $ianmackenzie$elm_3d_scene$Scene3d$renderWithinShadows = F3(
 	function (meshRenderPasses, lightMatrices, numShadowingLights) {
 		return $elm$core$List$concat(
@@ -18205,6 +18137,45 @@ var $elm$core$Maybe$map3 = F4(
 			}
 		}
 	});
+var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
+var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var $elm$core$Array$getHelp = F3(
+	function (shift, index, tree) {
+		getHelp:
+		while (true) {
+			var pos = $elm$core$Array$bitMask & (index >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_v0.$ === 'SubTree') {
+				var subTree = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$index = index,
+					$temp$tree = subTree;
+				shift = $temp$shift;
+				index = $temp$index;
+				tree = $temp$tree;
+				continue getHelp;
+			} else {
+				var values = _v0.a;
+				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
+			}
+		}
+	});
+var $elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
+var $elm$core$Array$get = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
+			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
+			A3($elm$core$Array$getHelp, startShift, index, tree)));
+	});
 var $ianmackenzie$elm_triangular_mesh$TriangularMesh$vertices = function (_v0) {
 	var mesh = _v0.a;
 	return mesh.vertices;
@@ -18235,6 +18206,41 @@ var $ianmackenzie$elm_triangular_mesh$TriangularMesh$faceVertices = function (me
 		$elm$core$List$filterMap,
 		toFace,
 		$ianmackenzie$elm_triangular_mesh$TriangularMesh$faceIndices(mesh));
+};
+var $elm$core$Array$fromListHelp = F3(
+	function (list, nodeList, nodeListSize) {
+		fromListHelp:
+		while (true) {
+			var _v0 = A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, list);
+			var jsArray = _v0.a;
+			var remainingItems = _v0.b;
+			if (_Utils_cmp(
+				$elm$core$Elm$JsArray$length(jsArray),
+				$elm$core$Array$branchFactor) < 0) {
+				return A2(
+					$elm$core$Array$builderToArray,
+					true,
+					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
+			} else {
+				var $temp$list = remainingItems,
+					$temp$nodeList = A2(
+					$elm$core$List$cons,
+					$elm$core$Array$Leaf(jsArray),
+					nodeList),
+					$temp$nodeListSize = nodeListSize + 1;
+				list = $temp$list;
+				nodeList = $temp$nodeList;
+				nodeListSize = $temp$nodeListSize;
+				continue fromListHelp;
+			}
+		}
+	});
+var $elm$core$Array$fromList = function (list) {
+	if (!list.b) {
+		return $elm$core$Array$empty;
+	} else {
+		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
+	}
 };
 var $ianmackenzie$elm_triangular_mesh$TriangularMesh$TriangularMesh = function (a) {
 	return {$: 'TriangularMesh', a: a};
@@ -20660,12 +20666,14 @@ var $ianmackenzie$elm_geometry$Cone3d$startingAt = F3(
 	});
 var $avh4$elm_color$Color$white = A4($avh4$elm_color$Color$RgbaSpace, 255 / 255, 255 / 255, 255 / 255, 1.0);
 var $avh4$elm_color$Color$yellow = A4($avh4$elm_color$Color$RgbaSpace, 237 / 255, 212 / 255, 0 / 255, 1.0);
-var $author$project$Main$viewBlock = F4(
-	function (board, model, index, block) {
-		var _v0 = A2($author$project$Main$indexToPoint, board, index);
-		var x = _v0.a;
-		var y = _v0.b;
-		var z = _v0.c;
+var $author$project$Main$viewBlock = F3(
+	function (board, model, _v0) {
+		var point = _v0.a;
+		var block = _v0.b;
+		var _v1 = point;
+		var x = _v1.a;
+		var y = _v1.b;
+		var z = _v1.c;
 		if ((_Utils_cmp(x, model.xLowerVisible) < 0) || ((_Utils_cmp(x, model.xUpperVisible) > 0) || ((_Utils_cmp(y, model.yLowerVisible) < 0) || ((_Utils_cmp(y, model.yUpperVisible) > 0) || ((_Utils_cmp(z, model.zLowerVisible) < 0) || (_Utils_cmp(z, model.zUpperVisible) > 0)))))) {
 			return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 		} else {
@@ -20698,16 +20706,15 @@ var $author$project$Main$viewBlock = F4(
 				case 'PlayerSpawn':
 					var forward = block.a.forward;
 					var left = block.a.left;
-					var _v2 = model.mode;
-					if (_v2.$ === 'Game') {
+					var _v3 = model.mode;
+					if (_v3.$ === 'Game') {
 						return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 					} else {
 						var center = A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z);
 						var carl = $ianmackenzie$elm_geometry$SketchPlane3d$toFrame(
 							$ianmackenzie$elm_geometry$SketchPlane3d$unsafe(
 								{
-									originPoint: $author$project$Main$pointToPoint3d(
-										A2($author$project$Main$indexToPoint, board, index)),
+									originPoint: $author$project$Main$pointToPoint3d(point),
 									xDirection: $author$project$Main$axisToDirection3d(forward),
 									yDirection: $author$project$Main$axisToDirection3d(left)
 								}));
@@ -20771,8 +20778,8 @@ var $author$project$Main$viewBlock = F4(
 				case 'Empty':
 					return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 				default:
-					var _v3 = model.mode;
-					if (_v3.$ === 'Game') {
+					var _v4 = model.mode;
+					if (_v4.$ === 'Game') {
 						return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 					} else {
 						return A2(
@@ -22630,9 +22637,9 @@ var $author$project$Main$view = function (model) {
 												_List_fromArray(
 													[
 														A2(
-														$elm$core$List$indexedMap,
+														$elm$core$List$map,
 														A2($author$project$Main$viewBlock, editorBoard, model),
-														$elm$core$Array$toList(editorBoard.blocks)),
+														$elm$core$Dict$toList(editorBoard.blocks)),
 														_List_fromArray(
 														[
 															A3($author$project$Main$viewCursor, $avh4$elm_color$Color$white, model.cursorBounce, model.editorCursor),
@@ -22655,9 +22662,9 @@ var $author$project$Main$view = function (model) {
 												_List_fromArray(
 													[
 														A2(
-														$elm$core$List$indexedMap,
+														$elm$core$List$map,
 														A2($author$project$Main$viewBlock, model.board, model),
-														$elm$core$Array$toList(model.board.blocks)),
+														$elm$core$Dict$toList(model.board.blocks)),
 														_List_fromArray(
 														[
 															A2($author$project$Main$viewPlayer, model.playerFacing, model.playerFrame)

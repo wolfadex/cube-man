@@ -2,7 +2,6 @@ module Main exposing (main)
 
 import Angle exposing (Angle)
 import Animation exposing (Animation)
-import Array exposing (Array)
 import Axis3d exposing (Axis3d)
 import Axis3d.Extra
 import Block3d
@@ -12,6 +11,7 @@ import Browser.Events
 import Camera3d exposing (Camera3d)
 import Color exposing (Color)
 import Cone3d
+import Dict exposing (Dict)
 import Direction3d exposing (Direction3d)
 import Duration
 import Frame3d exposing (Frame3d)
@@ -25,6 +25,7 @@ import Json.Decode
 import Json.Encode
 import Length
 import LineSegment3d
+import List.Cartesian
 import Luminance
 import Phosphor
 import Pixels exposing (Pixels)
@@ -119,11 +120,16 @@ type alias Point =
     ( Int, Int, Int )
 
 
+pointCodec : Serialize.Codec e Point
+pointCodec =
+    Serialize.triple Serialize.int Serialize.int Serialize.int
+
+
 type alias Board =
     { maxX : Int
     , maxY : Int
     , maxZ : Int
-    , blocks : Array Block
+    , blocks : Dict Point Block
     }
 
 
@@ -141,7 +147,7 @@ boardCodec =
         |> Serialize.field .maxX Serialize.int
         |> Serialize.field .maxY Serialize.int
         |> Serialize.field .maxZ Serialize.int
-        |> Serialize.field .blocks (Serialize.array blockCodec)
+        |> Serialize.field .blocks (Serialize.dict pointCodec blockCodec)
         |> Serialize.finishRecord
 
 
@@ -213,9 +219,10 @@ blockCodec =
         |> Serialize.finishCustomType
 
 
-pointToIndex : { m | maxY : Int, maxZ : Int } -> Point -> Int
-pointToIndex { maxY, maxZ } ( x, y, z ) =
-    x * maxY * maxZ + y * maxZ + z
+
+-- pointToIndex : { m | maxY : Int, maxZ : Int } -> Point -> Int
+-- pointToIndex { maxY, maxZ } ( x, y, z ) =
+--     x * maxY * maxZ + y * maxZ + z
 
 
 indexToPoint : { m | maxX : Int, maxY : Int, maxZ : Int } -> Int -> Point
@@ -259,11 +266,23 @@ init () =
         maxZ =
             8
 
+        sizeHelper =
+            { maxX = maxX, maxY = maxY, maxZ = maxZ }
+
         board =
             { maxX = maxX
             , maxY = maxY
             , maxZ = maxZ
-            , blocks = Array.repeat (maxX * maxY * maxZ) Wall
+            , blocks =
+                List.repeat (maxX * maxY * maxZ) Wall
+                    |> List.foldl
+                        (\block ( index, blocks ) ->
+                            ( index + 1
+                            , Dict.insert (indexToPoint sizeHelper index) block blocks
+                            )
+                        )
+                        ( 0, Dict.empty )
+                    |> Tuple.second
             }
     in
     ( { xLowerVisible = 0
@@ -499,7 +518,7 @@ update msg model =
                                     (\board ->
                                         { board
                                             | blocks =
-                                                Array.set (pointToIndex board model.editorCursor)
+                                                Dict.insert model.editorCursor
                                                     Empty
                                                     board.blocks
                                         }
@@ -529,8 +548,8 @@ update msg model =
                                                 case model.selectedBlockType of
                                                     PlayerSpawn _ ->
                                                         board.blocks
-                                                            |> Array.map
-                                                                (\block ->
+                                                            |> Dict.map
+                                                                (\_ block ->
                                                                     case block of
                                                                         PlayerSpawn _ ->
                                                                             Empty
@@ -538,11 +557,11 @@ update msg model =
                                                                         _ ->
                                                                             block
                                                                 )
-                                                            |> Array.set (pointToIndex board model.editorCursor)
+                                                            |> Dict.insert model.editorCursor
                                                                 model.selectedBlockType
 
                                                     _ ->
-                                                        Array.set (pointToIndex board model.editorCursor)
+                                                        Dict.insert model.editorCursor
                                                             model.selectedBlockType
                                                             board.blocks
                                         }
@@ -564,7 +583,7 @@ update msg model =
                                             |> Undo.value
                                 in
                                 board.blocks
-                                    |> Array.get (pointToIndex board model.editorCursor)
+                                    |> Dict.get model.editorCursor
                                     |> Maybe.map (\block -> ( model.editorCursor, block ))
                           }
                         , Cmd.none
@@ -580,7 +599,7 @@ update msg model =
                                             |> Undo.value
                                 in
                                 editorBoard.blocks
-                                    |> Array.get (pointToIndex editorBoard model.editorCursor)
+                                    |> Dict.get model.editorCursor
                                     |> Maybe.map (\block -> ( model.editorCursor, block ))
                           }
                         , Cmd.none
@@ -648,90 +667,126 @@ update msg model =
             ( { model
                 | editorBoard =
                     Undo.insertWith
-                        (\board -> { board | blocks = Array.set (pointToIndex board point) block board.blocks })
+                        (\board -> { board | blocks = Dict.insert point block board.blocks })
                         model.editorBoard
                 , selectedBlock = Just ( point, block )
               }
             , Cmd.none
             )
 
-        MaxXChanged maxX ->
-            ( case String.toInt maxX of
+        MaxXChanged maxXStr ->
+            ( case String.toInt maxXStr of
                 Nothing ->
                     { model
-                        | editorMaxXRaw = maxX
+                        | editorMaxXRaw = maxXStr
                     }
 
-                Just x ->
+                Just maxX ->
                     { model
-                        | editorMaxXRaw = maxX
+                        | editorMaxXRaw = maxXStr
                         , editorBoard =
                             Undo.insertWith
                                 (\editorBoard ->
-                                    { editorBoard | maxX = x }
+                                    { editorBoard
+                                        | maxX = maxX
+                                        , blocks =
+                                            if maxX < (editorBoard.maxX + 1) then
+                                                List.Cartesian.map3 (\x y z -> ( x, y, z ))
+                                                    (List.range maxX (editorBoard.maxX + 1))
+                                                    (List.range 0 editorBoard.maxY)
+                                                    (List.range 0 editorBoard.maxZ)
+                                                    |> List.foldl Dict.remove editorBoard.blocks
+
+                                            else
+                                                editorBoard.blocks
+                                    }
                                 )
                                 model.editorBoard
-                        , xLowerVisible = min model.xLowerVisible x
+                        , xLowerVisible = min model.xLowerVisible maxX
                         , xUpperVisible =
                             if model.xUpperVisible + 1 == (Undo.value model.editorBoard).maxX then
-                                x - 1
+                                maxX - 1
 
                             else
-                                min model.xUpperVisible (x - 1)
+                                min model.xUpperVisible (maxX - 1)
                     }
             , Cmd.none
             )
 
-        MaxYChanged maxY ->
-            ( case String.toInt maxY of
+        MaxYChanged maxYStr ->
+            ( case String.toInt maxYStr of
                 Nothing ->
                     { model
-                        | editorMaxYRaw = maxY
+                        | editorMaxYRaw = maxYStr
                     }
 
-                Just y ->
+                Just maxY ->
                     { model
-                        | editorMaxYRaw = maxY
+                        | editorMaxYRaw = maxYStr
                         , editorBoard =
                             Undo.insertWith
                                 (\editorBoard ->
-                                    { editorBoard | maxY = y }
+                                    { editorBoard
+                                        | maxY = maxY
+                                        , blocks =
+                                            if maxY < (editorBoard.maxY + 1) then
+                                                List.Cartesian.map3 (\x y z -> ( x, y, z ))
+                                                    (List.range 0 editorBoard.maxX)
+                                                    (List.range maxY (editorBoard.maxY + 1))
+                                                    (List.range 0 editorBoard.maxZ)
+                                                    |> List.foldl Dict.remove editorBoard.blocks
+
+                                            else
+                                                editorBoard.blocks
+                                    }
                                 )
                                 model.editorBoard
-                        , yLowerVisible = min model.yLowerVisible y
+                        , yLowerVisible = min model.yLowerVisible maxY
                         , yUpperVisible =
                             if model.yUpperVisible + 1 == (Undo.value model.editorBoard).maxY then
-                                y - 1
+                                maxY - 1
 
                             else
-                                min model.yUpperVisible (y - 1)
+                                min model.yUpperVisible (maxY - 1)
                     }
             , Cmd.none
             )
 
-        MaxZChanged maxZ ->
-            ( case String.toInt maxZ of
+        MaxZChanged maxZStr ->
+            ( case String.toInt maxZStr of
                 Nothing ->
                     { model
-                        | editorMaxZRaw = maxZ
+                        | editorMaxZRaw = maxZStr
                     }
 
-                Just z ->
+                Just maxZ ->
                     { model
-                        | editorMaxZRaw = maxZ
+                        | editorMaxZRaw = maxZStr
                         , editorBoard =
                             Undo.insertWith
                                 (\editorBoard ->
-                                    { editorBoard | maxZ = z }
+                                    { editorBoard
+                                        | maxZ = maxZ
+                                        , blocks =
+                                            if maxZ < (editorBoard.maxZ + 1) then
+                                                List.Cartesian.map3 (\x y z -> ( x, y, z ))
+                                                    (List.range 0 editorBoard.maxX)
+                                                    (List.range 0 editorBoard.maxY)
+                                                    (List.range maxZ (editorBoard.maxZ + 1))
+                                                    |> List.foldl Dict.remove editorBoard.blocks
+
+                                            else
+                                                editorBoard.blocks
+                                    }
                                 )
                                 model.editorBoard
-                        , zLowerVisible = min model.zLowerVisible z
+                        , zLowerVisible = min model.zLowerVisible maxZ
                         , zUpperVisible =
                             if model.zUpperVisible + 1 == (Undo.value model.editorBoard).maxZ then
-                                z - 1
+                                maxZ - 1
 
                             else
-                                min model.zUpperVisible (z - 1)
+                                min model.zUpperVisible (maxZ - 1)
                     }
             , Cmd.none
             )
@@ -750,22 +805,20 @@ update msg model =
 
 findSpawn : Board -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : {} })
 findSpawn board =
-    findSpawnHelper board (Array.toIndexedList board.blocks)
+    findSpawnHelper (Dict.toList board.blocks)
 
 
-findSpawnHelper : Board -> List ( Int, Block ) -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : {} })
-findSpawnHelper board blocks =
+findSpawnHelper : List ( Point, Block ) -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : {} })
+findSpawnHelper blocks =
     case blocks of
         [] ->
             Nothing
 
-        ( index, block ) :: rest ->
+        ( point, block ) :: rest ->
             case block of
                 PlayerSpawn details ->
                     SketchPlane3d.unsafe
-                        { originPoint =
-                            indexToPoint board index
-                                |> pointToPoint3d
+                        { originPoint = pointToPoint3d point
                         , xDirection = axisToDirection3d details.forward
                         , yDirection = axisToDirection3d details.left
                         }
@@ -773,7 +826,7 @@ findSpawnHelper board blocks =
                         |> Just
 
                 _ ->
-                    findSpawnHelper board rest
+                    findSpawnHelper rest
 
 
 moveCameraByMouse : Json.Encode.Value -> Point2d Pixels ScreenCoordinates -> Model -> ( Model, Cmd Msg )
@@ -816,17 +869,16 @@ moveCursorByMouse offset model =
             Undo.value model.editorBoard
 
         maybeIntersection =
-            Array.foldl
-                (\block ( index, maybeInter ) ->
-                    ( index + 1
-                    , case block of
+            Dict.foldl
+                (\point block maybeInter ->
+                    case block of
                         Empty ->
                             maybeInter
 
                         _ ->
                             let
                                 ( x, y, z ) =
-                                    indexToPoint editorBoard index
+                                    point
                             in
                             if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
                                 maybeInter
@@ -836,7 +888,7 @@ moveCursorByMouse offset model =
                                     boundingBox =
                                         BoundingBox3d.withDimensions
                                             ( Length.meters 1, Length.meters 1, Length.meters 1 )
-                                            (pointToPoint3d (indexToPoint editorBoard index))
+                                            (pointToPoint3d point)
                                 in
                                 case Axis3d.Extra.intersectionAxisAlignedBoundingBox3d ray boundingBox of
                                     Nothing ->
@@ -857,11 +909,9 @@ moveCursorByMouse offset model =
 
                                                 else
                                                     maybeInter
-                    )
                 )
-                ( 0, Nothing )
+                Nothing
                 editorBoard.blocks
-                |> Tuple.second
     in
     case maybeIntersection of
         Nothing ->
@@ -985,7 +1035,7 @@ movePlayer deltaMs model =
         Nothing ->
             let
                 nearBlock =
-                    Array.get
+                    Dict.get
                         (model.playerFrame
                             |> Frame3d.translateIn
                                 (case model.playerFacing of
@@ -1006,7 +1056,6 @@ movePlayer deltaMs model =
                                 (Length.meters 0.6)
                             |> Frame3d.originPoint
                             |> point3dToPoint
-                            |> pointToIndex model.board
                         )
                         model.board.blocks
             in
@@ -1219,7 +1268,7 @@ setPlayerFacing model =
                                     , playerFacing = model.playerWantFacing
                                 }
                         in
-                        case Array.get (pointToIndex model.board targetBoardPoint) model.board.blocks of
+                        case Dict.get targetBoardPoint model.board.blocks of
                             Nothing ->
                                 model
 
@@ -1433,8 +1482,8 @@ view model =
                                 in
                                 List.concat
                                     [ editorBoard.blocks
-                                        |> Array.toList
-                                        |> List.indexedMap (viewBlock editorBoard model)
+                                        |> Dict.toList
+                                        |> List.map (viewBlock editorBoard model)
                                     , [ viewCursor Color.white model.cursorBounce model.editorCursor
                                       , viewOrientationArrows
                                       , case model.selectedBlock of
@@ -1454,8 +1503,8 @@ view model =
                             Game ->
                                 List.concat
                                     [ model.board.blocks
-                                        |> Array.toList
-                                        |> List.indexedMap (viewBlock model.board model)
+                                        |> Dict.toList
+                                        |> List.map (viewBlock model.board model)
                                     , [ viewPlayer model.playerFacing model.playerFrame ]
                                     ]
                     }
@@ -2042,13 +2091,11 @@ viewPlayer facing frame =
             )
 
 
-viewBlock : Board -> Model -> Int -> Block -> Scene3d.Entity WorldCoordinates
-viewBlock board model index block =
+viewBlock : Board -> Model -> ( Point, Block ) -> Scene3d.Entity WorldCoordinates
+viewBlock board model ( point, block ) =
     let
         ( x, y, z ) =
-            indexToPoint
-                board
-                index
+            point
     in
     if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
         Scene3d.nothing
@@ -2109,9 +2156,7 @@ viewBlock board model index block =
 
                             carl =
                                 SketchPlane3d.unsafe
-                                    { originPoint =
-                                        indexToPoint board index
-                                            |> pointToPoint3d
+                                    { originPoint = pointToPoint3d point
                                     , xDirection = axisToDirection3d forward
                                     , yDirection = axisToDirection3d left
                                     }
