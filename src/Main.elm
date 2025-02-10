@@ -81,6 +81,9 @@ type alias Model =
     , playerFacing : Facing
     , playerWantFacing : Facing
     , playerMovingAcrossEdge : Maybe Angle
+    , editorMaxXRaw : String
+    , editorMaxYRaw : String
+    , editorMaxZRaw : String
     }
 
 
@@ -304,6 +307,9 @@ init () =
       , playerFacing = Forward
       , playerWantFacing = Forward
       , playerMovingAcrossEdge = Nothing
+      , editorMaxXRaw = String.fromInt maxX
+      , editorMaxYRaw = String.fromInt maxY
+      , editorMaxZRaw = String.fromInt maxZ
       }
     , Cmd.none
     )
@@ -369,9 +375,9 @@ type Msg
     | ZUpperVisibleChanged Int
     | BlockTypeSelected Block
     | SetBlock Point Block
-    | MaxXChanged Int
-    | MaxYChanged Int
-    | MaxZChanged Int
+    | MaxXChanged String
+    | MaxYChanged String
+    | MaxZChanged String
     | ShowBoardBounds Bool
 
 
@@ -650,32 +656,83 @@ update msg model =
             )
 
         MaxXChanged maxX ->
-            ( { model
-                | editorBoard =
-                    Undo.insertWith
-                        (\editorBoard -> { editorBoard | maxX = maxX })
-                        model.editorBoard
-              }
+            ( case String.toInt maxX of
+                Nothing ->
+                    { model
+                        | editorMaxXRaw = maxX
+                    }
+
+                Just x ->
+                    { model
+                        | editorMaxXRaw = maxX
+                        , editorBoard =
+                            Undo.insertWith
+                                (\editorBoard ->
+                                    { editorBoard | maxX = x }
+                                )
+                                model.editorBoard
+                        , xLowerVisible = min model.xLowerVisible x
+                        , xUpperVisible =
+                            if model.xUpperVisible + 1 == (Undo.value model.editorBoard).maxX then
+                                x - 1
+
+                            else
+                                min model.xUpperVisible (x - 1)
+                    }
             , Cmd.none
             )
 
         MaxYChanged maxY ->
-            ( { model
-                | editorBoard =
-                    Undo.insertWith
-                        (\editorBoard -> { editorBoard | maxY = maxY })
-                        model.editorBoard
-              }
+            ( case String.toInt maxY of
+                Nothing ->
+                    { model
+                        | editorMaxYRaw = maxY
+                    }
+
+                Just y ->
+                    { model
+                        | editorMaxYRaw = maxY
+                        , editorBoard =
+                            Undo.insertWith
+                                (\editorBoard ->
+                                    { editorBoard | maxY = y }
+                                )
+                                model.editorBoard
+                        , yLowerVisible = min model.yLowerVisible y
+                        , yUpperVisible =
+                            if model.yUpperVisible + 1 == (Undo.value model.editorBoard).maxY then
+                                y - 1
+
+                            else
+                                min model.yUpperVisible (y - 1)
+                    }
             , Cmd.none
             )
 
         MaxZChanged maxZ ->
-            ( { model
-                | editorBoard =
-                    Undo.insertWith
-                        (\editorBoard -> { editorBoard | maxZ = maxZ })
-                        model.editorBoard
-              }
+            ( case String.toInt maxZ of
+                Nothing ->
+                    { model
+                        | editorMaxZRaw = maxZ
+                    }
+
+                Just z ->
+                    { model
+                        | editorMaxZRaw = maxZ
+                        , editorBoard =
+                            Undo.insertWith
+                                (\editorBoard ->
+                                    { editorBoard | maxZ = z }
+                                )
+                                model.editorBoard
+                        , zLowerVisible = min model.zLowerVisible z
+                        , zUpperVisible =
+                            if model.zUpperVisible + 1 == (Undo.value model.editorBoard).maxZ then
+                                z - 1
+
+                            else
+                                min model.zUpperVisible (z - 1)
+                    }
             , Cmd.none
             )
 
@@ -1513,13 +1570,11 @@ view model =
                                 [ Html.span [] [ Html.text "X Size " ]
                                 , Html.input
                                     [ Html.Attributes.type_ "number"
-                                    , Html.Attributes.value (String.fromInt editorBoard.maxX)
+                                    , Html.Attributes.value model.editorMaxXRaw
                                     , Html.Attributes.min "1"
                                     , Html.Attributes.max "20"
                                     , Html.Attributes.step "1"
-                                    , Html.Events.on "blur" <|
-                                        Json.Decode.map MaxXChanged
-                                            (Json.Decode.at [ "target", "value" ] Json.Decode.int)
+                                    , Html.Events.onInput MaxXChanged
                                     ]
                                     []
                                 ]
@@ -1539,13 +1594,11 @@ view model =
                                 [ Html.span [] [ Html.text "Y Size " ]
                                 , Html.input
                                     [ Html.Attributes.type_ "number"
-                                    , Html.Attributes.value (String.fromInt editorBoard.maxY)
+                                    , Html.Attributes.value model.editorMaxYRaw
                                     , Html.Attributes.min "1"
                                     , Html.Attributes.max "20"
                                     , Html.Attributes.step "1"
-                                    , Html.Events.on "blur" <|
-                                        Json.Decode.map MaxYChanged
-                                            (Json.Decode.at [ "target", "value" ] Json.Decode.int)
+                                    , Html.Events.onInput MaxYChanged
                                     ]
                                     []
                                 ]
@@ -1565,13 +1618,11 @@ view model =
                                 [ Html.span [] [ Html.text "Z Size " ]
                                 , Html.input
                                     [ Html.Attributes.type_ "number"
-                                    , Html.Attributes.value (String.fromInt editorBoard.maxZ)
+                                    , Html.Attributes.value model.editorMaxZRaw
                                     , Html.Attributes.min "1"
                                     , Html.Attributes.max "20"
                                     , Html.Attributes.step "1"
-                                    , Html.Events.on "blur" <|
-                                        Json.Decode.map MaxZChanged
-                                            (Json.Decode.at [ "target", "value" ] Json.Decode.int)
+                                    , Html.Events.onInput MaxZChanged
                                     ]
                                     []
                                 ]

@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739159218128"
+    "1739160078625"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -11993,6 +11993,9 @@ var $author$project$Main$init = function (_v0) {
 			editorBoard: $author$project$Undo$init(board),
 			editorCursor: _Utils_Tuple3(0, 0, 0),
 			editorKeysDown: $elm$core$Set$empty,
+			editorMaxXRaw: $elm$core$String$fromInt(maxX),
+			editorMaxYRaw: $elm$core$String$fromInt(maxY),
+			editorMaxZRaw: $elm$core$String$fromInt(maxZ),
 			mode: $author$project$Main$Editor,
 			mouseDragging: $author$project$Main$NoInteraction,
 			playerFacing: $author$project$Main$Forward,
@@ -14804,8 +14807,8 @@ var $author$project$Main$update = F2(
 						return _Debug_todo(
 							'Main',
 							{
-								start: {line: 437, column: 29},
-								end: {line: 437, column: 39}
+								start: {line: 443, column: 29},
+								end: {line: 443, column: 39}
 							})('No player spawn found');
 					} else {
 						var spawnFrame = _v4.a;
@@ -15099,50 +15102,95 @@ var $author$project$Main$update = F2(
 			case 'MaxXChanged':
 				var maxX = msg.a;
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							editorBoard: A2(
-								$author$project$Undo$insertWith,
-								function (editorBoard) {
-									return _Utils_update(
-										editorBoard,
-										{maxX: maxX});
-								},
-								model.editorBoard)
-						}),
+					function () {
+						var _v8 = $elm$core$String$toInt(maxX);
+						if (_v8.$ === 'Nothing') {
+							return _Utils_update(
+								model,
+								{editorMaxXRaw: maxX});
+						} else {
+							var x = _v8.a;
+							return _Utils_update(
+								model,
+								{
+									editorBoard: A2(
+										$author$project$Undo$insertWith,
+										function (editorBoard) {
+											return _Utils_update(
+												editorBoard,
+												{maxX: x});
+										},
+										model.editorBoard),
+									editorMaxXRaw: maxX,
+									xLowerVisible: A2($elm$core$Basics$min, model.xLowerVisible, x),
+									xUpperVisible: _Utils_eq(
+										model.xUpperVisible + 1,
+										$author$project$Undo$value(model.editorBoard).maxX) ? (x - 1) : A2($elm$core$Basics$min, model.xUpperVisible, x - 1)
+								});
+						}
+					}(),
 					$elm$core$Platform$Cmd$none);
 			case 'MaxYChanged':
 				var maxY = msg.a;
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							editorBoard: A2(
-								$author$project$Undo$insertWith,
-								function (editorBoard) {
-									return _Utils_update(
-										editorBoard,
-										{maxY: maxY});
-								},
-								model.editorBoard)
-						}),
+					function () {
+						var _v9 = $elm$core$String$toInt(maxY);
+						if (_v9.$ === 'Nothing') {
+							return _Utils_update(
+								model,
+								{editorMaxYRaw: maxY});
+						} else {
+							var y = _v9.a;
+							return _Utils_update(
+								model,
+								{
+									editorBoard: A2(
+										$author$project$Undo$insertWith,
+										function (editorBoard) {
+											return _Utils_update(
+												editorBoard,
+												{maxY: y});
+										},
+										model.editorBoard),
+									editorMaxYRaw: maxY,
+									yLowerVisible: A2($elm$core$Basics$min, model.yLowerVisible, y),
+									yUpperVisible: _Utils_eq(
+										model.yUpperVisible + 1,
+										$author$project$Undo$value(model.editorBoard).maxY) ? (y - 1) : A2($elm$core$Basics$min, model.yUpperVisible, y - 1)
+								});
+						}
+					}(),
 					$elm$core$Platform$Cmd$none);
 			case 'MaxZChanged':
 				var maxZ = msg.a;
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							editorBoard: A2(
-								$author$project$Undo$insertWith,
-								function (editorBoard) {
-									return _Utils_update(
-										editorBoard,
-										{maxZ: maxZ});
-								},
-								model.editorBoard)
-						}),
+					function () {
+						var _v10 = $elm$core$String$toInt(maxZ);
+						if (_v10.$ === 'Nothing') {
+							return _Utils_update(
+								model,
+								{editorMaxZRaw: maxZ});
+						} else {
+							var z = _v10.a;
+							return _Utils_update(
+								model,
+								{
+									editorBoard: A2(
+										$author$project$Undo$insertWith,
+										function (editorBoard) {
+											return _Utils_update(
+												editorBoard,
+												{maxZ: z});
+										},
+										model.editorBoard),
+									editorMaxZRaw: maxZ,
+									zLowerVisible: A2($elm$core$Basics$min, model.zLowerVisible, z),
+									zUpperVisible: _Utils_eq(
+										model.zUpperVisible + 1,
+										$author$project$Undo$value(model.editorBoard).maxZ) ? (z - 1) : A2($elm$core$Basics$min, model.zUpperVisible, z - 1)
+								});
+						}
+					}(),
 					$elm$core$Platform$Cmd$none);
 			case 'ShowBoardBounds':
 				var show = msg.a;
@@ -15153,8 +15201,8 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			default:
 				var key = msg.a;
-				var _v8 = model.mode;
-				if (_v8.$ === 'Editor') {
+				var _v11 = model.mode;
+				if (_v11.$ === 'Editor') {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				} else {
 					return A2($author$project$Main$handleGameKeyPressed, key, model);
@@ -15197,10 +15245,6 @@ var $author$project$Main$ZLowerVisibleChanged = function (a) {
 var $author$project$Main$ZUpperVisibleChanged = function (a) {
 	return {$: 'ZUpperVisibleChanged', a: a};
 };
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
 var $author$project$Main$axisToLabel = function (axis) {
 	switch (axis.$) {
 		case 'PositiveX':
@@ -15491,6 +15535,10 @@ var $elm$html$Html$Events$stopPropagationOn = F2(
 			$elm$virtual_dom$VirtualDom$on,
 			event,
 			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
 	});
 var $elm$html$Html$Events$targetValue = A2(
 	$elm$json$Json$Decode$at,
@@ -22843,22 +22891,11 @@ var $author$project$Main$view = function (model) {
 														_List_fromArray(
 															[
 																$elm$html$Html$Attributes$type_('number'),
-																$elm$html$Html$Attributes$value(
-																$elm$core$String$fromInt(editorBoard.maxX)),
+																$elm$html$Html$Attributes$value(model.editorMaxXRaw),
 																$elm$html$Html$Attributes$min('1'),
 																$elm$html$Html$Attributes$max('20'),
 																$elm$html$Html$Attributes$step('1'),
-																A2(
-																$elm$html$Html$Events$on,
-																'blur',
-																A2(
-																	$elm$json$Json$Decode$map,
-																	$author$project$Main$MaxXChanged,
-																	A2(
-																		$elm$json$Json$Decode$at,
-																		_List_fromArray(
-																			['target', 'value']),
-																		$elm$json$Json$Decode$int)))
+																$elm$html$Html$Events$onInput($author$project$Main$MaxXChanged)
 															]),
 														_List_Nil)
 													])),
@@ -22902,22 +22939,11 @@ var $author$project$Main$view = function (model) {
 														_List_fromArray(
 															[
 																$elm$html$Html$Attributes$type_('number'),
-																$elm$html$Html$Attributes$value(
-																$elm$core$String$fromInt(editorBoard.maxY)),
+																$elm$html$Html$Attributes$value(model.editorMaxYRaw),
 																$elm$html$Html$Attributes$min('1'),
 																$elm$html$Html$Attributes$max('20'),
 																$elm$html$Html$Attributes$step('1'),
-																A2(
-																$elm$html$Html$Events$on,
-																'blur',
-																A2(
-																	$elm$json$Json$Decode$map,
-																	$author$project$Main$MaxYChanged,
-																	A2(
-																		$elm$json$Json$Decode$at,
-																		_List_fromArray(
-																			['target', 'value']),
-																		$elm$json$Json$Decode$int)))
+																$elm$html$Html$Events$onInput($author$project$Main$MaxYChanged)
 															]),
 														_List_Nil)
 													])),
@@ -22961,22 +22987,11 @@ var $author$project$Main$view = function (model) {
 														_List_fromArray(
 															[
 																$elm$html$Html$Attributes$type_('number'),
-																$elm$html$Html$Attributes$value(
-																$elm$core$String$fromInt(editorBoard.maxZ)),
+																$elm$html$Html$Attributes$value(model.editorMaxZRaw),
 																$elm$html$Html$Attributes$min('1'),
 																$elm$html$Html$Attributes$max('20'),
 																$elm$html$Html$Attributes$step('1'),
-																A2(
-																$elm$html$Html$Events$on,
-																'blur',
-																A2(
-																	$elm$json$Json$Decode$map,
-																	$author$project$Main$MaxZChanged,
-																	A2(
-																		$elm$json$Json$Decode$at,
-																		_List_fromArray(
-																			['target', 'value']),
-																		$elm$json$Json$Decode$int)))
+																$elm$html$Html$Events$onInput($author$project$Main$MaxZChanged)
 															]),
 														_List_Nil)
 													])),
