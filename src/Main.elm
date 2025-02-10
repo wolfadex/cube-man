@@ -55,10 +55,7 @@ main =
 
 
 type alias Model =
-    { maxX : Int
-    , maxY : Int
-    , maxZ : Int
-    , board : Board
+    { board : Board
     , editorBoard : Undo.Stack Board
     , boardLoadError : Maybe BoardLoadError
     , screenSize : { width : Int, height : Int }
@@ -119,7 +116,11 @@ type alias Point =
 
 
 type alias Board =
-    Array Block
+    { maxX : Int
+    , maxY : Int
+    , maxZ : Int
+    , blocks : Array Block
+    }
 
 
 type Block
@@ -132,7 +133,12 @@ type Block
 
 boardCodec : Serialize.Codec e Board
 boardCodec =
-    Serialize.array blockCodec
+    Serialize.record Board
+        |> Serialize.field .maxX Serialize.int
+        |> Serialize.field .maxY Serialize.int
+        |> Serialize.field .maxZ Serialize.int
+        |> Serialize.field .blocks (Serialize.array blockCodec)
+        |> Serialize.finishRecord
 
 
 playerSpawnDetailsCodec : Serialize.Codec e { forward : Axis, left : Axis }
@@ -250,12 +256,13 @@ init () =
             8
 
         board =
-            Array.repeat (maxX * maxY * maxZ) Wall
+            { maxX = maxX
+            , maxY = maxY
+            , maxZ = maxZ
+            , blocks = Array.repeat (maxX * maxY * maxZ) Wall
+            }
     in
-    ( { maxX = maxX
-      , maxY = maxY
-      , maxZ = maxZ
-      , xLowerVisible = 0
+    ( { xLowerVisible = 0
       , xUpperVisible = maxX - 1
       , yLowerVisible = 0
       , yUpperVisible = maxY - 1
@@ -288,7 +295,8 @@ init () =
       , editMode = Select
       , selectedBlock = Nothing
       , boardEncoding =
-            Serialize.encodeToJson boardCodec board
+            board
+                |> Serialize.encodeToJson boardCodec
                 |> Json.Encode.encode 0
       , playerFrame = Frame3d.atPoint (Point3d.meters 1 4 7)
       , playerFacing = Forward
@@ -418,7 +426,7 @@ update msg model =
                         board =
                             Undo.value model.editorBoard
                     in
-                    case findSpawn model board of
+                    case findSpawn board of
                         Nothing ->
                             Debug.todo "No player spawn found"
 
@@ -475,16 +483,24 @@ update msg model =
                     Remove ->
                         let
                             editorBoard =
-                                model.editorBoard
-                                    |> Undo.value
-                                    |> Array.set (pointToIndex model model.editorCursor)
-                                        Empty
+                                Undo.insertWith
+                                    (\board ->
+                                        { board
+                                            | blocks =
+                                                Array.set (pointToIndex board model.editorCursor)
+                                                    Empty
+                                                    board.blocks
+                                        }
+                                    )
+                                    model.editorBoard
                         in
                         ( { model
                             | mouseDragging = NoInteraction
-                            , editorBoard = Undo.insert editorBoard model.editorBoard
+                            , editorBoard = editorBoard
                             , boardEncoding =
-                                Serialize.encodeToJson boardCodec editorBoard
+                                editorBoard
+                                    |> Undo.value
+                                    |> Serialize.encodeToJson boardCodec
                                     |> Json.Encode.encode 0
                             , selectedBlock = Nothing
                           }
@@ -494,37 +510,49 @@ update msg model =
                     Add ->
                         let
                             editorBoard =
-                                model.editorBoard
-                                    |> Undo.value
-                                    |> (\board ->
-                                            case model.selectedBlockType of
-                                                PlayerSpawn _ ->
-                                                    Array.map
-                                                        (\block ->
-                                                            case block of
-                                                                PlayerSpawn _ ->
-                                                                    Empty
+                                Undo.insertWith
+                                    (\board ->
+                                        { board
+                                            | blocks =
+                                                case model.selectedBlockType of
+                                                    PlayerSpawn _ ->
+                                                        board.blocks
+                                                            |> Array.map
+                                                                (\block ->
+                                                                    case block of
+                                                                        PlayerSpawn _ ->
+                                                                            Empty
 
-                                                                _ ->
-                                                                    block
-                                                        )
-                                                        board
+                                                                        _ ->
+                                                                            block
+                                                                )
+                                                            |> Array.set (pointToIndex board model.editorCursor)
+                                                                model.selectedBlockType
 
-                                                _ ->
-                                                    board
-                                       )
-                                    |> Array.set (pointToIndex model model.editorCursor)
-                                        model.selectedBlockType
+                                                    _ ->
+                                                        Array.set (pointToIndex board model.editorCursor)
+                                                            model.selectedBlockType
+                                                            board.blocks
+                                        }
+                                    )
+                                    model.editorBoard
                         in
                         ( { model
                             | mouseDragging = NoInteraction
-                            , editorBoard = Undo.insert editorBoard model.editorBoard
+                            , editorBoard = editorBoard
                             , boardEncoding =
-                                Serialize.encodeToJson boardCodec editorBoard
+                                editorBoard
+                                    |> Undo.value
+                                    |> Serialize.encodeToJson boardCodec
                                     |> Json.Encode.encode 0
                             , selectedBlock =
-                                editorBoard
-                                    |> Array.get (pointToIndex model model.editorCursor)
+                                let
+                                    board =
+                                        editorBoard
+                                            |> Undo.value
+                                in
+                                board.blocks
+                                    |> Array.get (pointToIndex board model.editorCursor)
                                     |> Maybe.map (\block -> ( model.editorCursor, block ))
                           }
                         , Cmd.none
@@ -534,9 +562,13 @@ update msg model =
                         ( { model
                             | mouseDragging = NoInteraction
                             , selectedBlock =
-                                model.editorBoard
-                                    |> Undo.value
-                                    |> Array.get (pointToIndex model model.editorCursor)
+                                let
+                                    editorBoard =
+                                        model.editorBoard
+                                            |> Undo.value
+                                in
+                                editorBoard.blocks
+                                    |> Array.get (pointToIndex editorBoard model.editorCursor)
                                     |> Maybe.map (\block -> ( model.editorCursor, block ))
                           }
                         , Cmd.none
@@ -604,7 +636,7 @@ update msg model =
             ( { model
                 | editorBoard =
                     Undo.insertWith
-                        (Array.set (pointToIndex model point) block)
+                        (\board -> { board | blocks = Array.set (pointToIndex board point) block board.blocks })
                         model.editorBoard
                 , selectedBlock = Just ( point, block )
               }
@@ -620,14 +652,14 @@ update msg model =
                     handleGameKeyPressed key model
 
 
-findSpawn : Model -> Board -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : {} })
-findSpawn model board =
-    findSpawnHelper model (Array.toIndexedList board)
+findSpawn : Board -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : {} })
+findSpawn board =
+    findSpawnHelper board (Array.toIndexedList board.blocks)
 
 
-findSpawnHelper : Model -> List ( Int, Block ) -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : {} })
-findSpawnHelper model board =
-    case board of
+findSpawnHelper : Board -> List ( Int, Block ) -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : {} })
+findSpawnHelper board blocks =
+    case blocks of
         [] ->
             Nothing
 
@@ -636,7 +668,7 @@ findSpawnHelper model board =
                 PlayerSpawn details ->
                     SketchPlane3d.unsafe
                         { originPoint =
-                            indexToPoint model index
+                            indexToPoint board index
                                 |> pointToPoint3d
                         , xDirection = axisToDirection3d details.forward
                         , yDirection = axisToDirection3d details.left
@@ -645,7 +677,7 @@ findSpawnHelper model board =
                         |> Just
 
                 _ ->
-                    findSpawnHelper model rest
+                    findSpawnHelper board rest
 
 
 moveCameraByMouse : Json.Encode.Value -> Point2d Pixels ScreenCoordinates -> Model -> ( Model, Cmd Msg )
@@ -684,6 +716,9 @@ moveCursorByMouse offset model =
                 )
                 offset
 
+        editorBoard =
+            Undo.value model.editorBoard
+
         maybeIntersection =
             Array.foldl
                 (\block ( index, maybeInter ) ->
@@ -695,7 +730,7 @@ moveCursorByMouse offset model =
                         _ ->
                             let
                                 ( x, y, z ) =
-                                    indexToPoint model index
+                                    indexToPoint editorBoard index
                             in
                             if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
                                 maybeInter
@@ -705,7 +740,7 @@ moveCursorByMouse offset model =
                                     boundingBox =
                                         BoundingBox3d.withDimensions
                                             ( Length.meters 1, Length.meters 1, Length.meters 1 )
-                                            (pointToPoint3d (indexToPoint model index))
+                                            (pointToPoint3d (indexToPoint editorBoard index))
                                 in
                                 case Axis3d.Extra.intersectionAxisAlignedBoundingBox3d ray boundingBox of
                                     Nothing ->
@@ -729,7 +764,7 @@ moveCursorByMouse offset model =
                     )
                 )
                 ( 0, Nothing )
-                (Undo.value model.editorBoard)
+                editorBoard.blocks
                 |> Tuple.second
     in
     case maybeIntersection of
@@ -875,9 +910,9 @@ movePlayer deltaMs model =
                                 (Length.meters 0.6)
                             |> Frame3d.originPoint
                             |> point3dToPoint
-                            |> pointToIndex model
+                            |> pointToIndex model.board
                         )
-                        model.board
+                        model.board.blocks
             in
             case nearBlock of
                 Nothing ->
@@ -1088,7 +1123,7 @@ setPlayerFacing model =
                                     , playerFacing = model.playerWantFacing
                                 }
                         in
-                        case Array.get (pointToIndex model targetBoardPoint) model.board of
+                        case Array.get (pointToIndex model.board targetBoardPoint) model.board.blocks of
                             Nothing ->
                                 model
 
@@ -1295,11 +1330,15 @@ view model =
                     , entities =
                         case model.mode of
                             Editor ->
+                                let
+                                    editorBoard =
+                                        model.editorBoard
+                                            |> Undo.value
+                                in
                                 List.concat
-                                    [ model.editorBoard
-                                        |> Undo.value
+                                    [ editorBoard.blocks
                                         |> Array.toList
-                                        |> List.indexedMap (viewBlock model)
+                                        |> List.indexedMap (viewBlock editorBoard model)
                                     , [ viewCursor Color.white model.cursorBounce model.editorCursor
                                       , viewOrientationArrows
                                       , case model.selectedBlock of
@@ -1313,9 +1352,9 @@ view model =
 
                             Game ->
                                 List.concat
-                                    [ model.board
+                                    [ model.board.blocks
                                         |> Array.toList
-                                        |> List.indexedMap (viewBlock model)
+                                        |> List.indexedMap (viewBlock model.board model)
                                     , [ viewPlayer model.playerFacing model.playerFrame ]
                                     ]
                     }
@@ -1448,6 +1487,11 @@ view model =
                         ]
 
                 Editor ->
+                    let
+                        editorBoard =
+                            model.editorBoard
+                                |> Undo.value
+                    in
                     Html.div
                         [ Html.Attributes.style "grid-column" "2"
                         , Html.Attributes.style "grid-row" "2"
@@ -1535,7 +1579,7 @@ view model =
                             [ Html.label []
                                 [ Html.span [] [ Html.text "X Visibility" ]
                                 , Html.Range.view
-                                    { max = toFloat (model.maxX - 1)
+                                    { max = toFloat (editorBoard.maxX - 1)
                                     , min = 0
                                     , lowValue = toFloat model.xLowerVisible
                                     , highValue = toFloat model.xUpperVisible
@@ -1546,7 +1590,7 @@ view model =
                             , Html.label []
                                 [ Html.span [] [ Html.text "Y Visibility" ]
                                 , Html.Range.view
-                                    { max = toFloat (model.maxY - 1)
+                                    { max = toFloat (editorBoard.maxY - 1)
                                     , min = 0
                                     , lowValue = toFloat model.yLowerVisible
                                     , highValue = toFloat model.yUpperVisible
@@ -1557,7 +1601,7 @@ view model =
                             , Html.label []
                                 [ Html.span [] [ Html.text "Z Visibility" ]
                                 , Html.Range.view
-                                    { max = toFloat (model.maxZ - 1)
+                                    { max = toFloat (editorBoard.maxZ - 1)
                                     , min = 0
                                     , lowValue = toFloat model.zLowerVisible
                                     , highValue = toFloat model.zUpperVisible
@@ -1766,12 +1810,12 @@ viewPlayer facing frame =
             )
 
 
-viewBlock : Model -> Int -> Block -> Scene3d.Entity WorldCoordinates
-viewBlock model index block =
+viewBlock : Board -> Model -> Int -> Block -> Scene3d.Entity WorldCoordinates
+viewBlock board model index block =
     let
         ( x, y, z ) =
             indexToPoint
-                model
+                board
                 index
     in
     if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
@@ -1783,9 +1827,9 @@ viewBlock model index block =
                 Scene3d.blockWithShadow
                     (Scene3d.Material.matte
                         (Color.rgb
-                            (toFloat x * 1.2 / toFloat model.maxX)
-                            (toFloat y * 1.2 / toFloat model.maxY)
-                            (toFloat z * 1.2 / toFloat model.maxZ)
+                            (toFloat x * 1.2 / toFloat board.maxX)
+                            (toFloat y * 1.2 / toFloat board.maxY)
+                            (toFloat z * 1.2 / toFloat board.maxZ)
                         )
                     )
                     (Block3d.centeredOn
@@ -1834,7 +1878,7 @@ viewBlock model index block =
                             carl =
                                 SketchPlane3d.unsafe
                                     { originPoint =
-                                        indexToPoint model index
+                                        indexToPoint board index
                                             |> pointToPoint3d
                                     , xDirection = axisToDirection3d forward
                                     , yDirection = axisToDirection3d left

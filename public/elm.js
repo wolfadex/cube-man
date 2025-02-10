@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739155376363"
+    "1739157240617"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -10932,6 +10932,10 @@ var $ianmackenzie$elm_geometry$Frame3d$atPoint = function (point) {
 	return $ianmackenzie$elm_geometry$Frame3d$unsafe(
 		{originPoint: point, xDirection: $ianmackenzie$elm_geometry$Direction3d$x, yDirection: $ianmackenzie$elm_geometry$Direction3d$y, zDirection: $ianmackenzie$elm_geometry$Direction3d$z});
 };
+var $author$project$Main$Board = F4(
+	function (maxX, maxY, maxZ, blocks) {
+		return {blocks: blocks, maxX: maxX, maxY: maxY, maxZ: maxZ};
+	});
 var $elm$core$Array$fromListHelp = F3(
 	function (list, nodeList, nodeListSize) {
 		fromListHelp:
@@ -11806,7 +11810,55 @@ var $author$project$Main$blockCodec = $MartinSStewart$elm_serialize$Serialize$fi
 											return playerSpawnEncoder(details);
 									}
 								}))))))));
-var $author$project$Main$boardCodec = $MartinSStewart$elm_serialize$Serialize$array($author$project$Main$blockCodec);
+var $elm$bytes$Bytes$Decode$float64 = function (endianness) {
+	return $elm$bytes$Bytes$Decode$Decoder(
+		_Bytes_read_f64(
+			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
+};
+var $elm$bytes$Bytes$Encode$F64 = F2(
+	function (a, b) {
+		return {$: 'F64', a: a, b: b};
+	});
+var $elm$bytes$Bytes$Encode$float64 = $elm$bytes$Bytes$Encode$F64;
+var $elm$core$Basics$round = _Basics_round;
+var $MartinSStewart$elm_serialize$Serialize$int = A4(
+	$MartinSStewart$elm_serialize$Serialize$build,
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Basics$toFloat,
+		$elm$bytes$Bytes$Encode$float64($MartinSStewart$elm_serialize$Serialize$endian)),
+	A2(
+		$elm$bytes$Bytes$Decode$map,
+		A2($elm$core$Basics$composeR, $elm$core$Basics$round, $elm$core$Result$Ok),
+		$elm$bytes$Bytes$Decode$float64($MartinSStewart$elm_serialize$Serialize$endian)),
+	$elm$json$Json$Encode$int,
+	A2($elm$json$Json$Decode$map, $elm$core$Result$Ok, $elm$json$Json$Decode$int));
+var $author$project$Main$boardCodec = $MartinSStewart$elm_serialize$Serialize$finishRecord(
+	A3(
+		$MartinSStewart$elm_serialize$Serialize$field,
+		function ($) {
+			return $.blocks;
+		},
+		$MartinSStewart$elm_serialize$Serialize$array($author$project$Main$blockCodec),
+		A3(
+			$MartinSStewart$elm_serialize$Serialize$field,
+			function ($) {
+				return $.maxZ;
+			},
+			$MartinSStewart$elm_serialize$Serialize$int,
+			A3(
+				$MartinSStewart$elm_serialize$Serialize$field,
+				function ($) {
+					return $.maxY;
+				},
+				$MartinSStewart$elm_serialize$Serialize$int,
+				A3(
+					$MartinSStewart$elm_serialize$Serialize$field,
+					function ($) {
+						return $.maxX;
+					},
+					$MartinSStewart$elm_serialize$Serialize$int,
+					$MartinSStewart$elm_serialize$Serialize$record($author$project$Main$Board))))));
 var $elm$core$Basics$pi = _Basics_pi;
 var $ianmackenzie$elm_units$Quantity$Quantity = function (a) {
 	return {$: 'Quantity', a: a};
@@ -11911,7 +11963,12 @@ var $author$project$Main$init = function (_v0) {
 	var maxZ = 8;
 	var maxY = 8;
 	var maxX = 8;
-	var board = A2($elm$core$Array$repeat, (maxX * maxY) * maxZ, $author$project$Main$Wall);
+	var board = {
+		blocks: A2($elm$core$Array$repeat, (maxX * maxY) * maxZ, $author$project$Main$Wall),
+		maxX: maxX,
+		maxY: maxY,
+		maxZ: maxZ
+	};
 	return _Utils_Tuple2(
 		{
 			board: board,
@@ -11936,9 +11993,6 @@ var $author$project$Main$init = function (_v0) {
 			editorBoard: $author$project$Undo$init(board),
 			editorCursor: _Utils_Tuple3(0, 0, 0),
 			editorKeysDown: $elm$core$Set$empty,
-			maxX: maxX,
-			maxY: maxY,
-			maxZ: maxZ,
 			mode: $author$project$Main$Editor,
 			mouseDragging: $author$project$Main$NoInteraction,
 			playerFacing: $author$project$Main$Forward,
@@ -12638,16 +12692,16 @@ var $ianmackenzie$elm_geometry$Geometry$Types$SketchPlane3d = function (a) {
 };
 var $ianmackenzie$elm_geometry$SketchPlane3d$unsafe = $ianmackenzie$elm_geometry$Geometry$Types$SketchPlane3d;
 var $author$project$Main$findSpawnHelper = F2(
-	function (model, board) {
+	function (board, blocks) {
 		findSpawnHelper:
 		while (true) {
-			if (!board.b) {
+			if (!blocks.b) {
 				return $elm$core$Maybe$Nothing;
 			} else {
-				var _v1 = board.a;
+				var _v1 = blocks.a;
 				var index = _v1.a;
 				var block = _v1.b;
-				var rest = board.b;
+				var rest = blocks.b;
 				if (block.$ === 'PlayerSpawn') {
 					var details = block.a;
 					return $elm$core$Maybe$Just(
@@ -12655,15 +12709,15 @@ var $author$project$Main$findSpawnHelper = F2(
 							$ianmackenzie$elm_geometry$SketchPlane3d$unsafe(
 								{
 									originPoint: $author$project$Main$pointToPoint3d(
-										A2($author$project$Main$indexToPoint, model, index)),
+										A2($author$project$Main$indexToPoint, board, index)),
 									xDirection: $author$project$Main$axisToDirection3d(details.forward),
 									yDirection: $author$project$Main$axisToDirection3d(details.left)
 								})));
 				} else {
-					var $temp$model = model,
-						$temp$board = rest;
-					model = $temp$model;
+					var $temp$board = board,
+						$temp$blocks = rest;
 					board = $temp$board;
+					blocks = $temp$blocks;
 					continue findSpawnHelper;
 				}
 			}
@@ -12692,13 +12746,12 @@ var $elm$core$Array$toIndexedList = function (array) {
 		_Utils_Tuple2(len - 1, _List_Nil),
 		array).b;
 };
-var $author$project$Main$findSpawn = F2(
-	function (model, board) {
-		return A2(
-			$author$project$Main$findSpawnHelper,
-			model,
-			$elm$core$Array$toIndexedList(board));
-	});
+var $author$project$Main$findSpawn = function (board) {
+	return A2(
+		$author$project$Main$findSpawnHelper,
+		board,
+		$elm$core$Array$toIndexedList(board.blocks));
+};
 var $elm$core$Bitwise$and = _Bitwise_and;
 var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
 var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
@@ -12780,17 +12833,6 @@ var $elm$core$Set$insert = F2(
 		var dict = _v0.a;
 		return $elm$core$Set$Set_elm_builtin(
 			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
-	});
-var $author$project$Undo$insert = F2(
-	function (newV, _v0) {
-		var _v1 = _v0.a;
-		var before = _v1.a;
-		var oldV = _v1.b;
-		return $author$project$Undo$Stack(
-			_Utils_Tuple3(
-				A2($elm$core$List$cons, oldV, before),
-				newV,
-				_List_Nil));
 	});
 var $author$project$Undo$insertWith = F2(
 	function (fn, _v0) {
@@ -13457,7 +13499,6 @@ var $ianmackenzie$elm_geometry$Point2d$pixels = F2(
 		return $ianmackenzie$elm_geometry$Geometry$Types$Point2d(
 			{x: x, y: y});
 	});
-var $elm$core$Basics$round = _Basics_round;
 var $author$project$Main$point3dToPoint = function (point) {
 	var parts = $ianmackenzie$elm_geometry$Point3d$unwrap(point);
 	return _Utils_Tuple3(
@@ -13693,6 +13734,7 @@ var $author$project$Main$moveCursorByMouse = F2(
 				A2($ianmackenzie$elm_geometry$Point2d$pixels, 0, model.screenSize.height),
 				A2($ianmackenzie$elm_geometry$Point2d$pixels, model.screenSize.width, 0)),
 			offset);
+		var editorBoard = $author$project$Undo$value(model.editorBoard);
 		var maybeIntersection = A3(
 			$elm$core$Array$foldl,
 			F2(
@@ -13705,7 +13747,7 @@ var $author$project$Main$moveCursorByMouse = F2(
 							if (block.$ === 'Empty') {
 								return maybeInter;
 							} else {
-								var _v5 = A2($author$project$Main$indexToPoint, model, index);
+								var _v5 = A2($author$project$Main$indexToPoint, editorBoard, index);
 								var x = _v5.a;
 								var y = _v5.b;
 								var z = _v5.c;
@@ -13719,7 +13761,7 @@ var $author$project$Main$moveCursorByMouse = F2(
 											$ianmackenzie$elm_units$Length$meters(1),
 											$ianmackenzie$elm_units$Length$meters(1)),
 										$author$project$Main$pointToPoint3d(
-											A2($author$project$Main$indexToPoint, model, index)));
+											A2($author$project$Main$indexToPoint, editorBoard, index)));
 									var _v6 = A2($author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d, ray, boundingBox);
 									if (_v6.$ === 'Nothing') {
 										return maybeInter;
@@ -13744,7 +13786,7 @@ var $author$project$Main$moveCursorByMouse = F2(
 						}());
 				}),
 			_Utils_Tuple2(0, $elm$core$Maybe$Nothing),
-			$author$project$Undo$value(model.editorBoard)).b;
+			editorBoard.blocks).b;
 		if (maybeIntersection.$ === 'Nothing') {
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		} else {
@@ -14371,7 +14413,7 @@ var $author$project$Main$movePlayer = F2(
 				$elm$core$Array$get,
 				A2(
 					$author$project$Main$pointToIndex,
-					model,
+					model.board,
 					$author$project$Main$point3dToPoint(
 						$ianmackenzie$elm_geometry$Frame3d$originPoint(
 							A3(
@@ -14393,7 +14435,7 @@ var $author$project$Main$movePlayer = F2(
 								}(),
 								$ianmackenzie$elm_units$Length$meters(0.6),
 								model.playerFrame)))),
-				model.board);
+				model.board.blocks);
 			if (nearBlock.$ === 'Nothing') {
 				return model;
 			} else {
@@ -14620,8 +14662,8 @@ var $author$project$Main$setPlayerFacing = function (model) {
 							$author$project$Main$pointToPoint3d(playerBoardPoint)));
 					var _v1 = A2(
 						$elm$core$Array$get,
-						A2($author$project$Main$pointToIndex, model, targetBoardPoint),
-						model.board);
+						A2($author$project$Main$pointToIndex, model.board, targetBoardPoint),
+						model.board.blocks);
 					if (_v1.$ === 'Nothing') {
 						return model;
 					} else {
@@ -14756,13 +14798,13 @@ var $author$project$Main$update = F2(
 				var _v3 = model.mode;
 				if (_v3.$ === 'Editor') {
 					var board = $author$project$Undo$value(model.editorBoard);
-					var _v4 = A2($author$project$Main$findSpawn, model, board);
+					var _v4 = $author$project$Main$findSpawn(board);
 					if (_v4.$ === 'Nothing') {
 						return _Debug_todo(
 							'Main',
 							{
-								start: {line: 423, column: 29},
-								end: {line: 423, column: 39}
+								start: {line: 431, column: 29},
+								end: {line: 431, column: 39}
 							})('No player spawn found');
 					} else {
 						var spawnFrame = _v4.a;
@@ -14842,11 +14884,20 @@ var $author$project$Main$update = F2(
 					var _v5 = model.editMode;
 					switch (_v5.$) {
 						case 'Remove':
-							var editorBoard = A3(
-								$elm$core$Array$set,
-								A2($author$project$Main$pointToIndex, model, model.editorCursor),
-								$author$project$Main$Empty,
-								$author$project$Undo$value(model.editorBoard));
+							var editorBoard = A2(
+								$author$project$Undo$insertWith,
+								function (board) {
+									return _Utils_update(
+										board,
+										{
+											blocks: A3(
+												$elm$core$Array$set,
+												A2($author$project$Main$pointToIndex, board, model.editorCursor),
+												$author$project$Main$Empty,
+												board.blocks)
+										});
+								},
+								model.editorBoard);
 							return _Utils_Tuple2(
 								_Utils_update(
 									model,
@@ -14854,35 +14905,50 @@ var $author$project$Main$update = F2(
 										boardEncoding: A2(
 											$elm$json$Json$Encode$encode,
 											0,
-											A2($MartinSStewart$elm_serialize$Serialize$encodeToJson, $author$project$Main$boardCodec, editorBoard)),
-										editorBoard: A2($author$project$Undo$insert, editorBoard, model.editorBoard),
+											A2(
+												$MartinSStewart$elm_serialize$Serialize$encodeToJson,
+												$author$project$Main$boardCodec,
+												$author$project$Undo$value(editorBoard))),
+										editorBoard: editorBoard,
 										mouseDragging: $author$project$Main$NoInteraction,
 										selectedBlock: $elm$core$Maybe$Nothing
 									}),
 								$elm$core$Platform$Cmd$none);
 						case 'Add':
-							var editorBoard = A3(
-								$elm$core$Array$set,
-								A2($author$project$Main$pointToIndex, model, model.editorCursor),
-								model.selectedBlockType,
+							var editorBoard = A2(
+								$author$project$Undo$insertWith,
 								function (board) {
-									var _v6 = model.selectedBlockType;
-									if (_v6.$ === 'PlayerSpawn') {
-										return A2(
-											$elm$core$Array$map,
-											function (block) {
-												if (block.$ === 'PlayerSpawn') {
-													return $author$project$Main$Empty;
+									return _Utils_update(
+										board,
+										{
+											blocks: function () {
+												var _v6 = model.selectedBlockType;
+												if (_v6.$ === 'PlayerSpawn') {
+													return A3(
+														$elm$core$Array$set,
+														A2($author$project$Main$pointToIndex, board, model.editorCursor),
+														model.selectedBlockType,
+														A2(
+															$elm$core$Array$map,
+															function (block) {
+																if (block.$ === 'PlayerSpawn') {
+																	return $author$project$Main$Empty;
+																} else {
+																	return block;
+																}
+															},
+															board.blocks));
 												} else {
-													return block;
+													return A3(
+														$elm$core$Array$set,
+														A2($author$project$Main$pointToIndex, board, model.editorCursor),
+														model.selectedBlockType,
+														board.blocks);
 												}
-											},
-											board);
-									} else {
-										return board;
-									}
-								}(
-									$author$project$Undo$value(model.editorBoard)));
+											}()
+										});
+								},
+								model.editorBoard);
 							return _Utils_Tuple2(
 								_Utils_update(
 									model,
@@ -14890,18 +14956,24 @@ var $author$project$Main$update = F2(
 										boardEncoding: A2(
 											$elm$json$Json$Encode$encode,
 											0,
-											A2($MartinSStewart$elm_serialize$Serialize$encodeToJson, $author$project$Main$boardCodec, editorBoard)),
-										editorBoard: A2($author$project$Undo$insert, editorBoard, model.editorBoard),
-										mouseDragging: $author$project$Main$NoInteraction,
-										selectedBlock: A2(
-											$elm$core$Maybe$map,
-											function (block) {
-												return _Utils_Tuple2(model.editorCursor, block);
-											},
 											A2(
-												$elm$core$Array$get,
-												A2($author$project$Main$pointToIndex, model, model.editorCursor),
-												editorBoard))
+												$MartinSStewart$elm_serialize$Serialize$encodeToJson,
+												$author$project$Main$boardCodec,
+												$author$project$Undo$value(editorBoard))),
+										editorBoard: editorBoard,
+										mouseDragging: $author$project$Main$NoInteraction,
+										selectedBlock: function () {
+											var board = $author$project$Undo$value(editorBoard);
+											return A2(
+												$elm$core$Maybe$map,
+												function (block) {
+													return _Utils_Tuple2(model.editorCursor, block);
+												},
+												A2(
+													$elm$core$Array$get,
+													A2($author$project$Main$pointToIndex, board, model.editorCursor),
+													board.blocks));
+										}()
 									}),
 								$elm$core$Platform$Cmd$none);
 						default:
@@ -14910,15 +14982,18 @@ var $author$project$Main$update = F2(
 									model,
 									{
 										mouseDragging: $author$project$Main$NoInteraction,
-										selectedBlock: A2(
-											$elm$core$Maybe$map,
-											function (block) {
-												return _Utils_Tuple2(model.editorCursor, block);
-											},
-											A2(
-												$elm$core$Array$get,
-												A2($author$project$Main$pointToIndex, model, model.editorCursor),
-												$author$project$Undo$value(model.editorBoard)))
+										selectedBlock: function () {
+											var editorBoard = $author$project$Undo$value(model.editorBoard);
+											return A2(
+												$elm$core$Maybe$map,
+												function (block) {
+													return _Utils_Tuple2(model.editorCursor, block);
+												},
+												A2(
+													$elm$core$Array$get,
+													A2($author$project$Main$pointToIndex, editorBoard, model.editorCursor),
+													editorBoard.blocks));
+										}()
 									}),
 								$elm$core$Platform$Cmd$none);
 					}
@@ -15004,10 +15079,17 @@ var $author$project$Main$update = F2(
 						{
 							editorBoard: A2(
 								$author$project$Undo$insertWith,
-								A2(
-									$elm$core$Array$set,
-									A2($author$project$Main$pointToIndex, model, point),
-									block),
+								function (board) {
+									return _Utils_update(
+										board,
+										{
+											blocks: A3(
+												$elm$core$Array$set,
+												A2($author$project$Main$pointToIndex, board, point),
+												block,
+												board.blocks)
+										});
+								},
 								model.editorBoard),
 							selectedBlock: $elm$core$Maybe$Just(
 								_Utils_Tuple2(point, block))
@@ -20899,9 +20981,9 @@ var $ianmackenzie$elm_geometry$Cone3d$startingAt = F3(
 	});
 var $avh4$elm_color$Color$white = A4($avh4$elm_color$Color$RgbaSpace, 255 / 255, 255 / 255, 255 / 255, 1.0);
 var $avh4$elm_color$Color$yellow = A4($avh4$elm_color$Color$RgbaSpace, 237 / 255, 212 / 255, 0 / 255, 1.0);
-var $author$project$Main$viewBlock = F3(
-	function (model, index, block) {
-		var _v0 = A2($author$project$Main$indexToPoint, model, index);
+var $author$project$Main$viewBlock = F4(
+	function (board, model, index, block) {
+		var _v0 = A2($author$project$Main$indexToPoint, board, index);
 		var x = _v0.a;
 		var y = _v0.b;
 		var z = _v0.c;
@@ -20913,7 +20995,7 @@ var $author$project$Main$viewBlock = F3(
 					return A2(
 						$ianmackenzie$elm_3d_scene$Scene3d$blockWithShadow,
 						$ianmackenzie$elm_3d_scene$Scene3d$Material$matte(
-							A3($avh4$elm_color$Color$rgb, (x * 1.2) / model.maxX, (y * 1.2) / model.maxY, (z * 1.2) / model.maxZ)),
+							A3($avh4$elm_color$Color$rgb, (x * 1.2) / board.maxX, (y * 1.2) / board.maxY, (z * 1.2) / board.maxZ)),
 						A2(
 							$ianmackenzie$elm_geometry$Block3d$centeredOn,
 							$ianmackenzie$elm_geometry$Frame3d$atPoint(
@@ -20946,7 +21028,7 @@ var $author$project$Main$viewBlock = F3(
 							$ianmackenzie$elm_geometry$SketchPlane3d$unsafe(
 								{
 									originPoint: $author$project$Main$pointToPoint3d(
-										A2($author$project$Main$indexToPoint, model, index)),
+										A2($author$project$Main$indexToPoint, board, index)),
 									xDirection: $author$project$Main$axisToDirection3d(forward),
 									yDirection: $author$project$Main$axisToDirection3d(left)
 								}));
@@ -21998,14 +22080,14 @@ var $author$project$Main$view = function (model) {
 									entities: function () {
 										var _v6 = model.mode;
 										if (_v6.$ === 'Editor') {
+											var editorBoard = $author$project$Undo$value(model.editorBoard);
 											return $elm$core$List$concat(
 												_List_fromArray(
 													[
 														A2(
 														$elm$core$List$indexedMap,
-														$author$project$Main$viewBlock(model),
-														$elm$core$Array$toList(
-															$author$project$Undo$value(model.editorBoard))),
+														A2($author$project$Main$viewBlock, editorBoard, model),
+														$elm$core$Array$toList(editorBoard.blocks)),
 														_List_fromArray(
 														[
 															A3($author$project$Main$viewCursor, $avh4$elm_color$Color$white, model.cursorBounce, model.editorCursor),
@@ -22028,8 +22110,8 @@ var $author$project$Main$view = function (model) {
 													[
 														A2(
 														$elm$core$List$indexedMap,
-														$author$project$Main$viewBlock(model),
-														$elm$core$Array$toList(model.board)),
+														A2($author$project$Main$viewBlock, model.board, model),
+														$elm$core$Array$toList(model.board.blocks)),
 														_List_fromArray(
 														[
 															A2($author$project$Main$viewPlayer, model.playerFacing, model.playerFrame)
@@ -22317,6 +22399,7 @@ var $author$project$Main$view = function (model) {
 											]))
 									]));
 						} else {
+							var editorBoard = $author$project$Undo$value(model.editorBoard);
 							return A2(
 								$elm$html$Html$div,
 								_List_fromArray(
@@ -22498,7 +22581,7 @@ var $author$project$Main$view = function (model) {
 														{
 															highValue: model.xUpperVisible,
 															lowValue: model.xLowerVisible,
-															max: model.maxX - 1,
+															max: editorBoard.maxX - 1,
 															min: 0,
 															onHighChange: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$XUpperVisibleChanged),
 															onLowChange: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$XLowerVisibleChanged)
@@ -22520,7 +22603,7 @@ var $author$project$Main$view = function (model) {
 														{
 															highValue: model.yUpperVisible,
 															lowValue: model.yLowerVisible,
-															max: model.maxY - 1,
+															max: editorBoard.maxY - 1,
 															min: 0,
 															onHighChange: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$YUpperVisibleChanged),
 															onLowChange: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$YLowerVisibleChanged)
@@ -22542,7 +22625,7 @@ var $author$project$Main$view = function (model) {
 														{
 															highValue: model.zUpperVisible,
 															lowValue: model.zLowerVisible,
-															max: model.maxZ - 1,
+															max: editorBoard.maxZ - 1,
 															min: 0,
 															onHighChange: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$ZUpperVisibleChanged),
 															onLowChange: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$ZLowerVisibleChanged)
