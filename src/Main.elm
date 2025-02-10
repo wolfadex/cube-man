@@ -10,16 +10,16 @@ import BoundingBox3d
 import Browser
 import Browser.Events
 import Camera3d exposing (Camera3d)
-import Color
+import Color exposing (Color)
 import Cone3d
 import Direction3d exposing (Direction3d)
 import Duration
 import Frame3d exposing (Frame3d)
-import Geometry.Serialize
 import Html
 import Html.Attributes
 import Html.Attributes.Extra
 import Html.Events
+import Html.Extra
 import Html.Range
 import Json.Decode
 import Json.Encode
@@ -78,6 +78,7 @@ type alias Model =
     , boardEncoding : String
     , mode : Mode
     , editMode : EditMode
+    , selectedBlock : Maybe ( Point, Block )
     , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : {} }
     , playerFacing : Facing
     , playerWantFacing : Facing
@@ -99,6 +100,7 @@ type Mode
 type EditMode
     = Add
     | Remove
+    | Select
 
 
 type Facing
@@ -125,7 +127,7 @@ type Block
     | Wall
     | Edge
     | PointPickup Bool
-    | PlayerSpawn { forward : Direction3d WorldCoordinates, left : Direction3d WorldCoordinates }
+    | PlayerSpawn { forward : Axis, left : Axis }
 
 
 boardCodec : Serialize.Codec e Board
@@ -133,12 +135,44 @@ boardCodec =
     Serialize.array blockCodec
 
 
-playerSpawnDetailsCodec : Serialize.Codec e { forward : Direction3d WorldCoordinates, left : Direction3d WorldCoordinates }
+playerSpawnDetailsCodec : Serialize.Codec e { forward : Axis, left : Axis }
 playerSpawnDetailsCodec =
     Serialize.record (\forward left -> { forward = forward, left = left })
-        |> Serialize.field .forward Geometry.Serialize.direction3d
-        |> Serialize.field .left Geometry.Serialize.direction3d
+        |> Serialize.field .forward axisCodex
+        |> Serialize.field .left axisCodex
         |> Serialize.finishRecord
+
+
+axisCodex : Serialize.Codec e Axis
+axisCodex =
+    Serialize.customType
+        (\positiveXEncoder negativeXEncoder positiveYEncoder negativeYEncoder positiveZEncoder negativeZEncoder value ->
+            case value of
+                PositiveX ->
+                    positiveXEncoder
+
+                NegativeX ->
+                    negativeXEncoder
+
+                PositiveY ->
+                    positiveYEncoder
+
+                NegativeY ->
+                    negativeYEncoder
+
+                PositiveZ ->
+                    positiveZEncoder
+
+                NegativeZ ->
+                    negativeZEncoder
+        )
+        |> Serialize.variant0 PositiveX
+        |> Serialize.variant0 NegativeX
+        |> Serialize.variant0 PositiveY
+        |> Serialize.variant0 NegativeY
+        |> Serialize.variant0 PositiveZ
+        |> Serialize.variant0 NegativeZ
+        |> Serialize.finishCustomType
 
 
 blockCodec : Serialize.Codec e Block
@@ -251,7 +285,8 @@ init () =
                 ]
                 |> Animation.withLoop
       , mode = Editor
-      , editMode = Remove
+      , editMode = Select
+      , selectedBlock = Nothing
       , boardEncoding =
             Serialize.encodeToJson boardCodec board
                 |> Json.Encode.encode 0
@@ -323,6 +358,7 @@ type Msg
     | ZLowerVisibleChanged Int
     | ZUpperVisibleChanged Int
     | BlockTypeSelected Block
+    | SetBlock Point Block
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -363,6 +399,7 @@ update msg model =
                     ( { model
                         | editorBoard = editorBoard
                         , boardLoadError = Nothing
+                        , selectedBlock = Nothing
                       }
                     , Cmd.none
                     )
@@ -405,10 +442,20 @@ update msg model =
             ( { model | editMode = editMode }, Cmd.none )
 
         Undo ->
-            ( { model | editorBoard = Undo.undo model.editorBoard }, Cmd.none )
+            ( { model
+                | editorBoard = Undo.undo model.editorBoard
+                , selectedBlock = Nothing
+              }
+            , Cmd.none
+            )
 
         Redo ->
-            ( { model | editorBoard = Undo.redo model.editorBoard }, Cmd.none )
+            ( { model
+                | editorBoard = Undo.redo model.editorBoard
+                , selectedBlock = Nothing
+              }
+            , Cmd.none
+            )
 
         MouseDown pointerId ->
             ( { model | mouseDragging = InteractionStart pointerId }, Cmd.none )
@@ -424,45 +471,76 @@ update msg model =
                 ( { model | mouseDragging = NoInteraction }, Cmd.none )
 
             else
-                let
-                    editorBoard =
-                        model.editorBoard
-                            |> Undo.value
-                            |> (\board ->
-                                    case model.selectedBlockType of
-                                        PlayerSpawn _ ->
-                                            Array.map
-                                                (\block ->
-                                                    case block of
-                                                        PlayerSpawn _ ->
-                                                            Empty
-
-                                                        _ ->
-                                                            block
-                                                )
-                                                board
-
-                                        _ ->
-                                            board
-                               )
-                            |> Array.set (pointToIndex model model.editorCursor)
-                                (case model.editMode of
-                                    Remove ->
+                case model.editMode of
+                    Remove ->
+                        let
+                            editorBoard =
+                                model.editorBoard
+                                    |> Undo.value
+                                    |> Array.set (pointToIndex model model.editorCursor)
                                         Empty
+                        in
+                        ( { model
+                            | mouseDragging = NoInteraction
+                            , editorBoard = Undo.insert editorBoard model.editorBoard
+                            , boardEncoding =
+                                Serialize.encodeToJson boardCodec editorBoard
+                                    |> Json.Encode.encode 0
+                            , selectedBlock = Nothing
+                          }
+                        , Cmd.none
+                        )
 
-                                    Add ->
+                    Add ->
+                        let
+                            editorBoard =
+                                model.editorBoard
+                                    |> Undo.value
+                                    |> (\board ->
+                                            case model.selectedBlockType of
+                                                PlayerSpawn _ ->
+                                                    Array.map
+                                                        (\block ->
+                                                            case block of
+                                                                PlayerSpawn _ ->
+                                                                    Empty
+
+                                                                _ ->
+                                                                    block
+                                                        )
+                                                        board
+
+                                                _ ->
+                                                    board
+                                       )
+                                    |> Array.set (pointToIndex model model.editorCursor)
                                         model.selectedBlockType
-                                )
-                in
-                ( { model
-                    | mouseDragging = NoInteraction
-                    , editorBoard = Undo.insert editorBoard model.editorBoard
-                    , boardEncoding =
-                        Serialize.encodeToJson boardCodec editorBoard
-                            |> Json.Encode.encode 0
-                  }
-                , Cmd.none
-                )
+                        in
+                        ( { model
+                            | mouseDragging = NoInteraction
+                            , editorBoard = Undo.insert editorBoard model.editorBoard
+                            , boardEncoding =
+                                Serialize.encodeToJson boardCodec editorBoard
+                                    |> Json.Encode.encode 0
+                            , selectedBlock =
+                                editorBoard
+                                    |> Array.get (pointToIndex model model.editorCursor)
+                                    |> Maybe.map (\block -> ( model.editorCursor, block ))
+                          }
+                        , Cmd.none
+                        )
+
+                    Select ->
+                        ( { model
+                            | mouseDragging = NoInteraction
+                            , selectedBlock =
+                                model.editorBoard
+                                    |> Undo.value
+                                    |> Array.get (pointToIndex model model.editorCursor)
+                                    |> Maybe.map (\block -> ( model.editorCursor, block ))
+                          }
+                        , Cmd.none
+                        )
 
         MouseMove pointerId offset movement ->
             if Set.member "Shift" model.editorKeysDown then
@@ -522,6 +600,17 @@ update msg model =
         BlockTypeSelected blockType ->
             ( { model | selectedBlockType = blockType }, Cmd.none )
 
+        SetBlock point block ->
+            ( { model
+                | editorBoard =
+                    Undo.insertWith
+                        (Array.set (pointToIndex model point) block)
+                        model.editorBoard
+                , selectedBlock = Just ( point, block )
+              }
+            , Cmd.none
+            )
+
         KeyPressed key ->
             case model.mode of
                 Editor ->
@@ -549,8 +638,8 @@ findSpawnHelper model board =
                         { originPoint =
                             indexToPoint model index
                                 |> pointToPoint3d
-                        , xDirection = details.forward
-                        , yDirection = details.left
+                        , xDirection = axisToDirection3d details.forward
+                        , yDirection = axisToDirection3d details.left
                         }
                         |> SketchPlane3d.toFrame
                         |> Just
@@ -657,6 +746,10 @@ moveCursorByMouse offset model =
 
                         Add ->
                             Point3d.along intersection (Length.meters 0.5)
+                                |> point3dToPoint
+
+                        Select ->
+                            Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
                                 |> point3dToPoint
               }
             , Cmd.none
@@ -1207,8 +1300,14 @@ view model =
                                         |> Undo.value
                                         |> Array.toList
                                         |> List.indexedMap (viewBlock model)
-                                    , [ viewCursor model.cursorBounce model.editorCursor
+                                    , [ viewCursor Color.white model.cursorBounce model.editorCursor
                                       , viewOrientationArrows
+                                      , case model.selectedBlock of
+                                            Nothing ->
+                                                Scene3d.nothing
+
+                                            Just ( point, _ ) ->
+                                                viewCursor Color.yellow model.cursorBounce point
                                       ]
                                     ]
 
@@ -1267,12 +1366,23 @@ view model =
                             [ Html.Attributes.attribute "role" "group" ]
                             [ Html.button
                                 [ Html.Attributes.type_ "button"
+                                , Html.Events.onClick (SetEditMode Select)
+                                , Html.Attributes.title "Select block"
+                                , Html.Attributes.Extra.aria "current" <|
+                                    Html.Attributes.Extra.bool (model.editMode == Select)
+                                ]
+                                [ Phosphor.cursor Phosphor.Regular
+                                    |> Phosphor.toHtml []
+                                ]
+                            , Html.button
+                                [ Html.Attributes.type_ "button"
                                 , Html.Events.onClick (SetEditMode Add)
                                 , Html.Attributes.title "Add block"
                                 , Html.Attributes.Extra.aria "current" <|
                                     Html.Attributes.Extra.bool (model.editMode == Add)
                                 ]
-                                [ Html.text "Add"
+                                [ Phosphor.plus Phosphor.Regular
+                                    |> Phosphor.toHtml []
                                 ]
                             , Html.button
                                 [ Html.Attributes.type_ "button"
@@ -1281,7 +1391,8 @@ view model =
                                 , Html.Attributes.Extra.aria "current" <|
                                     Html.Attributes.Extra.bool (model.editMode == Remove)
                                 ]
-                                [ Html.text "Remove"
+                                [ Phosphor.x Phosphor.Regular
+                                    |> Phosphor.toHtml []
                                 ]
                             ]
                         , Html.div
@@ -1313,9 +1424,9 @@ view model =
                                 ]
                             , Html.button
                                 [ Html.Attributes.Extra.aria "current" <|
-                                    Html.Attributes.Extra.bool (model.selectedBlockType == PlayerSpawn { forward = Direction3d.x, left = Direction3d.y })
+                                    Html.Attributes.Extra.bool (model.selectedBlockType == PlayerSpawn { forward = PositiveX, left = PositiveY })
                                 , Html.Attributes.type_ "button"
-                                , Html.Events.onClick (BlockTypeSelected (PlayerSpawn { forward = Direction3d.x, left = Direction3d.y }))
+                                , Html.Events.onClick (BlockTypeSelected (PlayerSpawn { forward = PositiveX, left = PositiveY }))
                                 ]
                                 [ Html.text "Player\u{00A0}Spawn"
                                 ]
@@ -1344,7 +1455,83 @@ view model =
                         , Html.Attributes.style "height" "80vh"
                         , Html.Attributes.style "overflow" "auto"
                         ]
-                        [ Html.form []
+                        [ case model.selectedBlock of
+                            Nothing ->
+                                Html.span [] [ Html.text "No block selected" ]
+
+                            Just ( point, block ) ->
+                                case block of
+                                    Empty ->
+                                        Html.span [] [ Html.text "Empty block" ]
+
+                                    Edge ->
+                                        Html.span [] [ Html.text "Edge" ]
+
+                                    Wall ->
+                                        Html.span [] [ Html.text "Wall" ]
+
+                                    PointPickup _ ->
+                                        Html.span [] [ Html.text "PointPickup" ]
+
+                                    PlayerSpawn details ->
+                                        Html.form
+                                            []
+                                            [ Html.span [] [ Html.text "Player Spawn" ]
+                                            , Html.br [] []
+                                            , Html.label []
+                                                [ Html.span [] [ Html.text "Forward Direction " ]
+                                                , Html.Extra.select
+                                                    []
+                                                    { value = Just details.forward
+                                                    , options =
+                                                        [ PositiveX
+                                                        , NegativeX
+                                                        , PositiveY
+                                                        , NegativeY
+                                                        , PositiveZ
+                                                        , NegativeZ
+                                                        ]
+                                                    , toLabel = axisToLabel
+                                                    , toKey = axisToLabel
+                                                    , onSelect =
+                                                        \value ->
+                                                            case value of
+                                                                Nothing ->
+                                                                    SetBlock point (PlayerSpawn details)
+
+                                                                Just axis ->
+                                                                    SetBlock point (PlayerSpawn { details | forward = axis })
+                                                    }
+                                                ]
+                                            , Html.br [] []
+                                            , Html.label []
+                                                [ Html.span [] [ Html.text "Left Direction " ]
+                                                , Html.Extra.select
+                                                    []
+                                                    { value = Just details.left
+                                                    , options =
+                                                        [ PositiveX
+                                                        , NegativeX
+                                                        , PositiveY
+                                                        , NegativeY
+                                                        , PositiveZ
+                                                        , NegativeZ
+                                                        ]
+                                                    , toLabel = axisToLabel
+                                                    , toKey = axisToLabel
+                                                    , onSelect =
+                                                        \value ->
+                                                            case value of
+                                                                Nothing ->
+                                                                    SetBlock point (PlayerSpawn details)
+
+                                                                Just axis ->
+                                                                    SetBlock point (PlayerSpawn { details | left = axis })
+                                                    }
+                                                ]
+                                            ]
+                        , Html.hr [] []
+                        , Html.form []
                             [ Html.label []
                                 [ Html.span [] [ Html.text "X Visibility" ]
                                 , Html.Range.view
@@ -1472,6 +1659,59 @@ viewOrientationArrows =
         ]
 
 
+type Axis
+    = PositiveX
+    | NegativeX
+    | PositiveY
+    | NegativeY
+    | PositiveZ
+    | NegativeZ
+
+
+axisToLabel : Axis -> String
+axisToLabel axis =
+    case axis of
+        PositiveX ->
+            "Positive X"
+
+        NegativeX ->
+            "Negative X"
+
+        PositiveY ->
+            "Positive Y"
+
+        NegativeY ->
+            "Negative Y"
+
+        PositiveZ ->
+            "Positive Z"
+
+        NegativeZ ->
+            "Negative Z"
+
+
+axisToDirection3d : Axis -> Direction3d coordinates
+axisToDirection3d axis =
+    case axis of
+        PositiveX ->
+            Direction3d.positiveX
+
+        NegativeX ->
+            Direction3d.negativeX
+
+        PositiveY ->
+            Direction3d.positiveY
+
+        NegativeY ->
+            Direction3d.negativeY
+
+        PositiveZ ->
+            Direction3d.positiveZ
+
+        NegativeZ ->
+            Direction3d.negativeZ
+
+
 viewPlayer : Facing -> Frame3d Length.Meters WorldCoordinates { defines : {} } -> Scene3d.Entity WorldCoordinates
 viewPlayer facing frame =
     Scene3d.group
@@ -1596,8 +1836,8 @@ viewBlock model index block =
                                     { originPoint =
                                         indexToPoint model index
                                             |> pointToPoint3d
-                                    , xDirection = forward
-                                    , yDirection = left
+                                    , xDirection = axisToDirection3d forward
+                                    , yDirection = axisToDirection3d left
                                     }
                                     |> SketchPlane3d.toFrame
                         in
@@ -1670,8 +1910,8 @@ viewBlock model index block =
                             )
 
 
-viewCursor : Animation Float -> Point -> Scene3d.Entity WorldCoordinates
-viewCursor bounceAnim ( x, y, z ) =
+viewCursor : Color -> Animation Float -> Point -> Scene3d.Entity WorldCoordinates
+viewCursor color bounceAnim ( x, y, z ) =
     let
         center =
             Point3d.meters
@@ -1702,7 +1942,7 @@ viewCursor bounceAnim ( x, y, z ) =
     Scene3d.group
         [ -- X bars
           Scene3d.block
-            (Scene3d.Material.color Color.white)
+            (Scene3d.Material.color color)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
@@ -1712,7 +1952,7 @@ viewCursor bounceAnim ( x, y, z ) =
                 ( length, Length.meters 0.1, Length.meters 0.1 )
             )
         , Scene3d.block
-            (Scene3d.Material.color Color.white)
+            (Scene3d.Material.color color)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
@@ -1722,7 +1962,7 @@ viewCursor bounceAnim ( x, y, z ) =
                 ( length, Length.meters 0.1, Length.meters 0.1 )
             )
         , Scene3d.block
-            (Scene3d.Material.color Color.white)
+            (Scene3d.Material.color color)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
@@ -1732,7 +1972,7 @@ viewCursor bounceAnim ( x, y, z ) =
                 ( length, Length.meters 0.1, Length.meters 0.1 )
             )
         , Scene3d.block
-            (Scene3d.Material.color Color.white)
+            (Scene3d.Material.color color)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
@@ -1744,7 +1984,7 @@ viewCursor bounceAnim ( x, y, z ) =
 
         -- Z bars
         , Scene3d.block
-            (Scene3d.Material.color Color.white)
+            (Scene3d.Material.color color)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
@@ -1754,7 +1994,7 @@ viewCursor bounceAnim ( x, y, z ) =
                 ( Length.meters 0.1, Length.meters 0.1, length )
             )
         , Scene3d.block
-            (Scene3d.Material.color Color.white)
+            (Scene3d.Material.color color)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
@@ -1764,7 +2004,7 @@ viewCursor bounceAnim ( x, y, z ) =
                 ( Length.meters 0.1, Length.meters 0.1, length )
             )
         , Scene3d.block
-            (Scene3d.Material.color Color.white)
+            (Scene3d.Material.color color)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
@@ -1774,7 +2014,7 @@ viewCursor bounceAnim ( x, y, z ) =
                 ( Length.meters 0.1, Length.meters 0.1, length )
             )
         , Scene3d.block
-            (Scene3d.Material.color Color.white)
+            (Scene3d.Material.color color)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
@@ -1786,7 +2026,7 @@ viewCursor bounceAnim ( x, y, z ) =
 
         -- Y bars
         , Scene3d.block
-            (Scene3d.Material.color Color.white)
+            (Scene3d.Material.color color)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
@@ -1796,7 +2036,7 @@ viewCursor bounceAnim ( x, y, z ) =
                 ( Length.meters 0.1, length, Length.meters 0.1 )
             )
         , Scene3d.block
-            (Scene3d.Material.color Color.white)
+            (Scene3d.Material.color color)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
@@ -1806,7 +2046,7 @@ viewCursor bounceAnim ( x, y, z ) =
                 ( Length.meters 0.1, length, Length.meters 0.1 )
             )
         , Scene3d.block
-            (Scene3d.Material.color Color.white)
+            (Scene3d.Material.color color)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint
@@ -1816,7 +2056,7 @@ viewCursor bounceAnim ( x, y, z ) =
                 ( Length.meters 0.1, length, Length.meters 0.1 )
             )
         , Scene3d.block
-            (Scene3d.Material.color Color.white)
+            (Scene3d.Material.color color)
             (Block3d.centeredOn
                 (center
                     |> Frame3d.atPoint

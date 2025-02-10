@@ -4,6 +4,7 @@ module Undo exposing
     , canUndo
     , init
     , insert
+    , insertWith
     , redo
     , undo
     , value
@@ -22,6 +23,11 @@ init v =
 insert : a -> Stack a -> Stack a
 insert newV (Stack ( before, oldV, _ )) =
     Stack ( oldV :: before, newV, [] )
+
+
+insertWith : (a -> a) -> Stack a -> Stack a
+insertWith fn (Stack ( before, v, _ )) =
+    Stack ( v :: before, fn v, [] )
 
 
 value : Stack a -> a

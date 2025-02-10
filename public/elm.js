@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739129544560"
+    "1739155376363"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -10905,7 +10905,7 @@ var $elm$browser$Browser$document = _Browser_document;
 var $author$project$Main$Editor = {$: 'Editor'};
 var $author$project$Main$Forward = {$: 'Forward'};
 var $author$project$Main$NoInteraction = {$: 'NoInteraction'};
-var $author$project$Main$Remove = {$: 'Remove'};
+var $author$project$Main$Select = {$: 'Select'};
 var $author$project$Main$Wall = {$: 'Wall'};
 var $ianmackenzie$elm_geometry$Geometry$Types$Frame3d = function (a) {
 	return {$: 'Frame3d', a: a};
@@ -11469,37 +11469,117 @@ var $MartinSStewart$elm_serialize$Serialize$finishCustomType = function (_v0) {
 			},
 			A2($elm$json$Json$Decode$index, 0, $elm$json$Json$Decode$int)));
 };
-var $ianmackenzie$elm_units$Quantity$Quantity = function (a) {
-	return {$: 'Quantity', a: a};
+var $author$project$Main$NegativeX = {$: 'NegativeX'};
+var $author$project$Main$NegativeY = {$: 'NegativeY'};
+var $author$project$Main$NegativeZ = {$: 'NegativeZ'};
+var $author$project$Main$PositiveX = {$: 'PositiveX'};
+var $author$project$Main$PositiveY = {$: 'PositiveY'};
+var $author$project$Main$PositiveZ = {$: 'PositiveZ'};
+var $MartinSStewart$elm_serialize$Serialize$VariantEncoder = function (a) {
+	return {$: 'VariantEncoder', a: a};
 };
-var $elm$core$Basics$negate = function (n) {
-	return -n;
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $elm$bytes$Bytes$Encode$U16 = F2(
+	function (a, b) {
+		return {$: 'U16', a: a, b: b};
+	});
+var $elm$bytes$Bytes$Encode$unsignedInt16 = $elm$bytes$Bytes$Encode$U16;
+var $MartinSStewart$elm_serialize$Serialize$variant = F5(
+	function (matchPiece, matchJsonPiece, decoderPiece, jsonDecoderPiece, _v0) {
+		var am = _v0.a;
+		var jsonEnc = function (v) {
+			return $MartinSStewart$elm_serialize$Serialize$VariantEncoder(
+				_Utils_Tuple2(
+					$elm$bytes$Bytes$Encode$sequence(_List_Nil),
+					A2(
+						$elm$json$Json$Encode$list,
+						$elm$core$Basics$identity,
+						A2(
+							$elm$core$List$cons,
+							$elm$json$Json$Encode$int(am.idCounter),
+							v))));
+		};
+		var jsonDecoder_ = F2(
+			function (tag, orElse) {
+				return _Utils_eq(tag, am.idCounter) ? jsonDecoderPiece : A2(am.jsonDecoder, tag, orElse);
+			});
+		var enc = function (v) {
+			return $MartinSStewart$elm_serialize$Serialize$VariantEncoder(
+				_Utils_Tuple2(
+					$elm$bytes$Bytes$Encode$sequence(
+						A2(
+							$elm$core$List$cons,
+							A2($elm$bytes$Bytes$Encode$unsignedInt16, $MartinSStewart$elm_serialize$Serialize$endian, am.idCounter),
+							v)),
+					$elm$json$Json$Encode$null));
+		};
+		var decoder_ = F2(
+			function (tag, orElse) {
+				return _Utils_eq(tag, am.idCounter) ? decoderPiece : A2(am.decoder, tag, orElse);
+			});
+		return $MartinSStewart$elm_serialize$Serialize$CustomTypeCodec(
+			{
+				decoder: decoder_,
+				idCounter: am.idCounter + 1,
+				jsonDecoder: jsonDecoder_,
+				jsonMatch: am.jsonMatch(
+					matchJsonPiece(jsonEnc)),
+				match: am.match(
+					matchPiece(enc))
+			});
+	});
+var $MartinSStewart$elm_serialize$Serialize$variant0 = function (ctor) {
+	return A4(
+		$MartinSStewart$elm_serialize$Serialize$variant,
+		function (c) {
+			return c(_List_Nil);
+		},
+		function (c) {
+			return c(_List_Nil);
+		},
+		$elm$bytes$Bytes$Decode$succeed(
+			$elm$core$Result$Ok(ctor)),
+		$elm$json$Json$Decode$succeed(
+			$elm$core$Result$Ok(ctor)));
 };
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
-var $elm$core$Basics$sqrt = _Basics_sqrt;
-var $ianmackenzie$elm_geometry$Vector3d$direction = function (_v0) {
-	var v = _v0.a;
-	var largestComponent = A2(
-		$elm$core$Basics$max,
-		$elm$core$Basics$abs(v.x),
+var $author$project$Main$axisCodex = $MartinSStewart$elm_serialize$Serialize$finishCustomType(
+	A2(
+		$MartinSStewart$elm_serialize$Serialize$variant0,
+		$author$project$Main$NegativeZ,
 		A2(
-			$elm$core$Basics$max,
-			$elm$core$Basics$abs(v.y),
-			$elm$core$Basics$abs(v.z)));
-	if (!largestComponent) {
-		return $elm$core$Maybe$Nothing;
-	} else {
-		var scaledZ = v.z / largestComponent;
-		var scaledY = v.y / largestComponent;
-		var scaledX = v.x / largestComponent;
-		var scaledLength = $elm$core$Basics$sqrt(((scaledX * scaledX) + (scaledY * scaledY)) + (scaledZ * scaledZ));
-		return $elm$core$Maybe$Just(
-			$ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-				{x: scaledX / scaledLength, y: scaledY / scaledLength, z: scaledZ / scaledLength}));
-	}
-};
+			$MartinSStewart$elm_serialize$Serialize$variant0,
+			$author$project$Main$PositiveZ,
+			A2(
+				$MartinSStewart$elm_serialize$Serialize$variant0,
+				$author$project$Main$NegativeY,
+				A2(
+					$MartinSStewart$elm_serialize$Serialize$variant0,
+					$author$project$Main$PositiveY,
+					A2(
+						$MartinSStewart$elm_serialize$Serialize$variant0,
+						$author$project$Main$NegativeX,
+						A2(
+							$MartinSStewart$elm_serialize$Serialize$variant0,
+							$author$project$Main$PositiveX,
+							$MartinSStewart$elm_serialize$Serialize$customType(
+								F7(
+									function (positiveXEncoder, negativeXEncoder, positiveYEncoder, negativeYEncoder, positiveZEncoder, negativeZEncoder, value) {
+										switch (value.$) {
+											case 'PositiveX':
+												return positiveXEncoder;
+											case 'NegativeX':
+												return negativeXEncoder;
+											case 'PositiveY':
+												return positiveYEncoder;
+											case 'NegativeY':
+												return negativeYEncoder;
+											case 'PositiveZ':
+												return positiveZEncoder;
+											default:
+												return negativeZEncoder;
+										}
+									})))))))));
 var $MartinSStewart$elm_serialize$Serialize$RecordCodec = function (a) {
 	return {$: 'RecordCodec', a: a};
 };
@@ -11613,28 +11693,6 @@ var $MartinSStewart$elm_serialize$Serialize$finishRecord = function (_v0) {
 					$elm$json$Json$Encode$list($elm$core$Basics$identity)))
 		});
 };
-var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $elm$json$Json$Encode$float = _Json_wrap;
-var $elm$bytes$Bytes$Decode$float64 = function (endianness) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		_Bytes_read_f64(
-			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
-};
-var $elm$bytes$Bytes$Encode$F64 = F2(
-	function (a, b) {
-		return {$: 'F64', a: a, b: b};
-	});
-var $elm$bytes$Bytes$Encode$float64 = $elm$bytes$Bytes$Encode$F64;
-var $MartinSStewart$elm_serialize$Serialize$float = A4(
-	$MartinSStewart$elm_serialize$Serialize$build,
-	$elm$bytes$Bytes$Encode$float64($MartinSStewart$elm_serialize$Serialize$endian),
-	A2(
-		$elm$bytes$Bytes$Decode$map,
-		$elm$core$Result$Ok,
-		$elm$bytes$Bytes$Decode$float64($MartinSStewart$elm_serialize$Serialize$endian)),
-	$elm$json$Json$Encode$float,
-	A2($elm$json$Json$Decode$map, $elm$core$Result$Ok, $elm$json$Json$Decode$float));
-var $elm$core$Basics$pow = _Basics_pow;
 var $MartinSStewart$elm_serialize$Serialize$record = function (ctor) {
 	return $MartinSStewart$elm_serialize$Serialize$RecordCodec(
 		{
@@ -11651,159 +11709,24 @@ var $MartinSStewart$elm_serialize$Serialize$record = function (ctor) {
 			}
 		});
 };
-var $ianmackenzie$elm_geometry$Direction3d$unwrap = function (_v0) {
-	var coordinates = _v0.a;
-	return coordinates;
-};
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $ianmackenzie$elm_geometry$Geometry$Types$Vector3d = function (a) {
-	return {$: 'Vector3d', a: a};
-};
-var $ianmackenzie$elm_geometry$Vector3d$xyz = F3(
-	function (_v0, _v1, _v2) {
-		var x = _v0.a;
-		var y = _v1.a;
-		var z = _v2.a;
-		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
-			{x: x, y: y, z: z});
-	});
-var $MartinSStewart$elm_geometry_serialize$Geometry$Serialize$direction3d = $MartinSStewart$elm_serialize$Serialize$finishRecord(
-	A3(
-		$MartinSStewart$elm_serialize$Serialize$field,
-		A2(
-			$elm$core$Basics$composeR,
-			$ianmackenzie$elm_geometry$Direction3d$unwrap,
-			function ($) {
-				return $.z;
-			}),
-		$MartinSStewart$elm_serialize$Serialize$float,
-		A3(
-			$MartinSStewart$elm_serialize$Serialize$field,
-			A2(
-				$elm$core$Basics$composeR,
-				$ianmackenzie$elm_geometry$Direction3d$unwrap,
-				function ($) {
-					return $.y;
-				}),
-			$MartinSStewart$elm_serialize$Serialize$float,
-			A3(
-				$MartinSStewart$elm_serialize$Serialize$field,
-				A2(
-					$elm$core$Basics$composeR,
-					$ianmackenzie$elm_geometry$Direction3d$unwrap,
-					function ($) {
-						return $.x;
-					}),
-				$MartinSStewart$elm_serialize$Serialize$float,
-				$MartinSStewart$elm_serialize$Serialize$record(
-					F3(
-						function (x, y, z) {
-							return ($elm$core$Basics$abs(
-								((A2($elm$core$Basics$pow, x, 2) + A2($elm$core$Basics$pow, y, 2)) + A2($elm$core$Basics$pow, z, 2)) - 1) < 0.0000000000001) ? $ianmackenzie$elm_geometry$Direction3d$unsafe(
-								{x: x, y: y, z: z}) : A2(
-								$elm$core$Maybe$withDefault,
-								$ianmackenzie$elm_geometry$Direction3d$x,
-								$ianmackenzie$elm_geometry$Vector3d$direction(
-									A3(
-										$ianmackenzie$elm_geometry$Vector3d$xyz,
-										$ianmackenzie$elm_units$Quantity$Quantity(x),
-										$ianmackenzie$elm_units$Quantity$Quantity(y),
-										$ianmackenzie$elm_units$Quantity$Quantity(z))));
-						}))))));
 var $author$project$Main$playerSpawnDetailsCodec = $MartinSStewart$elm_serialize$Serialize$finishRecord(
 	A3(
 		$MartinSStewart$elm_serialize$Serialize$field,
 		function ($) {
 			return $.left;
 		},
-		$MartinSStewart$elm_geometry_serialize$Geometry$Serialize$direction3d,
+		$author$project$Main$axisCodex,
 		A3(
 			$MartinSStewart$elm_serialize$Serialize$field,
 			function ($) {
 				return $.forward;
 			},
-			$MartinSStewart$elm_geometry_serialize$Geometry$Serialize$direction3d,
+			$author$project$Main$axisCodex,
 			$MartinSStewart$elm_serialize$Serialize$record(
 				F2(
 					function (forward, left) {
 						return {forward: forward, left: left};
 					})))));
-var $MartinSStewart$elm_serialize$Serialize$VariantEncoder = function (a) {
-	return {$: 'VariantEncoder', a: a};
-};
-var $elm$json$Json$Encode$int = _Json_wrap;
-var $elm$json$Json$Encode$null = _Json_encodeNull;
-var $elm$bytes$Bytes$Encode$U16 = F2(
-	function (a, b) {
-		return {$: 'U16', a: a, b: b};
-	});
-var $elm$bytes$Bytes$Encode$unsignedInt16 = $elm$bytes$Bytes$Encode$U16;
-var $MartinSStewart$elm_serialize$Serialize$variant = F5(
-	function (matchPiece, matchJsonPiece, decoderPiece, jsonDecoderPiece, _v0) {
-		var am = _v0.a;
-		var jsonEnc = function (v) {
-			return $MartinSStewart$elm_serialize$Serialize$VariantEncoder(
-				_Utils_Tuple2(
-					$elm$bytes$Bytes$Encode$sequence(_List_Nil),
-					A2(
-						$elm$json$Json$Encode$list,
-						$elm$core$Basics$identity,
-						A2(
-							$elm$core$List$cons,
-							$elm$json$Json$Encode$int(am.idCounter),
-							v))));
-		};
-		var jsonDecoder_ = F2(
-			function (tag, orElse) {
-				return _Utils_eq(tag, am.idCounter) ? jsonDecoderPiece : A2(am.jsonDecoder, tag, orElse);
-			});
-		var enc = function (v) {
-			return $MartinSStewart$elm_serialize$Serialize$VariantEncoder(
-				_Utils_Tuple2(
-					$elm$bytes$Bytes$Encode$sequence(
-						A2(
-							$elm$core$List$cons,
-							A2($elm$bytes$Bytes$Encode$unsignedInt16, $MartinSStewart$elm_serialize$Serialize$endian, am.idCounter),
-							v)),
-					$elm$json$Json$Encode$null));
-		};
-		var decoder_ = F2(
-			function (tag, orElse) {
-				return _Utils_eq(tag, am.idCounter) ? decoderPiece : A2(am.decoder, tag, orElse);
-			});
-		return $MartinSStewart$elm_serialize$Serialize$CustomTypeCodec(
-			{
-				decoder: decoder_,
-				idCounter: am.idCounter + 1,
-				jsonDecoder: jsonDecoder_,
-				jsonMatch: am.jsonMatch(
-					matchJsonPiece(jsonEnc)),
-				match: am.match(
-					matchPiece(enc))
-			});
-	});
-var $MartinSStewart$elm_serialize$Serialize$variant0 = function (ctor) {
-	return A4(
-		$MartinSStewart$elm_serialize$Serialize$variant,
-		function (c) {
-			return c(_List_Nil);
-		},
-		function (c) {
-			return c(_List_Nil);
-		},
-		$elm$bytes$Bytes$Decode$succeed(
-			$elm$core$Result$Ok(ctor)),
-		$elm$json$Json$Decode$succeed(
-			$elm$core$Result$Ok(ctor)));
-};
 var $MartinSStewart$elm_serialize$Serialize$result1 = F2(
 	function (ctor, value) {
 		if (value.$ === 'Ok') {
@@ -11885,6 +11808,9 @@ var $author$project$Main$blockCodec = $MartinSStewart$elm_serialize$Serialize$fi
 								}))))))));
 var $author$project$Main$boardCodec = $MartinSStewart$elm_serialize$Serialize$array($author$project$Main$blockCodec);
 var $elm$core$Basics$pi = _Basics_pi;
+var $ianmackenzie$elm_units$Quantity$Quantity = function (a) {
+	return {$: 'Quantity', a: a};
+};
 var $ianmackenzie$elm_units$Angle$radians = function (numRadians) {
 	return $ianmackenzie$elm_units$Quantity$Quantity(numRadians);
 };
@@ -12006,7 +11932,7 @@ var $author$project$Main$init = function (_v0) {
 							{offset: 500, value: 1},
 							{offset: 500, value: 0}
 						]))),
-			editMode: $author$project$Main$Remove,
+			editMode: $author$project$Main$Select,
 			editorBoard: $author$project$Undo$init(board),
 			editorCursor: _Utils_Tuple3(0, 0, 0),
 			editorKeysDown: $elm$core$Set$empty,
@@ -12021,6 +11947,7 @@ var $author$project$Main$init = function (_v0) {
 			playerMovingAcrossEdge: $elm$core$Maybe$Nothing,
 			playerWantFacing: $author$project$Main$Forward,
 			screenSize: {height: 600, width: 800},
+			selectedBlock: $elm$core$Maybe$Nothing,
 			selectedBlockType: $author$project$Main$Wall,
 			xLowerVisible: 0,
 			xUpperVisible: maxX - 1,
@@ -12632,6 +12559,31 @@ var $MartinSStewart$elm_serialize$Serialize$decodeFromJson = F2(
 		}
 	});
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $ianmackenzie$elm_geometry$Direction3d$negativeX = $ianmackenzie$elm_geometry$Direction3d$unsafe(
+	{x: -1, y: 0, z: 0});
+var $ianmackenzie$elm_geometry$Direction3d$negativeY = $ianmackenzie$elm_geometry$Direction3d$unsafe(
+	{x: 0, y: -1, z: 0});
+var $ianmackenzie$elm_geometry$Direction3d$negativeZ = $ianmackenzie$elm_geometry$Direction3d$unsafe(
+	{x: 0, y: 0, z: -1});
+var $author$project$Main$axisToDirection3d = function (axis) {
+	switch (axis.$) {
+		case 'PositiveX':
+			return $ianmackenzie$elm_geometry$Direction3d$positiveX;
+		case 'NegativeX':
+			return $ianmackenzie$elm_geometry$Direction3d$negativeX;
+		case 'PositiveY':
+			return $ianmackenzie$elm_geometry$Direction3d$positiveY;
+		case 'NegativeY':
+			return $ianmackenzie$elm_geometry$Direction3d$negativeY;
+		case 'PositiveZ':
+			return $ianmackenzie$elm_geometry$Direction3d$positiveZ;
+		default:
+			return $ianmackenzie$elm_geometry$Direction3d$negativeZ;
+	}
+};
 var $author$project$Main$indexToPoint = F2(
 	function (_v0, index) {
 		var maxY = _v0.maxY;
@@ -12704,8 +12656,8 @@ var $author$project$Main$findSpawnHelper = F2(
 								{
 									originPoint: $author$project$Main$pointToPoint3d(
 										A2($author$project$Main$indexToPoint, model, index)),
-									xDirection: details.forward,
-									yDirection: details.left
+									xDirection: $author$project$Main$axisToDirection3d(details.forward),
+									yDirection: $author$project$Main$axisToDirection3d(details.left)
 								})));
 				} else {
 					var $temp$model = model,
@@ -12746,6 +12698,48 @@ var $author$project$Main$findSpawn = F2(
 			$author$project$Main$findSpawnHelper,
 			model,
 			$elm$core$Array$toIndexedList(board));
+	});
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
+var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var $elm$core$Array$getHelp = F3(
+	function (shift, index, tree) {
+		getHelp:
+		while (true) {
+			var pos = $elm$core$Array$bitMask & (index >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_v0.$ === 'SubTree') {
+				var subTree = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$index = index,
+					$temp$tree = subTree;
+				shift = $temp$shift;
+				index = $temp$index;
+				tree = $temp$tree;
+				continue getHelp;
+			} else {
+				var values = _v0.a;
+				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
+			}
+		}
+	});
+var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var $elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
+var $elm$core$Array$get = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
+			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
+			A3($elm$core$Array$getHelp, startShift, index, tree)));
 	});
 var $author$project$Main$Backward = {$: 'Backward'};
 var $author$project$Main$Left = {$: 'Left'};
@@ -12798,6 +12792,17 @@ var $author$project$Undo$insert = F2(
 				newV,
 				_List_Nil));
 	});
+var $author$project$Undo$insertWith = F2(
+	function (fn, _v0) {
+		var _v1 = _v0.a;
+		var before = _v1.a;
+		var v = _v1.b;
+		return $author$project$Undo$Stack(
+			_Utils_Tuple3(
+				A2($elm$core$List$cons, v, before),
+				fn(v),
+				_List_Nil));
+	});
 var $elm$core$Elm$JsArray$map = _JsArray_map;
 var $elm$core$Array$map = F2(
 	function (func, _v0) {
@@ -12822,6 +12827,16 @@ var $elm$core$Array$map = F2(
 			startShift,
 			A2($elm$core$Elm$JsArray$map, helper, tree),
 			A2($elm$core$Elm$JsArray$map, func, tail));
+	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
 	});
 var $elm$core$Result$mapError = F2(
 	function (f, result) {
@@ -12943,6 +12958,10 @@ var $ianmackenzie$elm_geometry$Point3d$along = F2(
 		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
 			{x: p0.x + (distance * d.x), y: p0.y + (distance * d.y), z: p0.z + (distance * d.z)});
 	});
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $elm$core$Basics$sqrt = _Basics_sqrt;
 var $ianmackenzie$elm_units$Quantity$zero = $ianmackenzie$elm_units$Quantity$Quantity(0);
 var $ianmackenzie$elm_geometry$Point3d$distanceFrom = F2(
 	function (_v0, _v1) {
@@ -13127,6 +13146,9 @@ var $ianmackenzie$elm_geometry$Frame3d$translateBy = F2(
 				zDirection: $ianmackenzie$elm_geometry$Frame3d$zDirection(frame)
 			});
 	});
+var $ianmackenzie$elm_geometry$Geometry$Types$Vector3d = function (a) {
+	return {$: 'Vector3d', a: a};
+};
 var $ianmackenzie$elm_geometry$Vector3d$withLength = F2(
 	function (_v0, _v1) {
 		var a = _v0.a;
@@ -13261,7 +13283,6 @@ var $elm$core$Array$foldl = F3(
 var $ianmackenzie$elm_geometry$Geometry$Types$Rectangle2d = function (a) {
 	return {$: 'Rectangle2d', a: a};
 };
-var $elm$core$Basics$ge = _Utils_ge;
 var $ianmackenzie$elm_units$Quantity$greaterThanOrEqualTo = F2(
 	function (_v0, _v1) {
 		var y = _v0.a;
@@ -13340,12 +13361,6 @@ var $ianmackenzie$elm_geometry$BoundingBox3d$extrema = function (boundingBox) {
 		minZ: $ianmackenzie$elm_units$Quantity$Quantity(b.minZ)
 	};
 };
-var $ianmackenzie$elm_geometry$Direction3d$negativeX = $ianmackenzie$elm_geometry$Direction3d$unsafe(
-	{x: -1, y: 0, z: 0});
-var $ianmackenzie$elm_geometry$Direction3d$negativeY = $ianmackenzie$elm_geometry$Direction3d$unsafe(
-	{x: 0, y: -1, z: 0});
-var $ianmackenzie$elm_geometry$Direction3d$negativeZ = $ianmackenzie$elm_geometry$Direction3d$unsafe(
-	{x: 0, y: 0, z: -1});
 var $ianmackenzie$elm_geometry$Axis3d$originPoint = function (_v0) {
 	var axis = _v0.a;
 	return axis.originPoint;
@@ -13468,6 +13483,27 @@ var $ianmackenzie$elm_geometry$Rectangle2d$dimensions = function (_v0) {
 	var rectangle = _v0.a;
 	return rectangle.dimensions;
 };
+var $ianmackenzie$elm_geometry$Vector3d$direction = function (_v0) {
+	var v = _v0.a;
+	var largestComponent = A2(
+		$elm$core$Basics$max,
+		$elm$core$Basics$abs(v.x),
+		A2(
+			$elm$core$Basics$max,
+			$elm$core$Basics$abs(v.y),
+			$elm$core$Basics$abs(v.z)));
+	if (!largestComponent) {
+		return $elm$core$Maybe$Nothing;
+	} else {
+		var scaledZ = v.z / largestComponent;
+		var scaledY = v.y / largestComponent;
+		var scaledX = v.x / largestComponent;
+		var scaledLength = $elm$core$Basics$sqrt(((scaledX * scaledX) + (scaledY * scaledY)) + (scaledZ * scaledZ));
+		return $elm$core$Maybe$Just(
+			$ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+				{x: scaledX / scaledLength, y: scaledY / scaledLength, z: scaledZ / scaledLength}));
+	}
+};
 var $ianmackenzie$elm_units$Quantity$divideBy = F2(
 	function (divisor, _v0) {
 		var value = _v0.a;
@@ -13511,6 +13547,15 @@ var $ianmackenzie$elm_3d_camera$Viewpoint3d$viewDirection = function (_v0) {
 	return $ianmackenzie$elm_geometry$Direction3d$reverse(
 		$ianmackenzie$elm_geometry$Frame3d$zDirection(frame));
 };
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
 var $ianmackenzie$elm_geometry$Point2d$xCoordinateIn = F2(
 	function (_v0, _v1) {
 		var frame = _v0.a;
@@ -13520,6 +13565,14 @@ var $ianmackenzie$elm_geometry$Point2d$xCoordinateIn = F2(
 		var _v3 = frame.xDirection;
 		var d = _v3.a;
 		return $ianmackenzie$elm_units$Quantity$Quantity(((p.x - p0.x) * d.x) + ((p.y - p0.y) * d.y));
+	});
+var $ianmackenzie$elm_geometry$Vector3d$xyz = F3(
+	function (_v0, _v1, _v2) {
+		var x = _v0.a;
+		var y = _v1.a;
+		var z = _v2.a;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
+			{x: x, y: y, z: z});
 	});
 var $ianmackenzie$elm_geometry$Point3d$xyzIn = F4(
 	function (_v0, _v1, _v2, _v3) {
@@ -13703,18 +13756,25 @@ var $author$project$Main$moveCursorByMouse = F2(
 					{
 						editorCursor: function () {
 							var _v2 = model.editMode;
-							if (_v2.$ === 'Remove') {
-								return $author$project$Main$point3dToPoint(
-									A2(
-										$ianmackenzie$elm_geometry$Point3d$along,
-										$ianmackenzie$elm_geometry$Axis3d$reverse(intersection),
-										$ianmackenzie$elm_units$Length$meters(0.5)));
-							} else {
-								return $author$project$Main$point3dToPoint(
-									A2(
-										$ianmackenzie$elm_geometry$Point3d$along,
-										intersection,
-										$ianmackenzie$elm_units$Length$meters(0.5)));
+							switch (_v2.$) {
+								case 'Remove':
+									return $author$project$Main$point3dToPoint(
+										A2(
+											$ianmackenzie$elm_geometry$Point3d$along,
+											$ianmackenzie$elm_geometry$Axis3d$reverse(intersection),
+											$ianmackenzie$elm_units$Length$meters(0.5)));
+								case 'Add':
+									return $author$project$Main$point3dToPoint(
+										A2(
+											$ianmackenzie$elm_geometry$Point3d$along,
+											intersection,
+											$ianmackenzie$elm_units$Length$meters(0.5)));
+								default:
+									return $author$project$Main$point3dToPoint(
+										A2(
+											$ianmackenzie$elm_geometry$Point3d$along,
+											$ianmackenzie$elm_geometry$Axis3d$reverse(intersection),
+											$ianmackenzie$elm_units$Length$meters(0.5)));
 							}
 						}()
 					}),
@@ -14115,10 +14175,6 @@ var $elm$core$Set$remove = F2(
 		return $elm$core$Set$Set_elm_builtin(
 			A2($elm$core$Dict$remove, key, dict));
 	});
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
-var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
-var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
 var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
 var $elm$core$Array$setHelp = F4(
 	function (shift, index, value, tree) {
@@ -14142,10 +14198,6 @@ var $elm$core$Array$setHelp = F4(
 				tree);
 		}
 	});
-var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
-var $elm$core$Array$tailIndex = function (len) {
-	return (len >>> 5) << 5;
-};
 var $elm$core$Array$set = F3(
 	function (index, value, array) {
 		var len = array.a;
@@ -14166,6 +14218,10 @@ var $elm$core$Array$set = F3(
 			A4($elm$core$Array$setHelp, startShift, index, value, tree),
 			tail));
 	});
+var $ianmackenzie$elm_geometry$Direction3d$unwrap = function (_v0) {
+	var coordinates = _v0.a;
+	return coordinates;
+};
 var $author$project$Main$correctSizeDirection = function (dir) {
 	var parts = $ianmackenzie$elm_geometry$Direction3d$unwrap(dir);
 	return $ianmackenzie$elm_geometry$Direction3d$unsafe(
@@ -14189,39 +14245,6 @@ var $ianmackenzie$elm_units$Quantity$for = F2(
 		var independentValue = _v0.a;
 		var rateOfChange = _v1.a;
 		return $ianmackenzie$elm_units$Quantity$Quantity(rateOfChange * independentValue);
-	});
-var $elm$core$Array$getHelp = F3(
-	function (shift, index, tree) {
-		getHelp:
-		while (true) {
-			var pos = $elm$core$Array$bitMask & (index >>> shift);
-			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (_v0.$ === 'SubTree') {
-				var subTree = _v0.a;
-				var $temp$shift = shift - $elm$core$Array$shiftStep,
-					$temp$index = index,
-					$temp$tree = subTree;
-				shift = $temp$shift;
-				index = $temp$index;
-				tree = $temp$tree;
-				continue getHelp;
-			} else {
-				var values = _v0.a;
-				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
-			}
-		}
-	});
-var $elm$core$Array$get = F2(
-	function (index, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
-			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
-			A3($elm$core$Array$getHelp, startShift, index, tree)));
 	});
 var $ianmackenzie$elm_units$Duration$seconds = function (numSeconds) {
 	return $ianmackenzie$elm_units$Quantity$Quantity(numSeconds);
@@ -14717,7 +14740,7 @@ var $author$project$Main$update = F2(
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{boardLoadError: $elm$core$Maybe$Nothing, editorBoard: editorBoard}),
+							{boardLoadError: $elm$core$Maybe$Nothing, editorBoard: editorBoard, selectedBlock: $elm$core$Maybe$Nothing}),
 						$elm$core$Platform$Cmd$none);
 				} else {
 					var error = loadedBoard.a;
@@ -14738,8 +14761,8 @@ var $author$project$Main$update = F2(
 						return _Debug_todo(
 							'Main',
 							{
-								start: {line: 386, column: 29},
-								end: {line: 386, column: 39}
+								start: {line: 423, column: 29},
+								end: {line: 423, column: 39}
 							})('No player spawn found');
 					} else {
 						var spawnFrame = _v4.a;
@@ -14768,7 +14791,8 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							editorBoard: $author$project$Undo$undo(model.editorBoard)
+							editorBoard: $author$project$Undo$undo(model.editorBoard),
+							selectedBlock: $elm$core$Maybe$Nothing
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Redo':
@@ -14776,7 +14800,8 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							editorBoard: $author$project$Undo$redo(model.editorBoard)
+							editorBoard: $author$project$Undo$redo(model.editorBoard),
+							selectedBlock: $elm$core$Maybe$Nothing
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MouseDown':
@@ -14814,47 +14839,89 @@ var $author$project$Main$update = F2(
 							{mouseDragging: $author$project$Main$NoInteraction}),
 						$elm$core$Platform$Cmd$none);
 				} else {
-					var editorBoard = A3(
-						$elm$core$Array$set,
-						A2($author$project$Main$pointToIndex, model, model.editorCursor),
-						function () {
-							var _v7 = model.editMode;
-							if (_v7.$ === 'Remove') {
-								return $author$project$Main$Empty;
-							} else {
-								return model.selectedBlockType;
-							}
-						}(),
-						function (board) {
-							var _v5 = model.selectedBlockType;
-							if (_v5.$ === 'PlayerSpawn') {
-								return A2(
-									$elm$core$Array$map,
-									function (block) {
-										if (block.$ === 'PlayerSpawn') {
-											return $author$project$Main$Empty;
-										} else {
-											return block;
-										}
-									},
-									board);
-							} else {
-								return board;
-							}
-						}(
-							$author$project$Undo$value(model.editorBoard)));
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								boardEncoding: A2(
-									$elm$json$Json$Encode$encode,
-									0,
-									A2($MartinSStewart$elm_serialize$Serialize$encodeToJson, $author$project$Main$boardCodec, editorBoard)),
-								editorBoard: A2($author$project$Undo$insert, editorBoard, model.editorBoard),
-								mouseDragging: $author$project$Main$NoInteraction
-							}),
-						$elm$core$Platform$Cmd$none);
+					var _v5 = model.editMode;
+					switch (_v5.$) {
+						case 'Remove':
+							var editorBoard = A3(
+								$elm$core$Array$set,
+								A2($author$project$Main$pointToIndex, model, model.editorCursor),
+								$author$project$Main$Empty,
+								$author$project$Undo$value(model.editorBoard));
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										boardEncoding: A2(
+											$elm$json$Json$Encode$encode,
+											0,
+											A2($MartinSStewart$elm_serialize$Serialize$encodeToJson, $author$project$Main$boardCodec, editorBoard)),
+										editorBoard: A2($author$project$Undo$insert, editorBoard, model.editorBoard),
+										mouseDragging: $author$project$Main$NoInteraction,
+										selectedBlock: $elm$core$Maybe$Nothing
+									}),
+								$elm$core$Platform$Cmd$none);
+						case 'Add':
+							var editorBoard = A3(
+								$elm$core$Array$set,
+								A2($author$project$Main$pointToIndex, model, model.editorCursor),
+								model.selectedBlockType,
+								function (board) {
+									var _v6 = model.selectedBlockType;
+									if (_v6.$ === 'PlayerSpawn') {
+										return A2(
+											$elm$core$Array$map,
+											function (block) {
+												if (block.$ === 'PlayerSpawn') {
+													return $author$project$Main$Empty;
+												} else {
+													return block;
+												}
+											},
+											board);
+									} else {
+										return board;
+									}
+								}(
+									$author$project$Undo$value(model.editorBoard)));
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										boardEncoding: A2(
+											$elm$json$Json$Encode$encode,
+											0,
+											A2($MartinSStewart$elm_serialize$Serialize$encodeToJson, $author$project$Main$boardCodec, editorBoard)),
+										editorBoard: A2($author$project$Undo$insert, editorBoard, model.editorBoard),
+										mouseDragging: $author$project$Main$NoInteraction,
+										selectedBlock: A2(
+											$elm$core$Maybe$map,
+											function (block) {
+												return _Utils_Tuple2(model.editorCursor, block);
+											},
+											A2(
+												$elm$core$Array$get,
+												A2($author$project$Main$pointToIndex, model, model.editorCursor),
+												editorBoard))
+									}),
+								$elm$core$Platform$Cmd$none);
+						default:
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										mouseDragging: $author$project$Main$NoInteraction,
+										selectedBlock: A2(
+											$elm$core$Maybe$map,
+											function (block) {
+												return _Utils_Tuple2(model.editorCursor, block);
+											},
+											A2(
+												$elm$core$Array$get,
+												A2($author$project$Main$pointToIndex, model, model.editorCursor),
+												$author$project$Undo$value(model.editorBoard)))
+									}),
+								$elm$core$Platform$Cmd$none);
+					}
 				}
 			case 'MouseMove':
 				var pointerId = msg.a;
@@ -14928,6 +14995,24 @@ var $author$project$Main$update = F2(
 						model,
 						{selectedBlockType: blockType}),
 					$elm$core$Platform$Cmd$none);
+			case 'SetBlock':
+				var point = msg.a;
+				var block = msg.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							editorBoard: A2(
+								$author$project$Undo$insertWith,
+								A2(
+									$elm$core$Array$set,
+									A2($author$project$Main$pointToIndex, model, point),
+									block),
+								model.editorBoard),
+							selectedBlock: $elm$core$Maybe$Just(
+								_Utils_Tuple2(point, block))
+						}),
+					$elm$core$Platform$Cmd$none);
 			default:
 				var key = msg.a;
 				var _v8 = model.mode;
@@ -14949,6 +15034,11 @@ var $author$project$Main$EncodingChanged = function (a) {
 var $author$project$Main$LoadBoard = {$: 'LoadBoard'};
 var $author$project$Main$Redo = {$: 'Redo'};
 var $phosphor_icons$phosphor_elm$Phosphor$Regular = {$: 'Regular'};
+var $author$project$Main$Remove = {$: 'Remove'};
+var $author$project$Main$SetBlock = F2(
+	function (a, b) {
+		return {$: 'SetBlock', a: a, b: b};
+	});
 var $author$project$Main$SetEditMode = function (a) {
 	return {$: 'SetEditMode', a: a};
 };
@@ -15161,6 +15251,22 @@ var $phosphor_icons$phosphor_elm$Phosphor$arrowCounterClockwise = function (weig
 	}();
 	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
+var $author$project$Main$axisToLabel = function (axis) {
+	switch (axis.$) {
+		case 'PositiveX':
+			return 'Positive X';
+		case 'NegativeX':
+			return 'Negative X';
+		case 'PositiveY':
+			return 'Positive Y';
+		case 'NegativeY':
+			return 'Negative Y';
+		case 'PositiveZ':
+			return 'Positive Z';
+		default:
+			return 'Negative Z';
+	}
+};
 var $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor = function (a) {
 	return {$: 'BackgroundColor', a: a};
 };
@@ -15170,6 +15276,7 @@ var $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor = function (color) {
 var $author$project$Html$Attributes$Extra$bool = function (b) {
 	return b ? 'true' : 'false';
 };
+var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $author$project$Undo$canRedo = function (_v0) {
@@ -15192,6 +15299,87 @@ var $elm$core$List$append = F2(
 	});
 var $elm$core$List$concat = function (lists) {
 	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $phosphor_icons$phosphor_elm$Phosphor$cursor = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M224.15,179.17l-46.83-46.82,37.93-13.51.76-.3a20,20,0,0,0-1.76-37.27L54.16,29A20,20,0,0,0,29,54.16L81.27,214.24A20,20,0,0,0,118.54,216c.11-.25.21-.5.3-.76l13.51-37.92,46.83,46.82a20,20,0,0,0,28.28,0l16.69-16.68A20,20,0,0,0,224.15,179.17Zm-30.83,25.17-48.48-48.48A20,20,0,0,0,130.7,150a20.66,20.66,0,0,0-3.74.35A20,20,0,0,0,112.35,162c-.11.25-.21.5-.3.76L100.4,195.5,54.29,54.29l141.21,46.1-32.71,11.66c-.26.09-.51.19-.76.3a20,20,0,0,0-6.17,32.48h0l48.49,48.48Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M213.66,201,201,213.66a8,8,0,0,1-11.31,0l-51.31-51.31a8,8,0,0,0-13,2.46l-17.82,46.41a8,8,0,0,1-14.85-.71L40.41,50.44a8,8,0,0,1,10-10L210.51,92.68a8,8,0,0,1,.71,14.85l-46.41,17.82a8,8,0,0,0-2.46,13l51.31,51.31A8,8,0,0,1,213.66,201Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M168,132.69,214.08,115l.33-.13A16,16,0,0,0,213,85.07L52.92,32.8A15.95,15.95,0,0,0,32.8,52.92L85.07,213a15.82,15.82,0,0,0,14.41,11l.78,0a15.84,15.84,0,0,0,14.61-9.59l.13-.33L132.69,168,184,219.31a16,16,0,0,0,22.63,0l12.68-12.68a16,16,0,0,0,0-22.63ZM195.31,208,144,156.69a16,16,0,0,0-26,4.93c0,.11-.09.22-.13.32l-17.65,46L48,48l159.85,52.2-45.95,17.64-.32.13a16,16,0,0,0-4.93,26h0L208,195.31Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M220.49,207.8,207.8,220.49a12,12,0,0,1-17,0l-56.57-56.57L115,214.08l-.13.33A15.84,15.84,0,0,1,100.26,224l-.78,0a15.82,15.82,0,0,1-14.41-11L32.8,52.92A15.95,15.95,0,0,1,52.92,32.8L213,85.07a16,16,0,0,1,1.41,29.8l-.33.13-50.16,19.27,56.57,56.56A12,12,0,0,1,220.49,207.8Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M166.59,134.1a1.91,1.91,0,0,1-.55-1.79,2,2,0,0,1,1.08-1.42l46.25-17.76.24-.1A14,14,0,0,0,212.38,87L52.29,34.7A13.95,13.95,0,0,0,34.7,52.29L87,212.38a13.82,13.82,0,0,0,12.6,9.6c.23,0,.46,0,.69,0A13.84,13.84,0,0,0,113,213.61a2.44,2.44,0,0,0,.1-.24l17.76-46.25a2,2,0,0,1,3.21-.53l51.31,51.31a14,14,0,0,0,19.8,0l12.69-12.69a14,14,0,0,0,0-19.8Zm42.82,62.63-12.68,12.68a2,2,0,0,1-2.83,0L142.59,158.1a14,14,0,0,0-22.74,4.32,2.44,2.44,0,0,0-.1.24L102,208.91a2,2,0,0,1-3.61-.26L46.11,48.57a1.87,1.87,0,0,1,.47-2A1.92,1.92,0,0,1,47.93,46a2.22,2.22,0,0,1,.64.1L208.65,98.38a2,2,0,0,1,.26,3.61l-46.25,17.76-.24.1a14,14,0,0,0-4.32,22.74h0l51.31,51.31A2,2,0,0,1,209.41,196.73Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M168,132.69,214.08,115l.33-.13A16,16,0,0,0,213,85.07L52.92,32.8A15.95,15.95,0,0,0,32.8,52.92L85.07,213a15.82,15.82,0,0,0,14.41,11l.78,0a15.84,15.84,0,0,0,14.61-9.59l.13-.33L132.69,168,184,219.31a16,16,0,0,0,22.63,0l12.68-12.68a16,16,0,0,0,0-22.63ZM195.31,208,144,156.69a16,16,0,0,0-26,4.93c0,.11-.09.22-.13.32l-17.65,46L48,48l159.85,52.2-45.95,17.64-.32.13a16,16,0,0,0-4.93,26h0L208,195.31Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M165.17,135.51a4,4,0,0,1,1.17-6.46l46.31-17.79.16-.06a12,12,0,0,0-1.05-22.33L51.67,36.6A12,12,0,0,0,36.6,51.67L88.87,211.76A11.86,11.86,0,0,0,99.67,220h.58a11.86,11.86,0,0,0,11-7.19l.06-.16,17.79-46.31a4,4,0,0,1,6.47-1.17l51.31,51.32a12,12,0,0,0,17,0l12.69-12.69a12,12,0,0,0,0-17Zm45.66,62.63-12.69,12.69a4,4,0,0,1-5.66,0l-51.31-51.31a12,12,0,0,0-8.48-3.52,12.13,12.13,0,0,0-2.24.21,12,12,0,0,0-8.77,7l-.06.16-17.79,46.31a4,4,0,0,1-7.36-.42L44.2,49.19a4,4,0,0,1,5-5L209.27,96.47a4,4,0,0,1,.42,7.36l-46.31,17.78-.16.07a12,12,0,0,0-3.71,19.49l51.32,51.31A4,4,0,0,1,210.83,198.14Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
 var $author$project$Main$MouseDown = function (a) {
 	return {$: 'MouseDown', a: a};
@@ -15217,6 +15405,7 @@ var $author$project$Main$MouseMove = F3(
 	function (a, b, c) {
 		return {$: 'MouseMove', a: a, b: b, c: c};
 	});
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $elm$json$Json$Decode$map4 = _Json_map4;
 var $author$project$Main$decodePointerMove = function (pointer) {
 	return A5(
@@ -15281,16 +15470,6 @@ var $ianmackenzie$elm_units$Quantity$greaterThan = F2(
 		var y = _v0.a;
 		var x = _v1.a;
 		return _Utils_cmp(x, y) > 0;
-	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
 	});
 var $ianmackenzie$elm_geometry$Vector3d$minus = F2(
 	function (_v0, _v1) {
@@ -15413,6 +15592,12 @@ var $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt = function (_arguments) {
 	}
 };
 var $elm$core$Basics$not = _Basics_not;
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$EmptyNode = {$: 'EmptyNode'};
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity = function (a) {
+	return {$: 'Entity', a: a};
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty = $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity($ianmackenzie$elm_3d_scene$Scene3d$Types$EmptyNode);
+var $ianmackenzie$elm_3d_scene$Scene3d$nothing = $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -15483,6 +15668,87 @@ var $elm$html$Html$Events$onSubmit = function (msg) {
 			$elm$html$Html$Events$alwaysPreventDefault,
 			$elm$json$Json$Decode$succeed(msg)));
 };
+var $phosphor_icons$phosphor_elm$Phosphor$plus = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M216,56V200a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V56A16,16,0,0,1,56,40H200A16,16,0,0,1,216,56Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM184,136H136v48a8,8,0,0,1-16,0V136H72a8,8,0,0,1,0-16h48V72a8,8,0,0,1,16,0v48h48a8,8,0,0,1,0,16Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M222,128a6,6,0,0,1-6,6H134v82a6,6,0,0,1-12,0V134H40a6,6,0,0,1,0-12h82V40a6,6,0,0,1,12,0v82h82A6,6,0,0,1,222,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M220,128a4,4,0,0,1-4,4H132v84a4,4,0,0,1-8,0V132H40a4,4,0,0,1,0-8h84V40a4,4,0,0,1,8,0v84h84A4,4,0,0,1,220,128Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
+};
 var $elm$virtual_dom$VirtualDom$property = F2(
 	function (key, value) {
 		return A2(
@@ -15491,6 +15757,76 @@ var $elm$virtual_dom$VirtualDom$property = F2(
 			_VirtualDom_noJavaScriptOrHtmlJson(value));
 	});
 var $elm$html$Html$Attributes$property = $elm$virtual_dom$VirtualDom$property;
+var $elm$html$Html$option = _VirtualDom_node('option');
+var $elm$html$Html$select = _VirtualDom_node('select');
+var $author$project$Html$Extra$selectChangeHelper = F3(
+	function (toKey, options, key) {
+		selectChangeHelper:
+		while (true) {
+			if (!options.b) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var value = options.a;
+				var rest = options.b;
+				if (_Utils_eq(
+					toKey(value),
+					key)) {
+					return $elm$core$Maybe$Just(value);
+				} else {
+					var $temp$toKey = toKey,
+						$temp$options = rest,
+						$temp$key = key;
+					toKey = $temp$toKey;
+					options = $temp$options;
+					key = $temp$key;
+					continue selectChangeHelper;
+				}
+			}
+		}
+	});
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $author$project$Html$Extra$select = F2(
+	function (attributes, config) {
+		return A2(
+			$elm$html$Html$select,
+			_Utils_ap(
+				attributes,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onInput(
+						function (key) {
+							return config.onSelect(
+								A3($author$project$Html$Extra$selectChangeHelper, config.toKey, config.options, key));
+						})
+					])),
+			A2(
+				$elm$core$List$map,
+				function (option) {
+					return A2(
+						$elm$html$Html$option,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$value(
+								config.toKey(option))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								config.toLabel(option))
+							]));
+				},
+				config.options));
+	});
 var $elm$html$Html$small = _VirtualDom_node('small');
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
@@ -15900,6 +16236,7 @@ var $ianmackenzie$elm_3d_scene$Scene3d$resetStencil = $ianmackenzie$elm_3d_scene
 var $elm_explorations$webgl$WebGL$Settings$StencilTest$greater = $elm_explorations$webgl$WebGL$Settings$StencilTest$Test(516);
 var $elm_explorations$webgl$WebGL$Settings$StencilTest$invert = $elm_explorations$webgl$WebGL$Settings$StencilTest$Operation(5386);
 var $elm_explorations$webgl$WebGL$Settings$StencilTest$keep = $elm_explorations$webgl$WebGL$Settings$StencilTest$Operation(7680);
+var $elm$core$Basics$pow = _Basics_pow;
 var $ianmackenzie$elm_3d_scene$Scene3d$singleLightMask = function (index) {
 	return A2($elm$core$Basics$pow, 2, index + 4);
 };
@@ -16271,9 +16608,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$getViewBounds = F4(
 var $elm_explorations$linear_algebra$Math$Vector3$getX = _MJS_v3getX;
 var $elm_explorations$linear_algebra$Math$Vector3$getY = _MJS_v3getY;
 var $elm_explorations$linear_algebra$Math$Vector3$getZ = _MJS_v3getZ;
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity = function (a) {
-	return {$: 'Entity', a: a};
-};
 var $ianmackenzie$elm_3d_scene$Scene3d$Types$Group = function (a) {
 	return {$: 'Group', a: a};
 };
@@ -16992,16 +17326,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$sunny = function (_arguments) {
 			whiteBalance: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight
 		});
 };
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
 var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
 var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
 var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
@@ -17061,7 +17385,6 @@ var $phosphor_icons$phosphor_elm$Phosphor$toHtml = F2(
 				src));
 	});
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
-var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$Html$Range$High = {$: 'High'};
 var $author$project$Html$Range$Low = {$: 'Low'};
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
@@ -18484,8 +18807,6 @@ var $ianmackenzie$elm_geometry$Block3d$dimensions = function (_v0) {
 	var block = _v0.a;
 	return block.dimensions;
 };
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$EmptyNode = {$: 'EmptyNode'};
-var $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty = $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity($ianmackenzie$elm_3d_scene$Scene3d$Types$EmptyNode);
 var $ianmackenzie$elm_3d_scene$Scene3d$Types$MeshNode = F2(
 	function (a, b) {
 		return {$: 'MeshNode', a: a, b: b};
@@ -20231,7 +20552,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$Material$metal = function (_v0) {
 	return $ianmackenzie$elm_3d_scene$Scene3d$Material$pbr(
 		{baseColor: baseColor, metallic: 1, roughness: roughness});
 };
-var $ianmackenzie$elm_3d_scene$Scene3d$nothing = $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
 var $avh4$elm_color$Color$orange = A4($avh4$elm_color$Color$RgbaSpace, 245 / 255, 121 / 255, 0 / 255, 1.0);
 var $avh4$elm_color$Color$red = A4($avh4$elm_color$Color$RgbaSpace, 204 / 255, 0 / 255, 0 / 255, 1.0);
 var $avh4$elm_color$Color$rgb = F3(
@@ -20627,8 +20947,8 @@ var $author$project$Main$viewBlock = F3(
 								{
 									originPoint: $author$project$Main$pointToPoint3d(
 										A2($author$project$Main$indexToPoint, model, index)),
-									xDirection: forward,
-									yDirection: left
+									xDirection: $author$project$Main$axisToDirection3d(forward),
+									yDirection: $author$project$Main$axisToDirection3d(left)
 								}));
 						return $ianmackenzie$elm_3d_scene$Scene3d$group(
 							_List_fromArray(
@@ -20844,8 +21164,8 @@ var $ianmackenzie$elm_units$Quantity$toFloat = function (_v0) {
 	var value = _v0.a;
 	return value;
 };
-var $author$project$Main$viewCursor = F2(
-	function (bounceAnim, _v0) {
+var $author$project$Main$viewCursor = F3(
+	function (color, bounceAnim, _v0) {
 		var x = _v0.a;
 		var y = _v0.b;
 		var z = _v0.c;
@@ -20874,7 +21194,7 @@ var $author$project$Main$viewCursor = F2(
 				[
 					A2(
 					$ianmackenzie$elm_3d_scene$Scene3d$block,
-					$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$white),
+					$ianmackenzie$elm_3d_scene$Scene3d$Material$color(color),
 					A2(
 						$ianmackenzie$elm_geometry$Block3d$centeredOn,
 						A3(
@@ -20892,7 +21212,7 @@ var $author$project$Main$viewCursor = F2(
 							$ianmackenzie$elm_units$Length$meters(0.1)))),
 					A2(
 					$ianmackenzie$elm_3d_scene$Scene3d$block,
-					$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$white),
+					$ianmackenzie$elm_3d_scene$Scene3d$Material$color(color),
 					A2(
 						$ianmackenzie$elm_geometry$Block3d$centeredOn,
 						A3(
@@ -20910,7 +21230,7 @@ var $author$project$Main$viewCursor = F2(
 							$ianmackenzie$elm_units$Length$meters(0.1)))),
 					A2(
 					$ianmackenzie$elm_3d_scene$Scene3d$block,
-					$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$white),
+					$ianmackenzie$elm_3d_scene$Scene3d$Material$color(color),
 					A2(
 						$ianmackenzie$elm_geometry$Block3d$centeredOn,
 						A3(
@@ -20928,7 +21248,7 @@ var $author$project$Main$viewCursor = F2(
 							$ianmackenzie$elm_units$Length$meters(0.1)))),
 					A2(
 					$ianmackenzie$elm_3d_scene$Scene3d$block,
-					$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$white),
+					$ianmackenzie$elm_3d_scene$Scene3d$Material$color(color),
 					A2(
 						$ianmackenzie$elm_geometry$Block3d$centeredOn,
 						A3(
@@ -20946,7 +21266,7 @@ var $author$project$Main$viewCursor = F2(
 							$ianmackenzie$elm_units$Length$meters(0.1)))),
 					A2(
 					$ianmackenzie$elm_3d_scene$Scene3d$block,
-					$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$white),
+					$ianmackenzie$elm_3d_scene$Scene3d$Material$color(color),
 					A2(
 						$ianmackenzie$elm_geometry$Block3d$centeredOn,
 						A3(
@@ -20964,7 +21284,7 @@ var $author$project$Main$viewCursor = F2(
 							length))),
 					A2(
 					$ianmackenzie$elm_3d_scene$Scene3d$block,
-					$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$white),
+					$ianmackenzie$elm_3d_scene$Scene3d$Material$color(color),
 					A2(
 						$ianmackenzie$elm_geometry$Block3d$centeredOn,
 						A3(
@@ -20982,7 +21302,7 @@ var $author$project$Main$viewCursor = F2(
 							length))),
 					A2(
 					$ianmackenzie$elm_3d_scene$Scene3d$block,
-					$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$white),
+					$ianmackenzie$elm_3d_scene$Scene3d$Material$color(color),
 					A2(
 						$ianmackenzie$elm_geometry$Block3d$centeredOn,
 						A3(
@@ -21000,7 +21320,7 @@ var $author$project$Main$viewCursor = F2(
 							length))),
 					A2(
 					$ianmackenzie$elm_3d_scene$Scene3d$block,
-					$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$white),
+					$ianmackenzie$elm_3d_scene$Scene3d$Material$color(color),
 					A2(
 						$ianmackenzie$elm_geometry$Block3d$centeredOn,
 						A3(
@@ -21018,7 +21338,7 @@ var $author$project$Main$viewCursor = F2(
 							length))),
 					A2(
 					$ianmackenzie$elm_3d_scene$Scene3d$block,
-					$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$white),
+					$ianmackenzie$elm_3d_scene$Scene3d$Material$color(color),
 					A2(
 						$ianmackenzie$elm_geometry$Block3d$centeredOn,
 						A3(
@@ -21036,7 +21356,7 @@ var $author$project$Main$viewCursor = F2(
 							$ianmackenzie$elm_units$Length$meters(0.1)))),
 					A2(
 					$ianmackenzie$elm_3d_scene$Scene3d$block,
-					$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$white),
+					$ianmackenzie$elm_3d_scene$Scene3d$Material$color(color),
 					A2(
 						$ianmackenzie$elm_geometry$Block3d$centeredOn,
 						A3(
@@ -21054,7 +21374,7 @@ var $author$project$Main$viewCursor = F2(
 							$ianmackenzie$elm_units$Length$meters(0.1)))),
 					A2(
 					$ianmackenzie$elm_3d_scene$Scene3d$block,
-					$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$white),
+					$ianmackenzie$elm_3d_scene$Scene3d$Material$color(color),
 					A2(
 						$ianmackenzie$elm_geometry$Block3d$centeredOn,
 						A3(
@@ -21072,7 +21392,7 @@ var $author$project$Main$viewCursor = F2(
 							$ianmackenzie$elm_units$Length$meters(0.1)))),
 					A2(
 					$ianmackenzie$elm_3d_scene$Scene3d$block,
-					$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$white),
+					$ianmackenzie$elm_3d_scene$Scene3d$Material$color(color),
 					A2(
 						$ianmackenzie$elm_geometry$Block3d$centeredOn,
 						A3(
@@ -21461,6 +21781,87 @@ var $author$project$Main$viewPlayer = F2(
 					])));
 	});
 var $ianmackenzie$elm_geometry$Axis3d$x = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$x);
+var $phosphor_icons$phosphor_elm$Phosphor$x = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M216,56V200a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V56A16,16,0,0,1,56,40H200A16,16,0,0,1,216,56Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM181.66,170.34a8,8,0,0,1-11.32,11.32L128,139.31,85.66,181.66a8,8,0,0,1-11.32-11.32L116.69,128,74.34,85.66A8,8,0,0,1,85.66,74.34L128,116.69l42.34-42.35a8,8,0,0,1,11.32,11.32L139.31,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M204.24,195.76a6,6,0,1,1-8.48,8.48L128,136.49,60.24,204.24a6,6,0,0,1-8.48-8.48L119.51,128,51.76,60.24a6,6,0,0,1,8.48-8.48L128,119.51l67.76-67.75a6,6,0,0,1,8.48,8.48L136.49,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M202.83,197.17a4,4,0,0,1-5.66,5.66L128,133.66,58.83,202.83a4,4,0,0,1-5.66-5.66L122.34,128,53.17,58.83a4,4,0,0,1,5.66-5.66L128,122.34l69.17-69.17a4,4,0,1,1,5.66,5.66L133.66,128Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
+};
 var $ianmackenzie$elm_geometry$Axis3d$z = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$z);
 var $author$project$Main$view = function (model) {
 	return {
@@ -21607,8 +22008,18 @@ var $author$project$Main$view = function (model) {
 															$author$project$Undo$value(model.editorBoard))),
 														_List_fromArray(
 														[
-															A2($author$project$Main$viewCursor, model.cursorBounce, model.editorCursor),
-															$author$project$Main$viewOrientationArrows
+															A3($author$project$Main$viewCursor, $avh4$elm_color$Color$white, model.cursorBounce, model.editorCursor),
+															$author$project$Main$viewOrientationArrows,
+															function () {
+															var _v7 = model.selectedBlock;
+															if (_v7.$ === 'Nothing') {
+																return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
+															} else {
+																var _v8 = _v7.a;
+																var point = _v8.a;
+																return A3($author$project$Main$viewCursor, $avh4$elm_color$Color$yellow, model.cursorBounce, point);
+															}
+														}()
 														])
 													]));
 										} else {
@@ -21643,8 +22054,8 @@ var $author$project$Main$view = function (model) {
 								})
 							])),
 						function () {
-						var _v7 = model.mode;
-						if (_v7.$ === 'Game') {
+						var _v9 = model.mode;
+						if (_v9.$ === 'Game') {
 							return $elm$html$Html$text('');
 						} else {
 							return A2(
@@ -21734,6 +22145,27 @@ var $author$project$Main$view = function (model) {
 													[
 														$elm$html$Html$Attributes$type_('button'),
 														$elm$html$Html$Events$onClick(
+														$author$project$Main$SetEditMode($author$project$Main$Select)),
+														$elm$html$Html$Attributes$title('Select block'),
+														A2(
+														$author$project$Html$Attributes$Extra$aria,
+														'current',
+														$author$project$Html$Attributes$Extra$bool(
+															_Utils_eq(model.editMode, $author$project$Main$Select)))
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+														_List_Nil,
+														$phosphor_icons$phosphor_elm$Phosphor$cursor($phosphor_icons$phosphor_elm$Phosphor$Regular))
+													])),
+												A2(
+												$elm$html$Html$button,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$type_('button'),
+														$elm$html$Html$Events$onClick(
 														$author$project$Main$SetEditMode($author$project$Main$Add)),
 														$elm$html$Html$Attributes$title('Add block'),
 														A2(
@@ -21744,7 +22176,10 @@ var $author$project$Main$view = function (model) {
 													]),
 												_List_fromArray(
 													[
-														$elm$html$Html$text('Add')
+														A2(
+														$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+														_List_Nil,
+														$phosphor_icons$phosphor_elm$Phosphor$plus($phosphor_icons$phosphor_elm$Phosphor$Regular))
 													])),
 												A2(
 												$elm$html$Html$button,
@@ -21762,7 +22197,10 @@ var $author$project$Main$view = function (model) {
 													]),
 												_List_fromArray(
 													[
-														$elm$html$Html$text('Remove')
+														A2(
+														$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+														_List_Nil,
+														$phosphor_icons$phosphor_elm$Phosphor$x($phosphor_icons$phosphor_elm$Phosphor$Regular))
 													]))
 											])),
 										A2(
@@ -21838,12 +22276,12 @@ var $author$project$Main$view = function (model) {
 															_Utils_eq(
 																model.selectedBlockType,
 																$author$project$Main$PlayerSpawn(
-																	{forward: $ianmackenzie$elm_geometry$Direction3d$x, left: $ianmackenzie$elm_geometry$Direction3d$y})))),
+																	{forward: $author$project$Main$PositiveX, left: $author$project$Main$PositiveY})))),
 														$elm$html$Html$Attributes$type_('button'),
 														$elm$html$Html$Events$onClick(
 														$author$project$Main$BlockTypeSelected(
 															$author$project$Main$PlayerSpawn(
-																{forward: $ianmackenzie$elm_geometry$Direction3d$x, left: $ianmackenzie$elm_geometry$Direction3d$y})))
+																{forward: $author$project$Main$PositiveX, left: $author$project$Main$PositiveY})))
 													]),
 												_List_fromArray(
 													[
@@ -21854,8 +22292,8 @@ var $author$project$Main$view = function (model) {
 						}
 					}(),
 						function () {
-						var _v8 = model.mode;
-						if (_v8.$ === 'Game') {
+						var _v10 = model.mode;
+						if (_v10.$ === 'Game') {
 							return A2(
 								$elm$html$Html$div,
 								_List_fromArray(
@@ -21891,6 +22329,154 @@ var $author$project$Main$view = function (model) {
 									]),
 								_List_fromArray(
 									[
+										function () {
+										var _v11 = model.selectedBlock;
+										if (_v11.$ === 'Nothing') {
+											return A2(
+												$elm$html$Html$span,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('No block selected')
+													]));
+										} else {
+											var _v12 = _v11.a;
+											var point = _v12.a;
+											var block = _v12.b;
+											switch (block.$) {
+												case 'Empty':
+													return A2(
+														$elm$html$Html$span,
+														_List_Nil,
+														_List_fromArray(
+															[
+																$elm$html$Html$text('Empty block')
+															]));
+												case 'Edge':
+													return A2(
+														$elm$html$Html$span,
+														_List_Nil,
+														_List_fromArray(
+															[
+																$elm$html$Html$text('Edge')
+															]));
+												case 'Wall':
+													return A2(
+														$elm$html$Html$span,
+														_List_Nil,
+														_List_fromArray(
+															[
+																$elm$html$Html$text('Wall')
+															]));
+												case 'PointPickup':
+													return A2(
+														$elm$html$Html$span,
+														_List_Nil,
+														_List_fromArray(
+															[
+																$elm$html$Html$text('PointPickup')
+															]));
+												default:
+													var details = block.a;
+													return A2(
+														$elm$html$Html$form,
+														_List_Nil,
+														_List_fromArray(
+															[
+																A2(
+																$elm$html$Html$span,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$text('Player Spawn')
+																	])),
+																A2($elm$html$Html$br, _List_Nil, _List_Nil),
+																A2(
+																$elm$html$Html$label,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		A2(
+																		$elm$html$Html$span,
+																		_List_Nil,
+																		_List_fromArray(
+																			[
+																				$elm$html$Html$text('Forward Direction ')
+																			])),
+																		A2(
+																		$author$project$Html$Extra$select,
+																		_List_Nil,
+																		{
+																			onSelect: function (value) {
+																				if (value.$ === 'Nothing') {
+																					return A2(
+																						$author$project$Main$SetBlock,
+																						point,
+																						$author$project$Main$PlayerSpawn(details));
+																				} else {
+																					var axis = value.a;
+																					return A2(
+																						$author$project$Main$SetBlock,
+																						point,
+																						$author$project$Main$PlayerSpawn(
+																							_Utils_update(
+																								details,
+																								{forward: axis})));
+																				}
+																			},
+																			options: _List_fromArray(
+																				[$author$project$Main$PositiveX, $author$project$Main$NegativeX, $author$project$Main$PositiveY, $author$project$Main$NegativeY, $author$project$Main$PositiveZ, $author$project$Main$NegativeZ]),
+																			toKey: $author$project$Main$axisToLabel,
+																			toLabel: $author$project$Main$axisToLabel,
+																			value: $elm$core$Maybe$Just(details.forward)
+																		})
+																	])),
+																A2($elm$html$Html$br, _List_Nil, _List_Nil),
+																A2(
+																$elm$html$Html$label,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		A2(
+																		$elm$html$Html$span,
+																		_List_Nil,
+																		_List_fromArray(
+																			[
+																				$elm$html$Html$text('Left Direction ')
+																			])),
+																		A2(
+																		$author$project$Html$Extra$select,
+																		_List_Nil,
+																		{
+																			onSelect: function (value) {
+																				if (value.$ === 'Nothing') {
+																					return A2(
+																						$author$project$Main$SetBlock,
+																						point,
+																						$author$project$Main$PlayerSpawn(details));
+																				} else {
+																					var axis = value.a;
+																					return A2(
+																						$author$project$Main$SetBlock,
+																						point,
+																						$author$project$Main$PlayerSpawn(
+																							_Utils_update(
+																								details,
+																								{left: axis})));
+																				}
+																			},
+																			options: _List_fromArray(
+																				[$author$project$Main$PositiveX, $author$project$Main$NegativeX, $author$project$Main$PositiveY, $author$project$Main$NegativeY, $author$project$Main$PositiveZ, $author$project$Main$NegativeZ]),
+																			toKey: $author$project$Main$axisToLabel,
+																			toLabel: $author$project$Main$axisToLabel,
+																			value: $elm$core$Maybe$Just(details.left)
+																		})
+																	]))
+															]));
+											}
+										}
+									}(),
+										A2($elm$html$Html$hr, _List_Nil, _List_Nil),
 										A2(
 										$elm$html$Html$form,
 										_List_Nil,
@@ -22011,11 +22597,11 @@ var $author$project$Main$view = function (model) {
 														$elm$html$Html$text('Load')
 													])),
 												function () {
-												var _v9 = model.boardLoadError;
-												if (_v9.$ === 'Nothing') {
+												var _v16 = model.boardLoadError;
+												if (_v16.$ === 'Nothing') {
 													return $elm$html$Html$text('');
 												} else {
-													var error = _v9.a;
+													var error = _v16.a;
 													return A2(
 														$elm$html$Html$small,
 														_List_Nil,
