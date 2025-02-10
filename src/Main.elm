@@ -31,6 +31,7 @@ import Phosphor
 import Pixels exposing (Pixels)
 import Point2d exposing (Point2d)
 import Point3d exposing (Point3d)
+import Point3d.Extra
 import Quantity
 import Rectangle2d
 import Scene3d
@@ -42,7 +43,7 @@ import SketchPlane3d
 import Sphere3d
 import Undo
 import Vector3d
-import Viewpoint3d
+import Viewpoint3d exposing (Viewpoint3d)
 
 
 main : Program () Model Msg
@@ -72,7 +73,7 @@ type alias Model =
     , cameraRotation : Angle
     , cameraElevation : Angle
     , cameraDistance : Length
-    , cameraFocalPoint : Point2d Length.Meters ScreenCoordinates
+    , cameraFocalPoint : Point3d Length.Meters WorldCoordinates
     , mouseDragging : EditorMouseInteraction
     , cursorBounce : Animation Float
     , boardEncoding : String
@@ -267,13 +268,13 @@ init : () -> ( Model, Cmd Msg )
 init () =
     let
         maxX =
-            8
+            9
 
         maxY =
-            8
+            9
 
         maxZ =
-            8
+            9
 
         sizeHelper =
             { maxX = maxX, maxY = maxY, maxZ = maxZ }
@@ -310,7 +311,11 @@ init () =
       , cameraRotation = Angle.degrees 225
       , cameraElevation = Angle.degrees 15
       , cameraDistance = Length.meters 30
-      , cameraFocalPoint = Point2d.meters 3.5 3.5
+      , cameraFocalPoint =
+            Point3d.meters
+                ((toFloat maxX - 1) / 2)
+                ((toFloat maxY - 1) / 2)
+                ((toFloat maxZ - 1) / 2)
       , mouseDragging = NoInteraction
       , cursorBounce =
             Animation.init 0
@@ -703,26 +708,32 @@ update msg model =
                     }
 
                 Just maxX ->
-                    { model
-                        | editorMaxXRaw = maxXStr
-                        , editorBoard =
+                    let
+                        editorBoard =
                             Undo.insertWith
-                                (\editorBoard ->
-                                    { editorBoard
+                                (\eb ->
+                                    { eb
                                         | maxX = maxX
                                         , blocks =
-                                            if maxX < (editorBoard.maxX + 1) then
+                                            if maxX < (eb.maxX + 1) then
                                                 List.Cartesian.map3 (\x y z -> ( x, y, z ))
-                                                    (List.range maxX (editorBoard.maxX + 1))
-                                                    (List.range 0 editorBoard.maxY)
-                                                    (List.range 0 editorBoard.maxZ)
-                                                    |> List.foldl Dict.remove editorBoard.blocks
+                                                    (List.range maxX (eb.maxX + 1))
+                                                    (List.range 0 eb.maxY)
+                                                    (List.range 0 eb.maxZ)
+                                                    |> List.foldl Dict.remove eb.blocks
 
                                             else
-                                                editorBoard.blocks
+                                                eb.blocks
                                     }
                                 )
                                 model.editorBoard
+
+                        editorBoardVal =
+                            Undo.value editorBoard
+                    in
+                    { model
+                        | editorMaxXRaw = maxXStr
+                        , editorBoard = editorBoard
                         , xLowerVisible = min model.xLowerVisible maxX
                         , xUpperVisible =
                             if model.xUpperVisible + 1 == (Undo.value model.editorBoard).maxX then
@@ -730,6 +741,16 @@ update msg model =
 
                             else
                                 min model.xUpperVisible (maxX - 1)
+                        , cameraFocalPoint =
+                            model.cameraFocalPoint
+                                |> Point3d.Extra.constrain
+                                    { min = Point3d.origin
+                                    , max =
+                                        Point3d.meters
+                                            (toFloat editorBoardVal.maxX - 1)
+                                            (toFloat editorBoardVal.maxY - 1)
+                                            (toFloat editorBoardVal.maxZ - 1)
+                                    }
                     }
             , Cmd.none
             )
@@ -742,26 +763,32 @@ update msg model =
                     }
 
                 Just maxY ->
-                    { model
-                        | editorMaxYRaw = maxYStr
-                        , editorBoard =
+                    let
+                        editorBoard =
                             Undo.insertWith
-                                (\editorBoard ->
-                                    { editorBoard
+                                (\eb ->
+                                    { eb
                                         | maxY = maxY
                                         , blocks =
-                                            if maxY < (editorBoard.maxY + 1) then
+                                            if maxY < (eb.maxY + 1) then
                                                 List.Cartesian.map3 (\x y z -> ( x, y, z ))
-                                                    (List.range 0 editorBoard.maxX)
-                                                    (List.range maxY (editorBoard.maxY + 1))
-                                                    (List.range 0 editorBoard.maxZ)
-                                                    |> List.foldl Dict.remove editorBoard.blocks
+                                                    (List.range 0 eb.maxX)
+                                                    (List.range maxY (eb.maxY + 1))
+                                                    (List.range 0 eb.maxZ)
+                                                    |> List.foldl Dict.remove eb.blocks
 
                                             else
-                                                editorBoard.blocks
+                                                eb.blocks
                                     }
                                 )
                                 model.editorBoard
+
+                        editorBoardVal =
+                            Undo.value editorBoard
+                    in
+                    { model
+                        | editorMaxYRaw = maxYStr
+                        , editorBoard = editorBoard
                         , yLowerVisible = min model.yLowerVisible maxY
                         , yUpperVisible =
                             if model.yUpperVisible + 1 == (Undo.value model.editorBoard).maxY then
@@ -769,6 +796,16 @@ update msg model =
 
                             else
                                 min model.yUpperVisible (maxY - 1)
+                        , cameraFocalPoint =
+                            model.cameraFocalPoint
+                                |> Point3d.Extra.constrain
+                                    { min = Point3d.origin
+                                    , max =
+                                        Point3d.meters
+                                            (toFloat editorBoardVal.maxX - 1)
+                                            (toFloat editorBoardVal.maxY - 1)
+                                            (toFloat editorBoardVal.maxZ - 1)
+                                    }
                     }
             , Cmd.none
             )
@@ -781,26 +818,32 @@ update msg model =
                     }
 
                 Just maxZ ->
-                    { model
-                        | editorMaxZRaw = maxZStr
-                        , editorBoard =
+                    let
+                        editorBoard =
                             Undo.insertWith
-                                (\editorBoard ->
-                                    { editorBoard
+                                (\eb ->
+                                    { eb
                                         | maxZ = maxZ
                                         , blocks =
-                                            if maxZ < (editorBoard.maxZ + 1) then
+                                            if maxZ < (eb.maxZ + 1) then
                                                 List.Cartesian.map3 (\x y z -> ( x, y, z ))
-                                                    (List.range 0 editorBoard.maxX)
-                                                    (List.range 0 editorBoard.maxY)
-                                                    (List.range maxZ (editorBoard.maxZ + 1))
-                                                    |> List.foldl Dict.remove editorBoard.blocks
+                                                    (List.range 0 eb.maxX)
+                                                    (List.range 0 eb.maxY)
+                                                    (List.range maxZ (eb.maxZ + 1))
+                                                    |> List.foldl Dict.remove eb.blocks
 
                                             else
-                                                editorBoard.blocks
+                                                eb.blocks
                                     }
                                 )
                                 model.editorBoard
+
+                        editorBoardVal =
+                            Undo.value editorBoard
+                    in
+                    { model
+                        | editorMaxZRaw = maxZStr
+                        , editorBoard = editorBoard
                         , zLowerVisible = min model.zLowerVisible maxZ
                         , zUpperVisible =
                             if model.zUpperVisible + 1 == (Undo.value model.editorBoard).maxZ then
@@ -808,6 +851,16 @@ update msg model =
 
                             else
                                 min model.zUpperVisible (maxZ - 1)
+                        , cameraFocalPoint =
+                            model.cameraFocalPoint
+                                |> Point3d.Extra.constrain
+                                    { min = Point3d.origin
+                                    , max =
+                                        Point3d.meters
+                                            (toFloat editorBoardVal.maxX - 1)
+                                            (toFloat editorBoardVal.maxY - 1)
+                                            (toFloat editorBoardVal.maxZ - 1)
+                                    }
                     }
             , Cmd.none
             )
@@ -875,7 +928,37 @@ moveCameraByMouse pointerId movement model =
             )
 
         Pan ->
-            ( model
+            let
+                viewpointFrame =
+                    editorViewpoint model
+                        |> Viewpoint3d.viewPlane
+                        |> SketchPlane3d.toFrame
+
+                editorBoard =
+                    Undo.value model.editorBoard
+            in
+            ( { model
+                | cameraFocalPoint =
+                    model.cameraFocalPoint
+                        |> Point3d.translateIn (Frame3d.yDirection viewpointFrame |> Direction3d.reverse)
+                            (Point2d.yCoordinate movement
+                                |> Pixels.toFloat
+                                |> Length.meters
+                            )
+                        |> Point3d.translateIn (Frame3d.xDirection viewpointFrame)
+                            (Point2d.xCoordinate movement
+                                |> Pixels.toFloat
+                                |> Length.meters
+                            )
+                        |> Point3d.Extra.constrain
+                            { min = Point3d.origin
+                            , max =
+                                Point3d.meters
+                                    (toFloat editorBoard.maxX - 1)
+                                    (toFloat editorBoard.maxY - 1)
+                                    (toFloat editorBoard.maxZ - 1)
+                            }
+              }
             , Cmd.none
             )
 
@@ -983,18 +1066,19 @@ moveCursorByMouse offset model =
 editorCamera : Model -> Camera3d Length.Meters WorldCoordinates
 editorCamera model =
     Camera3d.perspective
-        { viewpoint =
-            Viewpoint3d.orbit
-                { focalPoint =
-                    model.cameraFocalPoint
-                        |> Point3d.on SketchPlane3d.xy
-                        |> Point3d.translateIn Direction3d.positiveZ (Length.meters 2)
-                , azimuth = model.cameraRotation
-                , elevation = model.cameraElevation
-                , distance = model.cameraDistance
-                , groundPlane = SketchPlane3d.xy
-                }
+        { viewpoint = editorViewpoint model
         , verticalFieldOfView = Angle.degrees 30
+        }
+
+
+editorViewpoint : Model -> Viewpoint3d Length.Meters WorldCoordinates
+editorViewpoint model =
+    Viewpoint3d.orbit
+        { focalPoint = model.cameraFocalPoint
+        , azimuth = model.cameraRotation
+        , elevation = model.cameraElevation
+        , distance = model.cameraDistance
+        , groundPlane = SketchPlane3d.xy
         }
 
 
