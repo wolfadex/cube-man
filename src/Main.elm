@@ -419,7 +419,6 @@ update msg model =
                         |> Json.Decode.decodeString Json.Decode.value
                         |> Result.withDefault Json.Encode.null
                         |> Serialize.decodeFromJson boardCodec
-                        |> Result.map Undo.init
                         |> Result.mapError
                             (\error ->
                                 case error of
@@ -436,9 +435,15 @@ update msg model =
             case loadedBoard of
                 Ok editorBoard ->
                     ( { model
-                        | editorBoard = editorBoard
+                        | editorBoard = Undo.init editorBoard
                         , boardLoadError = Nothing
                         , selectedBlock = Nothing
+                        , xLowerVisible = 0
+                        , xUpperVisible = editorBoard.maxX - 1
+                        , yLowerVisible = 0
+                        , yUpperVisible = editorBoard.maxY - 1
+                        , zLowerVisible = 0
+                        , zUpperVisible = editorBoard.maxZ - 1
                       }
                     , Cmd.none
                     )

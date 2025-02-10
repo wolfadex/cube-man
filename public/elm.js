@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739161310502"
+    "1739161854220"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -14690,21 +14690,28 @@ var $author$project$Main$update = F2(
 						}
 					},
 					A2(
-						$elm$core$Result$map,
-						$author$project$Undo$init,
+						$MartinSStewart$elm_serialize$Serialize$decodeFromJson,
+						$author$project$Main$boardCodec,
 						A2(
-							$MartinSStewart$elm_serialize$Serialize$decodeFromJson,
-							$author$project$Main$boardCodec,
-							A2(
-								$elm$core$Result$withDefault,
-								$elm$json$Json$Encode$null,
-								A2($elm$json$Json$Decode$decodeString, $elm$json$Json$Decode$value, model.boardEncoding)))));
+							$elm$core$Result$withDefault,
+							$elm$json$Json$Encode$null,
+							A2($elm$json$Json$Decode$decodeString, $elm$json$Json$Decode$value, model.boardEncoding))));
 				if (loadedBoard.$ === 'Ok') {
 					var editorBoard = loadedBoard.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{boardLoadError: $elm$core$Maybe$Nothing, editorBoard: editorBoard, selectedBlock: $elm$core$Maybe$Nothing}),
+							{
+								boardLoadError: $elm$core$Maybe$Nothing,
+								editorBoard: $author$project$Undo$init(editorBoard),
+								selectedBlock: $elm$core$Maybe$Nothing,
+								xLowerVisible: 0,
+								xUpperVisible: editorBoard.maxX - 1,
+								yLowerVisible: 0,
+								yUpperVisible: editorBoard.maxY - 1,
+								zLowerVisible: 0,
+								zUpperVisible: editorBoard.maxZ - 1
+							}),
 						$elm$core$Platform$Cmd$none);
 				} else {
 					var error = loadedBoard.a;
@@ -14725,8 +14732,8 @@ var $author$project$Main$update = F2(
 						return _Debug_todo(
 							'Main',
 							{
-								start: {line: 462, column: 29},
-								end: {line: 462, column: 39}
+								start: {line: 467, column: 29},
+								end: {line: 467, column: 39}
 							})('No player spawn found');
 					} else {
 						var spawnFrame = _v4.a;
