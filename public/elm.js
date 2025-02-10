@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739220986338"
+    "1739221865384"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -17384,7 +17384,7 @@ var $author$project$Main$init = function (_v0) {
 				A2($MartinSStewart$elm_serialize$Serialize$encodeToJson, $author$project$Main$boardCodec, board)),
 			boardLoadError: $elm$core$Maybe$Nothing,
 			cameraDistance: $ianmackenzie$elm_units$Length$meters(30),
-			cameraElevation: $ianmackenzie$elm_units$Angle$degrees(15),
+			cameraElevation: $ianmackenzie$elm_units$Angle$degrees(25),
 			cameraFocalPoint: A3($ianmackenzie$elm_geometry$Point3d$meters, (maxX - 1) / 2, (maxY - 1) / 2, (maxZ - 1) / 2),
 			cameraMode: $author$project$Main$Orbit,
 			cameraRotation: $ianmackenzie$elm_units$Angle$degrees(225),
@@ -18283,11 +18283,6 @@ var $ianmackenzie$elm_units$Quantity$plus = F2(
 		var x = _v1.a;
 		return $ianmackenzie$elm_units$Quantity$Quantity(x + y);
 	});
-var $ianmackenzie$elm_geometry$Direction3d$reverse = function (_v0) {
-	var d = _v0.a;
-	return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-		{x: -d.x, y: -d.y, z: -d.z});
-};
 var $ianmackenzie$elm_units$Pixels$toFloat = function (_v0) {
 	var numPixels = _v0.a;
 	return numPixels;
@@ -18368,15 +18363,20 @@ var $author$project$Main$moveCameraByMouse = F3(
 									$ianmackenzie$elm_geometry$Point3d$translateIn,
 									$ianmackenzie$elm_geometry$Frame3d$xDirection(viewpointFrame),
 									$ianmackenzie$elm_units$Length$meters(
-										$ianmackenzie$elm_units$Pixels$toFloat(
-											$ianmackenzie$elm_geometry$Point2d$xCoordinate(movement))),
+										function (f) {
+											return f / 4;
+										}(
+											$ianmackenzie$elm_units$Pixels$toFloat(
+												$ianmackenzie$elm_geometry$Point2d$xCoordinate(movement)))),
 									A3(
 										$ianmackenzie$elm_geometry$Point3d$translateIn,
-										$ianmackenzie$elm_geometry$Direction3d$reverse(
-											$ianmackenzie$elm_geometry$Frame3d$yDirection(viewpointFrame)),
+										$ianmackenzie$elm_geometry$Frame3d$zDirection(viewpointFrame),
 										$ianmackenzie$elm_units$Length$meters(
-											$ianmackenzie$elm_units$Pixels$toFloat(
-												$ianmackenzie$elm_geometry$Point2d$yCoordinate(movement))),
+											function (f) {
+												return f / 4;
+											}(
+												$ianmackenzie$elm_units$Pixels$toFloat(
+													$ianmackenzie$elm_geometry$Point2d$yCoordinate(movement)))),
 										model.cameraFocalPoint)))
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -18730,6 +18730,11 @@ var $ianmackenzie$elm_geometry$Direction3d$placeIn = F2(
 		return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
 			{x: ((i.x * d.x) + (j.x * d.y)) + (k.x * d.z), y: ((i.y * d.x) + (j.y * d.y)) + (k.y * d.z), z: ((i.z * d.x) + (j.z * d.y)) + (k.z * d.z)});
 	});
+var $ianmackenzie$elm_geometry$Direction3d$reverse = function (_v0) {
+	var d = _v0.a;
+	return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+		{x: -d.x, y: -d.y, z: -d.z});
+};
 var $ianmackenzie$elm_3d_camera$Viewpoint3d$viewDirection = function (_v0) {
 	var frame = _v0.a;
 	return $ianmackenzie$elm_geometry$Direction3d$reverse(
@@ -19507,8 +19512,8 @@ var $author$project$Main$update = F2(
 						return _Debug_todo(
 							'Main',
 							{
-								start: {line: 485, column: 29},
-								end: {line: 485, column: 39}
+								start: {line: 486, column: 29},
+								end: {line: 486, column: 39}
 							})('No player spawn found');
 					} else {
 						var spawnFrame = _v4.a;
@@ -19538,6 +19543,18 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{cameraMode: cameraMode}),
+					$elm$core$Platform$Cmd$none);
+			case 'ResetCamera':
+				var editorBoard = $author$project$Undo$value(model.editorBoard);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							cameraDistance: $ianmackenzie$elm_units$Length$meters(30),
+							cameraElevation: $ianmackenzie$elm_units$Angle$degrees(25),
+							cameraFocalPoint: A3($ianmackenzie$elm_geometry$Point3d$meters, (editorBoard.maxX - 1) / 2, (editorBoard.maxY - 1) / 2, (editorBoard.maxZ - 1) / 2),
+							cameraRotation: $ianmackenzie$elm_units$Angle$degrees(225)
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Undo':
 				return _Utils_Tuple2(
@@ -26031,6 +26048,7 @@ var $author$project$Main$Pan = {$: 'Pan'};
 var $author$project$Main$Redo = {$: 'Redo'};
 var $phosphor_icons$phosphor_elm$Phosphor$Regular = {$: 'Regular'};
 var $author$project$Main$Remove = {$: 'Remove'};
+var $author$project$Main$ResetCamera = {$: 'ResetCamera'};
 var $author$project$Main$SetCameraMode = function (a) {
 	return {$: 'SetCameraMode', a: a};
 };
@@ -26480,6 +26498,87 @@ var $author$project$Undo$canUndo = function (_v0) {
 	var _v1 = _v0.a;
 	var before = _v1.a;
 	return !_Utils_eq(before, _List_Nil);
+};
+var $phosphor_icons$phosphor_elm$Phosphor$clockCounterClockwise = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M140,80v41.21l34.17,20.5a12,12,0,1,1-12.34,20.58l-40-24A12,12,0,0,1,116,128V80a12,12,0,0,1,24,0ZM128,28A99.38,99.38,0,0,0,57.24,57.34c-4.69,4.74-9,9.37-13.24,14V64a12,12,0,0,0-24,0v40a12,12,0,0,0,12,12H72a12,12,0,0,0,0-24H57.77C63,86,68.37,80.22,74.26,74.26a76,76,0,1,1,1.58,109,12,12,0,0,0-16.48,17.46A100,100,0,1,0,128,28Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M216,128a88,88,0,1,1-88-88A88,88,0,0,1,216,128Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M136,80v43.47l36.12,21.67a8,8,0,0,1-8.24,13.72l-40-24A8,8,0,0,1,120,128V80a8,8,0,0,1,16,0Zm-8-48A95.44,95.44,0,0,0,60.08,60.15C52.81,67.51,46.35,74.59,40,82V64a8,8,0,0,0-16,0v40a8,8,0,0,0,8,8H72a8,8,0,0,0,0-16H49c7.15-8.42,14.27-16.35,22.39-24.57a80,80,0,1,1,1.66,114.75,8,8,0,1,0-11,11.64A96,96,0,1,0,128,32Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M224,128A96,96,0,0,1,62.11,197.82a8,8,0,1,1,11-11.64A80,80,0,1,0,71.43,71.43C67.9,75,64.58,78.51,61.35,82L77.66,98.34A8,8,0,0,1,72,112H32a8,8,0,0,1-8-8V64a8,8,0,0,1,13.66-5.66L50,70.7c3.22-3.49,6.54-7,10.06-10.55A96,96,0,0,1,224,128ZM128,72a8,8,0,0,0-8,8v48a8,8,0,0,0,3.88,6.86l40,24a8,8,0,1,0,8.24-13.72L136,123.47V80A8,8,0,0,0,128,72Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M134,80v44.6l37.09,22.25a6,6,0,0,1-6.18,10.3l-40-24A6,6,0,0,1,122,128V80a6,6,0,0,1,12,0Zm-6-46A93.4,93.4,0,0,0,61.51,61.56c-8.58,8.68-16,17-23.51,25.8V64a6,6,0,0,0-12,0v40a6,6,0,0,0,6,6H72a6,6,0,0,0,0-12H44.73C52.86,88.29,60.79,79.35,70,70a82,82,0,1,1,1.7,117.62,6,6,0,1,0-8.24,8.72A94,94,0,1,0,128,34Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M136,80v43.47l36.12,21.67a8,8,0,0,1-8.24,13.72l-40-24A8,8,0,0,1,120,128V80a8,8,0,0,1,16,0Zm-8-48A95.44,95.44,0,0,0,60.08,60.15C52.81,67.51,46.35,74.59,40,82V64a8,8,0,0,0-16,0v40a8,8,0,0,0,8,8H72a8,8,0,0,0,0-16H49c7.15-8.42,14.27-16.35,22.39-24.57a80,80,0,1,1,1.66,114.75,8,8,0,1,0-11,11.64A96,96,0,1,0,128,32Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M132,80v45.74l38.06,22.83a4,4,0,0,1-4.12,6.86l-40-24A4,4,0,0,1,124,128V80a4,4,0,0,1,8,0Zm-4-44A91.42,91.42,0,0,0,62.93,63C53.05,73,44.66,82.47,36,92.86V64a4,4,0,0,0-8,0v40a4,4,0,0,0,4,4H72a4,4,0,0,0,0-8H40.47C49.61,89,58.3,79,68.6,68.6a84,84,0,1,1,1.75,120.49,4,4,0,1,0-5.5,5.82A92,92,0,1,0,128,36Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
 var $phosphor_icons$phosphor_elm$Phosphor$cursor = function (weight) {
 	var elements = function () {
@@ -27009,6 +27108,21 @@ var $author$project$Main$viewEditorHeader = function (model) {
 									$phosphor_icons$phosphor_elm$Phosphor$toHtml,
 									_List_Nil,
 									$phosphor_icons$phosphor_elm$Phosphor$arrowsVertical($phosphor_icons$phosphor_elm$Phosphor$Regular))
+								])),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$type_('button'),
+									$elm$html$Html$Events$onClick($author$project$Main$ResetCamera),
+									$elm$html$Html$Attributes$title('Camera reset')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+									_List_Nil,
+									$phosphor_icons$phosphor_elm$Phosphor$clockCounterClockwise($phosphor_icons$phosphor_elm$Phosphor$Regular))
 								]))
 						])),
 					A2(
@@ -28033,4 +28147,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$document(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Point":{"args":[],"type":"( Basics.Int, Basics.Int, Basics.Int )"},"Point2d.Point2d":{"args":["units","coordinates"],"type":"Geometry.Types.Point2d units coordinates"},"Json.Decode.Value":{"args":[],"type":"Json.Encode.Value"}},"unions":{"Main.Msg":{"args":[],"tags":{"Tick":["Basics.Float"],"KeyPressed":["String.String"],"KeyDown":["String.String"],"KeyUp":["String.String"],"MouseDown":["Json.Decode.Value"],"MouseUp":[],"MouseMove":["Json.Decode.Value","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates"],"EncodingChanged":["String.String"],"LoadBoard":[],"ChangeMode":[],"SetEditMode":["Main.EditMode"],"SetCameraMode":["Main.CameraMode"],"Undo":[],"Redo":[],"XLowerVisibleChanged":["Basics.Int"],"XUpperVisibleChanged":["Basics.Int"],"YLowerVisibleChanged":["Basics.Int"],"YUpperVisibleChanged":["Basics.Int"],"ZLowerVisibleChanged":["Basics.Int"],"ZUpperVisibleChanged":["Basics.Int"],"BlockTypeSelected":["Main.Block"],"SetBlock":["Main.Point","Main.Block"],"MaxXChanged":["String.String"],"MaxYChanged":["String.String"],"MaxZChanged":["String.String"],"ShowBoardBounds":["Basics.Bool"]}},"Main.Block":{"args":[],"tags":{"Empty":[],"Wall":[],"Edge":[],"PointPickup":["Basics.Bool"],"PlayerSpawn":["{ forward : Main.Axis, left : Main.Axis }"]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Main.CameraMode":{"args":[],"tags":{"Orbit":[],"Pan":[],"Zoom":[]}},"Main.EditMode":{"args":[],"tags":{"Add":[],"Remove":[],"Select":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Pixels.Pixels":{"args":[],"tags":{"Pixels":[]}},"Geometry.Types.Point2d":{"args":["units","coordinates"],"tags":{"Point2d":["{ x : Basics.Float, y : Basics.Float }"]}},"Main.ScreenCoordinates":{"args":[],"tags":{"ScreenCoordinates":["Basics.Never"]}},"String.String":{"args":[],"tags":{"String":[]}},"Json.Encode.Value":{"args":[],"tags":{"Value":[]}},"Main.Axis":{"args":[],"tags":{"PositiveX":[],"NegativeX":[],"PositiveY":[],"NegativeY":[],"PositiveZ":[],"NegativeZ":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Point":{"args":[],"type":"( Basics.Int, Basics.Int, Basics.Int )"},"Point2d.Point2d":{"args":["units","coordinates"],"type":"Geometry.Types.Point2d units coordinates"},"Json.Decode.Value":{"args":[],"type":"Json.Encode.Value"}},"unions":{"Main.Msg":{"args":[],"tags":{"Tick":["Basics.Float"],"KeyPressed":["String.String"],"KeyDown":["String.String"],"KeyUp":["String.String"],"MouseDown":["Json.Decode.Value"],"MouseUp":[],"MouseMove":["Json.Decode.Value","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates"],"EncodingChanged":["String.String"],"LoadBoard":[],"ChangeMode":[],"SetEditMode":["Main.EditMode"],"SetCameraMode":["Main.CameraMode"],"ResetCamera":[],"Undo":[],"Redo":[],"XLowerVisibleChanged":["Basics.Int"],"XUpperVisibleChanged":["Basics.Int"],"YLowerVisibleChanged":["Basics.Int"],"YUpperVisibleChanged":["Basics.Int"],"ZLowerVisibleChanged":["Basics.Int"],"ZUpperVisibleChanged":["Basics.Int"],"BlockTypeSelected":["Main.Block"],"SetBlock":["Main.Point","Main.Block"],"MaxXChanged":["String.String"],"MaxYChanged":["String.String"],"MaxZChanged":["String.String"],"ShowBoardBounds":["Basics.Bool"]}},"Main.Block":{"args":[],"tags":{"Empty":[],"Wall":[],"Edge":[],"PointPickup":["Basics.Bool"],"PlayerSpawn":["{ forward : Main.Axis, left : Main.Axis }"]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Main.CameraMode":{"args":[],"tags":{"Orbit":[],"Pan":[],"Zoom":[]}},"Main.EditMode":{"args":[],"tags":{"Add":[],"Remove":[],"Select":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Pixels.Pixels":{"args":[],"tags":{"Pixels":[]}},"Geometry.Types.Point2d":{"args":["units","coordinates"],"tags":{"Point2d":["{ x : Basics.Float, y : Basics.Float }"]}},"Main.ScreenCoordinates":{"args":[],"tags":{"ScreenCoordinates":["Basics.Never"]}},"String.String":{"args":[],"tags":{"String":[]}},"Json.Encode.Value":{"args":[],"tags":{"Value":[]}},"Main.Axis":{"args":[],"tags":{"PositiveX":[],"NegativeX":[],"PositiveY":[],"NegativeY":[],"PositiveZ":[],"NegativeZ":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}}}}})}});}(this));

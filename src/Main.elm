@@ -309,7 +309,7 @@ init () =
       , editorCursor = ( 0, 0, 0 )
       , editorKeysDown = Set.empty
       , cameraRotation = Angle.degrees 225
-      , cameraElevation = Angle.degrees 15
+      , cameraElevation = Angle.degrees 25
       , cameraDistance = Length.meters 30
       , cameraFocalPoint =
             Point3d.meters
@@ -402,6 +402,7 @@ type Msg
     | ChangeMode
     | SetEditMode EditMode
     | SetCameraMode CameraMode
+    | ResetCamera
     | Undo
     | Redo
     | XLowerVisibleChanged Int
@@ -505,6 +506,24 @@ update msg model =
 
         SetCameraMode cameraMode ->
             ( { model | cameraMode = cameraMode }, Cmd.none )
+
+        ResetCamera ->
+            let
+                editorBoard =
+                    Undo.value model.editorBoard
+            in
+            ( { model
+                | cameraRotation = Angle.degrees 225
+                , cameraElevation = Angle.degrees 25
+                , cameraDistance = Length.meters 30
+                , cameraFocalPoint =
+                    Point3d.meters
+                        ((toFloat editorBoard.maxX - 1) / 2)
+                        ((toFloat editorBoard.maxY - 1) / 2)
+                        ((toFloat editorBoard.maxZ - 1) / 2)
+              }
+            , Cmd.none
+            )
 
         Undo ->
             ( { model
@@ -940,14 +959,16 @@ moveCameraByMouse pointerId movement model =
             ( { model
                 | cameraFocalPoint =
                     model.cameraFocalPoint
-                        |> Point3d.translateIn (Frame3d.yDirection viewpointFrame |> Direction3d.reverse)
+                        |> Point3d.translateIn (Frame3d.zDirection viewpointFrame)
                             (Point2d.yCoordinate movement
                                 |> Pixels.toFloat
+                                |> (\f -> f / 4)
                                 |> Length.meters
                             )
                         |> Point3d.translateIn (Frame3d.xDirection viewpointFrame)
                             (Point2d.xCoordinate movement
                                 |> Pixels.toFloat
+                                |> (\f -> f / 4)
                                 |> Length.meters
                             )
                         |> Point3d.Extra.constrain
@@ -1937,6 +1958,14 @@ viewEditorHeader model =
                             Html.Attributes.Extra.bool (model.cameraMode == Zoom)
                         ]
                         [ Phosphor.arrowsVertical Phosphor.Regular
+                            |> Phosphor.toHtml []
+                        ]
+                    , Html.button
+                        [ Html.Attributes.type_ "button"
+                        , Html.Events.onClick ResetCamera
+                        , Html.Attributes.title "Camera reset"
+                        ]
+                        [ Phosphor.clockCounterClockwise Phosphor.Regular
                             |> Phosphor.toHtml []
                         ]
                     ]
