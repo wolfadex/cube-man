@@ -2409,24 +2409,6 @@ viewPlayer facing frame =
                 }
                 |> Cone3d.placeIn frame
             )
-        , Scene3d.coneWithShadow
-            (Scene3d.Material.matte Color.green)
-            (Cone3d.startingAt Point3d.origin
-                Direction3d.positiveY
-                { radius = Length.meters 0.5
-                , length = Length.meters 0.75
-                }
-                |> Cone3d.placeIn frame
-            )
-        , Scene3d.coneWithShadow
-            (Scene3d.Material.matte Color.blue)
-            (Cone3d.startingAt Point3d.origin
-                Direction3d.positiveZ
-                { radius = Length.meters 0.5
-                , length = Length.meters 0.75
-                }
-                |> Cone3d.placeIn frame
-            )
         ]
         |> Scene3d.rotateAround (Axis3d.through (Frame3d.originPoint frame) (Frame3d.zDirection frame))
             (Angle.degrees <|
