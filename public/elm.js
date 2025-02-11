@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739235609305"
+    "1739236029428"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -19009,21 +19009,39 @@ var $author$project$Main$moveCursorByMouse = F2(
 								case 'Remove':
 									return $author$project$Main$point3dToPoint(
 										A2(
-											$ianmackenzie$elm_geometry$Point3d$along,
-											$ianmackenzie$elm_geometry$Axis3d$reverse(intersection),
-											$ianmackenzie$elm_units$Length$meters(0.5)));
+											$author$project$Point3d$Extra$constrain,
+											{
+												max: A3($ianmackenzie$elm_geometry$Point3d$meters, editorBoard.maxX - 1, editorBoard.maxY - 1, editorBoard.maxZ - 1),
+												min: $ianmackenzie$elm_geometry$Point3d$origin
+											},
+											A2(
+												$ianmackenzie$elm_geometry$Point3d$along,
+												$ianmackenzie$elm_geometry$Axis3d$reverse(intersection),
+												$ianmackenzie$elm_units$Length$meters(0.5))));
 								case 'Add':
 									return $author$project$Main$point3dToPoint(
 										A2(
-											$ianmackenzie$elm_geometry$Point3d$along,
-											intersection,
-											$ianmackenzie$elm_units$Length$meters(0.5)));
+											$author$project$Point3d$Extra$constrain,
+											{
+												max: A3($ianmackenzie$elm_geometry$Point3d$meters, editorBoard.maxX - 1, editorBoard.maxY - 1, editorBoard.maxZ - 1),
+												min: $ianmackenzie$elm_geometry$Point3d$origin
+											},
+											A2(
+												$ianmackenzie$elm_geometry$Point3d$along,
+												intersection,
+												$ianmackenzie$elm_units$Length$meters(0.5))));
 								default:
 									return $author$project$Main$point3dToPoint(
 										A2(
-											$ianmackenzie$elm_geometry$Point3d$along,
-											$ianmackenzie$elm_geometry$Axis3d$reverse(intersection),
-											$ianmackenzie$elm_units$Length$meters(0.5)));
+											$author$project$Point3d$Extra$constrain,
+											{
+												max: A3($ianmackenzie$elm_geometry$Point3d$meters, editorBoard.maxX - 1, editorBoard.maxY - 1, editorBoard.maxZ - 1),
+												min: $ianmackenzie$elm_geometry$Point3d$origin
+											},
+											A2(
+												$ianmackenzie$elm_geometry$Point3d$along,
+												$ianmackenzie$elm_geometry$Axis3d$reverse(intersection),
+												$ianmackenzie$elm_units$Length$meters(0.5))));
 							}
 						}()
 					}),

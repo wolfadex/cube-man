@@ -1073,14 +1073,38 @@ moveCursorByMouse offset model =
                     case model.editMode of
                         Remove ->
                             Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
+                                |> Point3d.Extra.constrain
+                                    { min = Point3d.origin
+                                    , max =
+                                        Point3d.meters
+                                            (toFloat editorBoard.maxX - 1)
+                                            (toFloat editorBoard.maxY - 1)
+                                            (toFloat editorBoard.maxZ - 1)
+                                    }
                                 |> point3dToPoint
 
                         Add ->
                             Point3d.along intersection (Length.meters 0.5)
+                                |> Point3d.Extra.constrain
+                                    { min = Point3d.origin
+                                    , max =
+                                        Point3d.meters
+                                            (toFloat editorBoard.maxX - 1)
+                                            (toFloat editorBoard.maxY - 1)
+                                            (toFloat editorBoard.maxZ - 1)
+                                    }
                                 |> point3dToPoint
 
                         Select ->
                             Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
+                                |> Point3d.Extra.constrain
+                                    { min = Point3d.origin
+                                    , max =
+                                        Point3d.meters
+                                            (toFloat editorBoard.maxX - 1)
+                                            (toFloat editorBoard.maxY - 1)
+                                            (toFloat editorBoard.maxZ - 1)
+                                    }
                                 |> point3dToPoint
               }
             , Cmd.none
