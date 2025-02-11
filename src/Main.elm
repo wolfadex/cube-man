@@ -92,6 +92,37 @@ type alias Model =
     , editorMaxYRaw : String
     , editorMaxZRaw : String
     , blockPalette : BlockPalette
+    , inputMapping : InputMapping
+    }
+
+
+type alias InputMapping =
+    { moveUp : ( String, String )
+    , moveDown : ( String, String )
+    , moveLeft : ( String, String )
+    , moveRight : ( String, String )
+
+    --
+    --
+    , cameraOrbit : ( String, String )
+    , cameraPan : ( String, String )
+    , cameraZoom : ( String, String )
+    , cameraReset : ( String, String )
+
+    --
+    , blockSelect : ( String, String )
+    , blockAdd : ( String, String )
+    , blockRemove : ( String, String )
+
+    --
+    , blockTypeWall : ( String, String )
+    , blockTypeEdge : ( String, String )
+    , blockTypePointPickup : ( String, String )
+    , blockTypePlayerSpawn : ( String, String )
+
+    --
+    , undo : ( String, String )
+    , redo : ( String, String )
     }
 
 
@@ -357,6 +388,34 @@ init () =
       , editorMaxYRaw = String.fromInt maxY
       , editorMaxZRaw = String.fromInt maxZ
       , blockPalette = SimpleBlocks
+      , inputMapping =
+            { moveUp = ( "w", "" )
+            , moveDown = ( "s", "" )
+            , moveLeft = ( "a", "" )
+            , moveRight = ( "d", "" )
+
+            --
+            --
+            , cameraOrbit = ( "1", "" )
+            , cameraPan = ( "2", "" )
+            , cameraZoom = ( "3", "" )
+            , cameraReset = ( "4", "" )
+
+            --
+            , blockSelect = ( "q", "" )
+            , blockAdd = ( "w", "" )
+            , blockRemove = ( "e", "" )
+
+            --
+            , blockTypeWall = ( "a", "" )
+            , blockTypeEdge = ( "s", "" )
+            , blockTypePointPickup = ( "d", "" )
+            , blockTypePlayerSpawn = ( "f", "" )
+
+            --
+            , undo = ( "z", "" )
+            , redo = ( "x", "" )
+            }
       }
     , Cmd.none
     )
@@ -1603,80 +1662,83 @@ redo model =
 
 handleEditorKeyPressed : String -> Model -> ( Model, Cmd Msg )
 handleEditorKeyPressed key model =
-    case key of
-        "1" ->
-            ( { model | cameraMode = Orbit }, Cmd.none )
+    if isInputKey model.inputMapping.cameraOrbit key then
+        ( { model | cameraMode = Orbit }, Cmd.none )
 
-        "2" ->
-            ( { model | cameraMode = Pan }, Cmd.none )
+    else if isInputKey model.inputMapping.cameraPan key then
+        ( { model | cameraMode = Pan }, Cmd.none )
 
-        "3" ->
-            ( { model | cameraMode = Zoom }, Cmd.none )
+    else if isInputKey model.inputMapping.cameraZoom key then
+        ( { model | cameraMode = Zoom }, Cmd.none )
 
-        "4" ->
-            resetCamera model
+    else if isInputKey model.inputMapping.cameraReset key then
+        resetCamera model
 
-        "q" ->
-            ( { model | editMode = Select }, Cmd.none )
+    else if isInputKey model.inputMapping.blockSelect key then
+        ( { model | editMode = Select }, Cmd.none )
 
-        "w" ->
-            ( { model | editMode = Add }, Cmd.none )
+    else if isInputKey model.inputMapping.blockAdd key then
+        ( { model | editMode = Add }, Cmd.none )
 
-        "e" ->
-            ( { model | editMode = Remove }, Cmd.none )
+    else if isInputKey model.inputMapping.blockRemove key then
+        ( { model | editMode = Remove }, Cmd.none )
 
-        "a" ->
-            ( { model | selectedBlockType = Wall }, Cmd.none )
+    else if isInputKey model.inputMapping.blockTypeWall key then
+        ( { model | selectedBlockType = Wall }, Cmd.none )
 
-        "s" ->
-            ( { model | selectedBlockType = Edge }, Cmd.none )
+    else if isInputKey model.inputMapping.blockTypeEdge key then
+        ( { model | selectedBlockType = Edge }, Cmd.none )
 
-        "d" ->
-            ( { model | selectedBlockType = PointPickup False }, Cmd.none )
+    else if isInputKey model.inputMapping.blockTypePointPickup key then
+        ( { model | selectedBlockType = PointPickup False }, Cmd.none )
 
-        "f" ->
-            ( { model | selectedBlockType = PlayerSpawn { forward = PositiveX, left = PositiveY } }, Cmd.none )
+    else if isInputKey model.inputMapping.blockTypePlayerSpawn key then
+        ( { model | selectedBlockType = PlayerSpawn { forward = PositiveX, left = PositiveY } }, Cmd.none )
 
-        "z" ->
-            undo model
+    else if isInputKey model.inputMapping.undo key then
+        undo model
 
-        "x" ->
-            redo model
+    else if isInputKey model.inputMapping.redo key then
+        redo model
 
-        "p" ->
-            ( { model
-                | blockPalette =
-                    case model.blockPalette of
-                        SimpleBlocks ->
-                            RainbowBlocks
+    else if key == "p" then
+        ( { model
+            | blockPalette =
+                case model.blockPalette of
+                    SimpleBlocks ->
+                        RainbowBlocks
 
-                        RainbowBlocks ->
-                            SimpleBlocks
-              }
-            , Cmd.none
-            )
+                    RainbowBlocks ->
+                        SimpleBlocks
+          }
+        , Cmd.none
+        )
 
-        _ ->
-            ( model, Cmd.none )
+    else
+        ( model, Cmd.none )
 
 
 handleGameKeyPressed : String -> Model -> ( Model, Cmd Msg )
 handleGameKeyPressed key model =
-    case key of
-        "w" ->
-            ( { model | playerWantFacing = Forward }, Cmd.none )
+    if isInputKey model.inputMapping.moveUp key then
+        ( { model | playerWantFacing = Forward }, Cmd.none )
 
-        "s" ->
-            ( { model | playerWantFacing = Backward }, Cmd.none )
+    else if isInputKey model.inputMapping.moveDown key then
+        ( { model | playerWantFacing = Backward }, Cmd.none )
 
-        "d" ->
-            ( { model | playerWantFacing = Right }, Cmd.none )
+    else if isInputKey model.inputMapping.moveLeft key then
+        ( { model | playerWantFacing = Left }, Cmd.none )
 
-        "a" ->
-            ( { model | playerWantFacing = Left }, Cmd.none )
+    else if isInputKey model.inputMapping.moveRight key then
+        ( { model | playerWantFacing = Right }, Cmd.none )
 
-        _ ->
-            ( model, Cmd.none )
+    else
+        ( model, Cmd.none )
+
+
+isInputKey : ( String, String ) -> String -> Bool
+isInputKey ( primary, secondary ) key =
+    key == primary || key == secondary
 
 
 decodeMouseDown : Json.Decode.Decoder Msg

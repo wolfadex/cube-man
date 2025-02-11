@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739242634603"
+    "1739244469487"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -12183,6 +12183,25 @@ var $author$project$Main$init = function (_v0) {
 			editorMaxXRaw: $elm$core$String$fromInt(maxX),
 			editorMaxYRaw: $elm$core$String$fromInt(maxY),
 			editorMaxZRaw: $elm$core$String$fromInt(maxZ),
+			inputMapping: {
+				blockAdd: _Utils_Tuple2('w', ''),
+				blockRemove: _Utils_Tuple2('e', ''),
+				blockSelect: _Utils_Tuple2('q', ''),
+				blockTypeEdge: _Utils_Tuple2('s', ''),
+				blockTypePlayerSpawn: _Utils_Tuple2('f', ''),
+				blockTypePointPickup: _Utils_Tuple2('d', ''),
+				blockTypeWall: _Utils_Tuple2('a', ''),
+				cameraOrbit: _Utils_Tuple2('1', ''),
+				cameraPan: _Utils_Tuple2('2', ''),
+				cameraReset: _Utils_Tuple2('4', ''),
+				cameraZoom: _Utils_Tuple2('3', ''),
+				moveDown: _Utils_Tuple2('s', ''),
+				moveLeft: _Utils_Tuple2('a', ''),
+				moveRight: _Utils_Tuple2('d', ''),
+				moveUp: _Utils_Tuple2('w', ''),
+				redo: _Utils_Tuple2('x', ''),
+				undo: _Utils_Tuple2('z', '')
+			},
 			mode: $author$project$Main$Editor,
 			mouseDragging: $author$project$Main$NoInteraction,
 			playerFacing: $author$project$Main$Forward,
@@ -12854,6 +12873,12 @@ var $author$project$Main$Pan = {$: 'Pan'};
 var $author$project$Main$RainbowBlocks = {$: 'RainbowBlocks'};
 var $author$project$Main$Remove = {$: 'Remove'};
 var $author$project$Main$Zoom = {$: 'Zoom'};
+var $author$project$Main$isInputKey = F2(
+	function (_v0, key) {
+		var primary = _v0.a;
+		var secondary = _v0.b;
+		return _Utils_eq(key, primary) || _Utils_eq(key, secondary);
+	});
 var $author$project$Undo$redo = function (stack) {
 	var _v0 = stack.a;
 	var before = _v0.a;
@@ -12928,130 +12953,88 @@ var $author$project$Main$undo = function (model) {
 };
 var $author$project$Main$handleEditorKeyPressed = F2(
 	function (key, model) {
-		switch (key) {
-			case '1':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{cameraMode: $author$project$Main$Orbit}),
-					$elm$core$Platform$Cmd$none);
-			case '2':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{cameraMode: $author$project$Main$Pan}),
-					$elm$core$Platform$Cmd$none);
-			case '3':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{cameraMode: $author$project$Main$Zoom}),
-					$elm$core$Platform$Cmd$none);
-			case '4':
-				return $author$project$Main$resetCamera(model);
-			case 'q':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{editMode: $author$project$Main$Select}),
-					$elm$core$Platform$Cmd$none);
-			case 'w':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{editMode: $author$project$Main$Add}),
-					$elm$core$Platform$Cmd$none);
-			case 'e':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{editMode: $author$project$Main$Remove}),
-					$elm$core$Platform$Cmd$none);
-			case 'a':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{selectedBlockType: $author$project$Main$Wall}),
-					$elm$core$Platform$Cmd$none);
-			case 's':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{selectedBlockType: $author$project$Main$Edge}),
-					$elm$core$Platform$Cmd$none);
-			case 'd':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							selectedBlockType: $author$project$Main$PointPickup(false)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'f':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							selectedBlockType: $author$project$Main$PlayerSpawn(
-								{forward: $author$project$Main$PositiveX, left: $author$project$Main$PositiveY})
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'z':
-				return $author$project$Main$undo(model);
-			case 'x':
-				return $author$project$Main$redo(model);
-			case 'p':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							blockPalette: function () {
-								var _v1 = model.blockPalette;
-								if (_v1.$ === 'SimpleBlocks') {
-									return $author$project$Main$RainbowBlocks;
-								} else {
-									return $author$project$Main$SimpleBlocks;
-								}
-							}()
-						}),
-					$elm$core$Platform$Cmd$none);
-			default:
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		}
+		return A2($author$project$Main$isInputKey, model.inputMapping.cameraOrbit, key) ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{cameraMode: $author$project$Main$Orbit}),
+			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.cameraPan, key) ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{cameraMode: $author$project$Main$Pan}),
+			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.cameraZoom, key) ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{cameraMode: $author$project$Main$Zoom}),
+			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.cameraReset, key) ? $author$project$Main$resetCamera(model) : (A2($author$project$Main$isInputKey, model.inputMapping.blockSelect, key) ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{editMode: $author$project$Main$Select}),
+			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.blockAdd, key) ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{editMode: $author$project$Main$Add}),
+			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.blockRemove, key) ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{editMode: $author$project$Main$Remove}),
+			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.blockTypeWall, key) ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{selectedBlockType: $author$project$Main$Wall}),
+			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.blockTypeEdge, key) ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{selectedBlockType: $author$project$Main$Edge}),
+			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.blockTypePointPickup, key) ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{
+					selectedBlockType: $author$project$Main$PointPickup(false)
+				}),
+			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.blockTypePlayerSpawn, key) ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{
+					selectedBlockType: $author$project$Main$PlayerSpawn(
+						{forward: $author$project$Main$PositiveX, left: $author$project$Main$PositiveY})
+				}),
+			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.undo, key) ? $author$project$Main$undo(model) : (A2($author$project$Main$isInputKey, model.inputMapping.redo, key) ? $author$project$Main$redo(model) : ((key === 'p') ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{
+					blockPalette: function () {
+						var _v0 = model.blockPalette;
+						if (_v0.$ === 'SimpleBlocks') {
+							return $author$project$Main$RainbowBlocks;
+						} else {
+							return $author$project$Main$SimpleBlocks;
+						}
+					}()
+				}),
+			$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none))))))))))))));
 	});
 var $author$project$Main$Backward = {$: 'Backward'};
 var $author$project$Main$Left = {$: 'Left'};
 var $author$project$Main$Right = {$: 'Right'};
 var $author$project$Main$handleGameKeyPressed = F2(
 	function (key, model) {
-		switch (key) {
-			case 'w':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{playerWantFacing: $author$project$Main$Forward}),
-					$elm$core$Platform$Cmd$none);
-			case 's':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{playerWantFacing: $author$project$Main$Backward}),
-					$elm$core$Platform$Cmd$none);
-			case 'd':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{playerWantFacing: $author$project$Main$Right}),
-					$elm$core$Platform$Cmd$none);
-			case 'a':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{playerWantFacing: $author$project$Main$Left}),
-					$elm$core$Platform$Cmd$none);
-			default:
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		}
+		return A2($author$project$Main$isInputKey, model.inputMapping.moveUp, key) ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{playerWantFacing: $author$project$Main$Forward}),
+			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.moveDown, key) ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{playerWantFacing: $author$project$Main$Backward}),
+			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.moveLeft, key) ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{playerWantFacing: $author$project$Main$Left}),
+			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.moveRight, key) ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{playerWantFacing: $author$project$Main$Right}),
+			$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none))));
 	});
 var $elm$core$Set$insert = F2(
 	function (key, _v0) {
