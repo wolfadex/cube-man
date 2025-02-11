@@ -2258,7 +2258,7 @@ viewHeader model =
                     [ Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick Undo
-                        , Html.Attributes.title "Undo"
+                        , Html.Attributes.title "Undo | z"
                         , Html.Attributes.Extra.aria "disabled" <|
                             Html.Attributes.Extra.bool (not <| Undo.canUndo model.editorBoard)
                         ]
@@ -2268,7 +2268,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick Redo
-                        , Html.Attributes.title "Redo"
+                        , Html.Attributes.title "Redo | x"
                         , Html.Attributes.Extra.aria "disabled" <|
                             Html.Attributes.Extra.bool (not <| Undo.canRedo model.editorBoard)
                         ]
@@ -2281,7 +2281,7 @@ viewHeader model =
                     [ Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetCameraMode Orbit)
-                        , Html.Attributes.title "Camera orbit"
+                        , Html.Attributes.title "Camera orbit | 1"
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.cameraMode == Orbit)
                         ]
@@ -2291,7 +2291,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetCameraMode Pan)
-                        , Html.Attributes.title "Camera pan"
+                        , Html.Attributes.title "Camera pan | 2"
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.cameraMode == Pan)
                         ]
@@ -2301,7 +2301,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetCameraMode Zoom)
-                        , Html.Attributes.title "Camera zoom"
+                        , Html.Attributes.title "Camera zoom | 3"
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.cameraMode == Zoom)
                         ]
@@ -2311,7 +2311,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick ResetCamera
-                        , Html.Attributes.title "Camera reset"
+                        , Html.Attributes.title "Camera reset | 4"
                         ]
                         [ Phosphor.clockCounterClockwise Phosphor.Regular
                             |> Phosphor.toHtml []
@@ -2322,7 +2322,7 @@ viewHeader model =
                     [ Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetEditMode Select)
-                        , Html.Attributes.title "Select block"
+                        , Html.Attributes.title "Select block | q"
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.editMode == Select)
                         ]
@@ -2332,7 +2332,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetEditMode Add)
-                        , Html.Attributes.title "Add block"
+                        , Html.Attributes.title "Add block | w"
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.editMode == Add)
                         ]
@@ -2342,7 +2342,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetEditMode Remove)
-                        , Html.Attributes.title "Remove block"
+                        , Html.Attributes.title "Remove block | e"
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.editMode == Remove)
                         ]
@@ -2358,6 +2358,7 @@ viewHeader model =
                             Html.Attributes.Extra.bool (model.selectedBlockType == Wall)
                         , Html.Attributes.type_ "button"
                         , Html.Events.onClick (BlockTypeSelected Wall)
+                        , Html.Attributes.title "Wall | a"
                         ]
                         [ Html.text "Wall"
                         ]
@@ -2366,6 +2367,7 @@ viewHeader model =
                             Html.Attributes.Extra.bool (model.selectedBlockType == Edge)
                         , Html.Attributes.type_ "button"
                         , Html.Events.onClick (BlockTypeSelected Edge)
+                        , Html.Attributes.title "Edge | s"
                         ]
                         [ Html.text "Edge"
                         ]
@@ -2374,6 +2376,7 @@ viewHeader model =
                             Html.Attributes.Extra.bool (model.selectedBlockType == PointPickup False)
                         , Html.Attributes.type_ "button"
                         , Html.Events.onClick (BlockTypeSelected (PointPickup False))
+                        , Html.Attributes.title "Point Pickup | d"
                         ]
                         [ Html.text "Point Pickup"
                         ]
@@ -2382,6 +2385,7 @@ viewHeader model =
                             Html.Attributes.Extra.bool (model.selectedBlockType == PlayerSpawn { forward = PositiveX, left = PositiveY })
                         , Html.Attributes.type_ "button"
                         , Html.Events.onClick (BlockTypeSelected (PlayerSpawn { forward = PositiveX, left = PositiveY }))
+                        , Html.Attributes.title "Player Spawn | f"
                         ]
                         [ Html.text "Player Spawn"
                         ]
