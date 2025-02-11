@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739249691894"
+    "1739256514953"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -8818,847 +8818,6 @@ var _Bytes_read_string = F3(function(len, bytes, offset)
 var _Bytes_decodeFailure = F2(function() { throw 0; });
 
 
-var _WebGL_guid = 0;
-
-function _WebGL_listEach(fn, list) {
-  for (; list.b; list = list.b) {
-    fn(list.a);
-  }
-}
-
-function _WebGL_listLength(list) {
-  var length = 0;
-  for (; list.b; list = list.b) {
-    length++;
-  }
-  return length;
-}
-
-var _WebGL_rAF = typeof requestAnimationFrame !== 'undefined' ?
-  requestAnimationFrame :
-  function (cb) { setTimeout(cb, 1000 / 60); };
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_entity = F5(function (settings, vert, frag, mesh, uniforms) {
-  return {
-    $: 0,
-    a: settings,
-    b: vert,
-    c: frag,
-    d: mesh,
-    e: uniforms
-  };
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enableBlend = F2(function (cache, setting) {
-  var blend = cache.blend;
-  blend.toggle = cache.toggle;
-
-  if (!blend.enabled) {
-    cache.gl.enable(cache.gl.BLEND);
-    blend.enabled = true;
-  }
-
-  // a   b   c   d   e   f   g h i j
-  // eq1 f11 f12 eq2 f21 f22 r g b a
-  if (blend.a !== setting.a || blend.d !== setting.d) {
-    cache.gl.blendEquationSeparate(setting.a, setting.d);
-    blend.a = setting.a;
-    blend.d = setting.d;
-  }
-  if (blend.b !== setting.b || blend.c !== setting.c || blend.e !== setting.e || blend.f !== setting.f) {
-    cache.gl.blendFuncSeparate(setting.b, setting.c, setting.e, setting.f);
-    blend.b = setting.b;
-    blend.c = setting.c;
-    blend.e = setting.e;
-    blend.f = setting.f;
-  }
-  if (blend.g !== setting.g || blend.h !== setting.h || blend.i !== setting.i || blend.j !== setting.j) {
-    cache.gl.blendColor(setting.g, setting.h, setting.i, setting.j);
-    blend.g = setting.g;
-    blend.h = setting.h;
-    blend.i = setting.i;
-    blend.j = setting.j;
-  }
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enableDepthTest = F2(function (cache, setting) {
-  var depthTest = cache.depthTest;
-  depthTest.toggle = cache.toggle;
-
-  if (!depthTest.enabled) {
-    cache.gl.enable(cache.gl.DEPTH_TEST);
-    depthTest.enabled = true;
-  }
-
-  // a    b    c    d
-  // func mask near far
-  if (depthTest.a !== setting.a) {
-    cache.gl.depthFunc(setting.a);
-    depthTest.a = setting.a;
-  }
-  if (depthTest.b !== setting.b) {
-    cache.gl.depthMask(setting.b);
-    depthTest.b = setting.b;
-  }
-  if (depthTest.c !== setting.c || depthTest.d !== setting.d) {
-    cache.gl.depthRange(setting.c, setting.d);
-    depthTest.c = setting.c;
-    depthTest.d = setting.d;
-  }
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enableStencilTest = F2(function (cache, setting) {
-  var stencilTest = cache.stencilTest;
-  stencilTest.toggle = cache.toggle;
-
-  if (!stencilTest.enabled) {
-    cache.gl.enable(cache.gl.STENCIL_TEST);
-    stencilTest.enabled = true;
-  }
-
-  // a   b    c         d     e     f      g      h     i     j      k
-  // ref mask writeMask test1 fail1 zfail1 zpass1 test2 fail2 zfail2 zpass2
-  if (stencilTest.d !== setting.d || stencilTest.a !== setting.a || stencilTest.b !== setting.b) {
-    cache.gl.stencilFuncSeparate(cache.gl.FRONT, setting.d, setting.a, setting.b);
-    stencilTest.d = setting.d;
-    // a and b are set in the cache.gl.BACK diffing because they should be the same
-  }
-  if (stencilTest.e !== setting.e || stencilTest.f !== setting.f || stencilTest.g !== setting.g) {
-    cache.gl.stencilOpSeparate(cache.gl.FRONT, setting.e, setting.f, setting.g);
-    stencilTest.e = setting.e;
-    stencilTest.f = setting.f;
-    stencilTest.g = setting.g;
-  }
-  if (stencilTest.c !== setting.c) {
-    cache.gl.stencilMask(setting.c);
-    stencilTest.c = setting.c;
-  }
-  if (stencilTest.h !== setting.h || stencilTest.a !== setting.a || stencilTest.b !== setting.b) {
-    cache.gl.stencilFuncSeparate(cache.gl.BACK, setting.h, setting.a, setting.b);
-    stencilTest.h = setting.h;
-    stencilTest.a = setting.a;
-    stencilTest.b = setting.b;
-  }
-  if (stencilTest.i !== setting.i || stencilTest.j !== setting.j || stencilTest.k !== setting.k) {
-    cache.gl.stencilOpSeparate(cache.gl.BACK, setting.i, setting.j, setting.k);
-    stencilTest.i = setting.i;
-    stencilTest.j = setting.j;
-    stencilTest.k = setting.k;
-  }
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enableScissor = F2(function (cache, setting) {
-  var scissor = cache.scissor;
-  scissor.toggle = cache.toggle;
-
-  if (!scissor.enabled) {
-    cache.gl.enable(cache.gl.SCISSOR_TEST);
-    scissor.enabled = true;
-  }
-
-  if (scissor.a !== setting.a || scissor.b !== setting.b || scissor.c !== setting.c || scissor.d !== setting.d) {
-    cache.gl.scissor(setting.a, setting.b, setting.c, setting.d);
-    scissor.a = setting.a;
-    scissor.b = setting.b;
-    scissor.c = setting.c;
-    scissor.d = setting.d;
-  }
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enableColorMask = F2(function (cache, setting) {
-  var colorMask = cache.colorMask;
-  colorMask.toggle = cache.toggle;
-  colorMask.enabled = true;
-
-  if (colorMask.a !== setting.a || colorMask.b !== setting.b || colorMask.c !== setting.c || colorMask.d !== setting.d) {
-    cache.gl.colorMask(setting.a, setting.b, setting.c, setting.d);
-    colorMask.a = setting.a;
-    colorMask.b = setting.b;
-    colorMask.c = setting.c;
-    colorMask.d = setting.d;
-  }
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enableCullFace = F2(function (cache, setting) {
-  var cullFace = cache.cullFace;
-  cullFace.toggle = cache.toggle;
-
-  if (!cullFace.enabled) {
-    cache.gl.enable(cache.gl.CULL_FACE);
-    cullFace.enabled = true;
-  }
-
-  if (cullFace.a !== setting.a) {
-    cache.gl.cullFace(setting.a);
-    cullFace.a = setting.a;
-  }
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enablePolygonOffset = F2(function (cache, setting) {
-  var polygonOffset = cache.polygonOffset;
-  polygonOffset.toggle = cache.toggle;
-
-  if (!polygonOffset.enabled) {
-    cache.gl.enable(cache.gl.POLYGON_OFFSET_FILL);
-    polygonOffset.enabled = true;
-  }
-
-  if (polygonOffset.a !== setting.a || polygonOffset.b !== setting.b) {
-    cache.gl.polygonOffset(setting.a, setting.b);
-    polygonOffset.a = setting.a;
-    polygonOffset.b = setting.b;
-  }
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enableSampleCoverage = F2(function (cache, setting) {
-  var sampleCoverage = cache.sampleCoverage;
-  sampleCoverage.toggle = cache.toggle;
-
-  if (!sampleCoverage.enabled) {
-    cache.gl.enable(cache.gl.SAMPLE_COVERAGE);
-    sampleCoverage.enabled = true;
-  }
-
-  if (sampleCoverage.a !== setting.a || sampleCoverage.b !== setting.b) {
-    cache.gl.sampleCoverage(setting.a, setting.b);
-    sampleCoverage.a = setting.a;
-    sampleCoverage.b = setting.b;
-  }
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enableSampleAlphaToCoverage = function (cache) {
-  var sampleAlphaToCoverage = cache.sampleAlphaToCoverage;
-  sampleAlphaToCoverage.toggle = cache.toggle;
-
-  if (!sampleAlphaToCoverage.enabled) {
-    cache.gl.enable(cache.gl.SAMPLE_ALPHA_TO_COVERAGE);
-    sampleAlphaToCoverage.enabled = true;
-  }
-};
-
-var _WebGL_disableBlend = function (cache) {
-  if (cache.blend.enabled) {
-    cache.gl.disable(cache.gl.BLEND);
-    cache.blend.enabled = false;
-  }
-};
-
-var _WebGL_disableDepthTest = function (cache) {
-  if (cache.depthTest.enabled) {
-    cache.gl.disable(cache.gl.DEPTH_TEST);
-    cache.depthTest.enabled = false;
-  }
-};
-
-var _WebGL_disableStencilTest = function (cache) {
-  if (cache.stencilTest.enabled) {
-    cache.gl.disable(cache.gl.STENCIL_TEST);
-    cache.stencilTest.enabled = false;
-  }
-};
-
-var _WebGL_disableScissor = function (cache) {
-  if (cache.scissor.enabled) {
-    cache.gl.disable(cache.gl.SCISSOR_TEST);
-    cache.scissor.enabled = false;
-  }
-};
-
-var _WebGL_disableColorMask = function (cache) {
-  var colorMask = cache.colorMask;
-  if (!colorMask.a || !colorMask.b || !colorMask.c || !colorMask.d) {
-    cache.gl.colorMask(true, true, true, true);
-    colorMask.a = true;
-    colorMask.b = true;
-    colorMask.c = true;
-    colorMask.d = true;
-  }
-};
-
-var _WebGL_disableCullFace = function (cache) {
-  cache.gl.disable(cache.gl.CULL_FACE);
-};
-
-var _WebGL_disablePolygonOffset = function (cache) {
-  cache.gl.disable(cache.gl.POLYGON_OFFSET_FILL);
-};
-
-var _WebGL_disableSampleCoverage = function (cache) {
-  cache.gl.disable(cache.gl.SAMPLE_COVERAGE);
-};
-
-var _WebGL_disableSampleAlphaToCoverage = function (cache) {
-  cache.gl.disable(cache.gl.SAMPLE_ALPHA_TO_COVERAGE);
-};
-
-var _WebGL_settings = ['blend', 'depthTest', 'stencilTest', 'scissor', 'colorMask', 'cullFace', 'polygonOffset', 'sampleCoverage', 'sampleAlphaToCoverage'];
-var _WebGL_disableFunctions = [_WebGL_disableBlend, _WebGL_disableDepthTest, _WebGL_disableStencilTest, _WebGL_disableScissor, _WebGL_disableColorMask, _WebGL_disableCullFace, _WebGL_disablePolygonOffset, _WebGL_disableSampleCoverage, _WebGL_disableSampleAlphaToCoverage];
-
-function _WebGL_doCompile(gl, src, type) {
-  var shader = gl.createShader(type);
-  // Enable OES_standard_derivatives extension
-  gl.shaderSource(shader, '#extension GL_OES_standard_derivatives : enable\n' + src);
-  gl.compileShader(shader);
-  return shader;
-}
-
-function _WebGL_doLink(gl, vshader, fshader) {
-  var program = gl.createProgram();
-
-  gl.attachShader(program, vshader);
-  gl.attachShader(program, fshader);
-  gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    throw ('Link failed: ' + gl.getProgramInfoLog(program) +
-      '\nvs info-log: ' + gl.getShaderInfoLog(vshader) +
-      '\nfs info-log: ' + gl.getShaderInfoLog(fshader));
-  }
-
-  return program;
-}
-
-function _WebGL_getAttributeInfo(gl, type) {
-  switch (type) {
-    case gl.FLOAT:
-      return { size: 1, arraySize: 1, type: Float32Array, baseType: gl.FLOAT };
-    case gl.FLOAT_VEC2:
-      return { size: 2, arraySize: 1, type: Float32Array, baseType: gl.FLOAT };
-    case gl.FLOAT_VEC3:
-      return { size: 3, arraySize: 1, type: Float32Array, baseType: gl.FLOAT };
-    case gl.FLOAT_VEC4:
-      return { size: 4, arraySize: 1, type: Float32Array, baseType: gl.FLOAT };
-    case gl.FLOAT_MAT4:
-      return { size: 4, arraySize: 4, type: Float32Array, baseType: gl.FLOAT };
-    case gl.INT:
-      return { size: 1, arraySize: 1, type: Int32Array, baseType: gl.INT };
-  }
-}
-
-/**
- *  Form the buffer for a given attribute.
- *
- *  @param {WebGLRenderingContext} gl context
- *  @param {WebGLActiveInfo} attribute the attribute to bind to.
- *         We use its name to grab the record by name and also to know
- *         how many elements we need to grab.
- *  @param {Mesh} mesh The mesh coming in from Elm.
- *  @param {Object} attributes The mapping between the attribute names and Elm fields
- *  @return {WebGLBuffer}
- */
-function _WebGL_doBindAttribute(gl, attribute, mesh, attributes) {
-  // The length of the number of vertices that
-  // complete one 'thing' based on the drawing mode.
-  // ie, 2 for Lines, 3 for Triangles, etc.
-  var elemSize = mesh.a.elemSize;
-
-  var idxKeys = [];
-  for (var i = 0; i < elemSize; i++) {
-    idxKeys.push(String.fromCharCode(97 + i));
-  }
-
-  function dataFill(data, cnt, fillOffset, elem, key) {
-    var i;
-    if (elemSize === 1) {
-      for (i = 0; i < cnt; i++) {
-        data[fillOffset++] = cnt === 1 ? elem[key] : elem[key][i];
-      }
-    } else {
-      idxKeys.forEach(function (idx) {
-        for (i = 0; i < cnt; i++) {
-          data[fillOffset++] = cnt === 1 ? elem[idx][key] : elem[idx][key][i];
-        }
-      });
-    }
-  }
-
-  var attributeInfo = _WebGL_getAttributeInfo(gl, attribute.type);
-
-  if (attributeInfo === undefined) {
-    throw new Error('No info available for: ' + attribute.type);
-  }
-
-  var dataIdx = 0;
-  var dataOffset = attributeInfo.size * attributeInfo.arraySize * elemSize;
-  var array = new attributeInfo.type(_WebGL_listLength(mesh.b) * dataOffset);
-
-  _WebGL_listEach(function (elem) {
-    dataFill(array, attributeInfo.size * attributeInfo.arraySize, dataIdx, elem, attributes[attribute.name] || attribute.name);
-    dataIdx += dataOffset;
-  }, mesh.b);
-
-  var buffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-  gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
-  return buffer;
-}
-
-/**
- *  This sets up the binding caching buffers.
- *
- *  We don't actually bind any buffers now except for the indices buffer.
- *  The problem with filling the buffers here is that it is possible to
- *  have a buffer shared between two webgl shaders;
- *  which could have different active attributes. If we bind it here against
- *  a particular program, we might not bind them all. That final bind is now
- *  done right before drawing.
- *
- *  @param {WebGLRenderingContext} gl context
- *  @param {Mesh} mesh a mesh object from Elm
- *  @return {Object} buffer - an object with the following properties
- *  @return {Number} buffer.numIndices
- *  @return {WebGLBuffer|null} buffer.indexBuffer - optional index buffer
- *  @return {Object} buffer.buffers - will be used to buffer attributes
- */
-function _WebGL_doBindSetup(gl, mesh) {
-  if (mesh.a.indexSize > 0) {
-    var indexBuffer = gl.createBuffer();
-    var indices = _WebGL_makeIndexedBuffer(mesh.c, mesh.a.indexSize);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-    return {
-      numIndices: indices.length,
-      indexBuffer: indexBuffer,
-      buffers: {}
-    };
-  } else {
-    return {
-      numIndices: mesh.a.elemSize * _WebGL_listLength(mesh.b),
-      indexBuffer: null,
-      buffers: {}
-    };
-  }
-}
-
-/**
- *  Create an indices array and fill it from indices
- *  based on the size of the index
- *
- *  @param {List} indicesList the list of indices
- *  @param {Number} indexSize the size of the index
- *  @return {Uint32Array} indices
- */
-function _WebGL_makeIndexedBuffer(indicesList, indexSize) {
-  var indices = new Uint32Array(_WebGL_listLength(indicesList) * indexSize);
-  var fillOffset = 0;
-  var i;
-  _WebGL_listEach(function (elem) {
-    if (indexSize === 1) {
-      indices[fillOffset++] = elem;
-    } else {
-      for (i = 0; i < indexSize; i++) {
-        indices[fillOffset++] = elem[String.fromCharCode(97 + i)];
-      }
-    }
-  }, indicesList);
-  return indices;
-}
-
-function _WebGL_getProgID(vertID, fragID) {
-  return vertID + '#' + fragID;
-}
-
-var _WebGL_drawGL = F2(function (model, domNode) {
-  var cache = model.f;
-  var gl = cache.gl;
-
-  if (!gl) {
-    return domNode;
-  }
-
-  gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-
-  if (!cache.depthTest.b) {
-    gl.depthMask(true);
-    cache.depthTest.b = true;
-  }
-  if (cache.stencilTest.c !== cache.STENCIL_WRITEMASK) {
-    gl.stencilMask(cache.STENCIL_WRITEMASK);
-    cache.stencilTest.c = cache.STENCIL_WRITEMASK;
-  }
-  _WebGL_disableScissor(cache);
-  _WebGL_disableColorMask(cache);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-
-  function drawEntity(entity) {
-    if (!entity.d.b.b) {
-      return; // Empty list
-    }
-
-    var progid;
-    var program;
-    var i;
-
-    if (entity.b.id && entity.c.id) {
-      progid = _WebGL_getProgID(entity.b.id, entity.c.id);
-      program = cache.programs[progid];
-    }
-
-    if (!program) {
-
-      var vshader;
-      if (entity.b.id) {
-        vshader = cache.shaders[entity.b.id];
-      } else {
-        entity.b.id = _WebGL_guid++;
-      }
-
-      if (!vshader) {
-        vshader = _WebGL_doCompile(gl, entity.b.src, gl.VERTEX_SHADER);
-        cache.shaders[entity.b.id] = vshader;
-      }
-
-      var fshader;
-      if (entity.c.id) {
-        fshader = cache.shaders[entity.c.id];
-      } else {
-        entity.c.id = _WebGL_guid++;
-      }
-
-      if (!fshader) {
-        fshader = _WebGL_doCompile(gl, entity.c.src, gl.FRAGMENT_SHADER);
-        cache.shaders[entity.c.id] = fshader;
-      }
-
-      var glProgram = _WebGL_doLink(gl, vshader, fshader);
-
-      program = {
-        glProgram: glProgram,
-        attributes: Object.assign({}, entity.b.attributes, entity.c.attributes),
-        currentUniforms: {},
-        activeAttributes: [],
-        activeAttributeLocations: []
-      };
-
-      program.uniformSetters = _WebGL_createUniformSetters(
-        gl,
-        model,
-        program,
-        Object.assign({}, entity.b.uniforms, entity.c.uniforms)
-      );
-
-      var numActiveAttributes = gl.getProgramParameter(glProgram, gl.ACTIVE_ATTRIBUTES);
-      for (i = 0; i < numActiveAttributes; i++) {
-        var attribute = gl.getActiveAttrib(glProgram, i);
-        var attribLocation = gl.getAttribLocation(glProgram, attribute.name);
-        program.activeAttributes.push(attribute);
-        program.activeAttributeLocations.push(attribLocation);
-      }
-
-      progid = _WebGL_getProgID(entity.b.id, entity.c.id);
-      cache.programs[progid] = program;
-    }
-
-    if (cache.lastProgId !== progid) {
-      gl.useProgram(program.glProgram);
-      cache.lastProgId = progid;
-    }
-
-    _WebGL_setUniforms(program.uniformSetters, entity.e);
-
-    var buffer = cache.buffers.get(entity.d);
-
-    if (!buffer) {
-      buffer = _WebGL_doBindSetup(gl, entity.d);
-      cache.buffers.set(entity.d, buffer);
-    }
-
-    for (i = 0; i < program.activeAttributes.length; i++) {
-      attribute = program.activeAttributes[i];
-      attribLocation = program.activeAttributeLocations[i];
-
-      if (buffer.buffers[attribute.name] === undefined) {
-        buffer.buffers[attribute.name] = _WebGL_doBindAttribute(gl, attribute, entity.d, program.attributes);
-      }
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer.buffers[attribute.name]);
-
-      var attributeInfo = _WebGL_getAttributeInfo(gl, attribute.type);
-      if (attributeInfo.arraySize === 1) {
-        gl.enableVertexAttribArray(attribLocation);
-        gl.vertexAttribPointer(attribLocation, attributeInfo.size, attributeInfo.baseType, false, 0, 0);
-      } else {
-        // Point to four vec4 in case of mat4
-        var offset = attributeInfo.size * 4; // float32 takes 4 bytes
-        var stride = offset * attributeInfo.arraySize;
-        for (var m = 0; m < attributeInfo.arraySize; m++) {
-          gl.enableVertexAttribArray(attribLocation + m);
-          gl.vertexAttribPointer(attribLocation + m, attributeInfo.size, attributeInfo.baseType, false, stride, offset * m);
-        }
-      }
-    }
-
-    // Apply all the new settings
-    cache.toggle = !cache.toggle;
-    _WebGL_listEach($elm_explorations$webgl$WebGL$Internal$enableSetting(cache), entity.a);
-    // Disable the settings that were applied in the previous draw call
-    for (i = 0; i < _WebGL_settings.length; i++) {
-      var setting = cache[_WebGL_settings[i]];
-      if (setting.toggle !== cache.toggle && setting.enabled) {
-        _WebGL_disableFunctions[i](cache);
-        setting.enabled = false;
-        setting.toggle = cache.toggle;
-      }
-    }
-
-    if (buffer.indexBuffer) {
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer.indexBuffer);
-      gl.drawElements(entity.d.a.mode, buffer.numIndices, gl.UNSIGNED_INT, 0);
-    } else {
-      gl.drawArrays(entity.d.a.mode, 0, buffer.numIndices);
-    }
-  }
-
-  _WebGL_listEach(drawEntity, model.g);
-  return domNode;
-});
-
-function _WebGL_createUniformSetters(gl, model, program, uniformsMap) {
-  var glProgram = program.glProgram;
-  var currentUniforms = program.currentUniforms;
-  var textureCounter = 0;
-  var cache = model.f;
-  function createUniformSetter(glProgram, uniform) {
-    var uniformName = uniform.name;
-    var uniformLocation = gl.getUniformLocation(glProgram, uniformName);
-    switch (uniform.type) {
-      case gl.INT:
-        return function (value) {
-          if (currentUniforms[uniformName] !== value) {
-            gl.uniform1i(uniformLocation, value);
-            currentUniforms[uniformName] = value;
-          }
-        };
-      case gl.FLOAT:
-        return function (value) {
-          if (currentUniforms[uniformName] !== value) {
-            gl.uniform1f(uniformLocation, value);
-            currentUniforms[uniformName] = value;
-          }
-        };
-      case gl.FLOAT_VEC2:
-        return function (value) {
-          if (currentUniforms[uniformName] !== value) {
-            gl.uniform2f(uniformLocation, value[0], value[1]);
-            currentUniforms[uniformName] = value;
-          }
-        };
-      case gl.FLOAT_VEC3:
-        return function (value) {
-          if (currentUniforms[uniformName] !== value) {
-            gl.uniform3f(uniformLocation, value[0], value[1], value[2]);
-            currentUniforms[uniformName] = value;
-          }
-        };
-      case gl.FLOAT_VEC4:
-        return function (value) {
-          if (currentUniforms[uniformName] !== value) {
-            gl.uniform4f(uniformLocation, value[0], value[1], value[2], value[3]);
-            currentUniforms[uniformName] = value;
-          }
-        };
-      case gl.FLOAT_MAT4:
-        return function (value) {
-          if (currentUniforms[uniformName] !== value) {
-            gl.uniformMatrix4fv(uniformLocation, false, new Float32Array(value));
-            currentUniforms[uniformName] = value;
-          }
-        };
-      case gl.SAMPLER_2D:
-        var currentTexture = textureCounter++;
-        return function (texture) {
-          gl.activeTexture(gl.TEXTURE0 + currentTexture);
-          var tex = cache.textures.get(texture);
-          if (!tex) {
-            tex = texture.createTexture(gl);
-            cache.textures.set(texture, tex);
-          }
-          gl.bindTexture(gl.TEXTURE_2D, tex);
-          if (currentUniforms[uniformName] !== texture) {
-            gl.uniform1i(uniformLocation, currentTexture);
-            currentUniforms[uniformName] = texture;
-          }
-        };
-      case gl.BOOL:
-        return function (value) {
-          if (currentUniforms[uniformName] !== value) {
-            gl.uniform1i(uniformLocation, value);
-            currentUniforms[uniformName] = value;
-          }
-        };
-      default:
-        return function () { };
-    }
-  }
-
-  var uniformSetters = {};
-  var numUniforms = gl.getProgramParameter(glProgram, gl.ACTIVE_UNIFORMS);
-  for (var i = 0; i < numUniforms; i++) {
-    var uniform = gl.getActiveUniform(glProgram, i);
-    uniformSetters[uniformsMap[uniform.name] || uniform.name] = createUniformSetter(glProgram, uniform);
-  }
-
-  return uniformSetters;
-}
-
-function _WebGL_setUniforms(setters, values) {
-  Object.keys(values).forEach(function (name) {
-    var setter = setters[name];
-    if (setter) {
-      setter(values[name]);
-    }
-  });
-}
-
-// VIRTUAL-DOM WIDGET
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_toHtml = F3(function (options, factList, entities) {
-  return _VirtualDom_custom(
-    factList,
-    {
-      g: entities,
-      f: {},
-      h: options
-    },
-    _WebGL_render,
-    _WebGL_diff
-  );
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enableAlpha = F2(function (options, option) {
-  options.contextAttributes.alpha = true;
-  options.contextAttributes.premultipliedAlpha = option.a;
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enableDepth = F2(function (options, option) {
-  options.contextAttributes.depth = true;
-  options.sceneSettings.push(function (gl) {
-    gl.clearDepth(option.a);
-  });
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enableStencil = F2(function (options, option) {
-  options.contextAttributes.stencil = true;
-  options.sceneSettings.push(function (gl) {
-    gl.clearStencil(option.a);
-  });
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enableAntialias = F2(function (options, option) {
-  options.contextAttributes.antialias = true;
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enableClearColor = F2(function (options, option) {
-  options.sceneSettings.push(function (gl) {
-    gl.clearColor(option.a, option.b, option.c, option.d);
-  });
-});
-
-// eslint-disable-next-line no-unused-vars
-var _WebGL_enablePreserveDrawingBuffer = F2(function (options, option) {
-  options.contextAttributes.preserveDrawingBuffer = true;
-});
-
-/**
- *  Creates canvas and schedules initial _WebGL_drawGL
- *  @param {Object} model
- *  @param {Object} model.f that may contain the following properties:
-           gl, shaders, programs, buffers, textures
- *  @param {List<Option>} model.h list of options coming from Elm
- *  @param {List<Entity>} model.g list of entities coming from Elm
- *  @return {HTMLElement} <canvas> if WebGL is supported, otherwise a <div>
- */
-function _WebGL_render(model) {
-  var options = {
-    contextAttributes: {
-      alpha: false,
-      depth: false,
-      stencil: false,
-      antialias: false,
-      premultipliedAlpha: false,
-      preserveDrawingBuffer: false
-    },
-    sceneSettings: []
-  };
-
-  _WebGL_listEach(function (option) {
-    return A2($elm_explorations$webgl$WebGL$Internal$enableOption, options, option);
-  }, model.h);
-
-  var canvas = _VirtualDom_doc.createElement('canvas');
-  var gl = canvas.getContext && (
-    canvas.getContext('webgl', options.contextAttributes) ||
-    canvas.getContext('experimental-webgl', options.contextAttributes)
-  );
-
-  if (gl && typeof WeakMap !== 'undefined') {
-    options.sceneSettings.forEach(function (sceneSetting) {
-      sceneSetting(gl);
-    });
-
-    // Activate extensions
-    gl.getExtension('OES_standard_derivatives');
-    gl.getExtension('OES_element_index_uint');
-
-    model.f.gl = gl;
-
-    // Cache the current settings in order to diff them to avoid redundant calls
-    // https://emscripten.org/docs/optimizing/Optimizing-WebGL.html#avoid-redundant-calls
-    model.f.toggle = false; // used to diff the settings from the previous and current draw calls
-    model.f.blend = { enabled: false, toggle: false };
-    model.f.depthTest = { enabled: false, toggle: false };
-    model.f.stencilTest = { enabled: false, toggle: false };
-    model.f.scissor = { enabled: false, toggle: false };
-    model.f.colorMask = { enabled: false, toggle: false };
-    model.f.cullFace = { enabled: false, toggle: false };
-    model.f.polygonOffset = { enabled: false, toggle: false };
-    model.f.sampleCoverage = { enabled: false, toggle: false };
-    model.f.sampleAlphaToCoverage = { enabled: false, toggle: false };
-
-    model.f.shaders = [];
-    model.f.programs = {};
-    model.f.lastProgId = null;
-    model.f.buffers = new WeakMap();
-    model.f.textures = new WeakMap();
-    // Memorize the initial stencil write mask, because
-    // browsers may have different number of stencil bits
-    model.f.STENCIL_WRITEMASK = gl.getParameter(gl.STENCIL_WRITEMASK);
-
-    // Render for the first time.
-    // This has to be done in animation frame,
-    // because the canvas is not in the DOM yet
-    _WebGL_rAF(function () {
-      return A2(_WebGL_drawGL, model, canvas);
-    });
-
-  } else {
-    canvas = _VirtualDom_doc.createElement('div');
-    canvas.innerHTML = '<a href="https://get.webgl.org/">Enable WebGL</a> to see this content!';
-  }
-
-  return canvas;
-}
-
-function _WebGL_diff(oldModel, newModel) {
-  newModel.f = oldModel.f;
-  return _WebGL_drawGL(newModel);
-}
-
-
 /*
  * Copyright (c) 2010 Mozilla Corporation
  * Copyright (c) 2010 Vladimir Vukicevic
@@ -10671,6 +9830,847 @@ var _MJS_m4x4makeBasis = F3(function(vx, vy, vz) {
 
     return r;
 });
+
+
+var _WebGL_guid = 0;
+
+function _WebGL_listEach(fn, list) {
+  for (; list.b; list = list.b) {
+    fn(list.a);
+  }
+}
+
+function _WebGL_listLength(list) {
+  var length = 0;
+  for (; list.b; list = list.b) {
+    length++;
+  }
+  return length;
+}
+
+var _WebGL_rAF = typeof requestAnimationFrame !== 'undefined' ?
+  requestAnimationFrame :
+  function (cb) { setTimeout(cb, 1000 / 60); };
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_entity = F5(function (settings, vert, frag, mesh, uniforms) {
+  return {
+    $: 0,
+    a: settings,
+    b: vert,
+    c: frag,
+    d: mesh,
+    e: uniforms
+  };
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enableBlend = F2(function (cache, setting) {
+  var blend = cache.blend;
+  blend.toggle = cache.toggle;
+
+  if (!blend.enabled) {
+    cache.gl.enable(cache.gl.BLEND);
+    blend.enabled = true;
+  }
+
+  // a   b   c   d   e   f   g h i j
+  // eq1 f11 f12 eq2 f21 f22 r g b a
+  if (blend.a !== setting.a || blend.d !== setting.d) {
+    cache.gl.blendEquationSeparate(setting.a, setting.d);
+    blend.a = setting.a;
+    blend.d = setting.d;
+  }
+  if (blend.b !== setting.b || blend.c !== setting.c || blend.e !== setting.e || blend.f !== setting.f) {
+    cache.gl.blendFuncSeparate(setting.b, setting.c, setting.e, setting.f);
+    blend.b = setting.b;
+    blend.c = setting.c;
+    blend.e = setting.e;
+    blend.f = setting.f;
+  }
+  if (blend.g !== setting.g || blend.h !== setting.h || blend.i !== setting.i || blend.j !== setting.j) {
+    cache.gl.blendColor(setting.g, setting.h, setting.i, setting.j);
+    blend.g = setting.g;
+    blend.h = setting.h;
+    blend.i = setting.i;
+    blend.j = setting.j;
+  }
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enableDepthTest = F2(function (cache, setting) {
+  var depthTest = cache.depthTest;
+  depthTest.toggle = cache.toggle;
+
+  if (!depthTest.enabled) {
+    cache.gl.enable(cache.gl.DEPTH_TEST);
+    depthTest.enabled = true;
+  }
+
+  // a    b    c    d
+  // func mask near far
+  if (depthTest.a !== setting.a) {
+    cache.gl.depthFunc(setting.a);
+    depthTest.a = setting.a;
+  }
+  if (depthTest.b !== setting.b) {
+    cache.gl.depthMask(setting.b);
+    depthTest.b = setting.b;
+  }
+  if (depthTest.c !== setting.c || depthTest.d !== setting.d) {
+    cache.gl.depthRange(setting.c, setting.d);
+    depthTest.c = setting.c;
+    depthTest.d = setting.d;
+  }
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enableStencilTest = F2(function (cache, setting) {
+  var stencilTest = cache.stencilTest;
+  stencilTest.toggle = cache.toggle;
+
+  if (!stencilTest.enabled) {
+    cache.gl.enable(cache.gl.STENCIL_TEST);
+    stencilTest.enabled = true;
+  }
+
+  // a   b    c         d     e     f      g      h     i     j      k
+  // ref mask writeMask test1 fail1 zfail1 zpass1 test2 fail2 zfail2 zpass2
+  if (stencilTest.d !== setting.d || stencilTest.a !== setting.a || stencilTest.b !== setting.b) {
+    cache.gl.stencilFuncSeparate(cache.gl.FRONT, setting.d, setting.a, setting.b);
+    stencilTest.d = setting.d;
+    // a and b are set in the cache.gl.BACK diffing because they should be the same
+  }
+  if (stencilTest.e !== setting.e || stencilTest.f !== setting.f || stencilTest.g !== setting.g) {
+    cache.gl.stencilOpSeparate(cache.gl.FRONT, setting.e, setting.f, setting.g);
+    stencilTest.e = setting.e;
+    stencilTest.f = setting.f;
+    stencilTest.g = setting.g;
+  }
+  if (stencilTest.c !== setting.c) {
+    cache.gl.stencilMask(setting.c);
+    stencilTest.c = setting.c;
+  }
+  if (stencilTest.h !== setting.h || stencilTest.a !== setting.a || stencilTest.b !== setting.b) {
+    cache.gl.stencilFuncSeparate(cache.gl.BACK, setting.h, setting.a, setting.b);
+    stencilTest.h = setting.h;
+    stencilTest.a = setting.a;
+    stencilTest.b = setting.b;
+  }
+  if (stencilTest.i !== setting.i || stencilTest.j !== setting.j || stencilTest.k !== setting.k) {
+    cache.gl.stencilOpSeparate(cache.gl.BACK, setting.i, setting.j, setting.k);
+    stencilTest.i = setting.i;
+    stencilTest.j = setting.j;
+    stencilTest.k = setting.k;
+  }
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enableScissor = F2(function (cache, setting) {
+  var scissor = cache.scissor;
+  scissor.toggle = cache.toggle;
+
+  if (!scissor.enabled) {
+    cache.gl.enable(cache.gl.SCISSOR_TEST);
+    scissor.enabled = true;
+  }
+
+  if (scissor.a !== setting.a || scissor.b !== setting.b || scissor.c !== setting.c || scissor.d !== setting.d) {
+    cache.gl.scissor(setting.a, setting.b, setting.c, setting.d);
+    scissor.a = setting.a;
+    scissor.b = setting.b;
+    scissor.c = setting.c;
+    scissor.d = setting.d;
+  }
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enableColorMask = F2(function (cache, setting) {
+  var colorMask = cache.colorMask;
+  colorMask.toggle = cache.toggle;
+  colorMask.enabled = true;
+
+  if (colorMask.a !== setting.a || colorMask.b !== setting.b || colorMask.c !== setting.c || colorMask.d !== setting.d) {
+    cache.gl.colorMask(setting.a, setting.b, setting.c, setting.d);
+    colorMask.a = setting.a;
+    colorMask.b = setting.b;
+    colorMask.c = setting.c;
+    colorMask.d = setting.d;
+  }
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enableCullFace = F2(function (cache, setting) {
+  var cullFace = cache.cullFace;
+  cullFace.toggle = cache.toggle;
+
+  if (!cullFace.enabled) {
+    cache.gl.enable(cache.gl.CULL_FACE);
+    cullFace.enabled = true;
+  }
+
+  if (cullFace.a !== setting.a) {
+    cache.gl.cullFace(setting.a);
+    cullFace.a = setting.a;
+  }
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enablePolygonOffset = F2(function (cache, setting) {
+  var polygonOffset = cache.polygonOffset;
+  polygonOffset.toggle = cache.toggle;
+
+  if (!polygonOffset.enabled) {
+    cache.gl.enable(cache.gl.POLYGON_OFFSET_FILL);
+    polygonOffset.enabled = true;
+  }
+
+  if (polygonOffset.a !== setting.a || polygonOffset.b !== setting.b) {
+    cache.gl.polygonOffset(setting.a, setting.b);
+    polygonOffset.a = setting.a;
+    polygonOffset.b = setting.b;
+  }
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enableSampleCoverage = F2(function (cache, setting) {
+  var sampleCoverage = cache.sampleCoverage;
+  sampleCoverage.toggle = cache.toggle;
+
+  if (!sampleCoverage.enabled) {
+    cache.gl.enable(cache.gl.SAMPLE_COVERAGE);
+    sampleCoverage.enabled = true;
+  }
+
+  if (sampleCoverage.a !== setting.a || sampleCoverage.b !== setting.b) {
+    cache.gl.sampleCoverage(setting.a, setting.b);
+    sampleCoverage.a = setting.a;
+    sampleCoverage.b = setting.b;
+  }
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enableSampleAlphaToCoverage = function (cache) {
+  var sampleAlphaToCoverage = cache.sampleAlphaToCoverage;
+  sampleAlphaToCoverage.toggle = cache.toggle;
+
+  if (!sampleAlphaToCoverage.enabled) {
+    cache.gl.enable(cache.gl.SAMPLE_ALPHA_TO_COVERAGE);
+    sampleAlphaToCoverage.enabled = true;
+  }
+};
+
+var _WebGL_disableBlend = function (cache) {
+  if (cache.blend.enabled) {
+    cache.gl.disable(cache.gl.BLEND);
+    cache.blend.enabled = false;
+  }
+};
+
+var _WebGL_disableDepthTest = function (cache) {
+  if (cache.depthTest.enabled) {
+    cache.gl.disable(cache.gl.DEPTH_TEST);
+    cache.depthTest.enabled = false;
+  }
+};
+
+var _WebGL_disableStencilTest = function (cache) {
+  if (cache.stencilTest.enabled) {
+    cache.gl.disable(cache.gl.STENCIL_TEST);
+    cache.stencilTest.enabled = false;
+  }
+};
+
+var _WebGL_disableScissor = function (cache) {
+  if (cache.scissor.enabled) {
+    cache.gl.disable(cache.gl.SCISSOR_TEST);
+    cache.scissor.enabled = false;
+  }
+};
+
+var _WebGL_disableColorMask = function (cache) {
+  var colorMask = cache.colorMask;
+  if (!colorMask.a || !colorMask.b || !colorMask.c || !colorMask.d) {
+    cache.gl.colorMask(true, true, true, true);
+    colorMask.a = true;
+    colorMask.b = true;
+    colorMask.c = true;
+    colorMask.d = true;
+  }
+};
+
+var _WebGL_disableCullFace = function (cache) {
+  cache.gl.disable(cache.gl.CULL_FACE);
+};
+
+var _WebGL_disablePolygonOffset = function (cache) {
+  cache.gl.disable(cache.gl.POLYGON_OFFSET_FILL);
+};
+
+var _WebGL_disableSampleCoverage = function (cache) {
+  cache.gl.disable(cache.gl.SAMPLE_COVERAGE);
+};
+
+var _WebGL_disableSampleAlphaToCoverage = function (cache) {
+  cache.gl.disable(cache.gl.SAMPLE_ALPHA_TO_COVERAGE);
+};
+
+var _WebGL_settings = ['blend', 'depthTest', 'stencilTest', 'scissor', 'colorMask', 'cullFace', 'polygonOffset', 'sampleCoverage', 'sampleAlphaToCoverage'];
+var _WebGL_disableFunctions = [_WebGL_disableBlend, _WebGL_disableDepthTest, _WebGL_disableStencilTest, _WebGL_disableScissor, _WebGL_disableColorMask, _WebGL_disableCullFace, _WebGL_disablePolygonOffset, _WebGL_disableSampleCoverage, _WebGL_disableSampleAlphaToCoverage];
+
+function _WebGL_doCompile(gl, src, type) {
+  var shader = gl.createShader(type);
+  // Enable OES_standard_derivatives extension
+  gl.shaderSource(shader, '#extension GL_OES_standard_derivatives : enable\n' + src);
+  gl.compileShader(shader);
+  return shader;
+}
+
+function _WebGL_doLink(gl, vshader, fshader) {
+  var program = gl.createProgram();
+
+  gl.attachShader(program, vshader);
+  gl.attachShader(program, fshader);
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    throw ('Link failed: ' + gl.getProgramInfoLog(program) +
+      '\nvs info-log: ' + gl.getShaderInfoLog(vshader) +
+      '\nfs info-log: ' + gl.getShaderInfoLog(fshader));
+  }
+
+  return program;
+}
+
+function _WebGL_getAttributeInfo(gl, type) {
+  switch (type) {
+    case gl.FLOAT:
+      return { size: 1, arraySize: 1, type: Float32Array, baseType: gl.FLOAT };
+    case gl.FLOAT_VEC2:
+      return { size: 2, arraySize: 1, type: Float32Array, baseType: gl.FLOAT };
+    case gl.FLOAT_VEC3:
+      return { size: 3, arraySize: 1, type: Float32Array, baseType: gl.FLOAT };
+    case gl.FLOAT_VEC4:
+      return { size: 4, arraySize: 1, type: Float32Array, baseType: gl.FLOAT };
+    case gl.FLOAT_MAT4:
+      return { size: 4, arraySize: 4, type: Float32Array, baseType: gl.FLOAT };
+    case gl.INT:
+      return { size: 1, arraySize: 1, type: Int32Array, baseType: gl.INT };
+  }
+}
+
+/**
+ *  Form the buffer for a given attribute.
+ *
+ *  @param {WebGLRenderingContext} gl context
+ *  @param {WebGLActiveInfo} attribute the attribute to bind to.
+ *         We use its name to grab the record by name and also to know
+ *         how many elements we need to grab.
+ *  @param {Mesh} mesh The mesh coming in from Elm.
+ *  @param {Object} attributes The mapping between the attribute names and Elm fields
+ *  @return {WebGLBuffer}
+ */
+function _WebGL_doBindAttribute(gl, attribute, mesh, attributes) {
+  // The length of the number of vertices that
+  // complete one 'thing' based on the drawing mode.
+  // ie, 2 for Lines, 3 for Triangles, etc.
+  var elemSize = mesh.a.elemSize;
+
+  var idxKeys = [];
+  for (var i = 0; i < elemSize; i++) {
+    idxKeys.push(String.fromCharCode(97 + i));
+  }
+
+  function dataFill(data, cnt, fillOffset, elem, key) {
+    var i;
+    if (elemSize === 1) {
+      for (i = 0; i < cnt; i++) {
+        data[fillOffset++] = cnt === 1 ? elem[key] : elem[key][i];
+      }
+    } else {
+      idxKeys.forEach(function (idx) {
+        for (i = 0; i < cnt; i++) {
+          data[fillOffset++] = cnt === 1 ? elem[idx][key] : elem[idx][key][i];
+        }
+      });
+    }
+  }
+
+  var attributeInfo = _WebGL_getAttributeInfo(gl, attribute.type);
+
+  if (attributeInfo === undefined) {
+    throw new Error('No info available for: ' + attribute.type);
+  }
+
+  var dataIdx = 0;
+  var dataOffset = attributeInfo.size * attributeInfo.arraySize * elemSize;
+  var array = new attributeInfo.type(_WebGL_listLength(mesh.b) * dataOffset);
+
+  _WebGL_listEach(function (elem) {
+    dataFill(array, attributeInfo.size * attributeInfo.arraySize, dataIdx, elem, attributes[attribute.name] || attribute.name);
+    dataIdx += dataOffset;
+  }, mesh.b);
+
+  var buffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
+  return buffer;
+}
+
+/**
+ *  This sets up the binding caching buffers.
+ *
+ *  We don't actually bind any buffers now except for the indices buffer.
+ *  The problem with filling the buffers here is that it is possible to
+ *  have a buffer shared between two webgl shaders;
+ *  which could have different active attributes. If we bind it here against
+ *  a particular program, we might not bind them all. That final bind is now
+ *  done right before drawing.
+ *
+ *  @param {WebGLRenderingContext} gl context
+ *  @param {Mesh} mesh a mesh object from Elm
+ *  @return {Object} buffer - an object with the following properties
+ *  @return {Number} buffer.numIndices
+ *  @return {WebGLBuffer|null} buffer.indexBuffer - optional index buffer
+ *  @return {Object} buffer.buffers - will be used to buffer attributes
+ */
+function _WebGL_doBindSetup(gl, mesh) {
+  if (mesh.a.indexSize > 0) {
+    var indexBuffer = gl.createBuffer();
+    var indices = _WebGL_makeIndexedBuffer(mesh.c, mesh.a.indexSize);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+    return {
+      numIndices: indices.length,
+      indexBuffer: indexBuffer,
+      buffers: {}
+    };
+  } else {
+    return {
+      numIndices: mesh.a.elemSize * _WebGL_listLength(mesh.b),
+      indexBuffer: null,
+      buffers: {}
+    };
+  }
+}
+
+/**
+ *  Create an indices array and fill it from indices
+ *  based on the size of the index
+ *
+ *  @param {List} indicesList the list of indices
+ *  @param {Number} indexSize the size of the index
+ *  @return {Uint32Array} indices
+ */
+function _WebGL_makeIndexedBuffer(indicesList, indexSize) {
+  var indices = new Uint32Array(_WebGL_listLength(indicesList) * indexSize);
+  var fillOffset = 0;
+  var i;
+  _WebGL_listEach(function (elem) {
+    if (indexSize === 1) {
+      indices[fillOffset++] = elem;
+    } else {
+      for (i = 0; i < indexSize; i++) {
+        indices[fillOffset++] = elem[String.fromCharCode(97 + i)];
+      }
+    }
+  }, indicesList);
+  return indices;
+}
+
+function _WebGL_getProgID(vertID, fragID) {
+  return vertID + '#' + fragID;
+}
+
+var _WebGL_drawGL = F2(function (model, domNode) {
+  var cache = model.f;
+  var gl = cache.gl;
+
+  if (!gl) {
+    return domNode;
+  }
+
+  gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+
+  if (!cache.depthTest.b) {
+    gl.depthMask(true);
+    cache.depthTest.b = true;
+  }
+  if (cache.stencilTest.c !== cache.STENCIL_WRITEMASK) {
+    gl.stencilMask(cache.STENCIL_WRITEMASK);
+    cache.stencilTest.c = cache.STENCIL_WRITEMASK;
+  }
+  _WebGL_disableScissor(cache);
+  _WebGL_disableColorMask(cache);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+
+  function drawEntity(entity) {
+    if (!entity.d.b.b) {
+      return; // Empty list
+    }
+
+    var progid;
+    var program;
+    var i;
+
+    if (entity.b.id && entity.c.id) {
+      progid = _WebGL_getProgID(entity.b.id, entity.c.id);
+      program = cache.programs[progid];
+    }
+
+    if (!program) {
+
+      var vshader;
+      if (entity.b.id) {
+        vshader = cache.shaders[entity.b.id];
+      } else {
+        entity.b.id = _WebGL_guid++;
+      }
+
+      if (!vshader) {
+        vshader = _WebGL_doCompile(gl, entity.b.src, gl.VERTEX_SHADER);
+        cache.shaders[entity.b.id] = vshader;
+      }
+
+      var fshader;
+      if (entity.c.id) {
+        fshader = cache.shaders[entity.c.id];
+      } else {
+        entity.c.id = _WebGL_guid++;
+      }
+
+      if (!fshader) {
+        fshader = _WebGL_doCompile(gl, entity.c.src, gl.FRAGMENT_SHADER);
+        cache.shaders[entity.c.id] = fshader;
+      }
+
+      var glProgram = _WebGL_doLink(gl, vshader, fshader);
+
+      program = {
+        glProgram: glProgram,
+        attributes: Object.assign({}, entity.b.attributes, entity.c.attributes),
+        currentUniforms: {},
+        activeAttributes: [],
+        activeAttributeLocations: []
+      };
+
+      program.uniformSetters = _WebGL_createUniformSetters(
+        gl,
+        model,
+        program,
+        Object.assign({}, entity.b.uniforms, entity.c.uniforms)
+      );
+
+      var numActiveAttributes = gl.getProgramParameter(glProgram, gl.ACTIVE_ATTRIBUTES);
+      for (i = 0; i < numActiveAttributes; i++) {
+        var attribute = gl.getActiveAttrib(glProgram, i);
+        var attribLocation = gl.getAttribLocation(glProgram, attribute.name);
+        program.activeAttributes.push(attribute);
+        program.activeAttributeLocations.push(attribLocation);
+      }
+
+      progid = _WebGL_getProgID(entity.b.id, entity.c.id);
+      cache.programs[progid] = program;
+    }
+
+    if (cache.lastProgId !== progid) {
+      gl.useProgram(program.glProgram);
+      cache.lastProgId = progid;
+    }
+
+    _WebGL_setUniforms(program.uniformSetters, entity.e);
+
+    var buffer = cache.buffers.get(entity.d);
+
+    if (!buffer) {
+      buffer = _WebGL_doBindSetup(gl, entity.d);
+      cache.buffers.set(entity.d, buffer);
+    }
+
+    for (i = 0; i < program.activeAttributes.length; i++) {
+      attribute = program.activeAttributes[i];
+      attribLocation = program.activeAttributeLocations[i];
+
+      if (buffer.buffers[attribute.name] === undefined) {
+        buffer.buffers[attribute.name] = _WebGL_doBindAttribute(gl, attribute, entity.d, program.attributes);
+      }
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer.buffers[attribute.name]);
+
+      var attributeInfo = _WebGL_getAttributeInfo(gl, attribute.type);
+      if (attributeInfo.arraySize === 1) {
+        gl.enableVertexAttribArray(attribLocation);
+        gl.vertexAttribPointer(attribLocation, attributeInfo.size, attributeInfo.baseType, false, 0, 0);
+      } else {
+        // Point to four vec4 in case of mat4
+        var offset = attributeInfo.size * 4; // float32 takes 4 bytes
+        var stride = offset * attributeInfo.arraySize;
+        for (var m = 0; m < attributeInfo.arraySize; m++) {
+          gl.enableVertexAttribArray(attribLocation + m);
+          gl.vertexAttribPointer(attribLocation + m, attributeInfo.size, attributeInfo.baseType, false, stride, offset * m);
+        }
+      }
+    }
+
+    // Apply all the new settings
+    cache.toggle = !cache.toggle;
+    _WebGL_listEach($elm_explorations$webgl$WebGL$Internal$enableSetting(cache), entity.a);
+    // Disable the settings that were applied in the previous draw call
+    for (i = 0; i < _WebGL_settings.length; i++) {
+      var setting = cache[_WebGL_settings[i]];
+      if (setting.toggle !== cache.toggle && setting.enabled) {
+        _WebGL_disableFunctions[i](cache);
+        setting.enabled = false;
+        setting.toggle = cache.toggle;
+      }
+    }
+
+    if (buffer.indexBuffer) {
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer.indexBuffer);
+      gl.drawElements(entity.d.a.mode, buffer.numIndices, gl.UNSIGNED_INT, 0);
+    } else {
+      gl.drawArrays(entity.d.a.mode, 0, buffer.numIndices);
+    }
+  }
+
+  _WebGL_listEach(drawEntity, model.g);
+  return domNode;
+});
+
+function _WebGL_createUniformSetters(gl, model, program, uniformsMap) {
+  var glProgram = program.glProgram;
+  var currentUniforms = program.currentUniforms;
+  var textureCounter = 0;
+  var cache = model.f;
+  function createUniformSetter(glProgram, uniform) {
+    var uniformName = uniform.name;
+    var uniformLocation = gl.getUniformLocation(glProgram, uniformName);
+    switch (uniform.type) {
+      case gl.INT:
+        return function (value) {
+          if (currentUniforms[uniformName] !== value) {
+            gl.uniform1i(uniformLocation, value);
+            currentUniforms[uniformName] = value;
+          }
+        };
+      case gl.FLOAT:
+        return function (value) {
+          if (currentUniforms[uniformName] !== value) {
+            gl.uniform1f(uniformLocation, value);
+            currentUniforms[uniformName] = value;
+          }
+        };
+      case gl.FLOAT_VEC2:
+        return function (value) {
+          if (currentUniforms[uniformName] !== value) {
+            gl.uniform2f(uniformLocation, value[0], value[1]);
+            currentUniforms[uniformName] = value;
+          }
+        };
+      case gl.FLOAT_VEC3:
+        return function (value) {
+          if (currentUniforms[uniformName] !== value) {
+            gl.uniform3f(uniformLocation, value[0], value[1], value[2]);
+            currentUniforms[uniformName] = value;
+          }
+        };
+      case gl.FLOAT_VEC4:
+        return function (value) {
+          if (currentUniforms[uniformName] !== value) {
+            gl.uniform4f(uniformLocation, value[0], value[1], value[2], value[3]);
+            currentUniforms[uniformName] = value;
+          }
+        };
+      case gl.FLOAT_MAT4:
+        return function (value) {
+          if (currentUniforms[uniformName] !== value) {
+            gl.uniformMatrix4fv(uniformLocation, false, new Float32Array(value));
+            currentUniforms[uniformName] = value;
+          }
+        };
+      case gl.SAMPLER_2D:
+        var currentTexture = textureCounter++;
+        return function (texture) {
+          gl.activeTexture(gl.TEXTURE0 + currentTexture);
+          var tex = cache.textures.get(texture);
+          if (!tex) {
+            tex = texture.createTexture(gl);
+            cache.textures.set(texture, tex);
+          }
+          gl.bindTexture(gl.TEXTURE_2D, tex);
+          if (currentUniforms[uniformName] !== texture) {
+            gl.uniform1i(uniformLocation, currentTexture);
+            currentUniforms[uniformName] = texture;
+          }
+        };
+      case gl.BOOL:
+        return function (value) {
+          if (currentUniforms[uniformName] !== value) {
+            gl.uniform1i(uniformLocation, value);
+            currentUniforms[uniformName] = value;
+          }
+        };
+      default:
+        return function () { };
+    }
+  }
+
+  var uniformSetters = {};
+  var numUniforms = gl.getProgramParameter(glProgram, gl.ACTIVE_UNIFORMS);
+  for (var i = 0; i < numUniforms; i++) {
+    var uniform = gl.getActiveUniform(glProgram, i);
+    uniformSetters[uniformsMap[uniform.name] || uniform.name] = createUniformSetter(glProgram, uniform);
+  }
+
+  return uniformSetters;
+}
+
+function _WebGL_setUniforms(setters, values) {
+  Object.keys(values).forEach(function (name) {
+    var setter = setters[name];
+    if (setter) {
+      setter(values[name]);
+    }
+  });
+}
+
+// VIRTUAL-DOM WIDGET
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_toHtml = F3(function (options, factList, entities) {
+  return _VirtualDom_custom(
+    factList,
+    {
+      g: entities,
+      f: {},
+      h: options
+    },
+    _WebGL_render,
+    _WebGL_diff
+  );
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enableAlpha = F2(function (options, option) {
+  options.contextAttributes.alpha = true;
+  options.contextAttributes.premultipliedAlpha = option.a;
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enableDepth = F2(function (options, option) {
+  options.contextAttributes.depth = true;
+  options.sceneSettings.push(function (gl) {
+    gl.clearDepth(option.a);
+  });
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enableStencil = F2(function (options, option) {
+  options.contextAttributes.stencil = true;
+  options.sceneSettings.push(function (gl) {
+    gl.clearStencil(option.a);
+  });
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enableAntialias = F2(function (options, option) {
+  options.contextAttributes.antialias = true;
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enableClearColor = F2(function (options, option) {
+  options.sceneSettings.push(function (gl) {
+    gl.clearColor(option.a, option.b, option.c, option.d);
+  });
+});
+
+// eslint-disable-next-line no-unused-vars
+var _WebGL_enablePreserveDrawingBuffer = F2(function (options, option) {
+  options.contextAttributes.preserveDrawingBuffer = true;
+});
+
+/**
+ *  Creates canvas and schedules initial _WebGL_drawGL
+ *  @param {Object} model
+ *  @param {Object} model.f that may contain the following properties:
+           gl, shaders, programs, buffers, textures
+ *  @param {List<Option>} model.h list of options coming from Elm
+ *  @param {List<Entity>} model.g list of entities coming from Elm
+ *  @return {HTMLElement} <canvas> if WebGL is supported, otherwise a <div>
+ */
+function _WebGL_render(model) {
+  var options = {
+    contextAttributes: {
+      alpha: false,
+      depth: false,
+      stencil: false,
+      antialias: false,
+      premultipliedAlpha: false,
+      preserveDrawingBuffer: false
+    },
+    sceneSettings: []
+  };
+
+  _WebGL_listEach(function (option) {
+    return A2($elm_explorations$webgl$WebGL$Internal$enableOption, options, option);
+  }, model.h);
+
+  var canvas = _VirtualDom_doc.createElement('canvas');
+  var gl = canvas.getContext && (
+    canvas.getContext('webgl', options.contextAttributes) ||
+    canvas.getContext('experimental-webgl', options.contextAttributes)
+  );
+
+  if (gl && typeof WeakMap !== 'undefined') {
+    options.sceneSettings.forEach(function (sceneSetting) {
+      sceneSetting(gl);
+    });
+
+    // Activate extensions
+    gl.getExtension('OES_standard_derivatives');
+    gl.getExtension('OES_element_index_uint');
+
+    model.f.gl = gl;
+
+    // Cache the current settings in order to diff them to avoid redundant calls
+    // https://emscripten.org/docs/optimizing/Optimizing-WebGL.html#avoid-redundant-calls
+    model.f.toggle = false; // used to diff the settings from the previous and current draw calls
+    model.f.blend = { enabled: false, toggle: false };
+    model.f.depthTest = { enabled: false, toggle: false };
+    model.f.stencilTest = { enabled: false, toggle: false };
+    model.f.scissor = { enabled: false, toggle: false };
+    model.f.colorMask = { enabled: false, toggle: false };
+    model.f.cullFace = { enabled: false, toggle: false };
+    model.f.polygonOffset = { enabled: false, toggle: false };
+    model.f.sampleCoverage = { enabled: false, toggle: false };
+    model.f.sampleAlphaToCoverage = { enabled: false, toggle: false };
+
+    model.f.shaders = [];
+    model.f.programs = {};
+    model.f.lastProgId = null;
+    model.f.buffers = new WeakMap();
+    model.f.textures = new WeakMap();
+    // Memorize the initial stencil write mask, because
+    // browsers may have different number of stencil bits
+    model.f.STENCIL_WRITEMASK = gl.getParameter(gl.STENCIL_WRITEMASK);
+
+    // Render for the first time.
+    // This has to be done in animation frame,
+    // because the canvas is not in the DOM yet
+    _WebGL_rAF(function () {
+      return A2(_WebGL_drawGL, model, canvas);
+    });
+
+  } else {
+    canvas = _VirtualDom_doc.createElement('div');
+    canvas.innerHTML = '<a href="https://get.webgl.org/">Enable WebGL</a> to see this content!';
+  }
+
+  return canvas;
+}
+
+function _WebGL_diff(oldModel, newModel) {
+  newModel.f = oldModel.f;
+  return _WebGL_drawGL(newModel);
+}
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -16272,8 +16272,10 @@ var $elm$core$Basics$never = function (_v0) {
 	}
 };
 var $elm$browser$Browser$document = _Browser_document;
-var $author$project$Main$Editor = {$: 'Editor'};
+var $author$project$Main$EditBoard = {$: 'EditBoard'};
 var $author$project$Main$Forward = {$: 'Forward'};
+var $author$project$Main$FreePlayBoardSelection = {$: 'FreePlayBoardSelection'};
+var $author$project$Main$Menu = {$: 'Menu'};
 var $author$project$Main$NoInteraction = {$: 'NoInteraction'};
 var $author$project$Main$Orbit = {$: 'Orbit'};
 var $author$project$Main$Select = {$: 'Select'};
@@ -17378,6 +17380,7 @@ var $author$project$Main$init = function (_v0) {
 	};
 	return _Utils_Tuple2(
 		{
+			blockEditMode: $author$project$Main$Select,
 			blockPalette: $author$project$Main$SimpleBlocks,
 			board: board,
 			boardEncoding: A2(
@@ -17401,13 +17404,14 @@ var $author$project$Main$init = function (_v0) {
 							{offset: 500, value: 1},
 							{offset: 500, value: 0}
 						]))),
-			editMode: $author$project$Main$Select,
 			editorBoard: $author$project$Undo$init(board),
 			editorCursor: _Utils_Tuple3(0, 0, 0),
 			editorKeysDown: $elm$core$Set$empty,
 			editorMaxXRaw: $elm$core$String$fromInt(maxX),
 			editorMaxYRaw: $elm$core$String$fromInt(maxY),
 			editorMaxZRaw: $elm$core$String$fromInt(maxZ),
+			editorMode: $author$project$Main$EditBoard,
+			freePlayMode: $author$project$Main$FreePlayBoardSelection,
 			inputMapping: {
 				blockAdd: _Utils_Tuple2('w', ''),
 				blockRemove: _Utils_Tuple2('e', ''),
@@ -17428,7 +17432,6 @@ var $author$project$Main$init = function (_v0) {
 				toggleSettings: _Utils_Tuple2(',', ''),
 				undo: _Utils_Tuple2('z', '')
 			},
-			mode: $author$project$Main$Editor,
 			mouseDragging: $author$project$Main$NoInteraction,
 			playerFacing: $author$project$Main$Forward,
 			playerFrame: $ianmackenzie$elm_geometry$Frame3d$atPoint(
@@ -17436,10 +17439,12 @@ var $author$project$Main$init = function (_v0) {
 			playerMovingAcrossEdge: $elm$core$Maybe$Nothing,
 			playerWantFacing: $author$project$Main$Forward,
 			score: 0,
+			screen: $author$project$Main$Menu,
 			screenSize: {height: 600, width: 800},
 			selectedBlock: $elm$core$Maybe$Nothing,
 			selectedBlockType: $author$project$Main$Wall,
 			showBoardBounds: true,
+			showFreePlayMenu: false,
 			showSettings: false,
 			xLowerVisible: 0,
 			xUpperVisible: maxX - 1,
@@ -17780,23 +17785,44 @@ var $elm$browser$Browser$Events$onKeyDown = A2($elm$browser$Browser$Events$on, $
 var $elm$browser$Browser$Events$onKeyPress = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keypress');
 var $elm$browser$Browser$Events$onKeyUp = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keyup');
 var $author$project$Main$subscriptions = function (model) {
-	return model.showSettings ? $elm$core$Platform$Sub$none : $elm$core$Platform$Sub$batch(
-		_List_fromArray(
-			[
-				$elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Main$Tick),
-				$elm$browser$Browser$Events$onKeyPress($author$project$Main$decodeKeyPressed),
-				$elm$browser$Browser$Events$onKeyDown($author$project$Main$decodeKeyDown),
-				$elm$browser$Browser$Events$onKeyUp($author$project$Main$decodeKeyUp)
-			]));
+	var _v0 = model.screen;
+	switch (_v0.$) {
+		case 'Menu':
+			return $elm$core$Platform$Sub$none;
+		case 'Game':
+			return $elm$core$Platform$Sub$none;
+		case 'FreePlay':
+			var _v1 = model.freePlayMode;
+			if (_v1.$ === 'FreePlayBoardSelection') {
+				return $elm$core$Platform$Sub$none;
+			} else {
+				return $elm$core$Platform$Sub$batch(
+					_List_fromArray(
+						[
+							$elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Main$Tick),
+							$elm$browser$Browser$Events$onKeyPress($author$project$Main$decodeKeyPressed)
+						]));
+			}
+		default:
+			return model.showSettings ? $elm$core$Platform$Sub$none : $elm$core$Platform$Sub$batch(
+				_List_fromArray(
+					[
+						$elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Main$Tick),
+						$elm$browser$Browser$Events$onKeyPress($author$project$Main$decodeKeyPressed),
+						$elm$browser$Browser$Events$onKeyDown($author$project$Main$decodeKeyDown),
+						$elm$browser$Browser$Events$onKeyUp($author$project$Main$decodeKeyUp)
+					]));
+	}
 };
 var $author$project$Main$DataCorrupted = {$: 'DataCorrupted'};
-var $author$project$Main$Game = {$: 'Game'};
+var $author$project$Main$FreePlayBoardLoaded = {$: 'FreePlayBoardLoaded'};
 var $author$project$Main$InteractionStart = function (a) {
 	return {$: 'InteractionStart', a: a};
 };
 var $author$project$Main$MissingPlayerSpawn = {$: 'MissingPlayerSpawn'};
 var $author$project$Main$OtherError = {$: 'OtherError'};
 var $author$project$Main$SerializerOutOfDate = {$: 'SerializerOutOfDate'};
+var $author$project$Main$TestGame = {$: 'TestGame'};
 var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
@@ -18057,15 +18083,15 @@ var $author$project$Main$handleEditorKeyPressed = F2(
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.cameraReset, key) ? $author$project$Main$resetCamera(model) : (A2($author$project$Main$isInputKey, model.inputMapping.blockSelect, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{editMode: $author$project$Main$Select}),
+				{blockEditMode: $author$project$Main$Select}),
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.blockAdd, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{editMode: $author$project$Main$Add}),
+				{blockEditMode: $author$project$Main$Add}),
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.blockRemove, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{editMode: $author$project$Main$Remove}),
+				{blockEditMode: $author$project$Main$Remove}),
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.blockTypeWall, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
@@ -19092,7 +19118,7 @@ var $author$project$Main$moveCursorByMouse = F2(
 					model,
 					{
 						editorCursor: function () {
-							var _v2 = model.editMode;
+							var _v2 = model.blockEditMode;
 							switch (_v2.$) {
 								case 'Remove':
 									return $author$project$Main$point3dToPoint(
@@ -19625,14 +19651,32 @@ var $author$project$Main$setPlayerFacing = function (model) {
 };
 var $author$project$Main$tickPlayer = F2(
 	function (deltaMs, model) {
-		var _v0 = model.mode;
-		if (_v0.$ === 'Editor') {
-			return model;
-		} else {
-			return A2(
-				$author$project$Main$movePlayer,
-				deltaMs,
-				$author$project$Main$setPlayerFacing(model));
+		var _v0 = model.screen;
+		switch (_v0.$) {
+			case 'Editor':
+				var _v1 = model.editorMode;
+				if (_v1.$ === 'EditBoard') {
+					return model;
+				} else {
+					return A2(
+						$author$project$Main$movePlayer,
+						deltaMs,
+						$author$project$Main$setPlayerFacing(model));
+				}
+			case 'FreePlay':
+				var _v2 = model.freePlayMode;
+				if (_v2.$ === 'FreePlayBoardSelection') {
+					return model;
+				} else {
+					return A2(
+						$author$project$Main$movePlayer,
+						deltaMs,
+						$author$project$Main$setPlayerFacing(model));
+				}
+			case 'Menu':
+				return model;
+			default:
+				return model;
 		}
 	});
 var $elm$core$Result$withDefault = F2(
@@ -19661,7 +19705,7 @@ var $author$project$Main$update = F2(
 						model,
 						{boardEncoding: boardEncoding}),
 					$elm$core$Platform$Cmd$none);
-			case 'LoadBoard':
+			case 'LoadEditorBoard':
 				var encoding = msg.a;
 				var loadedBoard = A2(
 					$elm$core$Result$mapError,
@@ -19708,10 +19752,35 @@ var $author$project$Main$update = F2(
 							}),
 						$elm$core$Platform$Cmd$none);
 				}
-			case 'ChangeMode':
-				var _v3 = model.mode;
-				if (_v3.$ === 'Editor') {
-					var board = $author$project$Undo$value(model.editorBoard);
+			case 'ExitFreePlayBoard':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{freePlayMode: $author$project$Main$FreePlayBoardSelection, showFreePlayMenu: false}),
+					$elm$core$Platform$Cmd$none);
+			case 'LoadFreePlayBoard':
+				var encoding = msg.a;
+				var loadedBoard = A2(
+					$elm$core$Result$mapError,
+					function (error) {
+						switch (error.$) {
+							case 'CustomError':
+								return $author$project$Main$OtherError;
+							case 'DataCorrupted':
+								return $author$project$Main$DataCorrupted;
+							default:
+								return $author$project$Main$SerializerOutOfDate;
+						}
+					},
+					A2(
+						$MartinSStewart$elm_serialize$Serialize$decodeFromJson,
+						$author$project$Main$boardCodec,
+						A2(
+							$elm$core$Result$withDefault,
+							$elm$json$Json$Encode$null,
+							A2($elm$json$Json$Decode$decodeString, $elm$json$Json$Decode$value, encoding))));
+				if (loadedBoard.$ === 'Ok') {
+					var board = loadedBoard.a;
 					var _v4 = $author$project$Main$findSpawn(board);
 					if (_v4.$ === 'Nothing') {
 						return _Utils_Tuple2(
@@ -19726,22 +19795,53 @@ var $author$project$Main$update = F2(
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
-								{board: board, boardPlayError: $elm$core$Maybe$Nothing, mode: $author$project$Main$Game, playerFacing: $author$project$Main$Forward, playerFrame: spawnFrame, playerMovingAcrossEdge: $elm$core$Maybe$Nothing, playerWantFacing: $author$project$Main$Forward, score: 0}),
+								{board: board, boardPlayError: $elm$core$Maybe$Nothing, freePlayMode: $author$project$Main$FreePlayBoardLoaded, playerFacing: $author$project$Main$Forward, playerFrame: spawnFrame, playerMovingAcrossEdge: $elm$core$Maybe$Nothing, playerWantFacing: $author$project$Main$Forward, score: 0}),
+							$elm$core$Platform$Cmd$none);
+					}
+				} else {
+					var error = loadedBoard.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								boardLoadError: $elm$core$Maybe$Just(error)
+							}),
+						$elm$core$Platform$Cmd$none);
+				}
+			case 'ChangeMode':
+				var _v6 = model.editorMode;
+				if (_v6.$ === 'EditBoard') {
+					var board = $author$project$Undo$value(model.editorBoard);
+					var _v7 = $author$project$Main$findSpawn(board);
+					if (_v7.$ === 'Nothing') {
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									boardPlayError: $elm$core$Maybe$Just($author$project$Main$MissingPlayerSpawn)
+								}),
+							$elm$core$Platform$Cmd$none);
+					} else {
+						var spawnFrame = _v7.a;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{board: board, boardPlayError: $elm$core$Maybe$Nothing, editorMode: $author$project$Main$TestGame, playerFacing: $author$project$Main$Forward, playerFrame: spawnFrame, playerMovingAcrossEdge: $elm$core$Maybe$Nothing, playerWantFacing: $author$project$Main$Forward, score: 0}),
 							$elm$core$Platform$Cmd$none);
 					}
 				} else {
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{mode: $author$project$Main$Editor}),
+							{editorMode: $author$project$Main$EditBoard}),
 						$elm$core$Platform$Cmd$none);
 				}
-			case 'SetEditMode':
-				var editMode = msg.a;
+			case 'SetBlockEditMode':
+				var blockEditMode = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{editMode: editMode}),
+						{blockEditMode: blockEditMode}),
 					$elm$core$Platform$Cmd$none);
 			case 'SetCameraMode':
 				var cameraMode = msg.a;
@@ -19791,8 +19891,8 @@ var $author$project$Main$update = F2(
 							{mouseDragging: $author$project$Main$NoInteraction}),
 						$elm$core$Platform$Cmd$none);
 				} else {
-					var _v5 = model.editMode;
-					switch (_v5.$) {
+					var _v8 = model.blockEditMode;
+					switch (_v8.$) {
 						case 'Remove':
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
@@ -19828,8 +19928,8 @@ var $author$project$Main$update = F2(
 										board,
 										{
 											blocks: function () {
-												var _v9 = model.selectedBlockType;
-												if (_v9.$ === 'PlayerSpawn') {
+												var _v12 = model.selectedBlockType;
+												if (_v12.$ === 'PlayerSpawn') {
 													return A3(
 														$elm$core$Dict$insert,
 														model.editorCursor,
@@ -19837,7 +19937,7 @@ var $author$project$Main$update = F2(
 														A2(
 															$elm$core$Dict$map,
 															F2(
-																function (_v10, block) {
+																function (_v13, block) {
 																	if (block.$ === 'PlayerSpawn') {
 																		return $author$project$Main$Empty;
 																	} else {
@@ -19864,14 +19964,14 @@ var $author$project$Main$update = F2(
 												$author$project$Main$boardCodec,
 												$author$project$Undo$value(editorBoard))),
 										boardPlayError: function () {
-											var _v6 = model.boardPlayError;
-											if (_v6.$ === 'Nothing') {
+											var _v9 = model.boardPlayError;
+											if (_v9.$ === 'Nothing') {
 												return model.boardPlayError;
 											} else {
-												var _v7 = _v6.a;
-												var _v8 = $author$project$Main$findSpawn(
+												var _v10 = _v9.a;
+												var _v11 = $author$project$Main$findSpawn(
 													$author$project$Undo$value(editorBoard));
-												if (_v8.$ === 'Nothing') {
+												if (_v11.$ === 'Nothing') {
 													return model.boardPlayError;
 												} else {
 													return $elm$core$Maybe$Nothing;
@@ -20007,13 +20107,13 @@ var $author$project$Main$update = F2(
 				var maxXStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v12 = $elm$core$String$toInt(maxXStr);
-						if (_v12.$ === 'Nothing') {
+						var _v15 = $elm$core$String$toInt(maxXStr);
+						if (_v15.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxXRaw: maxXStr});
 						} else {
-							var maxX = _v12.a;
+							var maxX = _v15.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -20062,13 +20162,13 @@ var $author$project$Main$update = F2(
 				var maxYStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v13 = $elm$core$String$toInt(maxYStr);
-						if (_v13.$ === 'Nothing') {
+						var _v16 = $elm$core$String$toInt(maxYStr);
+						if (_v16.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxYRaw: maxYStr});
 						} else {
-							var maxY = _v13.a;
+							var maxY = _v16.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -20117,13 +20217,13 @@ var $author$project$Main$update = F2(
 				var maxZStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v14 = $elm$core$String$toInt(maxZStr);
-						if (_v14.$ === 'Nothing') {
+						var _v17 = $elm$core$String$toInt(maxZStr);
+						if (_v17.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxZRaw: maxZStr});
 						} else {
-							var maxZ = _v14.a;
+							var maxZ = _v17.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -20187,13 +20287,42 @@ var $author$project$Main$update = F2(
 							inputMapping: fn(model.inputMapping)
 						}),
 					$elm$core$Platform$Cmd$none);
+			case 'SetScreen':
+				var screen = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{screen: screen}),
+					$elm$core$Platform$Cmd$none);
+			case 'ShowFreePlayMenu':
+				var show = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{showFreePlayMenu: show}),
+					$elm$core$Platform$Cmd$none);
 			default:
 				var key = msg.a;
-				var _v15 = model.mode;
-				if (_v15.$ === 'Editor') {
-					return A2($author$project$Main$handleEditorKeyPressed, key, model);
-				} else {
-					return A2($author$project$Main$handleGameKeyPressed, key, model);
+				var _v18 = model.screen;
+				switch (_v18.$) {
+					case 'Editor':
+						var _v19 = model.editorMode;
+						if (_v19.$ === 'EditBoard') {
+							return A2($author$project$Main$handleEditorKeyPressed, key, model);
+						} else {
+							return A2($author$project$Main$handleGameKeyPressed, key, model);
+						}
+					case 'FreePlay':
+						var _v20 = model.freePlayMode;
+						if (_v20.$ === 'FreePlayBoardSelection') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							return A2($author$project$Main$handleGameKeyPressed, key, model);
+						}
+					case 'Menu':
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					default:
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
 		}
 	});
@@ -20203,8 +20332,8 @@ var $author$project$Main$DefaultBoard = {$: 'DefaultBoard'};
 var $author$project$Main$EncodingChanged = function (a) {
 	return {$: 'EncodingChanged', a: a};
 };
-var $author$project$Main$LoadBoard = function (a) {
-	return {$: 'LoadBoard', a: a};
+var $author$project$Main$LoadEditorBoard = function (a) {
+	return {$: 'LoadEditorBoard', a: a};
 };
 var $author$project$Main$MaxXChanged = function (a) {
 	return {$: 'MaxXChanged', a: a};
@@ -20255,12 +20384,6 @@ var $author$project$Main$axisToLabel = function (axis) {
 			return 'Negative Z';
 	}
 };
-var $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor = function (a) {
-	return {$: 'BackgroundColor', a: a};
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor = function (color) {
-	return $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor(color);
-};
 var $author$project$Main$basicMiniBoard = '[1,[5,5,5,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[2]],[[0,0,3],[1]],[[0,0,4],[1]],[[0,1,0],[1]],[[0,1,1],[1]],[[0,1,2],[3,false]],[[0,1,3],[1]],[[0,1,4],[1]],[[0,2,0],[2]],[[0,2,1],[3,false]],[[0,2,2],[3,false]],[[0,2,3],[3,false]],[[0,2,4],[2]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[3,false]],[[0,3,3],[1]],[[0,3,4],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[2]],[[0,4,3],[1]],[[0,4,4],[1]],[[1,0,0],[1]],[[1,0,1],[1]],[[1,0,2],[3,false]],[[1,0,3],[1]],[[1,0,4],[1]],[[1,1,0],[1]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,2,0],[3,false]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[3,false]],[[1,3,0],[1]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,4,0],[1]],[[1,4,1],[1]],[[1,4,2],[3,false]],[[1,4,3],[1]],[[1,4,4],[1]],[[2,0,0],[2]],[[2,0,1],[3,false]],[[2,0,2],[3,false]],[[2,0,3],[3,false]],[[2,0,4],[2]],[[2,1,0],[3,false]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[3,false]],[[2,2,0],[3,false]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[4,[[0],[2]]]],[[2,3,0],[3,false]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[3,false]],[[2,4,0],[2]],[[2,4,1],[3,false]],[[2,4,2],[3,false]],[[2,4,3],[3,false]],[[2,4,4],[2]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[3,false]],[[3,0,3],[1]],[[3,0,4],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,2,0],[3,false]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[3,false]],[[3,3,0],[1]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,4,0],[1]],[[3,4,1],[1]],[[3,4,2],[3,false]],[[3,4,3],[1]],[[3,4,4],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[2]],[[4,0,3],[1]],[[4,0,4],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[3,false]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,2,0],[2]],[[4,2,1],[3,false]],[[4,2,2],[3,false]],[[4,2,3],[3,false]],[[4,2,4],[2]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[3,false]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,4,0],[1]],[[4,4,1],[1]],[[4,4,2],[2]],[[4,4,3],[1]],[[4,4,4],[1]]]]]';
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $ianmackenzie$elm_3d_scene$Scene3d$Light$CastsShadows = function (a) {
@@ -20268,6 +20391,783 @@ var $ianmackenzie$elm_3d_scene$Scene3d$Light$CastsShadows = function (a) {
 };
 var $ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows = function (flag) {
 	return $ianmackenzie$elm_3d_scene$Scene3d$Light$CastsShadows(flag);
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$Chromaticity = function (a) {
+	return {$: 'Chromaticity', a: a};
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$chromaticity = function (xy) {
+	return $ianmackenzie$elm_3d_scene$Scene3d$Types$Chromaticity(xy);
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight = $ianmackenzie$elm_3d_scene$Scene3d$Light$chromaticity(
+	{x: 0.31271, y: 0.32902});
+var $author$project$Main$MouseDown = function (a) {
+	return {$: 'MouseDown', a: a};
+};
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $author$project$Main$decodeMouseDown = A2(
+	$elm$json$Json$Decode$andThen,
+	function (button) {
+		return (!button) ? A2(
+			$elm$json$Json$Decode$map,
+			$author$project$Main$MouseDown,
+			A2($elm$json$Json$Decode$field, 'pointerId', $elm$json$Json$Decode$value)) : $elm$json$Json$Decode$fail('Non-primary mouse button');
+	},
+	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
+var $author$project$Main$MouseUp = {$: 'MouseUp'};
+var $author$project$Main$decodeMouseUp = A2(
+	$elm$json$Json$Decode$andThen,
+	function (button) {
+		return (!button) ? $elm$json$Json$Decode$succeed($author$project$Main$MouseUp) : $elm$json$Json$Decode$fail('Non-primary mouse button');
+	},
+	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
+var $author$project$Main$MouseMove = F3(
+	function (a, b, c) {
+		return {$: 'MouseMove', a: a, b: b, c: c};
+	});
+var $elm$json$Json$Decode$map4 = _Json_map4;
+var $author$project$Main$decodePointerMove = function (pointer) {
+	return A5(
+		$elm$json$Json$Decode$map4,
+		F4(
+			function (ox, oy, mx, my) {
+				return A3(
+					$author$project$Main$MouseMove,
+					pointer,
+					A2($ianmackenzie$elm_geometry$Point2d$pixels, ox, oy),
+					A2($ianmackenzie$elm_geometry$Point2d$pixels, mx, my));
+			}),
+		A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float),
+		A2($elm$json$Json$Decode$field, 'offsetY', $elm$json$Json$Decode$float),
+		A2($elm$json$Json$Decode$field, 'movementX', $elm$json$Json$Decode$float),
+		A2($elm$json$Json$Decode$field, 'movementY', $elm$json$Json$Decode$float));
+};
+var $author$project$Main$defaultBoard = '[1,[9,9,9,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[1]],[[0,0,3],[1]],[[0,0,4],[1]],[[0,0,5],[1]],[[0,0,6],[1]],[[0,0,7],[1]],[[0,0,8],[1]],[[0,1,0],[1]],[[0,1,1],[1]],[[0,1,2],[1]],[[0,1,3],[1]],[[0,1,4],[1]],[[0,1,5],[1]],[[0,1,6],[1]],[[0,1,7],[1]],[[0,1,8],[1]],[[0,2,0],[1]],[[0,2,1],[1]],[[0,2,2],[1]],[[0,2,3],[1]],[[0,2,4],[1]],[[0,2,5],[1]],[[0,2,6],[1]],[[0,2,7],[1]],[[0,2,8],[1]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[1]],[[0,3,3],[1]],[[0,3,4],[1]],[[0,3,5],[1]],[[0,3,6],[1]],[[0,3,7],[1]],[[0,3,8],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[1]],[[0,4,3],[1]],[[0,4,4],[1]],[[0,4,5],[1]],[[0,4,6],[1]],[[0,4,7],[1]],[[0,4,8],[1]],[[0,5,0],[1]],[[0,5,1],[1]],[[0,5,2],[1]],[[0,5,3],[1]],[[0,5,4],[1]],[[0,5,5],[1]],[[0,5,6],[1]],[[0,5,7],[1]],[[0,5,8],[1]],[[0,6,0],[1]],[[0,6,1],[1]],[[0,6,2],[1]],[[0,6,3],[1]],[[0,6,4],[1]],[[0,6,5],[1]],[[0,6,6],[1]],[[0,6,7],[1]],[[0,6,8],[1]],[[0,7,0],[1]],[[0,7,1],[1]],[[0,7,2],[1]],[[0,7,3],[1]],[[0,7,4],[1]],[[0,7,5],[1]],[[0,7,6],[1]],[[0,7,7],[1]],[[0,7,8],[1]],[[0,8,0],[1]],[[0,8,1],[1]],[[0,8,2],[1]],[[0,8,3],[1]],[[0,8,4],[1]],[[0,8,5],[1]],[[0,8,6],[1]],[[0,8,7],[1]],[[0,8,8],[1]],[[1,0,0],[1]],[[1,0,1],[1]],[[1,0,2],[1]],[[1,0,3],[1]],[[1,0,4],[1]],[[1,0,5],[1]],[[1,0,6],[1]],[[1,0,7],[1]],[[1,0,8],[1]],[[1,1,0],[1]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,1,5],[1]],[[1,1,6],[1]],[[1,1,7],[1]],[[1,1,8],[1]],[[1,2,0],[1]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[1]],[[1,2,5],[1]],[[1,2,6],[1]],[[1,2,7],[1]],[[1,2,8],[1]],[[1,3,0],[1]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,3,5],[1]],[[1,3,6],[1]],[[1,3,7],[1]],[[1,3,8],[1]],[[1,4,0],[1]],[[1,4,1],[1]],[[1,4,2],[1]],[[1,4,3],[1]],[[1,4,4],[1]],[[1,4,5],[1]],[[1,4,6],[1]],[[1,4,7],[1]],[[1,4,8],[1]],[[1,5,0],[1]],[[1,5,1],[1]],[[1,5,2],[1]],[[1,5,3],[1]],[[1,5,4],[1]],[[1,5,5],[1]],[[1,5,6],[1]],[[1,5,7],[1]],[[1,5,8],[1]],[[1,6,0],[1]],[[1,6,1],[1]],[[1,6,2],[1]],[[1,6,3],[1]],[[1,6,4],[1]],[[1,6,5],[1]],[[1,6,6],[1]],[[1,6,7],[1]],[[1,6,8],[1]],[[1,7,0],[1]],[[1,7,1],[1]],[[1,7,2],[1]],[[1,7,3],[1]],[[1,7,4],[1]],[[1,7,5],[1]],[[1,7,6],[1]],[[1,7,7],[1]],[[1,7,8],[1]],[[1,8,0],[1]],[[1,8,1],[1]],[[1,8,2],[1]],[[1,8,3],[1]],[[1,8,4],[1]],[[1,8,5],[1]],[[1,8,6],[1]],[[1,8,7],[1]],[[1,8,8],[1]],[[2,0,0],[1]],[[2,0,1],[1]],[[2,0,2],[1]],[[2,0,3],[1]],[[2,0,4],[1]],[[2,0,5],[1]],[[2,0,6],[1]],[[2,0,7],[1]],[[2,0,8],[1]],[[2,1,0],[1]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[1]],[[2,1,5],[1]],[[2,1,6],[1]],[[2,1,7],[1]],[[2,1,8],[1]],[[2,2,0],[1]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[1]],[[2,2,5],[1]],[[2,2,6],[1]],[[2,2,7],[1]],[[2,2,8],[1]],[[2,3,0],[1]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[1]],[[2,3,5],[1]],[[2,3,6],[1]],[[2,3,7],[1]],[[2,3,8],[1]],[[2,4,0],[1]],[[2,4,1],[1]],[[2,4,2],[1]],[[2,4,3],[1]],[[2,4,4],[1]],[[2,4,5],[1]],[[2,4,6],[1]],[[2,4,7],[1]],[[2,4,8],[1]],[[2,5,0],[1]],[[2,5,1],[1]],[[2,5,2],[1]],[[2,5,3],[1]],[[2,5,4],[1]],[[2,5,5],[1]],[[2,5,6],[1]],[[2,5,7],[1]],[[2,5,8],[1]],[[2,6,0],[1]],[[2,6,1],[1]],[[2,6,2],[1]],[[2,6,3],[1]],[[2,6,4],[1]],[[2,6,5],[1]],[[2,6,6],[1]],[[2,6,7],[1]],[[2,6,8],[1]],[[2,7,0],[1]],[[2,7,1],[1]],[[2,7,2],[1]],[[2,7,3],[1]],[[2,7,4],[1]],[[2,7,5],[1]],[[2,7,6],[1]],[[2,7,7],[1]],[[2,7,8],[1]],[[2,8,0],[1]],[[2,8,1],[1]],[[2,8,2],[1]],[[2,8,3],[1]],[[2,8,4],[1]],[[2,8,5],[1]],[[2,8,6],[1]],[[2,8,7],[1]],[[2,8,8],[1]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[1]],[[3,0,3],[1]],[[3,0,4],[1]],[[3,0,5],[1]],[[3,0,6],[1]],[[3,0,7],[1]],[[3,0,8],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,1,5],[1]],[[3,1,6],[1]],[[3,1,7],[1]],[[3,1,8],[1]],[[3,2,0],[1]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[1]],[[3,2,5],[1]],[[3,2,6],[1]],[[3,2,7],[1]],[[3,2,8],[1]],[[3,3,0],[1]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,3,5],[1]],[[3,3,6],[1]],[[3,3,7],[1]],[[3,3,8],[1]],[[3,4,0],[1]],[[3,4,1],[1]],[[3,4,2],[1]],[[3,4,3],[1]],[[3,4,4],[1]],[[3,4,5],[1]],[[3,4,6],[1]],[[3,4,7],[1]],[[3,4,8],[1]],[[3,5,0],[1]],[[3,5,1],[1]],[[3,5,2],[1]],[[3,5,3],[1]],[[3,5,4],[1]],[[3,5,5],[1]],[[3,5,6],[1]],[[3,5,7],[1]],[[3,5,8],[1]],[[3,6,0],[1]],[[3,6,1],[1]],[[3,6,2],[1]],[[3,6,3],[1]],[[3,6,4],[1]],[[3,6,5],[1]],[[3,6,6],[1]],[[3,6,7],[1]],[[3,6,8],[1]],[[3,7,0],[1]],[[3,7,1],[1]],[[3,7,2],[1]],[[3,7,3],[1]],[[3,7,4],[1]],[[3,7,5],[1]],[[3,7,6],[1]],[[3,7,7],[1]],[[3,7,8],[1]],[[3,8,0],[1]],[[3,8,1],[1]],[[3,8,2],[1]],[[3,8,3],[1]],[[3,8,4],[1]],[[3,8,5],[1]],[[3,8,6],[1]],[[3,8,7],[1]],[[3,8,8],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[1]],[[4,0,3],[1]],[[4,0,4],[1]],[[4,0,5],[1]],[[4,0,6],[1]],[[4,0,7],[1]],[[4,0,8],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[1]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,1,5],[1]],[[4,1,6],[1]],[[4,1,7],[1]],[[4,1,8],[1]],[[4,2,0],[1]],[[4,2,1],[1]],[[4,2,2],[1]],[[4,2,3],[1]],[[4,2,4],[1]],[[4,2,5],[1]],[[4,2,6],[1]],[[4,2,7],[1]],[[4,2,8],[1]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[1]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,3,5],[1]],[[4,3,6],[1]],[[4,3,7],[1]],[[4,3,8],[1]],[[4,4,0],[1]],[[4,4,1],[1]],[[4,4,2],[1]],[[4,4,3],[1]],[[4,4,4],[1]],[[4,4,5],[1]],[[4,4,6],[1]],[[4,4,7],[1]],[[4,4,8],[1]],[[4,5,0],[1]],[[4,5,1],[1]],[[4,5,2],[1]],[[4,5,3],[1]],[[4,5,4],[1]],[[4,5,5],[1]],[[4,5,6],[1]],[[4,5,7],[1]],[[4,5,8],[1]],[[4,6,0],[1]],[[4,6,1],[1]],[[4,6,2],[1]],[[4,6,3],[1]],[[4,6,4],[1]],[[4,6,5],[1]],[[4,6,6],[1]],[[4,6,7],[1]],[[4,6,8],[1]],[[4,7,0],[1]],[[4,7,1],[1]],[[4,7,2],[1]],[[4,7,3],[1]],[[4,7,4],[1]],[[4,7,5],[1]],[[4,7,6],[1]],[[4,7,7],[1]],[[4,7,8],[1]],[[4,8,0],[1]],[[4,8,1],[1]],[[4,8,2],[1]],[[4,8,3],[1]],[[4,8,4],[1]],[[4,8,5],[1]],[[4,8,6],[1]],[[4,8,7],[1]],[[4,8,8],[1]],[[5,0,0],[1]],[[5,0,1],[1]],[[5,0,2],[1]],[[5,0,3],[1]],[[5,0,4],[1]],[[5,0,5],[1]],[[5,0,6],[1]],[[5,0,7],[1]],[[5,0,8],[1]],[[5,1,0],[1]],[[5,1,1],[1]],[[5,1,2],[1]],[[5,1,3],[1]],[[5,1,4],[1]],[[5,1,5],[1]],[[5,1,6],[1]],[[5,1,7],[1]],[[5,1,8],[1]],[[5,2,0],[1]],[[5,2,1],[1]],[[5,2,2],[1]],[[5,2,3],[1]],[[5,2,4],[1]],[[5,2,5],[1]],[[5,2,6],[1]],[[5,2,7],[1]],[[5,2,8],[1]],[[5,3,0],[1]],[[5,3,1],[1]],[[5,3,2],[1]],[[5,3,3],[1]],[[5,3,4],[1]],[[5,3,5],[1]],[[5,3,6],[1]],[[5,3,7],[1]],[[5,3,8],[1]],[[5,4,0],[1]],[[5,4,1],[1]],[[5,4,2],[1]],[[5,4,3],[1]],[[5,4,4],[1]],[[5,4,5],[1]],[[5,4,6],[1]],[[5,4,7],[1]],[[5,4,8],[1]],[[5,5,0],[1]],[[5,5,1],[1]],[[5,5,2],[1]],[[5,5,3],[1]],[[5,5,4],[1]],[[5,5,5],[1]],[[5,5,6],[1]],[[5,5,7],[1]],[[5,5,8],[1]],[[5,6,0],[1]],[[5,6,1],[1]],[[5,6,2],[1]],[[5,6,3],[1]],[[5,6,4],[1]],[[5,6,5],[1]],[[5,6,6],[1]],[[5,6,7],[1]],[[5,6,8],[1]],[[5,7,0],[1]],[[5,7,1],[1]],[[5,7,2],[1]],[[5,7,3],[1]],[[5,7,4],[1]],[[5,7,5],[1]],[[5,7,6],[1]],[[5,7,7],[1]],[[5,7,8],[1]],[[5,8,0],[1]],[[5,8,1],[1]],[[5,8,2],[1]],[[5,8,3],[1]],[[5,8,4],[1]],[[5,8,5],[1]],[[5,8,6],[1]],[[5,8,7],[1]],[[5,8,8],[1]],[[6,0,0],[1]],[[6,0,1],[1]],[[6,0,2],[1]],[[6,0,3],[1]],[[6,0,4],[1]],[[6,0,5],[1]],[[6,0,6],[1]],[[6,0,7],[1]],[[6,0,8],[1]],[[6,1,0],[1]],[[6,1,1],[1]],[[6,1,2],[1]],[[6,1,3],[1]],[[6,1,4],[1]],[[6,1,5],[1]],[[6,1,6],[1]],[[6,1,7],[1]],[[6,1,8],[1]],[[6,2,0],[1]],[[6,2,1],[1]],[[6,2,2],[1]],[[6,2,3],[1]],[[6,2,4],[1]],[[6,2,5],[1]],[[6,2,6],[1]],[[6,2,7],[1]],[[6,2,8],[1]],[[6,3,0],[1]],[[6,3,1],[1]],[[6,3,2],[1]],[[6,3,3],[1]],[[6,3,4],[1]],[[6,3,5],[1]],[[6,3,6],[1]],[[6,3,7],[1]],[[6,3,8],[1]],[[6,4,0],[1]],[[6,4,1],[1]],[[6,4,2],[1]],[[6,4,3],[1]],[[6,4,4],[1]],[[6,4,5],[1]],[[6,4,6],[1]],[[6,4,7],[1]],[[6,4,8],[1]],[[6,5,0],[1]],[[6,5,1],[1]],[[6,5,2],[1]],[[6,5,3],[1]],[[6,5,4],[1]],[[6,5,5],[1]],[[6,5,6],[1]],[[6,5,7],[1]],[[6,5,8],[1]],[[6,6,0],[1]],[[6,6,1],[1]],[[6,6,2],[1]],[[6,6,3],[1]],[[6,6,4],[1]],[[6,6,5],[1]],[[6,6,6],[1]],[[6,6,7],[1]],[[6,6,8],[1]],[[6,7,0],[1]],[[6,7,1],[1]],[[6,7,2],[1]],[[6,7,3],[1]],[[6,7,4],[1]],[[6,7,5],[1]],[[6,7,6],[1]],[[6,7,7],[1]],[[6,7,8],[1]],[[6,8,0],[1]],[[6,8,1],[1]],[[6,8,2],[1]],[[6,8,3],[1]],[[6,8,4],[1]],[[6,8,5],[1]],[[6,8,6],[1]],[[6,8,7],[1]],[[6,8,8],[1]],[[7,0,0],[1]],[[7,0,1],[1]],[[7,0,2],[1]],[[7,0,3],[1]],[[7,0,4],[1]],[[7,0,5],[1]],[[7,0,6],[1]],[[7,0,7],[1]],[[7,0,8],[1]],[[7,1,0],[1]],[[7,1,1],[1]],[[7,1,2],[1]],[[7,1,3],[1]],[[7,1,4],[1]],[[7,1,5],[1]],[[7,1,6],[1]],[[7,1,7],[1]],[[7,1,8],[1]],[[7,2,0],[1]],[[7,2,1],[1]],[[7,2,2],[1]],[[7,2,3],[1]],[[7,2,4],[1]],[[7,2,5],[1]],[[7,2,6],[1]],[[7,2,7],[1]],[[7,2,8],[1]],[[7,3,0],[1]],[[7,3,1],[1]],[[7,3,2],[1]],[[7,3,3],[1]],[[7,3,4],[1]],[[7,3,5],[1]],[[7,3,6],[1]],[[7,3,7],[1]],[[7,3,8],[1]],[[7,4,0],[1]],[[7,4,1],[1]],[[7,4,2],[1]],[[7,4,3],[1]],[[7,4,4],[1]],[[7,4,5],[1]],[[7,4,6],[1]],[[7,4,7],[1]],[[7,4,8],[1]],[[7,5,0],[1]],[[7,5,1],[1]],[[7,5,2],[1]],[[7,5,3],[1]],[[7,5,4],[1]],[[7,5,5],[1]],[[7,5,6],[1]],[[7,5,7],[1]],[[7,5,8],[1]],[[7,6,0],[1]],[[7,6,1],[1]],[[7,6,2],[1]],[[7,6,3],[1]],[[7,6,4],[1]],[[7,6,5],[1]],[[7,6,6],[1]],[[7,6,7],[1]],[[7,6,8],[1]],[[7,7,0],[1]],[[7,7,1],[1]],[[7,7,2],[1]],[[7,7,3],[1]],[[7,7,4],[1]],[[7,7,5],[1]],[[7,7,6],[1]],[[7,7,7],[1]],[[7,7,8],[1]],[[7,8,0],[1]],[[7,8,1],[1]],[[7,8,2],[1]],[[7,8,3],[1]],[[7,8,4],[1]],[[7,8,5],[1]],[[7,8,6],[1]],[[7,8,7],[1]],[[7,8,8],[1]],[[8,0,0],[1]],[[8,0,1],[1]],[[8,0,2],[1]],[[8,0,3],[1]],[[8,0,4],[1]],[[8,0,5],[1]],[[8,0,6],[1]],[[8,0,7],[1]],[[8,0,8],[1]],[[8,1,0],[1]],[[8,1,1],[1]],[[8,1,2],[1]],[[8,1,3],[1]],[[8,1,4],[1]],[[8,1,5],[1]],[[8,1,6],[1]],[[8,1,7],[1]],[[8,1,8],[1]],[[8,2,0],[1]],[[8,2,1],[1]],[[8,2,2],[1]],[[8,2,3],[1]],[[8,2,4],[1]],[[8,2,5],[1]],[[8,2,6],[1]],[[8,2,7],[1]],[[8,2,8],[1]],[[8,3,0],[1]],[[8,3,1],[1]],[[8,3,2],[1]],[[8,3,3],[1]],[[8,3,4],[1]],[[8,3,5],[1]],[[8,3,6],[1]],[[8,3,7],[1]],[[8,3,8],[1]],[[8,4,0],[1]],[[8,4,1],[1]],[[8,4,2],[1]],[[8,4,3],[1]],[[8,4,4],[1]],[[8,4,5],[1]],[[8,4,6],[1]],[[8,4,7],[1]],[[8,4,8],[1]],[[8,5,0],[1]],[[8,5,1],[1]],[[8,5,2],[1]],[[8,5,3],[1]],[[8,5,4],[1]],[[8,5,5],[1]],[[8,5,6],[1]],[[8,5,7],[1]],[[8,5,8],[1]],[[8,6,0],[1]],[[8,6,1],[1]],[[8,6,2],[1]],[[8,6,3],[1]],[[8,6,4],[1]],[[8,6,5],[1]],[[8,6,6],[1]],[[8,6,7],[1]],[[8,6,8],[1]],[[8,7,0],[1]],[[8,7,1],[1]],[[8,7,2],[1]],[[8,7,3],[1]],[[8,7,4],[1]],[[8,7,5],[1]],[[8,7,6],[1]],[[8,7,7],[1]],[[8,7,8],[1]],[[8,8,0],[1]],[[8,8,1],[1]],[[8,8,2],[1]],[[8,8,3],[1]],[[8,8,4],[1]],[[8,8,5],[1]],[[8,8,6],[1]],[[8,8,7],[1]],[[8,8,8],[1]]]]]';
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$Light = function (a) {
+	return {$: 'Light', a: a};
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$CieXyz = F3(
+	function (a, b, c) {
+		return {$: 'CieXyz', a: a, b: b, c: c};
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToCieXyz = F2(
+	function (_v0, _v1) {
+		var intensity = _v0.a;
+		var x = _v1.a.x;
+		var y = _v1.a.y;
+		return A3($ianmackenzie$elm_3d_scene$Scene3d$Types$CieXyz, (intensity * x) / y, intensity, (intensity * ((1 - x) - y)) / y);
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$LinearRgb = function (a) {
+	return {$: 'LinearRgb', a: a};
+};
+var $elm_explorations$linear_algebra$Math$Vector3$vec3 = _MJS_v3;
+var $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$cieXyzToLinearRgb = function (_v0) {
+	var bigX = _v0.a;
+	var bigY = _v0.b;
+	var bigZ = _v0.c;
+	return $ianmackenzie$elm_3d_scene$Scene3d$Types$LinearRgb(
+		A3($elm_explorations$linear_algebra$Math$Vector3$vec3, ((3.2406 * bigX) - (1.5372 * bigY)) - (0.4986 * bigZ), (((-0.9689) * bigX) + (1.8758 * bigY)) + (0.0415 * bigZ), ((0.0557 * bigX) - (0.204 * bigY)) + (1.057 * bigZ)));
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToLinearRgb = F2(
+	function (intensity, chromaticity) {
+		return $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$cieXyzToLinearRgb(
+			A2($ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToCieXyz, intensity, chromaticity));
+	});
+var $elm_explorations$linear_algebra$Math$Vector3$getX = _MJS_v3getX;
+var $elm_explorations$linear_algebra$Math$Vector3$getY = _MJS_v3getY;
+var $elm_explorations$linear_algebra$Math$Vector3$getZ = _MJS_v3getZ;
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$directional = F2(
+	function (_v0, light) {
+		var shadowFlag = _v0.a;
+		var _v1 = $ianmackenzie$elm_geometry$Direction3d$unwrap(light.direction);
+		var x = _v1.x;
+		var y = _v1.y;
+		var z = _v1.z;
+		var _v2 = A2($ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToLinearRgb, light.intensity, light.chromaticity);
+		var rgb = _v2.a;
+		return $ianmackenzie$elm_3d_scene$Scene3d$Types$Light(
+			{
+				b: $elm_explorations$linear_algebra$Math$Vector3$getZ(rgb),
+				castsShadows: shadowFlag,
+				g: $elm_explorations$linear_algebra$Math$Vector3$getY(rgb),
+				parameter: 0,
+				r: $elm_explorations$linear_algebra$Math$Vector3$getX(rgb),
+				type_: 1,
+				x: -x,
+				y: -y,
+				z: -z
+			});
+	});
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
+var $elm$html$Html$Attributes$step = function (n) {
+	return A2($elm$html$Html$Attributes$stringProperty, 'step', n);
+};
+var $elm$core$String$toFloat = _String_toFloat;
+var $author$project$Html$Extra$dualRange = F2(
+	function (attributes, config) {
+		var percent2 = (config.valueHigh / config.max) * 100;
+		var percent1 = (config.valueLow / config.max) * 100;
+		var colorMin = A2($elm$core$Maybe$withDefault, 'gray', config.colorMin);
+		var colorMid = A2($elm$core$Maybe$withDefault, 'cornflowerblue', config.colorMid);
+		var colorMax = A2($elm$core$Maybe$withDefault, 'gray', config.colorMax);
+		var backgroundColorRight = 'linear-gradient(to right, ' + (colorMin + (' 0%, ' + (colorMin + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, ' + (colorMid + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, ' + (colorMid + (' ' + ($elm$core$String$fromFloat(percent2) + ('%, ' + (colorMax + (' ' + ($elm$core$String$fromFloat(percent2) + ('%, ' + (colorMax + ' 100%)')))))))))))))))))));
+		var backgroundColorLeft = 'linear-gradient(to right, ' + (colorMin + (' 0%, ' + (colorMin + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, ' + (colorMid + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, rgba(0, 0, 0, 0) ' + ($elm$core$String$fromFloat(percent2) + ('%, rgba(0, 0, 0, 0) ' + ($elm$core$String$fromFloat(percent2) + '%, rgba(0, 0, 0, 0) 100%)')))))))))))));
+		return A2(
+			$elm$html$Html$div,
+			_Utils_ap(
+				attributes,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('dual-range__container')
+					])),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('dual-range__controls')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$input,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('dual-range__control-1'),
+									$elm$html$Html$Attributes$type_('range'),
+									$elm$html$Html$Attributes$value(
+									$elm$core$String$fromFloat(config.valueLow)),
+									$elm$html$Html$Events$onInput(
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$String$toFloat,
+										A2(
+											$elm$core$Basics$composeR,
+											$elm$core$Maybe$withDefault(config.valueLow),
+											config.onInputLow))),
+									$elm$html$Html$Attributes$min(
+									$elm$core$String$fromFloat(config.min)),
+									$elm$html$Html$Attributes$max(
+									$elm$core$String$fromFloat(config.max)),
+									$elm$html$Html$Attributes$step(
+									$elm$core$String$fromFloat(config.step)),
+									function () {
+									var _v0 = config.thumb1Image;
+									if (_v0.$ === 'Nothing') {
+										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorLeft + '; --thumb-image: white;'));
+									} else {
+										var thumb1Image = _v0.a;
+										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorLeft + ('; --thumb-image: white url(' + (thumb1Image + ') center center/contain no-repeat;'))));
+									}
+								}()
+								]),
+							_List_Nil),
+							A2(
+							$elm$html$Html$input,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('dual-range__control-2'),
+									$elm$html$Html$Attributes$type_('range'),
+									$elm$html$Html$Attributes$value(
+									$elm$core$String$fromFloat(config.valueHigh)),
+									$elm$html$Html$Events$onInput(
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$String$toFloat,
+										A2(
+											$elm$core$Basics$composeR,
+											$elm$core$Maybe$withDefault(config.valueHigh),
+											config.onInputHigh))),
+									$elm$html$Html$Attributes$min(
+									$elm$core$String$fromFloat(config.min)),
+									$elm$html$Html$Attributes$max(
+									$elm$core$String$fromFloat(config.max)),
+									$elm$html$Html$Attributes$step(
+									$elm$core$String$fromFloat(config.step)),
+									function () {
+									var _v1 = config.thumb2Image;
+									if (_v1.$ === 'Nothing') {
+										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorRight + '; --thumb-image: white;'));
+									} else {
+										var thumb2Image = _v1.a;
+										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorRight + ('; --thumb-image: white url(' + (thumb2Image + ') center center/contain no-repeat;'))));
+									}
+								}()
+								]),
+							_List_Nil)
+						]))
+				]));
+	});
+var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
+var $elm$html$Html$form = _VirtualDom_node('form');
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled = $ianmackenzie$elm_3d_scene$Scene3d$Types$Light(
+	{b: 0, castsShadows: false, g: 0, parameter: 0, r: 0, type_: 0, x: 0, y: 0, z: 0});
+var $ianmackenzie$elm_3d_scene$Scene3d$MultiplePasses = F2(
+	function (a, b) {
+		return {$: 'MultiplePasses', a: a, b: b};
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$SingleUnshadowedPass = function (a) {
+	return {$: 'SingleUnshadowedPass', a: a};
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$eraseLight = function (_v0) {
+	var light = _v0.a;
+	return $ianmackenzie$elm_3d_scene$Scene3d$Types$Light(light);
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$lightCastsShadows = function (_v0) {
+	var properties = _v0.a;
+	return properties.castsShadows;
+};
+var $elm_explorations$linear_algebra$Math$Matrix4$fromRecord = _MJS_m4x4fromRecord;
+var $ianmackenzie$elm_3d_scene$Scene3d$lightPair = F2(
+	function (_v0, _v1) {
+		var first = _v0.a;
+		var second = _v1.a;
+		return $elm_explorations$linear_algebra$Math$Matrix4$fromRecord(
+			{m11: first.x, m12: first.r, m13: second.x, m14: second.r, m21: first.y, m22: first.g, m23: second.y, m24: second.g, m31: first.z, m32: first.b, m33: second.z, m34: second.b, m41: first.type_, m42: first.parameter, m43: second.type_, m44: second.parameter});
+	});
+var $elm_explorations$linear_algebra$Math$Vector4$vec4 = _MJS_v4;
+var $ianmackenzie$elm_3d_scene$Scene3d$lightingDisabled = _Utils_Tuple2(
+	{
+		lights12: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled),
+		lights34: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled),
+		lights56: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled),
+		lights78: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled)
+	},
+	A4($elm_explorations$linear_algebra$Math$Vector4$vec4, 0, 0, 0, 0));
+var $ianmackenzie$elm_3d_scene$Scene3d$noLights = $ianmackenzie$elm_3d_scene$Scene3d$SingleUnshadowedPass($ianmackenzie$elm_3d_scene$Scene3d$lightingDisabled.a);
+var $elm$core$List$partition = F2(
+	function (pred, list) {
+		var step = F2(
+			function (x, _v0) {
+				var trues = _v0.a;
+				var falses = _v0.b;
+				return pred(x) ? _Utils_Tuple2(
+					A2($elm$core$List$cons, x, trues),
+					falses) : _Utils_Tuple2(
+					trues,
+					A2($elm$core$List$cons, x, falses));
+			});
+		return A3(
+			$elm$core$List$foldr,
+			step,
+			_Utils_Tuple2(_List_Nil, _List_Nil),
+			list);
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$singleLight = function (_v0) {
+	var light = _v0.a;
+	return $elm_explorations$linear_algebra$Math$Matrix4$fromRecord(
+		{m11: light.x, m12: light.r, m13: 0, m14: 0, m21: light.y, m22: light.g, m23: 0, m24: 0, m31: light.z, m32: light.b, m33: 0, m34: 0, m41: light.type_, m42: light.parameter, m43: 0, m44: 0});
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$eightLights = F8(
+	function (first, second, third, fourth, fifth, sixth, seventh, eigth) {
+		var _v0 = A2(
+			$elm$core$List$partition,
+			$ianmackenzie$elm_3d_scene$Scene3d$lightCastsShadows,
+			_List_fromArray(
+				[
+					$ianmackenzie$elm_3d_scene$Scene3d$eraseLight(first),
+					$ianmackenzie$elm_3d_scene$Scene3d$eraseLight(second),
+					$ianmackenzie$elm_3d_scene$Scene3d$eraseLight(third),
+					$ianmackenzie$elm_3d_scene$Scene3d$eraseLight(fourth)
+				]));
+		var enabledShadowCasters = _v0.a;
+		var disabledShadowCasters = _v0.b;
+		if (!enabledShadowCasters.b) {
+			return $ianmackenzie$elm_3d_scene$Scene3d$SingleUnshadowedPass(
+				{
+					lights12: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, first, second),
+					lights34: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, third, fourth),
+					lights56: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, fifth, sixth),
+					lights78: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, seventh, eigth)
+				});
+		} else {
+			var sortedLights = _Utils_ap(enabledShadowCasters, disabledShadowCasters);
+			if ((((sortedLights.b && sortedLights.b.b) && sortedLights.b.b.b) && sortedLights.b.b.b.b) && (!sortedLights.b.b.b.b.b)) {
+				var light0 = sortedLights.a;
+				var _v3 = sortedLights.b;
+				var light1 = _v3.a;
+				var _v4 = _v3.b;
+				var light2 = _v4.a;
+				var _v5 = _v4.b;
+				var light3 = _v5.a;
+				return A2(
+					$ianmackenzie$elm_3d_scene$Scene3d$MultiplePasses,
+					A2($elm$core$List$map, $ianmackenzie$elm_3d_scene$Scene3d$singleLight, enabledShadowCasters),
+					{
+						lights12: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, light0, light1),
+						lights34: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, light2, light3),
+						lights56: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, fifth, sixth),
+						lights78: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, seventh, eigth)
+					});
+			} else {
+				return $ianmackenzie$elm_3d_scene$Scene3d$noLights;
+			}
+		}
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$fourLights = F4(
+	function (first, second, third, fourth) {
+		return A8($ianmackenzie$elm_3d_scene$Scene3d$eightLights, first, second, third, fourth, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled);
+	});
+var $ianmackenzie$elm_units$Illuminance$lux = function (numLux) {
+	return $ianmackenzie$elm_units$Quantity$Quantity(numLux);
+};
+var $ianmackenzie$elm_units$Quantity$greaterThan = F2(
+	function (_v0, _v1) {
+		var y = _v0.a;
+		var x = _v1.a;
+		return _Utils_cmp(x, y) > 0;
+	});
+var $ianmackenzie$elm_units$Illuminance$inLux = function (_v0) {
+	var numLux = _v0.a;
+	return numLux;
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$soft = function (light) {
+	soft:
+	while (true) {
+		if (_Utils_eq(light.intensityAbove, $ianmackenzie$elm_units$Quantity$zero) && _Utils_eq(light.intensityBelow, $ianmackenzie$elm_units$Quantity$zero)) {
+			return $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled;
+		} else {
+			if (A2(
+				$ianmackenzie$elm_units$Quantity$greaterThan,
+				$ianmackenzie$elm_units$Quantity$abs(light.intensityAbove),
+				$ianmackenzie$elm_units$Quantity$abs(light.intensityBelow))) {
+				var $temp$light = {
+					chromaticity: light.chromaticity,
+					intensityAbove: light.intensityBelow,
+					intensityBelow: light.intensityAbove,
+					upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse(light.upDirection)
+				};
+				light = $temp$light;
+				continue soft;
+			} else {
+				var nitsBelow = $elm$core$Basics$abs(
+					$ianmackenzie$elm_units$Illuminance$inLux(light.intensityBelow) / $elm$core$Basics$pi);
+				var nitsAbove = $elm$core$Basics$abs(
+					$ianmackenzie$elm_units$Illuminance$inLux(light.intensityAbove) / $elm$core$Basics$pi);
+				var _v0 = $ianmackenzie$elm_geometry$Direction3d$unwrap(light.upDirection);
+				var x = _v0.x;
+				var y = _v0.y;
+				var z = _v0.z;
+				var _v1 = A2(
+					$ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToLinearRgb,
+					$ianmackenzie$elm_units$Quantity$float(1),
+					light.chromaticity);
+				var rgb = _v1.a;
+				return $ianmackenzie$elm_3d_scene$Scene3d$Types$Light(
+					{
+						b: nitsAbove * $elm_explorations$linear_algebra$Math$Vector3$getZ(rgb),
+						castsShadows: false,
+						g: nitsAbove * $elm_explorations$linear_algebra$Math$Vector3$getY(rgb),
+						parameter: nitsBelow / nitsAbove,
+						r: nitsAbove * $elm_explorations$linear_algebra$Math$Vector3$getX(rgb),
+						type_: 3,
+						x: x,
+						y: y,
+						z: z
+					});
+			}
+		}
+	}
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead = function (_arguments) {
+	return $ianmackenzie$elm_3d_scene$Scene3d$Light$soft(
+		{chromaticity: _arguments.chromaticity, intensityAbove: _arguments.intensity, intensityBelow: $ianmackenzie$elm_units$Quantity$zero, upDirection: _arguments.upDirection});
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$sixLights = F6(
+	function (first, second, third, fourth, fifth, sixth) {
+		return A8($ianmackenzie$elm_3d_scene$Scene3d$eightLights, first, second, third, fourth, fifth, sixth, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled);
+	});
+var $elm$core$Basics$clamp = F3(
+	function (low, high, number) {
+		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
+	});
+var $ianmackenzie$elm_units$Temperature$inKelvins = function (_v0) {
+	var numKelvins = _v0.a;
+	return numKelvins;
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature = function (temperature) {
+	var t = A3(
+		$elm$core$Basics$clamp,
+		1667,
+		25000,
+		$ianmackenzie$elm_units$Temperature$inKelvins(temperature));
+	var x = (t <= 4000) ? ((((((-0.2661239) * 1.0e9) / ((t * t) * t)) - ((0.2343589 * 1.0e6) / (t * t))) + ((0.8776956 * 1.0e3) / t)) + 0.17991) : ((((((-3.0258469) * 1.0e9) / ((t * t) * t)) + ((2.1070379 * 1.0e6) / (t * t))) + ((0.2226347 * 1.0e3) / t)) + 0.24039);
+	var y = (t <= 2222) ? (((((-1.1063814) * ((x * x) * x)) - (1.3481102 * (x * x))) + (2.18555832 * x)) - 0.20219683) : ((t <= 4000) ? (((((-0.9549476) * ((x * x) * x)) - (1.37418593 * (x * x))) + (2.09137015 * x)) - 0.16748867) : ((((3.081758 * ((x * x) * x)) - (5.8733867 * (x * x))) + (3.75112997 * x)) - 0.37001483));
+	return $ianmackenzie$elm_3d_scene$Scene3d$Light$chromaticity(
+		{x: x, y: y});
+};
+var $ianmackenzie$elm_units$Temperature$Temperature = function (a) {
+	return {$: 'Temperature', a: a};
+};
+var $ianmackenzie$elm_units$Temperature$kelvins = function (numKelvins) {
+	return $ianmackenzie$elm_units$Temperature$Temperature(numKelvins);
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight = $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature(
+	$ianmackenzie$elm_units$Temperature$kelvins(12000));
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight = $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature(
+	$ianmackenzie$elm_units$Temperature$kelvins(5600));
+var $ianmackenzie$elm_geometry$Axis3d$x = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$x);
+var $ianmackenzie$elm_geometry$Axis3d$z = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$z);
+var $author$project$Main$gameLights = function (model) {
+	var sun2 = A2(
+		$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
+		$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
+		{
+			chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
+			direction: A3(
+				$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+				$ianmackenzie$elm_geometry$Axis3d$x,
+				$ianmackenzie$elm_units$Angle$degrees(-70),
+				$ianmackenzie$elm_geometry$Direction3d$positiveZ),
+			intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
+		});
+	var sun1 = A2(
+		$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
+		$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
+		{
+			chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
+			direction: A3(
+				$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+				$ianmackenzie$elm_geometry$Axis3d$x,
+				$ianmackenzie$elm_units$Angle$degrees(70),
+				$ianmackenzie$elm_geometry$Direction3d$negativeZ),
+			intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
+		});
+	var sky3 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+		{
+			chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
+			intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
+			upDirection: A3(
+				$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+				$ianmackenzie$elm_geometry$Axis3d$z,
+				A2(
+					$ianmackenzie$elm_units$Quantity$plus,
+					$ianmackenzie$elm_units$Angle$degrees(-90),
+					model.cameraRotation),
+				A3(
+					$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+					$ianmackenzie$elm_geometry$Axis3d$x,
+					$ianmackenzie$elm_units$Angle$degrees(-70),
+					$ianmackenzie$elm_geometry$Direction3d$positiveZ))
+		});
+	var sky2 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+		{
+			chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+			intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
+			upDirection: A3(
+				$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+				$ianmackenzie$elm_geometry$Axis3d$z,
+				A2(
+					$ianmackenzie$elm_units$Quantity$plus,
+					$ianmackenzie$elm_units$Angle$degrees(90),
+					model.cameraRotation),
+				A3(
+					$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+					$ianmackenzie$elm_geometry$Axis3d$x,
+					$ianmackenzie$elm_units$Angle$degrees(70),
+					$ianmackenzie$elm_geometry$Direction3d$positiveZ))
+		});
+	var sky1 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+		{
+			chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+			intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
+			upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
+		});
+	var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+		{
+			chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
+			intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
+			upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
+		});
+	return A6($ianmackenzie$elm_3d_scene$Scene3d$sixLights, sun1, sun2, sky1, sky2, sky3, environment);
+};
+var $ianmackenzie$elm_geometry$Vector3d$cross = F2(
+	function (_v0, _v1) {
+		var v2 = _v0.a;
+		var v1 = _v1.a;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
+			{x: (v1.y * v2.z) - (v1.z * v2.y), y: (v1.z * v2.x) - (v1.x * v2.z), z: (v1.x * v2.y) - (v1.y * v2.x)});
+	});
+var $ianmackenzie$elm_geometry$Vector3d$from = F2(
+	function (_v0, _v1) {
+		var p1 = _v0.a;
+		var p2 = _v1.a;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
+			{x: p2.x - p1.x, y: p2.y - p1.y, z: p2.z - p1.z});
+	});
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $ianmackenzie$elm_geometry$Vector3d$dot = F2(
+	function (_v0, _v1) {
+		var v2 = _v0.a;
+		var v1 = _v1.a;
+		return $ianmackenzie$elm_units$Quantity$Quantity(((v1.x * v2.x) + (v1.y * v2.y)) + (v1.z * v2.z));
+	});
+var $ianmackenzie$elm_geometry$Vector3d$minus = F2(
+	function (_v0, _v1) {
+		var v2 = _v0.a;
+		var v1 = _v1.a;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
+			{x: v1.x - v2.x, y: v1.y - v2.y, z: v1.z - v2.z});
+	});
+var $ianmackenzie$elm_geometry$Vector3d$projectionIn = F2(
+	function (_v0, _v1) {
+		var d = _v0.a;
+		var v = _v1.a;
+		var projectedLength = ((v.x * d.x) + (v.y * d.y)) + (v.z * d.z);
+		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
+			{x: d.x * projectedLength, y: d.y * projectedLength, z: d.z * projectedLength});
+	});
+var $ianmackenzie$elm_geometry$Vector3d$reverse = function (_v0) {
+	var v = _v0.a;
+	return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
+		{x: -v.x, y: -v.y, z: -v.z});
+};
+var $ianmackenzie$elm_geometry$Direction3d$orthonormalize = F3(
+	function (xVector, xyVector, xyzVector) {
+		return A2(
+			$elm$core$Maybe$andThen,
+			function (xDirection) {
+				var yVector = A2(
+					$ianmackenzie$elm_geometry$Vector3d$minus,
+					A2($ianmackenzie$elm_geometry$Vector3d$projectionIn, xDirection, xyVector),
+					xyVector);
+				return A2(
+					$elm$core$Maybe$andThen,
+					function (yDirection) {
+						var rightHandedZVector = A2($ianmackenzie$elm_geometry$Vector3d$cross, xyVector, xVector);
+						var tripleProduct = A2($ianmackenzie$elm_geometry$Vector3d$dot, xyzVector, rightHandedZVector);
+						var zVector = A2($ianmackenzie$elm_units$Quantity$greaterThan, $ianmackenzie$elm_units$Quantity$zero, tripleProduct) ? rightHandedZVector : (A2($ianmackenzie$elm_units$Quantity$lessThan, $ianmackenzie$elm_units$Quantity$zero, tripleProduct) ? $ianmackenzie$elm_geometry$Vector3d$reverse(rightHandedZVector) : $ianmackenzie$elm_geometry$Vector3d$zero);
+						return A2(
+							$elm$core$Maybe$map,
+							function (zDirection) {
+								return _Utils_Tuple3(xDirection, yDirection, zDirection);
+							},
+							$ianmackenzie$elm_geometry$Vector3d$direction(zVector));
+					},
+					$ianmackenzie$elm_geometry$Vector3d$direction(yVector));
+			},
+			$ianmackenzie$elm_geometry$Vector3d$direction(xVector));
+	});
+var $ianmackenzie$elm_geometry$Direction3d$perpendicularTo = function (_v0) {
+	var d = _v0.a;
+	var absZ = $elm$core$Basics$abs(d.z);
+	var absY = $elm$core$Basics$abs(d.y);
+	var absX = $elm$core$Basics$abs(d.x);
+	if (_Utils_cmp(absX, absY) < 1) {
+		if (_Utils_cmp(absX, absZ) < 1) {
+			var scale = $elm$core$Basics$sqrt((d.z * d.z) + (d.y * d.y));
+			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+				{x: 0, y: (-d.z) / scale, z: d.y / scale});
+		} else {
+			var scale = $elm$core$Basics$sqrt((d.y * d.y) + (d.x * d.x));
+			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+				{x: (-d.y) / scale, y: d.x / scale, z: 0});
+		}
+	} else {
+		if (_Utils_cmp(absY, absZ) < 1) {
+			var scale = $elm$core$Basics$sqrt((d.z * d.z) + (d.x * d.x));
+			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+				{x: d.z / scale, y: 0, z: (-d.x) / scale});
+		} else {
+			var scale = $elm$core$Basics$sqrt((d.x * d.x) + (d.y * d.y));
+			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+				{x: (-d.y) / scale, y: d.x / scale, z: 0});
+		}
+	}
+};
+var $ianmackenzie$elm_geometry$Direction3d$perpendicularBasis = function (direction) {
+	var xDirection = $ianmackenzie$elm_geometry$Direction3d$perpendicularTo(direction);
+	var _v0 = xDirection;
+	var dX = _v0.a;
+	var _v1 = direction;
+	var d = _v1.a;
+	var yDirection = $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+		{x: (d.y * dX.z) - (d.z * dX.y), y: (d.z * dX.x) - (d.x * dX.z), z: (d.x * dX.y) - (d.y * dX.x)});
+	return _Utils_Tuple2(xDirection, yDirection);
+};
+var $ianmackenzie$elm_geometry$Frame3d$withZDirection = F2(
+	function (givenZDirection, givenOrigin) {
+		var _v0 = $ianmackenzie$elm_geometry$Direction3d$perpendicularBasis(givenZDirection);
+		var computedXDirection = _v0.a;
+		var computedYDirection = _v0.b;
+		return $ianmackenzie$elm_geometry$Frame3d$unsafe(
+			{originPoint: givenOrigin, xDirection: computedXDirection, yDirection: computedYDirection, zDirection: givenZDirection});
+	});
+var $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt = function (_arguments) {
+	var zVector = A2($ianmackenzie$elm_geometry$Vector3d$from, _arguments.focalPoint, _arguments.eyePoint);
+	var yVector = $ianmackenzie$elm_geometry$Direction3d$toVector(_arguments.upDirection);
+	var xVector = A2($ianmackenzie$elm_geometry$Vector3d$cross, zVector, yVector);
+	var _v0 = A3($ianmackenzie$elm_geometry$Direction3d$orthonormalize, zVector, yVector, xVector);
+	if (_v0.$ === 'Just') {
+		var _v1 = _v0.a;
+		var normalizedZDirection = _v1.a;
+		var normalizedYDirection = _v1.b;
+		var normalizedXDirection = _v1.c;
+		return $ianmackenzie$elm_3d_camera$Camera3d$Types$Viewpoint3d(
+			$ianmackenzie$elm_geometry$Frame3d$unsafe(
+				{originPoint: _arguments.eyePoint, xDirection: normalizedXDirection, yDirection: normalizedYDirection, zDirection: normalizedZDirection}));
+	} else {
+		var _v2 = $ianmackenzie$elm_geometry$Vector3d$direction(zVector);
+		if (_v2.$ === 'Just') {
+			var zDirection = _v2.a;
+			return $ianmackenzie$elm_3d_camera$Camera3d$Types$Viewpoint3d(
+				A2($ianmackenzie$elm_geometry$Frame3d$withZDirection, zDirection, _arguments.eyePoint));
+		} else {
+			var _v3 = $ianmackenzie$elm_geometry$Direction3d$perpendicularBasis(_arguments.upDirection);
+			var arbitraryZDirection = _v3.a;
+			var arbitraryXDirection = _v3.b;
+			return $ianmackenzie$elm_3d_camera$Camera3d$Types$Viewpoint3d(
+				$ianmackenzie$elm_geometry$Frame3d$unsafe(
+					{originPoint: _arguments.eyePoint, xDirection: arbitraryXDirection, yDirection: _arguments.upDirection, zDirection: arbitraryZDirection}));
+		}
+	}
+};
+var $author$project$Main$gamePlayCamera = function (model) {
+	return $ianmackenzie$elm_3d_camera$Camera3d$perspective(
+		{
+			verticalFieldOfView: $ianmackenzie$elm_units$Angle$degrees(30),
+			viewpoint: function () {
+				var targetPos = $ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame);
+				return $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt(
+					{
+						eyePoint: A3(
+							$ianmackenzie$elm_geometry$Point3d$translateIn,
+							$ianmackenzie$elm_geometry$Frame3d$zDirection(model.playerFrame),
+							$ianmackenzie$elm_units$Length$meters(15),
+							targetPos),
+						focalPoint: targetPos,
+						upDirection: $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame)
+					});
+			}()
+		});
+};
+var $avh4$elm_color$Color$RgbaSpace = F4(
+	function (a, b, c, d) {
+		return {$: 'RgbaSpace', a: a, b: b, c: c, d: d};
+	});
+var $avh4$elm_color$Color$green = A4($avh4$elm_color$Color$RgbaSpace, 115 / 255, 210 / 255, 22 / 255, 1.0);
+var $elm$html$Html$hr = _VirtualDom_node('hr');
+var $elm$html$Html$label = _VirtualDom_node('label');
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$EmptyNode = {$: 'EmptyNode'};
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity = function (a) {
+	return {$: 'Entity', a: a};
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty = $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity($ianmackenzie$elm_3d_scene$Scene3d$Types$EmptyNode);
+var $ianmackenzie$elm_3d_scene$Scene3d$nothing = $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
+var $elm$html$Html$Events$alwaysPreventDefault = function (msg) {
+	return _Utils_Tuple2(msg, true);
+};
+var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
+	return {$: 'MayPreventDefault', a: a};
+};
+var $elm$html$Html$Events$preventDefaultOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
+	});
+var $elm$html$Html$Events$onSubmit = function (msg) {
+	return A2(
+		$elm$html$Html$Events$preventDefaultOn,
+		'submit',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysPreventDefault,
+			$elm$json$Json$Decode$succeed(msg)));
+};
+var $elm$virtual_dom$VirtualDom$property = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_property,
+			_VirtualDom_noInnerHtmlOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlJson(value));
+	});
+var $elm$html$Html$Attributes$property = $elm$virtual_dom$VirtualDom$property;
+var $avh4$elm_color$Color$red = A4($avh4$elm_color$Color$RgbaSpace, 204 / 255, 0 / 255, 0 / 255, 1.0);
+var $elm$html$Html$option = _VirtualDom_node('option');
+var $elm$html$Html$select = _VirtualDom_node('select');
+var $author$project$Html$Extra$selectChangeHelper = F3(
+	function (toKey, options, key) {
+		selectChangeHelper:
+		while (true) {
+			if (!options.b) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var value = options.a;
+				var rest = options.b;
+				if (_Utils_eq(
+					toKey(value),
+					key)) {
+					return $elm$core$Maybe$Just(value);
+				} else {
+					var $temp$toKey = toKey,
+						$temp$options = rest,
+						$temp$key = key;
+					toKey = $temp$toKey;
+					options = $temp$options;
+					key = $temp$key;
+					continue selectChangeHelper;
+				}
+			}
+		}
+	});
+var $author$project$Html$Extra$select = F2(
+	function (attributes, config) {
+		return A2(
+			$elm$html$Html$select,
+			_Utils_ap(
+				attributes,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onInput(
+						function (key) {
+							return config.onSelect(
+								A3($author$project$Html$Extra$selectChangeHelper, config.toKey, config.options, key));
+						}),
+						$elm$html$Html$Attributes$value(
+						function () {
+							var _v0 = config.value;
+							if (_v0.$ === 'Nothing') {
+								return '';
+							} else {
+								var value = _v0.a;
+								return config.toKey(value);
+							}
+						}())
+					])),
+			A2(
+				$elm$core$List$map,
+				function (option) {
+					return A2(
+						$elm$html$Html$option,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$value(
+								config.toKey(option))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								config.toLabel(option))
+							]));
+				},
+				config.options));
+	});
+var $elm$html$Html$small = _VirtualDom_node('small');
+var $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor = function (a) {
+	return {$: 'BackgroundColor', a: a};
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor = function (color) {
+	return $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor(color);
 };
 var $elm_explorations$webgl$WebGL$Internal$Alpha = function (a) {
 	return {$: 'Alpha', a: a};
@@ -20374,7 +21274,6 @@ var $ianmackenzie$elm_units$Pixels$toInt = function (_v0) {
 	var numPixels = _v0.a;
 	return numPixels;
 };
-var $elm_explorations$linear_algebra$Math$Vector4$vec4 = _MJS_v4;
 var $ianmackenzie$elm_3d_scene$Scene3d$allLightsEnabled = A4($elm_explorations$linear_algebra$Math$Vector4$vec4, 1, 1, 1, 1);
 var $ianmackenzie$elm_3d_scene$Scene3d$call = F3(
 	function (renderPasses, lights, settings) {
@@ -20384,33 +21283,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$call = F3(
 				return A2(renderPass, lights, settings);
 			},
 			renderPasses);
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$CieXyz = F3(
-	function (a, b, c) {
-		return {$: 'CieXyz', a: a, b: b, c: c};
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToCieXyz = F2(
-	function (_v0, _v1) {
-		var intensity = _v0.a;
-		var x = _v1.a.x;
-		var y = _v1.a.y;
-		return A3($ianmackenzie$elm_3d_scene$Scene3d$Types$CieXyz, (intensity * x) / y, intensity, (intensity * ((1 - x) - y)) / y);
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$LinearRgb = function (a) {
-	return {$: 'LinearRgb', a: a};
-};
-var $elm_explorations$linear_algebra$Math$Vector3$vec3 = _MJS_v3;
-var $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$cieXyzToLinearRgb = function (_v0) {
-	var bigX = _v0.a;
-	var bigY = _v0.b;
-	var bigZ = _v0.c;
-	return $ianmackenzie$elm_3d_scene$Scene3d$Types$LinearRgb(
-		A3($elm_explorations$linear_algebra$Math$Vector3$vec3, ((3.2406 * bigX) - (1.5372 * bigY)) - (0.4986 * bigZ), (((-0.9689) * bigX) + (1.8758 * bigY)) + (0.0415 * bigZ), ((0.0557 * bigX) - (0.204 * bigY)) + (1.057 * bigZ)));
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToLinearRgb = F2(
-	function (intensity, chromaticity) {
-		return $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$cieXyzToLinearRgb(
-			A2($ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToCieXyz, intensity, chromaticity));
 	});
 var $ianmackenzie$elm_3d_scene$Scene3d$Transformation$compose = F2(
 	function (t1, t2) {
@@ -20431,7 +21303,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$Transformation$compose = F2(
 			scale: t1.scale * t2.scale
 		};
 	});
-var $elm_explorations$linear_algebra$Math$Matrix4$fromRecord = _MJS_m4x4fromRecord;
 var $ianmackenzie$elm_3d_scene$Scene3d$Transformation$modelMatrix = function (transformation) {
 	return $elm_explorations$linear_algebra$Math$Matrix4$fromRecord(
 		{m11: transformation.ix, m12: transformation.jx, m13: transformation.kx, m14: transformation.px, m21: transformation.iy, m22: transformation.jy, m23: transformation.ky, m24: transformation.py, m31: transformation.iz, m32: transformation.jz, m33: transformation.kz, m34: transformation.pz, m41: 0, m42: 0, m43: 0, m44: 1});
@@ -21023,12 +21894,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$getViewBounds = F4(
 			}
 		}
 	});
-var $elm_explorations$linear_algebra$Math$Vector3$getX = _MJS_v3getX;
-var $elm_explorations$linear_algebra$Math$Vector3$getY = _MJS_v3getY;
-var $elm_explorations$linear_algebra$Math$Vector3$getZ = _MJS_v3getZ;
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity = function (a) {
-	return {$: 'Entity', a: a};
-};
 var $ianmackenzie$elm_3d_scene$Scene3d$Types$Group = function (a) {
 	return {$: 'Group', a: a};
 };
@@ -21080,26 +21945,6 @@ var $ianmackenzie$elm_geometry$Vector3d$length = function (_v0) {
 		return $ianmackenzie$elm_units$Quantity$Quantity(scaledLength * largestComponent);
 	}
 };
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$Light = function (a) {
-	return {$: 'Light', a: a};
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled = $ianmackenzie$elm_3d_scene$Scene3d$Types$Light(
-	{b: 0, castsShadows: false, g: 0, parameter: 0, r: 0, type_: 0, x: 0, y: 0, z: 0});
-var $ianmackenzie$elm_3d_scene$Scene3d$lightPair = F2(
-	function (_v0, _v1) {
-		var first = _v0.a;
-		var second = _v1.a;
-		return $elm_explorations$linear_algebra$Math$Matrix4$fromRecord(
-			{m11: first.x, m12: first.r, m13: second.x, m14: second.r, m21: first.y, m22: first.g, m23: second.y, m24: second.g, m31: first.z, m32: first.b, m33: second.z, m34: second.b, m41: first.type_, m42: first.parameter, m43: second.type_, m44: second.parameter});
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$lightingDisabled = _Utils_Tuple2(
-	{
-		lights12: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled),
-		lights34: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled),
-		lights56: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled),
-		lights78: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled)
-	},
-	A4($elm_explorations$linear_algebra$Math$Vector4$vec4, 0, 0, 0, 0));
 var $elm_explorations$webgl$WebGL$Settings$StencilTest$equal = $elm_explorations$webgl$WebGL$Settings$StencilTest$Test(514);
 var $elm_explorations$webgl$WebGL$Settings$DepthTest$lessOrEqual = function (_v0) {
 	var write = _v0.write;
@@ -21482,179 +22327,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$custom = function (_arguments) {
 				{entities: _arguments.entities, exposure: _arguments.exposure, lights: _arguments.lights, toneMapping: _arguments.toneMapping, whiteBalance: _arguments.whiteBalance}
 			]));
 };
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$Chromaticity = function (a) {
-	return {$: 'Chromaticity', a: a};
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$chromaticity = function (xy) {
-	return $ianmackenzie$elm_3d_scene$Scene3d$Types$Chromaticity(xy);
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight = $ianmackenzie$elm_3d_scene$Scene3d$Light$chromaticity(
-	{x: 0.31271, y: 0.32902});
-var $author$project$Main$MouseDown = function (a) {
-	return {$: 'MouseDown', a: a};
-};
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $author$project$Main$decodeMouseDown = A2(
-	$elm$json$Json$Decode$andThen,
-	function (button) {
-		return (!button) ? A2(
-			$elm$json$Json$Decode$map,
-			$author$project$Main$MouseDown,
-			A2($elm$json$Json$Decode$field, 'pointerId', $elm$json$Json$Decode$value)) : $elm$json$Json$Decode$fail('Non-primary mouse button');
-	},
-	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
-var $author$project$Main$MouseUp = {$: 'MouseUp'};
-var $author$project$Main$decodeMouseUp = A2(
-	$elm$json$Json$Decode$andThen,
-	function (button) {
-		return (!button) ? $elm$json$Json$Decode$succeed($author$project$Main$MouseUp) : $elm$json$Json$Decode$fail('Non-primary mouse button');
-	},
-	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
-var $author$project$Main$MouseMove = F3(
-	function (a, b, c) {
-		return {$: 'MouseMove', a: a, b: b, c: c};
-	});
-var $elm$json$Json$Decode$map4 = _Json_map4;
-var $author$project$Main$decodePointerMove = function (pointer) {
-	return A5(
-		$elm$json$Json$Decode$map4,
-		F4(
-			function (ox, oy, mx, my) {
-				return A3(
-					$author$project$Main$MouseMove,
-					pointer,
-					A2($ianmackenzie$elm_geometry$Point2d$pixels, ox, oy),
-					A2($ianmackenzie$elm_geometry$Point2d$pixels, mx, my));
-			}),
-		A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float),
-		A2($elm$json$Json$Decode$field, 'offsetY', $elm$json$Json$Decode$float),
-		A2($elm$json$Json$Decode$field, 'movementX', $elm$json$Json$Decode$float),
-		A2($elm$json$Json$Decode$field, 'movementY', $elm$json$Json$Decode$float));
-};
-var $author$project$Main$defaultBoard = '[1,[9,9,9,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[1]],[[0,0,3],[1]],[[0,0,4],[1]],[[0,0,5],[1]],[[0,0,6],[1]],[[0,0,7],[1]],[[0,0,8],[1]],[[0,1,0],[1]],[[0,1,1],[1]],[[0,1,2],[1]],[[0,1,3],[1]],[[0,1,4],[1]],[[0,1,5],[1]],[[0,1,6],[1]],[[0,1,7],[1]],[[0,1,8],[1]],[[0,2,0],[1]],[[0,2,1],[1]],[[0,2,2],[1]],[[0,2,3],[1]],[[0,2,4],[1]],[[0,2,5],[1]],[[0,2,6],[1]],[[0,2,7],[1]],[[0,2,8],[1]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[1]],[[0,3,3],[1]],[[0,3,4],[1]],[[0,3,5],[1]],[[0,3,6],[1]],[[0,3,7],[1]],[[0,3,8],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[1]],[[0,4,3],[1]],[[0,4,4],[1]],[[0,4,5],[1]],[[0,4,6],[1]],[[0,4,7],[1]],[[0,4,8],[1]],[[0,5,0],[1]],[[0,5,1],[1]],[[0,5,2],[1]],[[0,5,3],[1]],[[0,5,4],[1]],[[0,5,5],[1]],[[0,5,6],[1]],[[0,5,7],[1]],[[0,5,8],[1]],[[0,6,0],[1]],[[0,6,1],[1]],[[0,6,2],[1]],[[0,6,3],[1]],[[0,6,4],[1]],[[0,6,5],[1]],[[0,6,6],[1]],[[0,6,7],[1]],[[0,6,8],[1]],[[0,7,0],[1]],[[0,7,1],[1]],[[0,7,2],[1]],[[0,7,3],[1]],[[0,7,4],[1]],[[0,7,5],[1]],[[0,7,6],[1]],[[0,7,7],[1]],[[0,7,8],[1]],[[0,8,0],[1]],[[0,8,1],[1]],[[0,8,2],[1]],[[0,8,3],[1]],[[0,8,4],[1]],[[0,8,5],[1]],[[0,8,6],[1]],[[0,8,7],[1]],[[0,8,8],[1]],[[1,0,0],[1]],[[1,0,1],[1]],[[1,0,2],[1]],[[1,0,3],[1]],[[1,0,4],[1]],[[1,0,5],[1]],[[1,0,6],[1]],[[1,0,7],[1]],[[1,0,8],[1]],[[1,1,0],[1]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,1,5],[1]],[[1,1,6],[1]],[[1,1,7],[1]],[[1,1,8],[1]],[[1,2,0],[1]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[1]],[[1,2,5],[1]],[[1,2,6],[1]],[[1,2,7],[1]],[[1,2,8],[1]],[[1,3,0],[1]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,3,5],[1]],[[1,3,6],[1]],[[1,3,7],[1]],[[1,3,8],[1]],[[1,4,0],[1]],[[1,4,1],[1]],[[1,4,2],[1]],[[1,4,3],[1]],[[1,4,4],[1]],[[1,4,5],[1]],[[1,4,6],[1]],[[1,4,7],[1]],[[1,4,8],[1]],[[1,5,0],[1]],[[1,5,1],[1]],[[1,5,2],[1]],[[1,5,3],[1]],[[1,5,4],[1]],[[1,5,5],[1]],[[1,5,6],[1]],[[1,5,7],[1]],[[1,5,8],[1]],[[1,6,0],[1]],[[1,6,1],[1]],[[1,6,2],[1]],[[1,6,3],[1]],[[1,6,4],[1]],[[1,6,5],[1]],[[1,6,6],[1]],[[1,6,7],[1]],[[1,6,8],[1]],[[1,7,0],[1]],[[1,7,1],[1]],[[1,7,2],[1]],[[1,7,3],[1]],[[1,7,4],[1]],[[1,7,5],[1]],[[1,7,6],[1]],[[1,7,7],[1]],[[1,7,8],[1]],[[1,8,0],[1]],[[1,8,1],[1]],[[1,8,2],[1]],[[1,8,3],[1]],[[1,8,4],[1]],[[1,8,5],[1]],[[1,8,6],[1]],[[1,8,7],[1]],[[1,8,8],[1]],[[2,0,0],[1]],[[2,0,1],[1]],[[2,0,2],[1]],[[2,0,3],[1]],[[2,0,4],[1]],[[2,0,5],[1]],[[2,0,6],[1]],[[2,0,7],[1]],[[2,0,8],[1]],[[2,1,0],[1]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[1]],[[2,1,5],[1]],[[2,1,6],[1]],[[2,1,7],[1]],[[2,1,8],[1]],[[2,2,0],[1]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[1]],[[2,2,5],[1]],[[2,2,6],[1]],[[2,2,7],[1]],[[2,2,8],[1]],[[2,3,0],[1]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[1]],[[2,3,5],[1]],[[2,3,6],[1]],[[2,3,7],[1]],[[2,3,8],[1]],[[2,4,0],[1]],[[2,4,1],[1]],[[2,4,2],[1]],[[2,4,3],[1]],[[2,4,4],[1]],[[2,4,5],[1]],[[2,4,6],[1]],[[2,4,7],[1]],[[2,4,8],[1]],[[2,5,0],[1]],[[2,5,1],[1]],[[2,5,2],[1]],[[2,5,3],[1]],[[2,5,4],[1]],[[2,5,5],[1]],[[2,5,6],[1]],[[2,5,7],[1]],[[2,5,8],[1]],[[2,6,0],[1]],[[2,6,1],[1]],[[2,6,2],[1]],[[2,6,3],[1]],[[2,6,4],[1]],[[2,6,5],[1]],[[2,6,6],[1]],[[2,6,7],[1]],[[2,6,8],[1]],[[2,7,0],[1]],[[2,7,1],[1]],[[2,7,2],[1]],[[2,7,3],[1]],[[2,7,4],[1]],[[2,7,5],[1]],[[2,7,6],[1]],[[2,7,7],[1]],[[2,7,8],[1]],[[2,8,0],[1]],[[2,8,1],[1]],[[2,8,2],[1]],[[2,8,3],[1]],[[2,8,4],[1]],[[2,8,5],[1]],[[2,8,6],[1]],[[2,8,7],[1]],[[2,8,8],[1]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[1]],[[3,0,3],[1]],[[3,0,4],[1]],[[3,0,5],[1]],[[3,0,6],[1]],[[3,0,7],[1]],[[3,0,8],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,1,5],[1]],[[3,1,6],[1]],[[3,1,7],[1]],[[3,1,8],[1]],[[3,2,0],[1]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[1]],[[3,2,5],[1]],[[3,2,6],[1]],[[3,2,7],[1]],[[3,2,8],[1]],[[3,3,0],[1]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,3,5],[1]],[[3,3,6],[1]],[[3,3,7],[1]],[[3,3,8],[1]],[[3,4,0],[1]],[[3,4,1],[1]],[[3,4,2],[1]],[[3,4,3],[1]],[[3,4,4],[1]],[[3,4,5],[1]],[[3,4,6],[1]],[[3,4,7],[1]],[[3,4,8],[1]],[[3,5,0],[1]],[[3,5,1],[1]],[[3,5,2],[1]],[[3,5,3],[1]],[[3,5,4],[1]],[[3,5,5],[1]],[[3,5,6],[1]],[[3,5,7],[1]],[[3,5,8],[1]],[[3,6,0],[1]],[[3,6,1],[1]],[[3,6,2],[1]],[[3,6,3],[1]],[[3,6,4],[1]],[[3,6,5],[1]],[[3,6,6],[1]],[[3,6,7],[1]],[[3,6,8],[1]],[[3,7,0],[1]],[[3,7,1],[1]],[[3,7,2],[1]],[[3,7,3],[1]],[[3,7,4],[1]],[[3,7,5],[1]],[[3,7,6],[1]],[[3,7,7],[1]],[[3,7,8],[1]],[[3,8,0],[1]],[[3,8,1],[1]],[[3,8,2],[1]],[[3,8,3],[1]],[[3,8,4],[1]],[[3,8,5],[1]],[[3,8,6],[1]],[[3,8,7],[1]],[[3,8,8],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[1]],[[4,0,3],[1]],[[4,0,4],[1]],[[4,0,5],[1]],[[4,0,6],[1]],[[4,0,7],[1]],[[4,0,8],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[1]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,1,5],[1]],[[4,1,6],[1]],[[4,1,7],[1]],[[4,1,8],[1]],[[4,2,0],[1]],[[4,2,1],[1]],[[4,2,2],[1]],[[4,2,3],[1]],[[4,2,4],[1]],[[4,2,5],[1]],[[4,2,6],[1]],[[4,2,7],[1]],[[4,2,8],[1]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[1]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,3,5],[1]],[[4,3,6],[1]],[[4,3,7],[1]],[[4,3,8],[1]],[[4,4,0],[1]],[[4,4,1],[1]],[[4,4,2],[1]],[[4,4,3],[1]],[[4,4,4],[1]],[[4,4,5],[1]],[[4,4,6],[1]],[[4,4,7],[1]],[[4,4,8],[1]],[[4,5,0],[1]],[[4,5,1],[1]],[[4,5,2],[1]],[[4,5,3],[1]],[[4,5,4],[1]],[[4,5,5],[1]],[[4,5,6],[1]],[[4,5,7],[1]],[[4,5,8],[1]],[[4,6,0],[1]],[[4,6,1],[1]],[[4,6,2],[1]],[[4,6,3],[1]],[[4,6,4],[1]],[[4,6,5],[1]],[[4,6,6],[1]],[[4,6,7],[1]],[[4,6,8],[1]],[[4,7,0],[1]],[[4,7,1],[1]],[[4,7,2],[1]],[[4,7,3],[1]],[[4,7,4],[1]],[[4,7,5],[1]],[[4,7,6],[1]],[[4,7,7],[1]],[[4,7,8],[1]],[[4,8,0],[1]],[[4,8,1],[1]],[[4,8,2],[1]],[[4,8,3],[1]],[[4,8,4],[1]],[[4,8,5],[1]],[[4,8,6],[1]],[[4,8,7],[1]],[[4,8,8],[1]],[[5,0,0],[1]],[[5,0,1],[1]],[[5,0,2],[1]],[[5,0,3],[1]],[[5,0,4],[1]],[[5,0,5],[1]],[[5,0,6],[1]],[[5,0,7],[1]],[[5,0,8],[1]],[[5,1,0],[1]],[[5,1,1],[1]],[[5,1,2],[1]],[[5,1,3],[1]],[[5,1,4],[1]],[[5,1,5],[1]],[[5,1,6],[1]],[[5,1,7],[1]],[[5,1,8],[1]],[[5,2,0],[1]],[[5,2,1],[1]],[[5,2,2],[1]],[[5,2,3],[1]],[[5,2,4],[1]],[[5,2,5],[1]],[[5,2,6],[1]],[[5,2,7],[1]],[[5,2,8],[1]],[[5,3,0],[1]],[[5,3,1],[1]],[[5,3,2],[1]],[[5,3,3],[1]],[[5,3,4],[1]],[[5,3,5],[1]],[[5,3,6],[1]],[[5,3,7],[1]],[[5,3,8],[1]],[[5,4,0],[1]],[[5,4,1],[1]],[[5,4,2],[1]],[[5,4,3],[1]],[[5,4,4],[1]],[[5,4,5],[1]],[[5,4,6],[1]],[[5,4,7],[1]],[[5,4,8],[1]],[[5,5,0],[1]],[[5,5,1],[1]],[[5,5,2],[1]],[[5,5,3],[1]],[[5,5,4],[1]],[[5,5,5],[1]],[[5,5,6],[1]],[[5,5,7],[1]],[[5,5,8],[1]],[[5,6,0],[1]],[[5,6,1],[1]],[[5,6,2],[1]],[[5,6,3],[1]],[[5,6,4],[1]],[[5,6,5],[1]],[[5,6,6],[1]],[[5,6,7],[1]],[[5,6,8],[1]],[[5,7,0],[1]],[[5,7,1],[1]],[[5,7,2],[1]],[[5,7,3],[1]],[[5,7,4],[1]],[[5,7,5],[1]],[[5,7,6],[1]],[[5,7,7],[1]],[[5,7,8],[1]],[[5,8,0],[1]],[[5,8,1],[1]],[[5,8,2],[1]],[[5,8,3],[1]],[[5,8,4],[1]],[[5,8,5],[1]],[[5,8,6],[1]],[[5,8,7],[1]],[[5,8,8],[1]],[[6,0,0],[1]],[[6,0,1],[1]],[[6,0,2],[1]],[[6,0,3],[1]],[[6,0,4],[1]],[[6,0,5],[1]],[[6,0,6],[1]],[[6,0,7],[1]],[[6,0,8],[1]],[[6,1,0],[1]],[[6,1,1],[1]],[[6,1,2],[1]],[[6,1,3],[1]],[[6,1,4],[1]],[[6,1,5],[1]],[[6,1,6],[1]],[[6,1,7],[1]],[[6,1,8],[1]],[[6,2,0],[1]],[[6,2,1],[1]],[[6,2,2],[1]],[[6,2,3],[1]],[[6,2,4],[1]],[[6,2,5],[1]],[[6,2,6],[1]],[[6,2,7],[1]],[[6,2,8],[1]],[[6,3,0],[1]],[[6,3,1],[1]],[[6,3,2],[1]],[[6,3,3],[1]],[[6,3,4],[1]],[[6,3,5],[1]],[[6,3,6],[1]],[[6,3,7],[1]],[[6,3,8],[1]],[[6,4,0],[1]],[[6,4,1],[1]],[[6,4,2],[1]],[[6,4,3],[1]],[[6,4,4],[1]],[[6,4,5],[1]],[[6,4,6],[1]],[[6,4,7],[1]],[[6,4,8],[1]],[[6,5,0],[1]],[[6,5,1],[1]],[[6,5,2],[1]],[[6,5,3],[1]],[[6,5,4],[1]],[[6,5,5],[1]],[[6,5,6],[1]],[[6,5,7],[1]],[[6,5,8],[1]],[[6,6,0],[1]],[[6,6,1],[1]],[[6,6,2],[1]],[[6,6,3],[1]],[[6,6,4],[1]],[[6,6,5],[1]],[[6,6,6],[1]],[[6,6,7],[1]],[[6,6,8],[1]],[[6,7,0],[1]],[[6,7,1],[1]],[[6,7,2],[1]],[[6,7,3],[1]],[[6,7,4],[1]],[[6,7,5],[1]],[[6,7,6],[1]],[[6,7,7],[1]],[[6,7,8],[1]],[[6,8,0],[1]],[[6,8,1],[1]],[[6,8,2],[1]],[[6,8,3],[1]],[[6,8,4],[1]],[[6,8,5],[1]],[[6,8,6],[1]],[[6,8,7],[1]],[[6,8,8],[1]],[[7,0,0],[1]],[[7,0,1],[1]],[[7,0,2],[1]],[[7,0,3],[1]],[[7,0,4],[1]],[[7,0,5],[1]],[[7,0,6],[1]],[[7,0,7],[1]],[[7,0,8],[1]],[[7,1,0],[1]],[[7,1,1],[1]],[[7,1,2],[1]],[[7,1,3],[1]],[[7,1,4],[1]],[[7,1,5],[1]],[[7,1,6],[1]],[[7,1,7],[1]],[[7,1,8],[1]],[[7,2,0],[1]],[[7,2,1],[1]],[[7,2,2],[1]],[[7,2,3],[1]],[[7,2,4],[1]],[[7,2,5],[1]],[[7,2,6],[1]],[[7,2,7],[1]],[[7,2,8],[1]],[[7,3,0],[1]],[[7,3,1],[1]],[[7,3,2],[1]],[[7,3,3],[1]],[[7,3,4],[1]],[[7,3,5],[1]],[[7,3,6],[1]],[[7,3,7],[1]],[[7,3,8],[1]],[[7,4,0],[1]],[[7,4,1],[1]],[[7,4,2],[1]],[[7,4,3],[1]],[[7,4,4],[1]],[[7,4,5],[1]],[[7,4,6],[1]],[[7,4,7],[1]],[[7,4,8],[1]],[[7,5,0],[1]],[[7,5,1],[1]],[[7,5,2],[1]],[[7,5,3],[1]],[[7,5,4],[1]],[[7,5,5],[1]],[[7,5,6],[1]],[[7,5,7],[1]],[[7,5,8],[1]],[[7,6,0],[1]],[[7,6,1],[1]],[[7,6,2],[1]],[[7,6,3],[1]],[[7,6,4],[1]],[[7,6,5],[1]],[[7,6,6],[1]],[[7,6,7],[1]],[[7,6,8],[1]],[[7,7,0],[1]],[[7,7,1],[1]],[[7,7,2],[1]],[[7,7,3],[1]],[[7,7,4],[1]],[[7,7,5],[1]],[[7,7,6],[1]],[[7,7,7],[1]],[[7,7,8],[1]],[[7,8,0],[1]],[[7,8,1],[1]],[[7,8,2],[1]],[[7,8,3],[1]],[[7,8,4],[1]],[[7,8,5],[1]],[[7,8,6],[1]],[[7,8,7],[1]],[[7,8,8],[1]],[[8,0,0],[1]],[[8,0,1],[1]],[[8,0,2],[1]],[[8,0,3],[1]],[[8,0,4],[1]],[[8,0,5],[1]],[[8,0,6],[1]],[[8,0,7],[1]],[[8,0,8],[1]],[[8,1,0],[1]],[[8,1,1],[1]],[[8,1,2],[1]],[[8,1,3],[1]],[[8,1,4],[1]],[[8,1,5],[1]],[[8,1,6],[1]],[[8,1,7],[1]],[[8,1,8],[1]],[[8,2,0],[1]],[[8,2,1],[1]],[[8,2,2],[1]],[[8,2,3],[1]],[[8,2,4],[1]],[[8,2,5],[1]],[[8,2,6],[1]],[[8,2,7],[1]],[[8,2,8],[1]],[[8,3,0],[1]],[[8,3,1],[1]],[[8,3,2],[1]],[[8,3,3],[1]],[[8,3,4],[1]],[[8,3,5],[1]],[[8,3,6],[1]],[[8,3,7],[1]],[[8,3,8],[1]],[[8,4,0],[1]],[[8,4,1],[1]],[[8,4,2],[1]],[[8,4,3],[1]],[[8,4,4],[1]],[[8,4,5],[1]],[[8,4,6],[1]],[[8,4,7],[1]],[[8,4,8],[1]],[[8,5,0],[1]],[[8,5,1],[1]],[[8,5,2],[1]],[[8,5,3],[1]],[[8,5,4],[1]],[[8,5,5],[1]],[[8,5,6],[1]],[[8,5,7],[1]],[[8,5,8],[1]],[[8,6,0],[1]],[[8,6,1],[1]],[[8,6,2],[1]],[[8,6,3],[1]],[[8,6,4],[1]],[[8,6,5],[1]],[[8,6,6],[1]],[[8,6,7],[1]],[[8,6,8],[1]],[[8,7,0],[1]],[[8,7,1],[1]],[[8,7,2],[1]],[[8,7,3],[1]],[[8,7,4],[1]],[[8,7,5],[1]],[[8,7,6],[1]],[[8,7,7],[1]],[[8,7,8],[1]],[[8,8,0],[1]],[[8,8,1],[1]],[[8,8,2],[1]],[[8,8,3],[1]],[[8,8,4],[1]],[[8,8,5],[1]],[[8,8,6],[1]],[[8,8,7],[1]],[[8,8,8],[1]]]]]';
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$directional = F2(
-	function (_v0, light) {
-		var shadowFlag = _v0.a;
-		var _v1 = $ianmackenzie$elm_geometry$Direction3d$unwrap(light.direction);
-		var x = _v1.x;
-		var y = _v1.y;
-		var z = _v1.z;
-		var _v2 = A2($ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToLinearRgb, light.intensity, light.chromaticity);
-		var rgb = _v2.a;
-		return $ianmackenzie$elm_3d_scene$Scene3d$Types$Light(
-			{
-				b: $elm_explorations$linear_algebra$Math$Vector3$getZ(rgb),
-				castsShadows: shadowFlag,
-				g: $elm_explorations$linear_algebra$Math$Vector3$getY(rgb),
-				parameter: 0,
-				r: $elm_explorations$linear_algebra$Math$Vector3$getX(rgb),
-				type_: 1,
-				x: -x,
-				y: -y,
-				z: -z
-			});
-	});
-var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
-var $elm$html$Html$Attributes$step = function (n) {
-	return A2($elm$html$Html$Attributes$stringProperty, 'step', n);
-};
-var $elm$core$String$toFloat = _String_toFloat;
-var $author$project$Html$Extra$dualRange = F2(
-	function (attributes, config) {
-		var percent2 = (config.valueHigh / config.max) * 100;
-		var percent1 = (config.valueLow / config.max) * 100;
-		var colorMin = A2($elm$core$Maybe$withDefault, 'gray', config.colorMin);
-		var colorMid = A2($elm$core$Maybe$withDefault, 'cornflowerblue', config.colorMid);
-		var colorMax = A2($elm$core$Maybe$withDefault, 'gray', config.colorMax);
-		var backgroundColorRight = 'linear-gradient(to right, ' + (colorMin + (' 0%, ' + (colorMin + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, ' + (colorMid + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, ' + (colorMid + (' ' + ($elm$core$String$fromFloat(percent2) + ('%, ' + (colorMax + (' ' + ($elm$core$String$fromFloat(percent2) + ('%, ' + (colorMax + ' 100%)')))))))))))))))))));
-		var backgroundColorLeft = 'linear-gradient(to right, ' + (colorMin + (' 0%, ' + (colorMin + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, ' + (colorMid + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, rgba(0, 0, 0, 0) ' + ($elm$core$String$fromFloat(percent2) + ('%, rgba(0, 0, 0, 0) ' + ($elm$core$String$fromFloat(percent2) + '%, rgba(0, 0, 0, 0) 100%)')))))))))))));
-		return A2(
-			$elm$html$Html$div,
-			_Utils_ap(
-				attributes,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('dual-range__container')
-					])),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('dual-range__controls')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$input,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('dual-range__control-1'),
-									$elm$html$Html$Attributes$type_('range'),
-									$elm$html$Html$Attributes$value(
-									$elm$core$String$fromFloat(config.valueLow)),
-									$elm$html$Html$Events$onInput(
-									A2(
-										$elm$core$Basics$composeR,
-										$elm$core$String$toFloat,
-										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$Maybe$withDefault(config.valueLow),
-											config.onInputLow))),
-									$elm$html$Html$Attributes$min(
-									$elm$core$String$fromFloat(config.min)),
-									$elm$html$Html$Attributes$max(
-									$elm$core$String$fromFloat(config.max)),
-									$elm$html$Html$Attributes$step(
-									$elm$core$String$fromFloat(config.step)),
-									function () {
-									var _v0 = config.thumb1Image;
-									if (_v0.$ === 'Nothing') {
-										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorLeft + '; --thumb-image: white;'));
-									} else {
-										var thumb1Image = _v0.a;
-										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorLeft + ('; --thumb-image: white url(' + (thumb1Image + ') center center/contain no-repeat;'))));
-									}
-								}()
-								]),
-							_List_Nil),
-							A2(
-							$elm$html$Html$input,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('dual-range__control-2'),
-									$elm$html$Html$Attributes$type_('range'),
-									$elm$html$Html$Attributes$value(
-									$elm$core$String$fromFloat(config.valueHigh)),
-									$elm$html$Html$Events$onInput(
-									A2(
-										$elm$core$Basics$composeR,
-										$elm$core$String$toFloat,
-										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$Maybe$withDefault(config.valueHigh),
-											config.onInputHigh))),
-									$elm$html$Html$Attributes$min(
-									$elm$core$String$fromFloat(config.min)),
-									$elm$html$Html$Attributes$max(
-									$elm$core$String$fromFloat(config.max)),
-									$elm$html$Html$Attributes$step(
-									$elm$core$String$fromFloat(config.step)),
-									function () {
-									var _v1 = config.thumb2Image;
-									if (_v1.$ === 'Nothing') {
-										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorRight + '; --thumb-image: white;'));
-									} else {
-										var thumb2Image = _v1.a;
-										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorRight + ('; --thumb-image: white url(' + (thumb2Image + ') center center/contain no-repeat;'))));
-									}
-								}()
-								]),
-							_List_Nil)
-						]))
-				]));
-	});
 var $ianmackenzie$elm_3d_scene$Scene3d$Exposure = function (a) {
 	return {$: 'Exposure', a: a};
 };
@@ -21666,463 +22338,33 @@ var $ianmackenzie$elm_3d_scene$Scene3d$exposureValue = function (ev100) {
 		$ianmackenzie$elm_units$Luminance$nits(
 			1.2 * A2($elm$core$Basics$pow, 2, ev100)));
 };
-var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
-var $elm$html$Html$form = _VirtualDom_node('form');
-var $ianmackenzie$elm_3d_scene$Scene3d$MultiplePasses = F2(
-	function (a, b) {
-		return {$: 'MultiplePasses', a: a, b: b};
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$SingleUnshadowedPass = function (a) {
-	return {$: 'SingleUnshadowedPass', a: a};
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$eraseLight = function (_v0) {
-	var light = _v0.a;
-	return $ianmackenzie$elm_3d_scene$Scene3d$Types$Light(light);
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$lightCastsShadows = function (_v0) {
-	var properties = _v0.a;
-	return properties.castsShadows;
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$noLights = $ianmackenzie$elm_3d_scene$Scene3d$SingleUnshadowedPass($ianmackenzie$elm_3d_scene$Scene3d$lightingDisabled.a);
-var $elm$core$List$partition = F2(
-	function (pred, list) {
-		var step = F2(
-			function (x, _v0) {
-				var trues = _v0.a;
-				var falses = _v0.b;
-				return pred(x) ? _Utils_Tuple2(
-					A2($elm$core$List$cons, x, trues),
-					falses) : _Utils_Tuple2(
-					trues,
-					A2($elm$core$List$cons, x, falses));
-			});
-		return A3(
-			$elm$core$List$foldr,
-			step,
-			_Utils_Tuple2(_List_Nil, _List_Nil),
-			list);
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$singleLight = function (_v0) {
-	var light = _v0.a;
-	return $elm_explorations$linear_algebra$Math$Matrix4$fromRecord(
-		{m11: light.x, m12: light.r, m13: 0, m14: 0, m21: light.y, m22: light.g, m23: 0, m24: 0, m31: light.z, m32: light.b, m33: 0, m34: 0, m41: light.type_, m42: light.parameter, m43: 0, m44: 0});
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$eightLights = F8(
-	function (first, second, third, fourth, fifth, sixth, seventh, eigth) {
-		var _v0 = A2(
-			$elm$core$List$partition,
-			$ianmackenzie$elm_3d_scene$Scene3d$lightCastsShadows,
-			_List_fromArray(
-				[
-					$ianmackenzie$elm_3d_scene$Scene3d$eraseLight(first),
-					$ianmackenzie$elm_3d_scene$Scene3d$eraseLight(second),
-					$ianmackenzie$elm_3d_scene$Scene3d$eraseLight(third),
-					$ianmackenzie$elm_3d_scene$Scene3d$eraseLight(fourth)
-				]));
-		var enabledShadowCasters = _v0.a;
-		var disabledShadowCasters = _v0.b;
-		if (!enabledShadowCasters.b) {
-			return $ianmackenzie$elm_3d_scene$Scene3d$SingleUnshadowedPass(
-				{
-					lights12: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, first, second),
-					lights34: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, third, fourth),
-					lights56: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, fifth, sixth),
-					lights78: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, seventh, eigth)
-				});
-		} else {
-			var sortedLights = _Utils_ap(enabledShadowCasters, disabledShadowCasters);
-			if ((((sortedLights.b && sortedLights.b.b) && sortedLights.b.b.b) && sortedLights.b.b.b.b) && (!sortedLights.b.b.b.b.b)) {
-				var light0 = sortedLights.a;
-				var _v3 = sortedLights.b;
-				var light1 = _v3.a;
-				var _v4 = _v3.b;
-				var light2 = _v4.a;
-				var _v5 = _v4.b;
-				var light3 = _v5.a;
-				return A2(
-					$ianmackenzie$elm_3d_scene$Scene3d$MultiplePasses,
-					A2($elm$core$List$map, $ianmackenzie$elm_3d_scene$Scene3d$singleLight, enabledShadowCasters),
-					{
-						lights12: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, light0, light1),
-						lights34: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, light2, light3),
-						lights56: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, fifth, sixth),
-						lights78: A2($ianmackenzie$elm_3d_scene$Scene3d$lightPair, seventh, eigth)
-					});
-			} else {
-				return $ianmackenzie$elm_3d_scene$Scene3d$noLights;
-			}
-		}
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$fourLights = F4(
-	function (first, second, third, fourth) {
-		return A8($ianmackenzie$elm_3d_scene$Scene3d$eightLights, first, second, third, fourth, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled);
-	});
-var $avh4$elm_color$Color$RgbaSpace = F4(
-	function (a, b, c, d) {
-		return {$: 'RgbaSpace', a: a, b: b, c: c, d: d};
-	});
 var $avh4$elm_color$Color$gray = A4($avh4$elm_color$Color$RgbaSpace, 211 / 255, 215 / 255, 207 / 255, 1.0);
-var $avh4$elm_color$Color$green = A4($avh4$elm_color$Color$RgbaSpace, 115 / 255, 210 / 255, 22 / 255, 1.0);
-var $elm$html$Html$hr = _VirtualDom_node('hr');
 var $ianmackenzie$elm_units$Pixels$int = function (numPixels) {
 	return $ianmackenzie$elm_units$Quantity$Quantity(numPixels);
-};
-var $elm$html$Html$label = _VirtualDom_node('label');
-var $ianmackenzie$elm_geometry$Vector3d$cross = F2(
-	function (_v0, _v1) {
-		var v2 = _v0.a;
-		var v1 = _v1.a;
-		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
-			{x: (v1.y * v2.z) - (v1.z * v2.y), y: (v1.z * v2.x) - (v1.x * v2.z), z: (v1.x * v2.y) - (v1.y * v2.x)});
-	});
-var $ianmackenzie$elm_geometry$Vector3d$from = F2(
-	function (_v0, _v1) {
-		var p1 = _v0.a;
-		var p2 = _v1.a;
-		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
-			{x: p2.x - p1.x, y: p2.y - p1.y, z: p2.z - p1.z});
-	});
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $ianmackenzie$elm_geometry$Vector3d$dot = F2(
-	function (_v0, _v1) {
-		var v2 = _v0.a;
-		var v1 = _v1.a;
-		return $ianmackenzie$elm_units$Quantity$Quantity(((v1.x * v2.x) + (v1.y * v2.y)) + (v1.z * v2.z));
-	});
-var $ianmackenzie$elm_units$Quantity$greaterThan = F2(
-	function (_v0, _v1) {
-		var y = _v0.a;
-		var x = _v1.a;
-		return _Utils_cmp(x, y) > 0;
-	});
-var $ianmackenzie$elm_geometry$Vector3d$minus = F2(
-	function (_v0, _v1) {
-		var v2 = _v0.a;
-		var v1 = _v1.a;
-		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
-			{x: v1.x - v2.x, y: v1.y - v2.y, z: v1.z - v2.z});
-	});
-var $ianmackenzie$elm_geometry$Vector3d$projectionIn = F2(
-	function (_v0, _v1) {
-		var d = _v0.a;
-		var v = _v1.a;
-		var projectedLength = ((v.x * d.x) + (v.y * d.y)) + (v.z * d.z);
-		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
-			{x: d.x * projectedLength, y: d.y * projectedLength, z: d.z * projectedLength});
-	});
-var $ianmackenzie$elm_geometry$Vector3d$reverse = function (_v0) {
-	var v = _v0.a;
-	return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
-		{x: -v.x, y: -v.y, z: -v.z});
-};
-var $ianmackenzie$elm_geometry$Direction3d$orthonormalize = F3(
-	function (xVector, xyVector, xyzVector) {
-		return A2(
-			$elm$core$Maybe$andThen,
-			function (xDirection) {
-				var yVector = A2(
-					$ianmackenzie$elm_geometry$Vector3d$minus,
-					A2($ianmackenzie$elm_geometry$Vector3d$projectionIn, xDirection, xyVector),
-					xyVector);
-				return A2(
-					$elm$core$Maybe$andThen,
-					function (yDirection) {
-						var rightHandedZVector = A2($ianmackenzie$elm_geometry$Vector3d$cross, xyVector, xVector);
-						var tripleProduct = A2($ianmackenzie$elm_geometry$Vector3d$dot, xyzVector, rightHandedZVector);
-						var zVector = A2($ianmackenzie$elm_units$Quantity$greaterThan, $ianmackenzie$elm_units$Quantity$zero, tripleProduct) ? rightHandedZVector : (A2($ianmackenzie$elm_units$Quantity$lessThan, $ianmackenzie$elm_units$Quantity$zero, tripleProduct) ? $ianmackenzie$elm_geometry$Vector3d$reverse(rightHandedZVector) : $ianmackenzie$elm_geometry$Vector3d$zero);
-						return A2(
-							$elm$core$Maybe$map,
-							function (zDirection) {
-								return _Utils_Tuple3(xDirection, yDirection, zDirection);
-							},
-							$ianmackenzie$elm_geometry$Vector3d$direction(zVector));
-					},
-					$ianmackenzie$elm_geometry$Vector3d$direction(yVector));
-			},
-			$ianmackenzie$elm_geometry$Vector3d$direction(xVector));
-	});
-var $ianmackenzie$elm_geometry$Direction3d$perpendicularTo = function (_v0) {
-	var d = _v0.a;
-	var absZ = $elm$core$Basics$abs(d.z);
-	var absY = $elm$core$Basics$abs(d.y);
-	var absX = $elm$core$Basics$abs(d.x);
-	if (_Utils_cmp(absX, absY) < 1) {
-		if (_Utils_cmp(absX, absZ) < 1) {
-			var scale = $elm$core$Basics$sqrt((d.z * d.z) + (d.y * d.y));
-			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-				{x: 0, y: (-d.z) / scale, z: d.y / scale});
-		} else {
-			var scale = $elm$core$Basics$sqrt((d.y * d.y) + (d.x * d.x));
-			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-				{x: (-d.y) / scale, y: d.x / scale, z: 0});
-		}
-	} else {
-		if (_Utils_cmp(absY, absZ) < 1) {
-			var scale = $elm$core$Basics$sqrt((d.z * d.z) + (d.x * d.x));
-			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-				{x: d.z / scale, y: 0, z: (-d.x) / scale});
-		} else {
-			var scale = $elm$core$Basics$sqrt((d.x * d.x) + (d.y * d.y));
-			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-				{x: (-d.y) / scale, y: d.x / scale, z: 0});
-		}
-	}
-};
-var $ianmackenzie$elm_geometry$Direction3d$perpendicularBasis = function (direction) {
-	var xDirection = $ianmackenzie$elm_geometry$Direction3d$perpendicularTo(direction);
-	var _v0 = xDirection;
-	var dX = _v0.a;
-	var _v1 = direction;
-	var d = _v1.a;
-	var yDirection = $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-		{x: (d.y * dX.z) - (d.z * dX.y), y: (d.z * dX.x) - (d.x * dX.z), z: (d.x * dX.y) - (d.y * dX.x)});
-	return _Utils_Tuple2(xDirection, yDirection);
-};
-var $ianmackenzie$elm_geometry$Frame3d$withZDirection = F2(
-	function (givenZDirection, givenOrigin) {
-		var _v0 = $ianmackenzie$elm_geometry$Direction3d$perpendicularBasis(givenZDirection);
-		var computedXDirection = _v0.a;
-		var computedYDirection = _v0.b;
-		return $ianmackenzie$elm_geometry$Frame3d$unsafe(
-			{originPoint: givenOrigin, xDirection: computedXDirection, yDirection: computedYDirection, zDirection: givenZDirection});
-	});
-var $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt = function (_arguments) {
-	var zVector = A2($ianmackenzie$elm_geometry$Vector3d$from, _arguments.focalPoint, _arguments.eyePoint);
-	var yVector = $ianmackenzie$elm_geometry$Direction3d$toVector(_arguments.upDirection);
-	var xVector = A2($ianmackenzie$elm_geometry$Vector3d$cross, zVector, yVector);
-	var _v0 = A3($ianmackenzie$elm_geometry$Direction3d$orthonormalize, zVector, yVector, xVector);
-	if (_v0.$ === 'Just') {
-		var _v1 = _v0.a;
-		var normalizedZDirection = _v1.a;
-		var normalizedYDirection = _v1.b;
-		var normalizedXDirection = _v1.c;
-		return $ianmackenzie$elm_3d_camera$Camera3d$Types$Viewpoint3d(
-			$ianmackenzie$elm_geometry$Frame3d$unsafe(
-				{originPoint: _arguments.eyePoint, xDirection: normalizedXDirection, yDirection: normalizedYDirection, zDirection: normalizedZDirection}));
-	} else {
-		var _v2 = $ianmackenzie$elm_geometry$Vector3d$direction(zVector);
-		if (_v2.$ === 'Just') {
-			var zDirection = _v2.a;
-			return $ianmackenzie$elm_3d_camera$Camera3d$Types$Viewpoint3d(
-				A2($ianmackenzie$elm_geometry$Frame3d$withZDirection, zDirection, _arguments.eyePoint));
-		} else {
-			var _v3 = $ianmackenzie$elm_geometry$Direction3d$perpendicularBasis(_arguments.upDirection);
-			var arbitraryZDirection = _v3.a;
-			var arbitraryXDirection = _v3.b;
-			return $ianmackenzie$elm_3d_camera$Camera3d$Types$Viewpoint3d(
-				$ianmackenzie$elm_geometry$Frame3d$unsafe(
-					{originPoint: _arguments.eyePoint, xDirection: arbitraryXDirection, yDirection: _arguments.upDirection, zDirection: arbitraryZDirection}));
-		}
-	}
-};
-var $ianmackenzie$elm_units$Illuminance$lux = function (numLux) {
-	return $ianmackenzie$elm_units$Quantity$Quantity(numLux);
 };
 var $ianmackenzie$elm_3d_scene$Scene3d$Multisampling = {$: 'Multisampling'};
 var $ianmackenzie$elm_3d_scene$Scene3d$multisampling = $ianmackenzie$elm_3d_scene$Scene3d$Multisampling;
 var $ianmackenzie$elm_3d_scene$Scene3d$NoToneMapping = {$: 'NoToneMapping'};
 var $ianmackenzie$elm_3d_scene$Scene3d$noToneMapping = $ianmackenzie$elm_3d_scene$Scene3d$NoToneMapping;
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$EmptyNode = {$: 'EmptyNode'};
-var $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty = $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity($ianmackenzie$elm_3d_scene$Scene3d$Types$EmptyNode);
-var $ianmackenzie$elm_3d_scene$Scene3d$nothing = $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
-var $elm$html$Html$Events$alwaysPreventDefault = function (msg) {
-	return _Utils_Tuple2(msg, true);
-};
-var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
-	return {$: 'MayPreventDefault', a: a};
-};
-var $elm$html$Html$Events$preventDefaultOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
+var $author$project$Main$view3dScene = F4(
+	function (lights, screenSize, camera, entities) {
+		return $ianmackenzie$elm_3d_scene$Scene3d$custom(
+			{
+				antialiasing: $ianmackenzie$elm_3d_scene$Scene3d$multisampling,
+				background: $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor($avh4$elm_color$Color$gray),
+				camera: camera,
+				clipDepth: $ianmackenzie$elm_units$Length$meters(1),
+				dimensions: _Utils_Tuple2(
+					$ianmackenzie$elm_units$Pixels$int(screenSize.width),
+					$ianmackenzie$elm_units$Pixels$int(screenSize.height)),
+				entities: entities,
+				exposure: $ianmackenzie$elm_3d_scene$Scene3d$exposureValue(15),
+				lights: lights,
+				toneMapping: $ianmackenzie$elm_3d_scene$Scene3d$noToneMapping,
+				whiteBalance: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight
+			});
 	});
-var $elm$html$Html$Events$onSubmit = function (msg) {
-	return A2(
-		$elm$html$Html$Events$preventDefaultOn,
-		'submit',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysPreventDefault,
-			$elm$json$Json$Decode$succeed(msg)));
-};
-var $ianmackenzie$elm_units$Illuminance$inLux = function (_v0) {
-	var numLux = _v0.a;
-	return numLux;
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$soft = function (light) {
-	soft:
-	while (true) {
-		if (_Utils_eq(light.intensityAbove, $ianmackenzie$elm_units$Quantity$zero) && _Utils_eq(light.intensityBelow, $ianmackenzie$elm_units$Quantity$zero)) {
-			return $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled;
-		} else {
-			if (A2(
-				$ianmackenzie$elm_units$Quantity$greaterThan,
-				$ianmackenzie$elm_units$Quantity$abs(light.intensityAbove),
-				$ianmackenzie$elm_units$Quantity$abs(light.intensityBelow))) {
-				var $temp$light = {
-					chromaticity: light.chromaticity,
-					intensityAbove: light.intensityBelow,
-					intensityBelow: light.intensityAbove,
-					upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse(light.upDirection)
-				};
-				light = $temp$light;
-				continue soft;
-			} else {
-				var nitsBelow = $elm$core$Basics$abs(
-					$ianmackenzie$elm_units$Illuminance$inLux(light.intensityBelow) / $elm$core$Basics$pi);
-				var nitsAbove = $elm$core$Basics$abs(
-					$ianmackenzie$elm_units$Illuminance$inLux(light.intensityAbove) / $elm$core$Basics$pi);
-				var _v0 = $ianmackenzie$elm_geometry$Direction3d$unwrap(light.upDirection);
-				var x = _v0.x;
-				var y = _v0.y;
-				var z = _v0.z;
-				var _v1 = A2(
-					$ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToLinearRgb,
-					$ianmackenzie$elm_units$Quantity$float(1),
-					light.chromaticity);
-				var rgb = _v1.a;
-				return $ianmackenzie$elm_3d_scene$Scene3d$Types$Light(
-					{
-						b: nitsAbove * $elm_explorations$linear_algebra$Math$Vector3$getZ(rgb),
-						castsShadows: false,
-						g: nitsAbove * $elm_explorations$linear_algebra$Math$Vector3$getY(rgb),
-						parameter: nitsBelow / nitsAbove,
-						r: nitsAbove * $elm_explorations$linear_algebra$Math$Vector3$getX(rgb),
-						type_: 3,
-						x: x,
-						y: y,
-						z: z
-					});
-			}
-		}
-	}
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead = function (_arguments) {
-	return $ianmackenzie$elm_3d_scene$Scene3d$Light$soft(
-		{chromaticity: _arguments.chromaticity, intensityAbove: _arguments.intensity, intensityBelow: $ianmackenzie$elm_units$Quantity$zero, upDirection: _arguments.upDirection});
-};
-var $elm$virtual_dom$VirtualDom$property = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_property,
-			_VirtualDom_noInnerHtmlOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlJson(value));
-	});
-var $elm$html$Html$Attributes$property = $elm$virtual_dom$VirtualDom$property;
-var $avh4$elm_color$Color$red = A4($avh4$elm_color$Color$RgbaSpace, 204 / 255, 0 / 255, 0 / 255, 1.0);
-var $elm$html$Html$option = _VirtualDom_node('option');
-var $elm$html$Html$select = _VirtualDom_node('select');
-var $author$project$Html$Extra$selectChangeHelper = F3(
-	function (toKey, options, key) {
-		selectChangeHelper:
-		while (true) {
-			if (!options.b) {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var value = options.a;
-				var rest = options.b;
-				if (_Utils_eq(
-					toKey(value),
-					key)) {
-					return $elm$core$Maybe$Just(value);
-				} else {
-					var $temp$toKey = toKey,
-						$temp$options = rest,
-						$temp$key = key;
-					toKey = $temp$toKey;
-					options = $temp$options;
-					key = $temp$key;
-					continue selectChangeHelper;
-				}
-			}
-		}
-	});
-var $author$project$Html$Extra$select = F2(
-	function (attributes, config) {
-		return A2(
-			$elm$html$Html$select,
-			_Utils_ap(
-				attributes,
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onInput(
-						function (key) {
-							return config.onSelect(
-								A3($author$project$Html$Extra$selectChangeHelper, config.toKey, config.options, key));
-						}),
-						$elm$html$Html$Attributes$value(
-						function () {
-							var _v0 = config.value;
-							if (_v0.$ === 'Nothing') {
-								return '';
-							} else {
-								var value = _v0.a;
-								return config.toKey(value);
-							}
-						}())
-					])),
-			A2(
-				$elm$core$List$map,
-				function (option) {
-					return A2(
-						$elm$html$Html$option,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$value(
-								config.toKey(option))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								config.toLabel(option))
-							]));
-				},
-				config.options));
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$sixLights = F6(
-	function (first, second, third, fourth, fifth, sixth) {
-		return A8($ianmackenzie$elm_3d_scene$Scene3d$eightLights, first, second, third, fourth, fifth, sixth, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled);
-	});
-var $elm$core$Basics$clamp = F3(
-	function (low, high, number) {
-		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
-	});
-var $ianmackenzie$elm_units$Temperature$inKelvins = function (_v0) {
-	var numKelvins = _v0.a;
-	return numKelvins;
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature = function (temperature) {
-	var t = A3(
-		$elm$core$Basics$clamp,
-		1667,
-		25000,
-		$ianmackenzie$elm_units$Temperature$inKelvins(temperature));
-	var x = (t <= 4000) ? ((((((-0.2661239) * 1.0e9) / ((t * t) * t)) - ((0.2343589 * 1.0e6) / (t * t))) + ((0.8776956 * 1.0e3) / t)) + 0.17991) : ((((((-3.0258469) * 1.0e9) / ((t * t) * t)) + ((2.1070379 * 1.0e6) / (t * t))) + ((0.2226347 * 1.0e3) / t)) + 0.24039);
-	var y = (t <= 2222) ? (((((-1.1063814) * ((x * x) * x)) - (1.3481102 * (x * x))) + (2.18555832 * x)) - 0.20219683) : ((t <= 4000) ? (((((-0.9549476) * ((x * x) * x)) - (1.37418593 * (x * x))) + (2.09137015 * x)) - 0.16748867) : ((((3.081758 * ((x * x) * x)) - (5.8733867 * (x * x))) + (3.75112997 * x)) - 0.37001483));
-	return $ianmackenzie$elm_3d_scene$Scene3d$Light$chromaticity(
-		{x: x, y: y});
-};
-var $ianmackenzie$elm_units$Temperature$Temperature = function (a) {
-	return {$: 'Temperature', a: a};
-};
-var $ianmackenzie$elm_units$Temperature$kelvins = function (numKelvins) {
-	return $ianmackenzie$elm_units$Temperature$Temperature(numKelvins);
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight = $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature(
-	$ianmackenzie$elm_units$Temperature$kelvins(12000));
-var $elm$html$Html$small = _VirtualDom_node('small');
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight = $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature(
-	$ianmackenzie$elm_units$Temperature$kelvins(5600));
+var $author$project$Main$Editor = {$: 'Editor'};
 var $ianmackenzie$elm_geometry$Geometry$Types$Sphere3d = function (a) {
 	return {$: 'Sphere3d', a: a};
 };
@@ -25017,7 +25259,7 @@ var $author$project$Main$viewBlock = F3(
 								$ianmackenzie$elm_units$Length$meters(1))));
 				case 'PointPickup':
 					var collected = block.a;
-					return (collected && _Utils_eq(model.mode, $author$project$Main$Game)) ? $ianmackenzie$elm_3d_scene$Scene3d$nothing : A2(
+					return (collected && ((!_Utils_eq(model.screen, $author$project$Main$Editor)) || _Utils_eq(model.editorMode, $author$project$Main$TestGame))) ? $ianmackenzie$elm_3d_scene$Scene3d$nothing : A2(
 						$ianmackenzie$elm_3d_scene$Scene3d$sphereWithShadow,
 						A2(
 							$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
@@ -25030,94 +25272,104 @@ var $author$project$Main$viewBlock = F3(
 				case 'PlayerSpawn':
 					var forward = block.a.forward;
 					var left = block.a.left;
-					var _v4 = model.mode;
-					if (_v4.$ === 'Game') {
-						return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
+					var _v4 = model.screen;
+					if (_v4.$ === 'Editor') {
+						var _v5 = model.editorMode;
+						if (_v5.$ === 'TestGame') {
+							return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
+						} else {
+							var center = A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z);
+							var carl = $ianmackenzie$elm_geometry$SketchPlane3d$toFrame(
+								$ianmackenzie$elm_geometry$SketchPlane3d$unsafe(
+									{
+										originPoint: $author$project$Main$pointToPoint3d(point),
+										xDirection: $author$project$Main$axisToDirection3d(forward),
+										yDirection: $author$project$Main$axisToDirection3d(left)
+									}));
+							return $ianmackenzie$elm_3d_scene$Scene3d$group(
+								_List_fromArray(
+									[
+										A2(
+										$ianmackenzie$elm_3d_scene$Scene3d$sphereWithShadow,
+										A2(
+											$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
+											$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$white),
+											$ianmackenzie$elm_units$Luminance$nits(100000)),
+										A2(
+											$ianmackenzie$elm_geometry$Sphere3d$atPoint,
+											center,
+											$ianmackenzie$elm_units$Length$meters(0.25))),
+										A2(
+										$ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow,
+										A2(
+											$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
+											$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$red),
+											$ianmackenzie$elm_units$Luminance$nits(10000)),
+										A3(
+											$ianmackenzie$elm_geometry$Cone3d$startingAt,
+											center,
+											$ianmackenzie$elm_geometry$Frame3d$xDirection(carl),
+											{
+												length: $ianmackenzie$elm_units$Length$meters(0.75),
+												radius: $ianmackenzie$elm_units$Length$meters(0.125)
+											})),
+										A2(
+										$ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow,
+										A2(
+											$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
+											$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$green),
+											$ianmackenzie$elm_units$Luminance$nits(10000)),
+										A3(
+											$ianmackenzie$elm_geometry$Cone3d$startingAt,
+											center,
+											$ianmackenzie$elm_geometry$Frame3d$yDirection(carl),
+											{
+												length: $ianmackenzie$elm_units$Length$meters(0.75),
+												radius: $ianmackenzie$elm_units$Length$meters(0.125)
+											})),
+										A2(
+										$ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow,
+										A2(
+											$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
+											$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$blue),
+											$ianmackenzie$elm_units$Luminance$nits(10000)),
+										A3(
+											$ianmackenzie$elm_geometry$Cone3d$startingAt,
+											center,
+											$ianmackenzie$elm_geometry$Frame3d$zDirection(carl),
+											{
+												length: $ianmackenzie$elm_units$Length$meters(0.75),
+												radius: $ianmackenzie$elm_units$Length$meters(0.125)
+											}))
+									]));
+						}
 					} else {
-						var center = A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z);
-						var carl = $ianmackenzie$elm_geometry$SketchPlane3d$toFrame(
-							$ianmackenzie$elm_geometry$SketchPlane3d$unsafe(
-								{
-									originPoint: $author$project$Main$pointToPoint3d(point),
-									xDirection: $author$project$Main$axisToDirection3d(forward),
-									yDirection: $author$project$Main$axisToDirection3d(left)
-								}));
-						return $ianmackenzie$elm_3d_scene$Scene3d$group(
-							_List_fromArray(
-								[
-									A2(
-									$ianmackenzie$elm_3d_scene$Scene3d$sphereWithShadow,
-									A2(
-										$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
-										$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$white),
-										$ianmackenzie$elm_units$Luminance$nits(100000)),
-									A2(
-										$ianmackenzie$elm_geometry$Sphere3d$atPoint,
-										center,
-										$ianmackenzie$elm_units$Length$meters(0.25))),
-									A2(
-									$ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow,
-									A2(
-										$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
-										$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$red),
-										$ianmackenzie$elm_units$Luminance$nits(10000)),
-									A3(
-										$ianmackenzie$elm_geometry$Cone3d$startingAt,
-										center,
-										$ianmackenzie$elm_geometry$Frame3d$xDirection(carl),
-										{
-											length: $ianmackenzie$elm_units$Length$meters(0.75),
-											radius: $ianmackenzie$elm_units$Length$meters(0.125)
-										})),
-									A2(
-									$ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow,
-									A2(
-										$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
-										$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$green),
-										$ianmackenzie$elm_units$Luminance$nits(10000)),
-									A3(
-										$ianmackenzie$elm_geometry$Cone3d$startingAt,
-										center,
-										$ianmackenzie$elm_geometry$Frame3d$yDirection(carl),
-										{
-											length: $ianmackenzie$elm_units$Length$meters(0.75),
-											radius: $ianmackenzie$elm_units$Length$meters(0.125)
-										})),
-									A2(
-									$ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow,
-									A2(
-										$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
-										$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$blue),
-										$ianmackenzie$elm_units$Luminance$nits(10000)),
-									A3(
-										$ianmackenzie$elm_geometry$Cone3d$startingAt,
-										center,
-										$ianmackenzie$elm_geometry$Frame3d$zDirection(carl),
-										{
-											length: $ianmackenzie$elm_units$Length$meters(0.75),
-											radius: $ianmackenzie$elm_units$Length$meters(0.125)
-										}))
-								]));
+						return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 					}
 				case 'Empty':
 					return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 				default:
-					var _v5 = model.mode;
-					if (_v5.$ === 'Game') {
-						return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
+					var _v6 = model.screen;
+					if (_v6.$ === 'Editor') {
+						var _v7 = model.editorMode;
+						if (_v7.$ === 'TestGame') {
+							return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
+						} else {
+							return A2(
+								$ianmackenzie$elm_3d_scene$Scene3d$blockWithShadow,
+								$ianmackenzie$elm_3d_scene$Scene3d$Material$metal(
+									{baseColor: $avh4$elm_color$Color$orange, roughness: 1}),
+								A2(
+									$ianmackenzie$elm_geometry$Block3d$centeredOn,
+									$ianmackenzie$elm_geometry$Frame3d$atPoint(
+										A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z)),
+									_Utils_Tuple3(
+										$ianmackenzie$elm_units$Length$meters(0.5),
+										$ianmackenzie$elm_units$Length$meters(0.5),
+										$ianmackenzie$elm_units$Length$meters(0.5))));
+						}
 					} else {
-						return A2(
-							$ianmackenzie$elm_3d_scene$Scene3d$blockWithShadow,
-							$ianmackenzie$elm_3d_scene$Scene3d$Material$metal(
-								{baseColor: $avh4$elm_color$Color$orange, roughness: 1}),
-							A2(
-								$ianmackenzie$elm_geometry$Block3d$centeredOn,
-								$ianmackenzie$elm_geometry$Frame3d$atPoint(
-									A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z)),
-								_Utils_Tuple3(
-									$ianmackenzie$elm_units$Length$meters(0.5),
-									$ianmackenzie$elm_units$Length$meters(0.5),
-									$ianmackenzie$elm_units$Length$meters(0.5))));
+						return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 					}
 			}
 		}
@@ -25741,11 +25993,14 @@ var $author$project$Main$BlockTypeSelected = function (a) {
 var $author$project$Main$Redo = {$: 'Redo'};
 var $phosphor_icons$phosphor_elm$Phosphor$Regular = {$: 'Regular'};
 var $author$project$Main$ResetCamera = {$: 'ResetCamera'};
+var $author$project$Main$SetBlockEditMode = function (a) {
+	return {$: 'SetBlockEditMode', a: a};
+};
 var $author$project$Main$SetCameraMode = function (a) {
 	return {$: 'SetCameraMode', a: a};
 };
-var $author$project$Main$SetEditMode = function (a) {
-	return {$: 'SetEditMode', a: a};
+var $author$project$Main$SetScreen = function (a) {
+	return {$: 'SetScreen', a: a};
 };
 var $author$project$Main$ShowBoardBounds = function (a) {
 	return {$: 'ShowBoardBounds', a: a};
@@ -26883,8 +27138,8 @@ var $phosphor_icons$phosphor_elm$Phosphor$xCircle = function (weight) {
 	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
 var $author$project$Main$viewHeader = function (model) {
-	var _v0 = model.mode;
-	if (_v0.$ === 'Game') {
+	var _v0 = model.editorMode;
+	if (_v0.$ === 'TestGame') {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -27106,14 +27361,14 @@ var $author$project$Main$viewHeader = function (model) {
 								[
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick(
-									$author$project$Main$SetEditMode($author$project$Main$Select)),
+									$author$project$Main$SetBlockEditMode($author$project$Main$Select)),
 									$elm$html$Html$Attributes$title(
 									'Select block - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.blockSelect)),
 									A2(
 									$author$project$Html$Attributes$Extra$aria,
 									'current',
 									$author$project$Html$Attributes$Extra$bool(
-										_Utils_eq(model.editMode, $author$project$Main$Select)))
+										_Utils_eq(model.blockEditMode, $author$project$Main$Select)))
 								]),
 							_List_fromArray(
 								[
@@ -27128,14 +27383,14 @@ var $author$project$Main$viewHeader = function (model) {
 								[
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick(
-									$author$project$Main$SetEditMode($author$project$Main$Add)),
+									$author$project$Main$SetBlockEditMode($author$project$Main$Add)),
 									$elm$html$Html$Attributes$title(
 									'Add block - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.blockAdd)),
 									A2(
 									$author$project$Html$Attributes$Extra$aria,
 									'current',
 									$author$project$Html$Attributes$Extra$bool(
-										_Utils_eq(model.editMode, $author$project$Main$Add)))
+										_Utils_eq(model.blockEditMode, $author$project$Main$Add)))
 								]),
 							_List_fromArray(
 								[
@@ -27150,14 +27405,14 @@ var $author$project$Main$viewHeader = function (model) {
 								[
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick(
-									$author$project$Main$SetEditMode($author$project$Main$Remove)),
+									$author$project$Main$SetBlockEditMode($author$project$Main$Remove)),
 									$elm$html$Html$Attributes$title(
 									'Remove block - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.blockRemove)),
 									A2(
 									$author$project$Html$Attributes$Extra$aria,
 									'current',
 									$author$project$Html$Attributes$Extra$bool(
-										_Utils_eq(model.editMode, $author$project$Main$Remove)))
+										_Utils_eq(model.blockEditMode, $author$project$Main$Remove)))
 								]),
 							_List_fromArray(
 								[
@@ -27288,8 +27543,7 @@ var $author$project$Main$viewHeader = function (model) {
 							$elm$html$Html$Events$onClick(
 							$author$project$Main$ShowSettings(true)),
 							$elm$html$Html$Attributes$title(
-							'Settings - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.toggleSettings)),
-							A2($elm$html$Html$Attributes$style, 'margin-left', 'auto')
+							'Settings - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.toggleSettings))
 						]),
 					_List_fromArray(
 						[
@@ -27297,6 +27551,19 @@ var $author$project$Main$viewHeader = function (model) {
 							$phosphor_icons$phosphor_elm$Phosphor$toHtml,
 							_List_Nil,
 							$phosphor_icons$phosphor_elm$Phosphor$gear($phosphor_icons$phosphor_elm$Phosphor$Regular))
+						])),
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$type_('button'),
+							$elm$html$Html$Events$onClick(
+							$author$project$Main$SetScreen($author$project$Main$Menu)),
+							A2($elm$html$Html$Attributes$style, 'margin-left', 'auto')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Exit')
 						])),
 					A3(
 					$author$project$Html$Extra$modal,
@@ -28243,846 +28510,1175 @@ var $author$project$Main$viewPlayer = F2(
 								})))
 					])));
 	});
-var $ianmackenzie$elm_geometry$Axis3d$x = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$x);
-var $ianmackenzie$elm_geometry$Axis3d$z = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$z);
 var $author$project$Main$zigZagBoard = '[1,[9,9,9,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[1]],[[0,0,3],[1]],[[0,0,4],[1]],[[0,0,5],[1]],[[0,0,6],[1]],[[0,0,7],[1]],[[0,0,8],[1]],[[0,1,0],[2]],[[0,1,1],[0]],[[0,1,2],[3,false]],[[0,1,3],[1]],[[0,1,4],[1]],[[0,1,5],[1]],[[0,1,6],[3,false]],[[0,1,7],[0]],[[0,1,8],[2]],[[0,2,0],[1]],[[0,2,1],[1]],[[0,2,2],[3,false]],[[0,2,3],[1]],[[0,2,4],[1]],[[0,2,5],[1]],[[0,2,6],[3,false]],[[0,2,7],[1]],[[0,2,8],[1]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[3,false]],[[0,3,3],[1]],[[0,3,4],[1]],[[0,3,5],[1]],[[0,3,6],[3,false]],[[0,3,7],[1]],[[0,3,8],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[3,false]],[[0,4,3],[3,false]],[[0,4,4],[3,false]],[[0,4,5],[3,false]],[[0,4,6],[3,false]],[[0,4,7],[1]],[[0,4,8],[1]],[[0,5,0],[1]],[[0,5,1],[1]],[[0,5,2],[3,false]],[[0,5,3],[1]],[[0,5,4],[1]],[[0,5,5],[1]],[[0,5,6],[3,false]],[[0,5,7],[1]],[[0,5,8],[1]],[[0,6,0],[1]],[[0,6,1],[1]],[[0,6,2],[3,false]],[[0,6,3],[1]],[[0,6,4],[1]],[[0,6,5],[1]],[[0,6,6],[3,false]],[[0,6,7],[1]],[[0,6,8],[1]],[[0,7,0],[2]],[[0,7,1],[0]],[[0,7,2],[3,false]],[[0,7,3],[1]],[[0,7,4],[1]],[[0,7,5],[1]],[[0,7,6],[3,false]],[[0,7,7],[0]],[[0,7,8],[2]],[[0,8,0],[1]],[[0,8,1],[1]],[[0,8,2],[1]],[[0,8,3],[1]],[[0,8,4],[1]],[[0,8,5],[1]],[[0,8,6],[1]],[[0,8,7],[1]],[[0,8,8],[1]],[[1,0,0],[2]],[[1,0,1],[0]],[[1,0,2],[3,false]],[[1,0,3],[1]],[[1,0,4],[1]],[[1,0,5],[1]],[[1,0,6],[3,false]],[[1,0,7],[0]],[[1,0,8],[2]],[[1,1,0],[0]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,1,5],[1]],[[1,1,6],[1]],[[1,1,7],[1]],[[1,1,8],[0]],[[1,2,0],[3,false]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[1]],[[1,2,5],[1]],[[1,2,6],[1]],[[1,2,7],[1]],[[1,2,8],[1]],[[1,3,0],[3,false]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,3,5],[1]],[[1,3,6],[1]],[[1,3,7],[1]],[[1,3,8],[1]],[[1,4,0],[3,false]],[[1,4,1],[1]],[[1,4,2],[1]],[[1,4,3],[1]],[[1,4,4],[1]],[[1,4,5],[1]],[[1,4,6],[1]],[[1,4,7],[1]],[[1,4,8],[1]],[[1,5,0],[3,false]],[[1,5,1],[1]],[[1,5,2],[1]],[[1,5,3],[1]],[[1,5,4],[1]],[[1,5,5],[1]],[[1,5,6],[1]],[[1,5,7],[1]],[[1,5,8],[1]],[[1,6,0],[3,false]],[[1,6,1],[1]],[[1,6,2],[1]],[[1,6,3],[1]],[[1,6,4],[1]],[[1,6,5],[1]],[[1,6,6],[1]],[[1,6,7],[1]],[[1,6,8],[1]],[[1,7,0],[0]],[[1,7,1],[1]],[[1,7,2],[1]],[[1,7,3],[1]],[[1,7,4],[1]],[[1,7,5],[1]],[[1,7,6],[1]],[[1,7,7],[1]],[[1,7,8],[0]],[[1,8,0],[2]],[[1,8,1],[0]],[[1,8,2],[3,false]],[[1,8,3],[1]],[[1,8,4],[1]],[[1,8,5],[1]],[[1,8,6],[3,false]],[[1,8,7],[0]],[[1,8,8],[2]],[[2,0,0],[1]],[[2,0,1],[1]],[[2,0,2],[3,false]],[[2,0,3],[1]],[[2,0,4],[1]],[[2,0,5],[1]],[[2,0,6],[3,false]],[[2,0,7],[1]],[[2,0,8],[1]],[[2,1,0],[1]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[1]],[[2,1,5],[1]],[[2,1,6],[1]],[[2,1,7],[1]],[[2,1,8],[3,false]],[[2,2,0],[1]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[1]],[[2,2,5],[1]],[[2,2,6],[1]],[[2,2,7],[1]],[[2,2,8],[1]],[[2,3,0],[1]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[1]],[[2,3,5],[1]],[[2,3,6],[1]],[[2,3,7],[1]],[[2,3,8],[1]],[[2,4,0],[3,false]],[[2,4,1],[1]],[[2,4,2],[1]],[[2,4,3],[1]],[[2,4,4],[1]],[[2,4,5],[1]],[[2,4,6],[1]],[[2,4,7],[1]],[[2,4,8],[1]],[[2,5,0],[1]],[[2,5,1],[1]],[[2,5,2],[1]],[[2,5,3],[1]],[[2,5,4],[1]],[[2,5,5],[1]],[[2,5,6],[1]],[[2,5,7],[1]],[[2,5,8],[1]],[[2,6,0],[1]],[[2,6,1],[1]],[[2,6,2],[1]],[[2,6,3],[1]],[[2,6,4],[1]],[[2,6,5],[1]],[[2,6,6],[1]],[[2,6,7],[1]],[[2,6,8],[1]],[[2,7,0],[1]],[[2,7,1],[1]],[[2,7,2],[1]],[[2,7,3],[1]],[[2,7,4],[1]],[[2,7,5],[1]],[[2,7,6],[1]],[[2,7,7],[1]],[[2,7,8],[3,false]],[[2,8,0],[1]],[[2,8,1],[1]],[[2,8,2],[3,false]],[[2,8,3],[1]],[[2,8,4],[1]],[[2,8,5],[1]],[[2,8,6],[3,false]],[[2,8,7],[1]],[[2,8,8],[1]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[3,false]],[[3,0,3],[1]],[[3,0,4],[1]],[[3,0,5],[1]],[[3,0,6],[3,false]],[[3,0,7],[1]],[[3,0,8],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,1,5],[1]],[[3,1,6],[1]],[[3,1,7],[1]],[[3,1,8],[3,false]],[[3,2,0],[1]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[1]],[[3,2,5],[1]],[[3,2,6],[1]],[[3,2,7],[1]],[[3,2,8],[1]],[[3,3,0],[1]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,3,5],[1]],[[3,3,6],[1]],[[3,3,7],[1]],[[3,3,8],[1]],[[3,4,0],[3,false]],[[3,4,1],[1]],[[3,4,2],[1]],[[3,4,3],[1]],[[3,4,4],[1]],[[3,4,5],[1]],[[3,4,6],[1]],[[3,4,7],[1]],[[3,4,8],[1]],[[3,5,0],[1]],[[3,5,1],[1]],[[3,5,2],[1]],[[3,5,3],[1]],[[3,5,4],[1]],[[3,5,5],[1]],[[3,5,6],[1]],[[3,5,7],[1]],[[3,5,8],[1]],[[3,6,0],[1]],[[3,6,1],[1]],[[3,6,2],[1]],[[3,6,3],[1]],[[3,6,4],[1]],[[3,6,5],[1]],[[3,6,6],[1]],[[3,6,7],[1]],[[3,6,8],[1]],[[3,7,0],[1]],[[3,7,1],[1]],[[3,7,2],[1]],[[3,7,3],[1]],[[3,7,4],[1]],[[3,7,5],[1]],[[3,7,6],[1]],[[3,7,7],[1]],[[3,7,8],[3,false]],[[3,8,0],[1]],[[3,8,1],[1]],[[3,8,2],[3,false]],[[3,8,3],[1]],[[3,8,4],[1]],[[3,8,5],[1]],[[3,8,6],[3,false]],[[3,8,7],[1]],[[3,8,8],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[3,false]],[[4,0,3],[3,false]],[[4,0,4],[3,false]],[[4,0,5],[3,false]],[[4,0,6],[3,false]],[[4,0,7],[1]],[[4,0,8],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[1]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,1,5],[1]],[[4,1,6],[1]],[[4,1,7],[1]],[[4,1,8],[3,false]],[[4,2,0],[1]],[[4,2,1],[1]],[[4,2,2],[1]],[[4,2,3],[1]],[[4,2,4],[1]],[[4,2,5],[1]],[[4,2,6],[1]],[[4,2,7],[1]],[[4,2,8],[3,false]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[1]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,3,5],[1]],[[4,3,6],[1]],[[4,3,7],[1]],[[4,3,8],[3,false]],[[4,4,0],[3,false]],[[4,4,1],[1]],[[4,4,2],[1]],[[4,4,3],[1]],[[4,4,4],[1]],[[4,4,5],[1]],[[4,4,6],[1]],[[4,4,7],[1]],[[4,4,8],[3,false]],[[4,5,0],[1]],[[4,5,1],[1]],[[4,5,2],[1]],[[4,5,3],[1]],[[4,5,4],[1]],[[4,5,5],[1]],[[4,5,6],[1]],[[4,5,7],[1]],[[4,5,8],[3,false]],[[4,6,0],[1]],[[4,6,1],[1]],[[4,6,2],[1]],[[4,6,3],[1]],[[4,6,4],[1]],[[4,6,5],[1]],[[4,6,6],[1]],[[4,6,7],[1]],[[4,6,8],[3,false]],[[4,7,0],[1]],[[4,7,1],[1]],[[4,7,2],[1]],[[4,7,3],[1]],[[4,7,4],[1]],[[4,7,5],[1]],[[4,7,6],[1]],[[4,7,7],[1]],[[4,7,8],[3,false]],[[4,8,0],[1]],[[4,8,1],[1]],[[4,8,2],[3,false]],[[4,8,3],[0]],[[4,8,4],[0]],[[4,8,5],[4,[[5],[1]]]],[[4,8,6],[3,false]],[[4,8,7],[1]],[[4,8,8],[1]],[[5,0,0],[1]],[[5,0,1],[1]],[[5,0,2],[3,false]],[[5,0,3],[1]],[[5,0,4],[1]],[[5,0,5],[1]],[[5,0,6],[3,false]],[[5,0,7],[1]],[[5,0,8],[1]],[[5,1,0],[1]],[[5,1,1],[1]],[[5,1,2],[1]],[[5,1,3],[1]],[[5,1,4],[1]],[[5,1,5],[1]],[[5,1,6],[1]],[[5,1,7],[1]],[[5,1,8],[3,false]],[[5,2,0],[1]],[[5,2,1],[1]],[[5,2,2],[1]],[[5,2,3],[1]],[[5,2,4],[1]],[[5,2,5],[1]],[[5,2,6],[1]],[[5,2,7],[1]],[[5,2,8],[1]],[[5,3,0],[1]],[[5,3,1],[1]],[[5,3,2],[1]],[[5,3,3],[1]],[[5,3,4],[1]],[[5,3,5],[1]],[[5,3,6],[1]],[[5,3,7],[1]],[[5,3,8],[1]],[[5,4,0],[3,false]],[[5,4,1],[1]],[[5,4,2],[1]],[[5,4,3],[1]],[[5,4,4],[1]],[[5,4,5],[1]],[[5,4,6],[1]],[[5,4,7],[1]],[[5,4,8],[1]],[[5,5,0],[1]],[[5,5,1],[1]],[[5,5,2],[1]],[[5,5,3],[1]],[[5,5,4],[1]],[[5,5,5],[1]],[[5,5,6],[1]],[[5,5,7],[1]],[[5,5,8],[1]],[[5,6,0],[1]],[[5,6,1],[1]],[[5,6,2],[1]],[[5,6,3],[1]],[[5,6,4],[1]],[[5,6,5],[1]],[[5,6,6],[1]],[[5,6,7],[1]],[[5,6,8],[1]],[[5,7,0],[1]],[[5,7,1],[1]],[[5,7,2],[1]],[[5,7,3],[1]],[[5,7,4],[1]],[[5,7,5],[1]],[[5,7,6],[1]],[[5,7,7],[1]],[[5,7,8],[3,false]],[[5,8,0],[1]],[[5,8,1],[1]],[[5,8,2],[3,false]],[[5,8,3],[1]],[[5,8,4],[1]],[[5,8,5],[1]],[[5,8,6],[3,false]],[[5,8,7],[1]],[[5,8,8],[1]],[[6,0,0],[1]],[[6,0,1],[1]],[[6,0,2],[3,false]],[[6,0,3],[1]],[[6,0,4],[1]],[[6,0,5],[1]],[[6,0,6],[3,false]],[[6,0,7],[1]],[[6,0,8],[1]],[[6,1,0],[1]],[[6,1,1],[1]],[[6,1,2],[1]],[[6,1,3],[1]],[[6,1,4],[1]],[[6,1,5],[1]],[[6,1,6],[1]],[[6,1,7],[1]],[[6,1,8],[3,false]],[[6,2,0],[1]],[[6,2,1],[1]],[[6,2,2],[1]],[[6,2,3],[1]],[[6,2,4],[1]],[[6,2,5],[1]],[[6,2,6],[1]],[[6,2,7],[1]],[[6,2,8],[1]],[[6,3,0],[1]],[[6,3,1],[1]],[[6,3,2],[1]],[[6,3,3],[1]],[[6,3,4],[1]],[[6,3,5],[1]],[[6,3,6],[1]],[[6,3,7],[1]],[[6,3,8],[1]],[[6,4,0],[3,false]],[[6,4,1],[1]],[[6,4,2],[1]],[[6,4,3],[1]],[[6,4,4],[1]],[[6,4,5],[1]],[[6,4,6],[1]],[[6,4,7],[1]],[[6,4,8],[1]],[[6,5,0],[1]],[[6,5,1],[1]],[[6,5,2],[1]],[[6,5,3],[1]],[[6,5,4],[1]],[[6,5,5],[1]],[[6,5,6],[1]],[[6,5,7],[1]],[[6,5,8],[1]],[[6,6,0],[1]],[[6,6,1],[1]],[[6,6,2],[1]],[[6,6,3],[1]],[[6,6,4],[1]],[[6,6,5],[1]],[[6,6,6],[1]],[[6,6,7],[1]],[[6,6,8],[1]],[[6,7,0],[1]],[[6,7,1],[1]],[[6,7,2],[1]],[[6,7,3],[1]],[[6,7,4],[1]],[[6,7,5],[1]],[[6,7,6],[1]],[[6,7,7],[1]],[[6,7,8],[3,false]],[[6,8,0],[1]],[[6,8,1],[1]],[[6,8,2],[3,false]],[[6,8,3],[1]],[[6,8,4],[1]],[[6,8,5],[1]],[[6,8,6],[3,false]],[[6,8,7],[1]],[[6,8,8],[1]],[[7,0,0],[2]],[[7,0,1],[0]],[[7,0,2],[3,false]],[[7,0,3],[1]],[[7,0,4],[1]],[[7,0,5],[1]],[[7,0,6],[3,false]],[[7,0,7],[0]],[[7,0,8],[2]],[[7,1,0],[0]],[[7,1,1],[1]],[[7,1,2],[1]],[[7,1,3],[1]],[[7,1,4],[1]],[[7,1,5],[1]],[[7,1,6],[1]],[[7,1,7],[1]],[[7,1,8],[0]],[[7,2,0],[3,false]],[[7,2,1],[1]],[[7,2,2],[1]],[[7,2,3],[1]],[[7,2,4],[1]],[[7,2,5],[1]],[[7,2,6],[1]],[[7,2,7],[1]],[[7,2,8],[1]],[[7,3,0],[3,false]],[[7,3,1],[1]],[[7,3,2],[1]],[[7,3,3],[1]],[[7,3,4],[1]],[[7,3,5],[1]],[[7,3,6],[1]],[[7,3,7],[1]],[[7,3,8],[1]],[[7,4,0],[3,false]],[[7,4,1],[1]],[[7,4,2],[1]],[[7,4,3],[1]],[[7,4,4],[1]],[[7,4,5],[1]],[[7,4,6],[1]],[[7,4,7],[1]],[[7,4,8],[1]],[[7,5,0],[3,false]],[[7,5,1],[1]],[[7,5,2],[1]],[[7,5,3],[1]],[[7,5,4],[1]],[[7,5,5],[1]],[[7,5,6],[1]],[[7,5,7],[1]],[[7,5,8],[1]],[[7,6,0],[3,false]],[[7,6,1],[1]],[[7,6,2],[1]],[[7,6,3],[1]],[[7,6,4],[1]],[[7,6,5],[1]],[[7,6,6],[1]],[[7,6,7],[1]],[[7,6,8],[1]],[[7,7,0],[0]],[[7,7,1],[1]],[[7,7,2],[1]],[[7,7,3],[1]],[[7,7,4],[1]],[[7,7,5],[1]],[[7,7,6],[1]],[[7,7,7],[1]],[[7,7,8],[0]],[[7,8,0],[2]],[[7,8,1],[0]],[[7,8,2],[3,false]],[[7,8,3],[1]],[[7,8,4],[1]],[[7,8,5],[1]],[[7,8,6],[3,false]],[[7,8,7],[0]],[[7,8,8],[2]],[[8,0,0],[1]],[[8,0,1],[1]],[[8,0,2],[1]],[[8,0,3],[1]],[[8,0,4],[1]],[[8,0,5],[1]],[[8,0,6],[1]],[[8,0,7],[1]],[[8,0,8],[1]],[[8,1,0],[2]],[[8,1,1],[0]],[[8,1,2],[3,false]],[[8,1,3],[1]],[[8,1,4],[1]],[[8,1,5],[1]],[[8,1,6],[3,false]],[[8,1,7],[0]],[[8,1,8],[2]],[[8,2,0],[1]],[[8,2,1],[1]],[[8,2,2],[3,false]],[[8,2,3],[1]],[[8,2,4],[1]],[[8,2,5],[1]],[[8,2,6],[3,false]],[[8,2,7],[1]],[[8,2,8],[1]],[[8,3,0],[1]],[[8,3,1],[1]],[[8,3,2],[3,false]],[[8,3,3],[1]],[[8,3,4],[1]],[[8,3,5],[1]],[[8,3,6],[3,false]],[[8,3,7],[1]],[[8,3,8],[1]],[[8,4,0],[1]],[[8,4,1],[1]],[[8,4,2],[3,false]],[[8,4,3],[3,false]],[[8,4,4],[3,false]],[[8,4,5],[3,false]],[[8,4,6],[3,false]],[[8,4,7],[1]],[[8,4,8],[1]],[[8,5,0],[1]],[[8,5,1],[1]],[[8,5,2],[3,false]],[[8,5,3],[1]],[[8,5,4],[1]],[[8,5,5],[1]],[[8,5,6],[3,false]],[[8,5,7],[1]],[[8,5,8],[1]],[[8,6,0],[1]],[[8,6,1],[1]],[[8,6,2],[3,false]],[[8,6,3],[1]],[[8,6,4],[1]],[[8,6,5],[1]],[[8,6,6],[3,false]],[[8,6,7],[1]],[[8,6,8],[1]],[[8,7,0],[2]],[[8,7,1],[0]],[[8,7,2],[3,false]],[[8,7,3],[1]],[[8,7,4],[1]],[[8,7,5],[1]],[[8,7,6],[3,false]],[[8,7,7],[0]],[[8,7,8],[2]],[[8,8,0],[1]],[[8,8,1],[1]],[[8,8,2],[1]],[[8,8,3],[1]],[[8,8,4],[1]],[[8,8,5],[1]],[[8,8,6],[1]],[[8,8,7],[1]],[[8,8,8],[1]]]]]';
-var $author$project$Main$view = function (model) {
-	return {
-		body: _List_fromArray(
+var $author$project$Main$viewEditorScreen = function (model) {
+	return _List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'display', 'grid'),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'grid-template-columns',
+					function () {
+						var _v0 = model.editorMode;
+						if (_v0.$ === 'EditBoard') {
+							return 'auto auto';
+						} else {
+							return 'auto 8rem';
+						}
+					}()),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'grid-template-rows',
+					function () {
+						var _v1 = model.editorMode;
+						if (_v1.$ === 'EditBoard') {
+							return 'auto auto';
+						} else {
+							return 'auto';
+						}
+					}())
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_Utils_ap(
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$Attributes$style,
+								'grid-column',
+								function () {
+									var _v2 = model.editorMode;
+									if (_v2.$ === 'EditBoard') {
+										return '1';
+									} else {
+										return '1 / 2';
+									}
+								}()),
+								A2(
+								$elm$html$Html$Attributes$style,
+								'grid-row',
+								function () {
+									var _v3 = model.editorMode;
+									if (_v3.$ === 'EditBoard') {
+										return '2';
+									} else {
+										return '1';
+									}
+								}())
+							]),
+						function () {
+							var _v4 = model.mouseDragging;
+							switch (_v4.$) {
+								case 'NoInteraction':
+									return _List_fromArray(
+										[
+											A2($elm$html$Html$Events$on, 'pointerdown', $author$project$Main$decodeMouseDown),
+											A2(
+											$elm$html$Html$Events$on,
+											'pointermove',
+											$author$project$Main$decodePointerMove($elm$json$Json$Encode$null)),
+											A2($elm$html$Html$Attributes$property, '___setPointerCapture', $elm$json$Json$Encode$null)
+										]);
+								case 'InteractionStart':
+									var pointer = _v4.a;
+									return _List_fromArray(
+										[
+											A2($elm$html$Html$Events$on, 'pointerup', $author$project$Main$decodeMouseUp),
+											A2(
+											$elm$html$Html$Events$on,
+											'pointermove',
+											$author$project$Main$decodePointerMove(pointer)),
+											A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
+										]);
+								default:
+									var pointer = _v4.a;
+									return _List_fromArray(
+										[
+											A2($elm$html$Html$Events$on, 'pointerup', $author$project$Main$decodeMouseUp),
+											A2(
+											$elm$html$Html$Events$on,
+											'pointermove',
+											$author$project$Main$decodePointerMove(pointer)),
+											A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
+										]);
+							}
+						}()),
+					_List_fromArray(
+						[
+							function () {
+							var lights = function () {
+								var _v10 = model.editorMode;
+								if (_v10.$ === 'TestGame') {
+									return $author$project$Main$gameLights(model);
+								} else {
+									var upsideDownSky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+										{
+											chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+											intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
+											upDirection: $ianmackenzie$elm_geometry$Direction3d$negativeZ
+										});
+									var sun = A2(
+										$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
+										$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
+										{
+											chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
+											direction: A3(
+												$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+												$ianmackenzie$elm_geometry$Axis3d$z,
+												A2(
+													$ianmackenzie$elm_units$Quantity$plus,
+													$ianmackenzie$elm_units$Angle$degrees(90),
+													model.cameraRotation),
+												A3(
+													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+													$ianmackenzie$elm_geometry$Axis3d$x,
+													$ianmackenzie$elm_units$Angle$degrees(70),
+													$ianmackenzie$elm_geometry$Direction3d$negativeZ)),
+											intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
+										});
+									var sky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+										{
+											chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+											intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
+											upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
+										});
+									var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+										{
+											chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
+											intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
+											upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
+										});
+									return A4($ianmackenzie$elm_3d_scene$Scene3d$fourLights, sun, sky, environment, upsideDownSky);
+								}
+							}();
+							return A4(
+								$author$project$Main$view3dScene,
+								lights,
+								model.screenSize,
+								function () {
+									var _v5 = model.editorMode;
+									if (_v5.$ === 'TestGame') {
+										return $author$project$Main$gamePlayCamera(model);
+									} else {
+										return $author$project$Main$editorCamera(model);
+									}
+								}(),
+								function () {
+									var _v6 = model.editorMode;
+									if (_v6.$ === 'EditBoard') {
+										var editorBoard = $author$project$Undo$value(model.editorBoard);
+										return $elm$core$List$concat(
+											_List_fromArray(
+												[
+													A2(
+													$elm$core$List$map,
+													A2($author$project$Main$viewBlock, editorBoard, model),
+													$elm$core$Dict$toList(editorBoard.blocks)),
+													_List_fromArray(
+													[
+														A3(
+														$author$project$Main$viewCursor,
+														function () {
+															var _v7 = model.blockEditMode;
+															switch (_v7.$) {
+																case 'Select':
+																	return $avh4$elm_color$Color$white;
+																case 'Remove':
+																	return $avh4$elm_color$Color$red;
+																default:
+																	return $avh4$elm_color$Color$green;
+															}
+														}(),
+														model.cursorBounce,
+														model.editorCursor),
+														$author$project$Main$viewOrientationArrows,
+														function () {
+														var _v8 = model.selectedBlock;
+														if (_v8.$ === 'Nothing') {
+															return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
+														} else {
+															var _v9 = _v8.a;
+															var point = _v9.a;
+															return A3($author$project$Main$viewCursor, $avh4$elm_color$Color$yellow, model.cursorBounce, point);
+														}
+													}(),
+														model.showBoardBounds ? $author$project$Main$viewBounds(editorBoard) : $ianmackenzie$elm_3d_scene$Scene3d$nothing
+													])
+												]));
+									} else {
+										return $elm$core$List$concat(
+											_List_fromArray(
+												[
+													A2(
+													$elm$core$List$map,
+													A2($author$project$Main$viewBlock, model.board, model),
+													$elm$core$Dict$toList(model.board.blocks)),
+													_List_fromArray(
+													[
+														A2($author$project$Main$viewPlayer, model.playerFacing, model.playerFrame)
+													])
+												]));
+									}
+								}());
+						}()
+						])),
+					$author$project$Main$viewHeader(model),
+					function () {
+					var _v11 = model.editorMode;
+					if (_v11.$ === 'TestGame') {
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
+									A2($elm$html$Html$Attributes$style, 'grid-row', '1'),
+									A2($elm$html$Html$Attributes$style, 'padding', '0.5rem')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$button,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$type_('button'),
+											$elm$html$Html$Events$onClick($author$project$Main$ChangeMode)
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Edit Level')
+										]))
+								]));
+					} else {
+						var editorBoard = $author$project$Undo$value(model.editorBoard);
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
+									A2($elm$html$Html$Attributes$style, 'grid-row', '2'),
+									A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
+									A2($elm$html$Html$Attributes$style, 'height', '80vh'),
+									A2($elm$html$Html$Attributes$style, 'overflow', 'auto')
+								]),
+							_List_fromArray(
+								[
+									function () {
+									var _v12 = model.selectedBlock;
+									if (_v12.$ === 'Nothing') {
+										return A2(
+											$elm$html$Html$span,
+											_List_Nil,
+											_List_fromArray(
+												[
+													$elm$html$Html$text('No block selected')
+												]));
+									} else {
+										var _v13 = _v12.a;
+										var point = _v13.a;
+										var block = _v13.b;
+										switch (block.$) {
+											case 'Empty':
+												return A2(
+													$elm$html$Html$span,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Empty block')
+														]));
+											case 'Edge':
+												return A2(
+													$elm$html$Html$span,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Edge')
+														]));
+											case 'Wall':
+												return A2(
+													$elm$html$Html$span,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Wall')
+														]));
+											case 'PointPickup':
+												return A2(
+													$elm$html$Html$span,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Point Pickup')
+														]));
+											default:
+												var details = block.a;
+												return A2(
+													$elm$html$Html$form,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('Player Spawn')
+																])),
+															A2($elm$html$Html$br, _List_Nil, _List_Nil),
+															A2(
+															$elm$html$Html$label,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$span,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Forward Direction ')
+																		])),
+																	A2(
+																	$author$project$Html$Extra$select,
+																	_List_Nil,
+																	{
+																		onSelect: function (value) {
+																			if (value.$ === 'Nothing') {
+																				return A2(
+																					$author$project$Main$SetBlock,
+																					point,
+																					$author$project$Main$PlayerSpawn(details));
+																			} else {
+																				var axis = value.a;
+																				return A2(
+																					$author$project$Main$SetBlock,
+																					point,
+																					$author$project$Main$PlayerSpawn(
+																						_Utils_update(
+																							details,
+																							{forward: axis})));
+																			}
+																		},
+																		options: _List_fromArray(
+																			[$author$project$Main$PositiveX, $author$project$Main$NegativeX, $author$project$Main$PositiveY, $author$project$Main$NegativeY, $author$project$Main$PositiveZ, $author$project$Main$NegativeZ]),
+																		toKey: $author$project$Main$axisToLabel,
+																		toLabel: $author$project$Main$axisToLabel,
+																		value: $elm$core$Maybe$Just(details.forward)
+																	})
+																])),
+															A2($elm$html$Html$br, _List_Nil, _List_Nil),
+															A2(
+															$elm$html$Html$label,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$span,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Left Direction ')
+																		])),
+																	A2(
+																	$author$project$Html$Extra$select,
+																	_List_Nil,
+																	{
+																		onSelect: function (value) {
+																			if (value.$ === 'Nothing') {
+																				return A2(
+																					$author$project$Main$SetBlock,
+																					point,
+																					$author$project$Main$PlayerSpawn(details));
+																			} else {
+																				var axis = value.a;
+																				return A2(
+																					$author$project$Main$SetBlock,
+																					point,
+																					$author$project$Main$PlayerSpawn(
+																						_Utils_update(
+																							details,
+																							{left: axis})));
+																			}
+																		},
+																		options: _List_fromArray(
+																			[$author$project$Main$PositiveX, $author$project$Main$NegativeX, $author$project$Main$PositiveY, $author$project$Main$NegativeY, $author$project$Main$PositiveZ, $author$project$Main$NegativeZ]),
+																		toKey: $author$project$Main$axisToLabel,
+																		toLabel: $author$project$Main$axisToLabel,
+																		value: $elm$core$Maybe$Just(details.left)
+																	})
+																]))
+														]));
+										}
+									}
+								}(),
+									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+									A2(
+									$elm$html$Html$form,
+									_List_Nil,
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$fieldset,
+											_List_Nil,
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$label,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('X Size ')
+																])),
+															A2(
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('number'),
+																	$elm$html$Html$Attributes$value(model.editorMaxXRaw),
+																	$elm$html$Html$Attributes$min('1'),
+																	$elm$html$Html$Attributes$max('20'),
+																	$elm$html$Html$Attributes$step('1'),
+																	$elm$html$Html$Events$onInput($author$project$Main$MaxXChanged)
+																]),
+															_List_Nil)
+														])),
+													A2($elm$html$Html$br, _List_Nil, _List_Nil),
+													A2(
+													$elm$html$Html$label,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('X Visibility')
+																])),
+															A2(
+															$author$project$Html$Extra$dualRange,
+															_List_Nil,
+															{
+																colorMax: $elm$core$Maybe$Nothing,
+																colorMid: $elm$core$Maybe$Nothing,
+																colorMin: $elm$core$Maybe$Nothing,
+																max: editorBoard.maxX - 1,
+																min: 0,
+																onInputHigh: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$XUpperVisibleChanged),
+																onInputLow: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$XLowerVisibleChanged),
+																step: 1,
+																thumb1Image: $elm$core$Maybe$Nothing,
+																thumb2Image: $elm$core$Maybe$Nothing,
+																valueHigh: model.xUpperVisible,
+																valueLow: model.xLowerVisible
+															})
+														]))
+												])),
+											A2($elm$html$Html$br, _List_Nil, _List_Nil),
+											A2(
+											$elm$html$Html$fieldset,
+											_List_Nil,
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$label,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('Y Size ')
+																])),
+															A2(
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('number'),
+																	$elm$html$Html$Attributes$value(model.editorMaxYRaw),
+																	$elm$html$Html$Attributes$min('1'),
+																	$elm$html$Html$Attributes$max('20'),
+																	$elm$html$Html$Attributes$step('1'),
+																	$elm$html$Html$Events$onInput($author$project$Main$MaxYChanged)
+																]),
+															_List_Nil)
+														])),
+													A2($elm$html$Html$br, _List_Nil, _List_Nil),
+													A2(
+													$elm$html$Html$label,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('Y Visibility')
+																])),
+															A2(
+															$author$project$Html$Extra$dualRange,
+															_List_Nil,
+															{
+																colorMax: $elm$core$Maybe$Nothing,
+																colorMid: $elm$core$Maybe$Nothing,
+																colorMin: $elm$core$Maybe$Nothing,
+																max: editorBoard.maxY - 1,
+																min: 0,
+																onInputHigh: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$YUpperVisibleChanged),
+																onInputLow: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$YLowerVisibleChanged),
+																step: 1,
+																thumb1Image: $elm$core$Maybe$Nothing,
+																thumb2Image: $elm$core$Maybe$Nothing,
+																valueHigh: model.yUpperVisible,
+																valueLow: model.yLowerVisible
+															})
+														]))
+												])),
+											A2($elm$html$Html$br, _List_Nil, _List_Nil),
+											A2(
+											$elm$html$Html$fieldset,
+											_List_Nil,
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$label,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('Z Size ')
+																])),
+															A2(
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('number'),
+																	$elm$html$Html$Attributes$value(model.editorMaxZRaw),
+																	$elm$html$Html$Attributes$min('1'),
+																	$elm$html$Html$Attributes$max('20'),
+																	$elm$html$Html$Attributes$step('1'),
+																	$elm$html$Html$Events$onInput($author$project$Main$MaxZChanged)
+																]),
+															_List_Nil)
+														])),
+													A2($elm$html$Html$br, _List_Nil, _List_Nil),
+													A2(
+													$elm$html$Html$label,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('Z Visibility')
+																])),
+															A2(
+															$author$project$Html$Extra$dualRange,
+															_List_Nil,
+															{
+																colorMax: $elm$core$Maybe$Nothing,
+																colorMid: $elm$core$Maybe$Nothing,
+																colorMin: $elm$core$Maybe$Nothing,
+																max: editorBoard.maxZ - 1,
+																min: 0,
+																onInputHigh: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$ZUpperVisibleChanged),
+																onInputLow: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$ZLowerVisibleChanged),
+																step: 1,
+																thumb1Image: $elm$core$Maybe$Nothing,
+																thumb2Image: $elm$core$Maybe$Nothing,
+																valueHigh: model.zUpperVisible,
+																valueLow: model.zLowerVisible
+															})
+														]))
+												]))
+										])),
+									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+									A2(
+									$elm$html$Html$form,
+									_List_fromArray(
+										[
+											$elm$html$Html$Events$onSubmit(
+											$author$project$Main$LoadEditorBoard(model.boardEncoding)),
+											A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+											A2($elm$html$Html$Attributes$style, 'gap', '1rem')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$label,
+											_List_fromArray(
+												[
+													A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+													A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
+													A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$span,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Encoded Level:')
+														])),
+													A2(
+													$elm$html$Html$input,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$value(model.boardEncoding),
+															$elm$html$Html$Events$onInput($author$project$Main$EncodingChanged)
+														]),
+													_List_Nil)
+												])),
+											A2(
+											$elm$html$Html$button,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$type_('submit')
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Load')
+												])),
+											function () {
+											var _v17 = model.boardLoadError;
+											if (_v17.$ === 'Nothing') {
+												return $elm$html$Html$text('');
+											} else {
+												var error = _v17.a;
+												return A2(
+													$elm$html$Html$small,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text(
+															function () {
+																switch (error.$) {
+																	case 'DataCorrupted':
+																		return 'Board data is corrupted';
+																	case 'SerializerOutOfDate':
+																		return 'Board data is from a different version of the game';
+																	default:
+																		return 'Unexpected error';
+																}
+															}())
+														]));
+											}
+										}()
+										])),
+									A2($elm$html$Html$br, _List_Nil, _List_Nil),
+									A2(
+									$elm$html$Html$label,
+									_List_Nil,
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$span,
+											_List_Nil,
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Load an example board ')
+												])),
+											A2(
+											$author$project$Html$Extra$select,
+											_List_Nil,
+											{
+												onSelect: function (value) {
+													if (value.$ === 'Nothing') {
+														return $author$project$Main$NoOp;
+													} else {
+														switch (value.a.$) {
+															case 'DefaultBoard':
+																var _v20 = value.a;
+																return $author$project$Main$LoadEditorBoard($author$project$Main$defaultBoard);
+															case 'BasicMiniBoard':
+																var _v21 = value.a;
+																return $author$project$Main$LoadEditorBoard($author$project$Main$basicMiniBoard);
+															default:
+																var _v22 = value.a;
+																return $author$project$Main$LoadEditorBoard($author$project$Main$zigZagBoard);
+														}
+													}
+												},
+												options: _List_fromArray(
+													[$author$project$Main$DefaultBoard, $author$project$Main$BasicMiniBoard, $author$project$Main$ZigZagBoard]),
+												toKey: function (value) {
+													switch (value.$) {
+														case 'DefaultBoard':
+															return 'DefaultBoard';
+														case 'BasicMiniBoard':
+															return 'BasicMiniBoard';
+														default:
+															return 'ZigZagBoard';
+													}
+												},
+												toLabel: function (value) {
+													switch (value.$) {
+														case 'DefaultBoard':
+															return '9 x 9 blank slate';
+														case 'BasicMiniBoard':
+															return 'Basic mini';
+														default:
+															return 'Zig zag';
+													}
+												},
+												value: $elm$core$Maybe$Nothing
+											})
+										]))
+								]));
+					}
+				}()
+				]))
+		]);
+};
+var $author$project$Main$ExitFreePlayBoard = {$: 'ExitFreePlayBoard'};
+var $author$project$Main$ShowFreePlayMenu = function (a) {
+	return {$: 'ShowFreePlayMenu', a: a};
+};
+var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $author$project$Main$LoadFreePlayBoard = function (a) {
+	return {$: 'LoadFreePlayBoard', a: a};
+};
+var $author$project$Main$viewBoardPreviewTile = function (board) {
+	return A2(
+		$elm$html$Html$button,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$type_('button'),
+				A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+				A2($elm$html$Html$Attributes$style, 'height', '8rem'),
+				$elm$html$Html$Events$onClick(
+				$author$project$Main$LoadFreePlayBoard(board.boardEncoding))
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(board.name)
+			]));
+};
+var $author$project$Main$viewFreePlayScreen = function (model) {
+	var _v0 = model.freePlayMode;
+	if (_v0.$ === 'FreePlayBoardSelection') {
+		return _List_fromArray(
 			[
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						A2($elm$html$Html$Attributes$style, 'display', 'grid'),
-						A2(
-						$elm$html$Html$Attributes$style,
-						'grid-template-columns',
-						function () {
-							var _v0 = model.mode;
-							if (_v0.$ === 'Editor') {
-								return 'auto auto';
-							} else {
-								return 'auto 8rem';
-							}
-						}()),
-						A2(
-						$elm$html$Html$Attributes$style,
-						'grid-template-rows',
-						function () {
-							var _v1 = model.mode;
-							if (_v1.$ === 'Editor') {
-								return 'auto auto';
-							} else {
-								return 'auto';
-							}
-						}())
+						A2($elm$html$Html$Attributes$style, 'width', '100vw'),
+						A2($elm$html$Html$Attributes$style, 'height', '100vh'),
+						A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+						A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+						A2($elm$html$Html$Attributes$style, 'align-items', 'center')
 					]),
 				_List_fromArray(
 					[
 						A2(
 						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'margin-top', '5rem'),
+								A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+								A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+								A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
+								A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$h1,
+								_List_fromArray(
+									[
+										A2($elm$html$Html$Attributes$style, 'text-align', 'center')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Pick a Board')
+									])),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$type_('button'),
+										A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+										A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
+										$elm$html$Html$Events$onClick(
+										$author$project$Main$SetScreen($author$project$Main$Menu))
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Main Menu')
+									]))
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'width', '100vw'),
+								A2($elm$html$Html$Attributes$style, 'display', 'grid'),
+								A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'repeat(5, 1fr)'),
+								A2($elm$html$Html$Attributes$style, 'gap', '2rem'),
+								A2($elm$html$Html$Attributes$style, 'padding', '2rem')
+							]),
 						_Utils_ap(
+							A2(
+								$elm$core$List$map,
+								$author$project$Main$viewBoardPreviewTile,
+								_List_fromArray(
+									[
+										{boardEncoding: $author$project$Main$basicMiniBoard, name: 'Mini'},
+										{boardEncoding: $author$project$Main$zigZagBoard, name: 'Zig-Zag'}
+									])),
 							_List_fromArray(
 								[
 									A2(
-									$elm$html$Html$Attributes$style,
-									'grid-column',
-									function () {
-										var _v2 = model.mode;
-										if (_v2.$ === 'Editor') {
-											return '1';
-										} else {
-											return '1 / 2';
-										}
-									}()),
-									A2(
-									$elm$html$Html$Attributes$style,
-									'grid-row',
-									function () {
-										var _v3 = model.mode;
-										if (_v3.$ === 'Editor') {
-											return '2';
-										} else {
-											return '1';
-										}
-									}())
-								]),
-							function () {
-								var _v4 = model.mouseDragging;
-								switch (_v4.$) {
-									case 'NoInteraction':
-										return _List_fromArray(
-											[
-												A2($elm$html$Html$Events$on, 'pointerdown', $author$project$Main$decodeMouseDown),
-												A2(
-												$elm$html$Html$Events$on,
-												'pointermove',
-												$author$project$Main$decodePointerMove($elm$json$Json$Encode$null)),
-												A2($elm$html$Html$Attributes$property, '___setPointerCapture', $elm$json$Json$Encode$null)
-											]);
-									case 'InteractionStart':
-										var pointer = _v4.a;
-										return _List_fromArray(
-											[
-												A2($elm$html$Html$Events$on, 'pointerup', $author$project$Main$decodeMouseUp),
-												A2(
-												$elm$html$Html$Events$on,
-												'pointermove',
-												$author$project$Main$decodePointerMove(pointer)),
-												A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
-											]);
-									default:
-										var pointer = _v4.a;
-										return _List_fromArray(
-											[
-												A2($elm$html$Html$Events$on, 'pointerup', $author$project$Main$decodeMouseUp),
-												A2(
-												$elm$html$Html$Events$on,
-												'pointermove',
-												$author$project$Main$decodePointerMove(pointer)),
-												A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
-											]);
-								}
-							}()),
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+											A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+											A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+											A2($elm$html$Html$Attributes$style, 'height', '8rem')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('More coming soon...')
+										]))
+								])))
+					]))
+			]);
+	} else {
+		return _List_fromArray(
+			[
+				A4(
+				$author$project$Main$view3dScene,
+				$author$project$Main$gameLights(model),
+				model.screenSize,
+				$author$project$Main$gamePlayCamera(model),
+				$elm$core$List$concat(
+					_List_fromArray(
+						[
+							A2(
+							$elm$core$List$map,
+							A2($author$project$Main$viewBlock, model.board, model),
+							$elm$core$Dict$toList(model.board.blocks)),
+							_List_fromArray(
+							[
+								A2($author$project$Main$viewPlayer, model.playerFacing, model.playerFrame)
+							])
+						]))),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+						A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
+						A2($elm$html$Html$Attributes$style, 'top', '0'),
+						A2($elm$html$Html$Attributes$style, 'left', '0')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$h3,
+						_List_Nil,
 						_List_fromArray(
 							[
-								function () {
-								var lights = function () {
-									var _v10 = model.mode;
-									if (_v10.$ === 'Game') {
-										var sun2 = A2(
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
-												direction: A3(
-													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-													$ianmackenzie$elm_geometry$Axis3d$x,
-													$ianmackenzie$elm_units$Angle$degrees(-70),
-													$ianmackenzie$elm_geometry$Direction3d$positiveZ),
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
-											});
-										var sun1 = A2(
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
-												direction: A3(
-													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-													$ianmackenzie$elm_geometry$Axis3d$x,
-													$ianmackenzie$elm_units$Angle$degrees(70),
-													$ianmackenzie$elm_geometry$Direction3d$negativeZ),
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
-											});
-										var sky3 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
-												upDirection: A3(
-													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-													$ianmackenzie$elm_geometry$Axis3d$z,
-													A2(
-														$ianmackenzie$elm_units$Quantity$plus,
-														$ianmackenzie$elm_units$Angle$degrees(-90),
-														model.cameraRotation),
-													A3(
-														$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-														$ianmackenzie$elm_geometry$Axis3d$x,
-														$ianmackenzie$elm_units$Angle$degrees(-70),
-														$ianmackenzie$elm_geometry$Direction3d$positiveZ))
-											});
-										var sky2 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
-												upDirection: A3(
-													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-													$ianmackenzie$elm_geometry$Axis3d$z,
-													A2(
-														$ianmackenzie$elm_units$Quantity$plus,
-														$ianmackenzie$elm_units$Angle$degrees(90),
-														model.cameraRotation),
-													A3(
-														$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-														$ianmackenzie$elm_geometry$Axis3d$x,
-														$ianmackenzie$elm_units$Angle$degrees(70),
-														$ianmackenzie$elm_geometry$Direction3d$positiveZ))
-											});
-										var sky1 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
-											});
-										var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
-											});
-										return A6($ianmackenzie$elm_3d_scene$Scene3d$sixLights, sun1, sun2, sky1, sky2, sky3, environment);
-									} else {
-										var upsideDownSky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$negativeZ
-											});
-										var sun = A2(
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
-												direction: A3(
-													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-													$ianmackenzie$elm_geometry$Axis3d$z,
-													A2(
-														$ianmackenzie$elm_units$Quantity$plus,
-														$ianmackenzie$elm_units$Angle$degrees(90),
-														model.cameraRotation),
-													A3(
-														$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-														$ianmackenzie$elm_geometry$Axis3d$x,
-														$ianmackenzie$elm_units$Angle$degrees(70),
-														$ianmackenzie$elm_geometry$Direction3d$negativeZ)),
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
-											});
-										var sky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
-											});
-										var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
-											});
-										return A4($ianmackenzie$elm_3d_scene$Scene3d$fourLights, sun, sky, environment, upsideDownSky);
-									}
-								}();
-								return $ianmackenzie$elm_3d_scene$Scene3d$custom(
-									{
-										antialiasing: $ianmackenzie$elm_3d_scene$Scene3d$multisampling,
-										background: $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor($avh4$elm_color$Color$gray),
-										camera: function () {
-											var _v5 = model.mode;
-											if (_v5.$ === 'Game') {
-												return $ianmackenzie$elm_3d_camera$Camera3d$perspective(
-													{
-														verticalFieldOfView: $ianmackenzie$elm_units$Angle$degrees(30),
-														viewpoint: function () {
-															var targetPos = $ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame);
-															return $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt(
-																{
-																	eyePoint: A3(
-																		$ianmackenzie$elm_geometry$Point3d$translateIn,
-																		$ianmackenzie$elm_geometry$Frame3d$zDirection(model.playerFrame),
-																		$ianmackenzie$elm_units$Length$meters(15),
-																		targetPos),
-																	focalPoint: targetPos,
-																	upDirection: $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame)
-																});
-														}()
-													});
-											} else {
-												return $author$project$Main$editorCamera(model);
-											}
-										}(),
-										clipDepth: $ianmackenzie$elm_units$Length$meters(1),
-										dimensions: _Utils_Tuple2(
-											$ianmackenzie$elm_units$Pixels$int(model.screenSize.width),
-											$ianmackenzie$elm_units$Pixels$int(model.screenSize.height)),
-										entities: function () {
-											var _v6 = model.mode;
-											if (_v6.$ === 'Editor') {
-												var editorBoard = $author$project$Undo$value(model.editorBoard);
-												return $elm$core$List$concat(
-													_List_fromArray(
-														[
-															A2(
-															$elm$core$List$map,
-															A2($author$project$Main$viewBlock, editorBoard, model),
-															$elm$core$Dict$toList(editorBoard.blocks)),
-															_List_fromArray(
-															[
-																A3(
-																$author$project$Main$viewCursor,
-																function () {
-																	var _v7 = model.editMode;
-																	switch (_v7.$) {
-																		case 'Select':
-																			return $avh4$elm_color$Color$white;
-																		case 'Remove':
-																			return $avh4$elm_color$Color$red;
-																		default:
-																			return $avh4$elm_color$Color$green;
-																	}
-																}(),
-																model.cursorBounce,
-																model.editorCursor),
-																$author$project$Main$viewOrientationArrows,
-																function () {
-																var _v8 = model.selectedBlock;
-																if (_v8.$ === 'Nothing') {
-																	return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
-																} else {
-																	var _v9 = _v8.a;
-																	var point = _v9.a;
-																	return A3($author$project$Main$viewCursor, $avh4$elm_color$Color$yellow, model.cursorBounce, point);
-																}
-															}(),
-																model.showBoardBounds ? $author$project$Main$viewBounds(editorBoard) : $ianmackenzie$elm_3d_scene$Scene3d$nothing
-															])
-														]));
-											} else {
-												return $elm$core$List$concat(
-													_List_fromArray(
-														[
-															A2(
-															$elm$core$List$map,
-															A2($author$project$Main$viewBlock, model.board, model),
-															$elm$core$Dict$toList(model.board.blocks)),
-															_List_fromArray(
-															[
-																A2($author$project$Main$viewPlayer, model.playerFacing, model.playerFrame)
-															])
-														]));
-											}
-										}(),
-										exposure: $ianmackenzie$elm_3d_scene$Scene3d$exposureValue(15),
-										lights: lights,
-										toneMapping: $ianmackenzie$elm_3d_scene$Scene3d$noToneMapping,
-										whiteBalance: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight
-									});
-							}()
+								$elm$html$Html$text(
+								'Score: ' + $elm$core$String$fromInt(model.score))
+							]))
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+						A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
+						A2($elm$html$Html$Attributes$style, 'top', '0'),
+						A2($elm$html$Html$Attributes$style, 'right', '0')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$type_('button'),
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$ShowFreePlayMenu(true))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Menu')
+							]))
+					])),
+				A3(
+				$author$project$Html$Extra$modal,
+				{
+					onClose: $author$project$Main$ShowFreePlayMenu(false),
+					open: model.showFreePlayMenu
+				},
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$h2,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'width', '100%'),
+								A2($elm$html$Html$Attributes$style, 'margin-top', '0')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Free Play'),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										A2($elm$html$Html$Attributes$style, 'float', 'right'),
+										A2($elm$html$Html$Attributes$style, 'background', 'none'),
+										$elm$html$Html$Attributes$type_('button'),
+										$elm$html$Html$Attributes$title('Close'),
+										$elm$html$Html$Events$onClick(
+										$author$project$Main$ShowFreePlayMenu(false))
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+										_List_Nil,
+										$phosphor_icons$phosphor_elm$Phosphor$xCircle($phosphor_icons$phosphor_elm$Phosphor$Regular))
+									]))
 							])),
-						$author$project$Main$viewHeader(model),
-						function () {
-						var _v11 = model.mode;
-						if (_v11.$ === 'Game') {
-							return A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
-										A2($elm$html$Html$Attributes$style, 'grid-row', '1'),
-										A2($elm$html$Html$Attributes$style, 'padding', '0.5rem')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$button,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$type_('button'),
-												$elm$html$Html$Events$onClick($author$project$Main$ChangeMode)
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Edit Level')
-											]))
-									]));
-						} else {
-							var editorBoard = $author$project$Undo$value(model.editorBoard);
-							return A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
-										A2($elm$html$Html$Attributes$style, 'grid-row', '2'),
-										A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
-										A2($elm$html$Html$Attributes$style, 'height', '80vh'),
-										A2($elm$html$Html$Attributes$style, 'overflow', 'auto')
-									]),
-								_List_fromArray(
-									[
-										function () {
-										var _v12 = model.selectedBlock;
-										if (_v12.$ === 'Nothing') {
-											return A2(
-												$elm$html$Html$span,
-												_List_Nil,
-												_List_fromArray(
-													[
-														$elm$html$Html$text('No block selected')
-													]));
-										} else {
-											var _v13 = _v12.a;
-											var point = _v13.a;
-											var block = _v13.b;
-											switch (block.$) {
-												case 'Empty':
-													return A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Empty block')
-															]));
-												case 'Edge':
-													return A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Edge')
-															]));
-												case 'Wall':
-													return A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Wall')
-															]));
-												case 'PointPickup':
-													return A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Point Pickup')
-															]));
-												default:
-													var details = block.a;
-													return A2(
-														$elm$html$Html$form,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Player Spawn')
-																	])),
-																A2($elm$html$Html$br, _List_Nil, _List_Nil),
-																A2(
-																$elm$html$Html$label,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		A2(
-																		$elm$html$Html$span,
-																		_List_Nil,
-																		_List_fromArray(
-																			[
-																				$elm$html$Html$text('Forward Direction ')
-																			])),
-																		A2(
-																		$author$project$Html$Extra$select,
-																		_List_Nil,
-																		{
-																			onSelect: function (value) {
-																				if (value.$ === 'Nothing') {
-																					return A2(
-																						$author$project$Main$SetBlock,
-																						point,
-																						$author$project$Main$PlayerSpawn(details));
-																				} else {
-																					var axis = value.a;
-																					return A2(
-																						$author$project$Main$SetBlock,
-																						point,
-																						$author$project$Main$PlayerSpawn(
-																							_Utils_update(
-																								details,
-																								{forward: axis})));
-																				}
-																			},
-																			options: _List_fromArray(
-																				[$author$project$Main$PositiveX, $author$project$Main$NegativeX, $author$project$Main$PositiveY, $author$project$Main$NegativeY, $author$project$Main$PositiveZ, $author$project$Main$NegativeZ]),
-																			toKey: $author$project$Main$axisToLabel,
-																			toLabel: $author$project$Main$axisToLabel,
-																			value: $elm$core$Maybe$Just(details.forward)
-																		})
-																	])),
-																A2($elm$html$Html$br, _List_Nil, _List_Nil),
-																A2(
-																$elm$html$Html$label,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		A2(
-																		$elm$html$Html$span,
-																		_List_Nil,
-																		_List_fromArray(
-																			[
-																				$elm$html$Html$text('Left Direction ')
-																			])),
-																		A2(
-																		$author$project$Html$Extra$select,
-																		_List_Nil,
-																		{
-																			onSelect: function (value) {
-																				if (value.$ === 'Nothing') {
-																					return A2(
-																						$author$project$Main$SetBlock,
-																						point,
-																						$author$project$Main$PlayerSpawn(details));
-																				} else {
-																					var axis = value.a;
-																					return A2(
-																						$author$project$Main$SetBlock,
-																						point,
-																						$author$project$Main$PlayerSpawn(
-																							_Utils_update(
-																								details,
-																								{left: axis})));
-																				}
-																			},
-																			options: _List_fromArray(
-																				[$author$project$Main$PositiveX, $author$project$Main$NegativeX, $author$project$Main$PositiveY, $author$project$Main$NegativeY, $author$project$Main$PositiveZ, $author$project$Main$NegativeZ]),
-																			toKey: $author$project$Main$axisToLabel,
-																			toLabel: $author$project$Main$axisToLabel,
-																			value: $elm$core$Maybe$Just(details.left)
-																		})
-																	]))
-															]));
-											}
-										}
-									}(),
-										A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-										A2(
-										$elm$html$Html$form,
-										_List_Nil,
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$fieldset,
-												_List_Nil,
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('X Size ')
-																	])),
-																A2(
-																$elm$html$Html$input,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Attributes$type_('number'),
-																		$elm$html$Html$Attributes$value(model.editorMaxXRaw),
-																		$elm$html$Html$Attributes$min('1'),
-																		$elm$html$Html$Attributes$max('20'),
-																		$elm$html$Html$Attributes$step('1'),
-																		$elm$html$Html$Events$onInput($author$project$Main$MaxXChanged)
-																	]),
-																_List_Nil)
-															])),
-														A2($elm$html$Html$br, _List_Nil, _List_Nil),
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('X Visibility')
-																	])),
-																A2(
-																$author$project$Html$Extra$dualRange,
-																_List_Nil,
-																{
-																	colorMax: $elm$core$Maybe$Nothing,
-																	colorMid: $elm$core$Maybe$Nothing,
-																	colorMin: $elm$core$Maybe$Nothing,
-																	max: editorBoard.maxX - 1,
-																	min: 0,
-																	onInputHigh: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$XUpperVisibleChanged),
-																	onInputLow: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$XLowerVisibleChanged),
-																	step: 1,
-																	thumb1Image: $elm$core$Maybe$Nothing,
-																	thumb2Image: $elm$core$Maybe$Nothing,
-																	valueHigh: model.xUpperVisible,
-																	valueLow: model.xLowerVisible
-																})
-															]))
-													])),
-												A2($elm$html$Html$br, _List_Nil, _List_Nil),
-												A2(
-												$elm$html$Html$fieldset,
-												_List_Nil,
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Y Size ')
-																	])),
-																A2(
-																$elm$html$Html$input,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Attributes$type_('number'),
-																		$elm$html$Html$Attributes$value(model.editorMaxYRaw),
-																		$elm$html$Html$Attributes$min('1'),
-																		$elm$html$Html$Attributes$max('20'),
-																		$elm$html$Html$Attributes$step('1'),
-																		$elm$html$Html$Events$onInput($author$project$Main$MaxYChanged)
-																	]),
-																_List_Nil)
-															])),
-														A2($elm$html$Html$br, _List_Nil, _List_Nil),
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Y Visibility')
-																	])),
-																A2(
-																$author$project$Html$Extra$dualRange,
-																_List_Nil,
-																{
-																	colorMax: $elm$core$Maybe$Nothing,
-																	colorMid: $elm$core$Maybe$Nothing,
-																	colorMin: $elm$core$Maybe$Nothing,
-																	max: editorBoard.maxY - 1,
-																	min: 0,
-																	onInputHigh: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$YUpperVisibleChanged),
-																	onInputLow: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$YLowerVisibleChanged),
-																	step: 1,
-																	thumb1Image: $elm$core$Maybe$Nothing,
-																	thumb2Image: $elm$core$Maybe$Nothing,
-																	valueHigh: model.yUpperVisible,
-																	valueLow: model.yLowerVisible
-																})
-															]))
-													])),
-												A2($elm$html$Html$br, _List_Nil, _List_Nil),
-												A2(
-												$elm$html$Html$fieldset,
-												_List_Nil,
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Z Size ')
-																	])),
-																A2(
-																$elm$html$Html$input,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Attributes$type_('number'),
-																		$elm$html$Html$Attributes$value(model.editorMaxZRaw),
-																		$elm$html$Html$Attributes$min('1'),
-																		$elm$html$Html$Attributes$max('20'),
-																		$elm$html$Html$Attributes$step('1'),
-																		$elm$html$Html$Events$onInput($author$project$Main$MaxZChanged)
-																	]),
-																_List_Nil)
-															])),
-														A2($elm$html$Html$br, _List_Nil, _List_Nil),
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Z Visibility')
-																	])),
-																A2(
-																$author$project$Html$Extra$dualRange,
-																_List_Nil,
-																{
-																	colorMax: $elm$core$Maybe$Nothing,
-																	colorMid: $elm$core$Maybe$Nothing,
-																	colorMin: $elm$core$Maybe$Nothing,
-																	max: editorBoard.maxZ - 1,
-																	min: 0,
-																	onInputHigh: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$ZUpperVisibleChanged),
-																	onInputLow: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$ZLowerVisibleChanged),
-																	step: 1,
-																	thumb1Image: $elm$core$Maybe$Nothing,
-																	thumb2Image: $elm$core$Maybe$Nothing,
-																	valueHigh: model.zUpperVisible,
-																	valueLow: model.zLowerVisible
-																})
-															]))
-													]))
-											])),
-										A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-										A2(
-										$elm$html$Html$form,
-										_List_fromArray(
-											[
-												$elm$html$Html$Events$onSubmit(
-												$author$project$Main$LoadBoard(model.boardEncoding)),
-												A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-												A2($elm$html$Html$Attributes$style, 'gap', '1rem')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$label,
-												_List_fromArray(
-													[
-														A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-														A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
-														A2($elm$html$Html$Attributes$style, 'align-items', 'center')
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Encoded Level:')
-															])),
-														A2(
-														$elm$html$Html$input,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$value(model.boardEncoding),
-																$elm$html$Html$Events$onInput($author$project$Main$EncodingChanged)
-															]),
-														_List_Nil)
-													])),
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$type_('submit')
-													]),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Load')
-													])),
-												function () {
-												var _v17 = model.boardLoadError;
-												if (_v17.$ === 'Nothing') {
-													return $elm$html$Html$text('');
-												} else {
-													var error = _v17.a;
-													return A2(
-														$elm$html$Html$small,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text(
-																function () {
-																	switch (error.$) {
-																		case 'DataCorrupted':
-																			return 'Board data is corrupted';
-																		case 'SerializerOutOfDate':
-																			return 'Board data is from a different version of the game';
-																		default:
-																			return 'Unexpected error';
-																	}
-																}())
-															]));
-												}
-											}()
-											])),
-										A2($elm$html$Html$br, _List_Nil, _List_Nil),
-										A2(
-										$elm$html$Html$label,
-										_List_Nil,
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$span,
-												_List_Nil,
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Load an example board ')
-													])),
-												A2(
-												$author$project$Html$Extra$select,
-												_List_Nil,
-												{
-													onSelect: function (value) {
-														if (value.$ === 'Nothing') {
-															return $author$project$Main$NoOp;
-														} else {
-															switch (value.a.$) {
-																case 'DefaultBoard':
-																	var _v20 = value.a;
-																	return $author$project$Main$LoadBoard($author$project$Main$defaultBoard);
-																case 'BasicMiniBoard':
-																	var _v21 = value.a;
-																	return $author$project$Main$LoadBoard($author$project$Main$basicMiniBoard);
-																default:
-																	var _v22 = value.a;
-																	return $author$project$Main$LoadBoard($author$project$Main$zigZagBoard);
-															}
-														}
-													},
-													options: _List_fromArray(
-														[$author$project$Main$DefaultBoard, $author$project$Main$BasicMiniBoard, $author$project$Main$ZigZagBoard]),
-													toKey: function (value) {
-														switch (value.$) {
-															case 'DefaultBoard':
-																return 'DefaultBoard';
-															case 'BasicMiniBoard':
-																return 'BasicMiniBoard';
-															default:
-																return 'ZigZagBoard';
-														}
-													},
-													toLabel: function (value) {
-														switch (value.$) {
-															case 'DefaultBoard':
-																return '9 x 9 blank slate';
-															case 'BasicMiniBoard':
-																return 'Basic mini';
-															default:
-																return 'Zig zag';
-														}
-													},
-													value: $elm$core$Maybe$Nothing
-												})
-											]))
-									]));
-						}
-					}()
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$type_('button'),
+								$elm$html$Html$Events$onClick($author$project$Main$ExitFreePlayBoard)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Select another board')
+							]))
 					]))
-			]),
+			]);
+	}
+};
+var $author$project$Main$viewGameScreen = function (_v0) {
+	return _List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'width', '100vw'),
+					A2($elm$html$Html$Attributes$style, 'height', '100vh'),
+					A2($elm$html$Html$Attributes$style, 'display', 'grid'),
+					A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'auto auto auto')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
+							A2($elm$html$Html$Attributes$style, 'margin-top', '5rem'),
+							A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+							A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+							A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
+							A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$h1,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'text-align', 'center')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Cube-Man')
+								])),
+							A2(
+							$elm$html$Html$h2,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'text-align', 'center')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Full game coming soon...')
+								])),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$type_('button'),
+									A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+									A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
+									$elm$html$Html$Events$onClick(
+									$author$project$Main$SetScreen($author$project$Main$Menu))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Main Menu')
+								]))
+						]))
+				]))
+		]);
+};
+var $author$project$Main$FreePlay = {$: 'FreePlay'};
+var $author$project$Main$Game = {$: 'Game'};
+var $author$project$Main$viewStartScreen = function (_v0) {
+	return _List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'width', '100vw'),
+					A2($elm$html$Html$Attributes$style, 'height', '100vh'),
+					A2($elm$html$Html$Attributes$style, 'display', 'grid'),
+					A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'auto auto auto')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
+							A2($elm$html$Html$Attributes$style, 'margin-top', '5rem'),
+							A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+							A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+							A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
+							A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$h1,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'text-align', 'center')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Cube-Man')
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'margin-top', '5rem'),
+									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+									A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+									A2($elm$html$Html$Attributes$style, 'gap', '1rem')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$button,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$type_('button'),
+											A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+											A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
+											$elm$html$Html$Events$onClick(
+											$author$project$Main$SetScreen($author$project$Main$Game))
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$span,
+											_List_fromArray(
+												[
+													A2($elm$html$Html$Attributes$style, 'text-decoration', 'line-through')
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Play')
+												])),
+											A2($elm$html$Html$br, _List_Nil, _List_Nil),
+											A2(
+											$elm$html$Html$small,
+											_List_Nil,
+											_List_fromArray(
+												[
+													$elm$html$Html$text(' Coming soon...')
+												]))
+										])),
+									A2(
+									$elm$html$Html$button,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$type_('button'),
+											A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+											A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
+											$elm$html$Html$Events$onClick(
+											$author$project$Main$SetScreen($author$project$Main$FreePlay))
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Free Play')
+										])),
+									A2(
+									$elm$html$Html$button,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$type_('button'),
+											A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+											A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
+											$elm$html$Html$Events$onClick(
+											$author$project$Main$SetScreen($author$project$Main$Editor))
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Level Editor')
+										]))
+								]))
+						]))
+				]))
+		]);
+};
+var $author$project$Main$view = function (model) {
+	return {
+		body: function () {
+			var _v0 = model.screen;
+			switch (_v0.$) {
+				case 'Menu':
+					return $author$project$Main$viewStartScreen(model);
+				case 'Game':
+					return $author$project$Main$viewGameScreen(model);
+				case 'FreePlay':
+					return $author$project$Main$viewFreePlayScreen(model);
+				default:
+					return $author$project$Main$viewEditorScreen(model);
+			}
+		}(),
 		title: 'Cube-Man'
 	};
 };
 var $author$project$Main$main = $elm$browser$Browser$document(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.InputMapping":{"args":[],"type":"{ moveUp : ( String.String, String.String ), moveDown : ( String.String, String.String ), moveLeft : ( String.String, String.String ), moveRight : ( String.String, String.String ), cameraOrbit : ( String.String, String.String ), cameraPan : ( String.String, String.String ), cameraZoom : ( String.String, String.String ), cameraReset : ( String.String, String.String ), blockSelect : ( String.String, String.String ), blockAdd : ( String.String, String.String ), blockRemove : ( String.String, String.String ), blockTypeWall : ( String.String, String.String ), blockTypeEdge : ( String.String, String.String ), blockTypePointPickup : ( String.String, String.String ), blockTypePlayerSpawn : ( String.String, String.String ), undo : ( String.String, String.String ), redo : ( String.String, String.String ), toggleSettings : ( String.String, String.String ) }"},"Main.Point":{"args":[],"type":"( Basics.Int, Basics.Int, Basics.Int )"},"Point2d.Point2d":{"args":["units","coordinates"],"type":"Geometry.Types.Point2d units coordinates"},"Json.Decode.Value":{"args":[],"type":"Json.Encode.Value"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"Tick":["Basics.Float"],"KeyPressed":["String.String"],"KeyDown":["String.String"],"KeyUp":["String.String"],"MouseDown":["Json.Decode.Value"],"MouseUp":[],"MouseMove":["Json.Decode.Value","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates"],"EncodingChanged":["String.String"],"LoadBoard":["String.String"],"ChangeMode":[],"SetEditMode":["Main.EditMode"],"SetCameraMode":["Main.CameraMode"],"ResetCamera":[],"Undo":[],"Redo":[],"XLowerVisibleChanged":["Basics.Int"],"XUpperVisibleChanged":["Basics.Int"],"YLowerVisibleChanged":["Basics.Int"],"YUpperVisibleChanged":["Basics.Int"],"ZLowerVisibleChanged":["Basics.Int"],"ZUpperVisibleChanged":["Basics.Int"],"BlockTypeSelected":["Main.Block"],"SetBlock":["Main.Point","Main.Block"],"MaxXChanged":["String.String"],"MaxYChanged":["String.String"],"MaxZChanged":["String.String"],"ShowBoardBounds":["Basics.Bool"],"ShowSettings":["Basics.Bool"],"SetMapping":["Main.InputMapping -> Main.InputMapping"]}},"Main.Block":{"args":[],"tags":{"Empty":[],"Wall":[],"Edge":[],"PointPickup":["Basics.Bool"],"PlayerSpawn":["{ forward : Main.Axis, left : Main.Axis }"]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Main.CameraMode":{"args":[],"tags":{"Orbit":[],"Pan":[],"Zoom":[]}},"Main.EditMode":{"args":[],"tags":{"Add":[],"Remove":[],"Select":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Pixels.Pixels":{"args":[],"tags":{"Pixels":[]}},"Geometry.Types.Point2d":{"args":["units","coordinates"],"tags":{"Point2d":["{ x : Basics.Float, y : Basics.Float }"]}},"Main.ScreenCoordinates":{"args":[],"tags":{"ScreenCoordinates":["Basics.Never"]}},"String.String":{"args":[],"tags":{"String":[]}},"Json.Encode.Value":{"args":[],"tags":{"Value":[]}},"Main.Axis":{"args":[],"tags":{"PositiveX":[],"NegativeX":[],"PositiveY":[],"NegativeY":[],"PositiveZ":[],"NegativeZ":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.InputMapping":{"args":[],"type":"{ moveUp : ( String.String, String.String ), moveDown : ( String.String, String.String ), moveLeft : ( String.String, String.String ), moveRight : ( String.String, String.String ), cameraOrbit : ( String.String, String.String ), cameraPan : ( String.String, String.String ), cameraZoom : ( String.String, String.String ), cameraReset : ( String.String, String.String ), blockSelect : ( String.String, String.String ), blockAdd : ( String.String, String.String ), blockRemove : ( String.String, String.String ), blockTypeWall : ( String.String, String.String ), blockTypeEdge : ( String.String, String.String ), blockTypePointPickup : ( String.String, String.String ), blockTypePlayerSpawn : ( String.String, String.String ), undo : ( String.String, String.String ), redo : ( String.String, String.String ), toggleSettings : ( String.String, String.String ) }"},"Main.Point":{"args":[],"type":"( Basics.Int, Basics.Int, Basics.Int )"},"Point2d.Point2d":{"args":["units","coordinates"],"type":"Geometry.Types.Point2d units coordinates"},"Json.Decode.Value":{"args":[],"type":"Json.Encode.Value"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"Tick":["Basics.Float"],"KeyPressed":["String.String"],"KeyDown":["String.String"],"KeyUp":["String.String"],"MouseDown":["Json.Decode.Value"],"MouseUp":[],"MouseMove":["Json.Decode.Value","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates"],"EncodingChanged":["String.String"],"LoadEditorBoard":["String.String"],"ChangeMode":[],"SetBlockEditMode":["Main.BlockEditMode"],"SetCameraMode":["Main.CameraMode"],"ResetCamera":[],"Undo":[],"Redo":[],"XLowerVisibleChanged":["Basics.Int"],"XUpperVisibleChanged":["Basics.Int"],"YLowerVisibleChanged":["Basics.Int"],"YUpperVisibleChanged":["Basics.Int"],"ZLowerVisibleChanged":["Basics.Int"],"ZUpperVisibleChanged":["Basics.Int"],"BlockTypeSelected":["Main.Block"],"SetBlock":["Main.Point","Main.Block"],"MaxXChanged":["String.String"],"MaxYChanged":["String.String"],"MaxZChanged":["String.String"],"ShowBoardBounds":["Basics.Bool"],"ShowSettings":["Basics.Bool"],"SetMapping":["Main.InputMapping -> Main.InputMapping"],"SetScreen":["Main.Screen"],"LoadFreePlayBoard":["String.String"],"ExitFreePlayBoard":[],"ShowFreePlayMenu":["Basics.Bool"]}},"Main.Block":{"args":[],"tags":{"Empty":[],"Wall":[],"Edge":[],"PointPickup":["Basics.Bool"],"PlayerSpawn":["{ forward : Main.Axis, left : Main.Axis }"]}},"Main.BlockEditMode":{"args":[],"tags":{"Add":[],"Remove":[],"Select":[]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Main.CameraMode":{"args":[],"tags":{"Orbit":[],"Pan":[],"Zoom":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Pixels.Pixels":{"args":[],"tags":{"Pixels":[]}},"Geometry.Types.Point2d":{"args":["units","coordinates"],"tags":{"Point2d":["{ x : Basics.Float, y : Basics.Float }"]}},"Main.Screen":{"args":[],"tags":{"Editor":[],"Game":[],"FreePlay":[],"Menu":[]}},"Main.ScreenCoordinates":{"args":[],"tags":{"ScreenCoordinates":["Basics.Never"]}},"String.String":{"args":[],"tags":{"String":[]}},"Json.Encode.Value":{"args":[],"tags":{"Value":[]}},"Main.Axis":{"args":[],"tags":{"PositiveX":[],"NegativeX":[],"PositiveY":[],"NegativeY":[],"PositiveZ":[],"NegativeZ":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}}}}})}});}(this));
