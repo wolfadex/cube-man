@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739241640117"
+    "1739241771857"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -15020,7 +15020,7 @@ var $author$project$Main$update = F2(
 							A2($elm$json$Json$Decode$decodeString, $elm$json$Json$Decode$value, encoding))));
 				if (loadedBoard.$ === 'Ok') {
 					var editorBoard = loadedBoard.a;
-					return _Utils_Tuple2(
+					return $author$project$Main$resetCamera(
 						_Utils_update(
 							model,
 							{
@@ -15033,8 +15033,7 @@ var $author$project$Main$update = F2(
 								yUpperVisible: editorBoard.maxY - 1,
 								zLowerVisible: 0,
 								zUpperVisible: editorBoard.maxZ - 1
-							}),
-						$elm$core$Platform$Cmd$none);
+							}));
 				} else {
 					var error = loadedBoard.a;
 					return _Utils_Tuple2(
@@ -20492,9 +20491,9 @@ var $author$project$Main$viewBlock = F3(
 							function () {
 								var _v3 = model.blockPalette;
 								if (_v3.$ === 'SimpleBlocks') {
-									return A3($avh4$elm_color$Color$rgb, (x * 1.2) / board.maxX, (y * 1.2) / board.maxY, (z * 1.2) / board.maxZ);
-								} else {
 									return $avh4$elm_color$Color$gray;
+								} else {
+									return A3($avh4$elm_color$Color$rgb, (x * 1.2) / board.maxX, (y * 1.2) / board.maxY, (z * 1.2) / board.maxZ);
 								}
 							}()),
 						A2(

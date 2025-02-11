@@ -472,19 +472,18 @@ update msg model =
             in
             case loadedBoard of
                 Ok editorBoard ->
-                    ( { model
-                        | editorBoard = Undo.init editorBoard
-                        , boardLoadError = Nothing
-                        , selectedBlock = Nothing
-                        , xLowerVisible = 0
-                        , xUpperVisible = editorBoard.maxX - 1
-                        , yLowerVisible = 0
-                        , yUpperVisible = editorBoard.maxY - 1
-                        , zLowerVisible = 0
-                        , zUpperVisible = editorBoard.maxZ - 1
-                      }
-                    , Cmd.none
-                    )
+                    resetCamera
+                        { model
+                            | editorBoard = Undo.init editorBoard
+                            , boardLoadError = Nothing
+                            , selectedBlock = Nothing
+                            , xLowerVisible = 0
+                            , xUpperVisible = editorBoard.maxX - 1
+                            , yLowerVisible = 0
+                            , yUpperVisible = editorBoard.maxY - 1
+                            , zLowerVisible = 0
+                            , zUpperVisible = editorBoard.maxZ - 1
+                        }
 
                 Err error ->
                     ( { model
@@ -2684,13 +2683,13 @@ viewBlock board model ( point, block ) =
                     (Scene3d.Material.matte <|
                         case model.blockPalette of
                             SimpleBlocks ->
+                                Color.gray
+
+                            RainbowBlocks ->
                                 Color.rgb
                                     (toFloat x * 1.2 / toFloat board.maxX)
                                     (toFloat y * 1.2 / toFloat board.maxY)
                                     (toFloat z * 1.2 / toFloat board.maxZ)
-
-                            RainbowBlocks ->
-                                Color.gray
                     )
                     (Block3d.centeredOn
                         (Frame3d.atPoint
