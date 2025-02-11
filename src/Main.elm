@@ -20,6 +20,7 @@ import Html.Attributes
 import Html.Attributes.Extra
 import Html.Events
 import Html.Extra
+import Illuminance
 import Json.Decode
 import Json.Encode
 import Length exposing (Length)
@@ -90,7 +91,13 @@ type alias Model =
     , editorMaxXRaw : String
     , editorMaxYRaw : String
     , editorMaxZRaw : String
+    , blockPalette : BlockPalette
     }
+
+
+type BlockPalette
+    = SimpleBlocks
+    | RainbowBlocks
 
 
 type EditorMouseInteraction
@@ -349,6 +356,7 @@ init () =
       , editorMaxXRaw = String.fromInt maxX
       , editorMaxYRaw = String.fromInt maxY
       , editorMaxZRaw = String.fromInt maxZ
+      , blockPalette = SimpleBlocks
       }
     , Cmd.none
     )
@@ -1636,6 +1644,19 @@ handleEditorKeyPressed key model =
         "x" ->
             redo model
 
+        "p" ->
+            ( { model
+                | blockPalette =
+                    case model.blockPalette of
+                        SimpleBlocks ->
+                            RainbowBlocks
+
+                        RainbowBlocks ->
+                            SimpleBlocks
+              }
+            , Cmd.none
+            )
+
         _ ->
             ( model, Cmd.none )
 
@@ -1757,12 +1778,119 @@ view model =
                                 ]
                        )
                 )
-                [ Scene3d.sunny
+                [ let
+                    lights =
+                        case model.mode of
+                            Game ->
+                                let
+                                    sun1 =
+                                        Scene3d.Light.directional (Scene3d.Light.castsShadows True)
+                                            { direction =
+                                                Direction3d.negativeZ
+                                                    |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
+                                            , intensity = Illuminance.lux 80000
+                                            , chromaticity = Scene3d.Light.sunlight
+                                            }
+
+                                    sun2 =
+                                        Scene3d.Light.directional (Scene3d.Light.castsShadows True)
+                                            { direction =
+                                                Direction3d.positiveZ
+                                                    |> Direction3d.rotateAround Axis3d.x (Angle.degrees -70)
+                                            , intensity = Illuminance.lux 80000
+                                            , chromaticity = Scene3d.Light.sunlight
+                                            }
+
+                                    sky1 =
+                                        Scene3d.Light.overhead
+                                            { upDirection =
+                                                Direction3d.positiveZ
+                                            , chromaticity = Scene3d.Light.skylight
+                                            , intensity = Illuminance.lux 20000
+                                            }
+
+                                    sky2 =
+                                        Scene3d.Light.overhead
+                                            { upDirection =
+                                                Direction3d.positiveZ
+                                                    |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
+                                                    |> Direction3d.rotateAround Axis3d.z
+                                                        (model.cameraRotation
+                                                            |> Quantity.plus (Angle.degrees 90)
+                                                        )
+                                            , chromaticity = Scene3d.Light.skylight
+                                            , intensity = Illuminance.lux 40000
+                                            }
+
+                                    sky3 =
+                                        Scene3d.Light.overhead
+                                            { upDirection =
+                                                Direction3d.positiveZ
+                                                    |> Direction3d.rotateAround Axis3d.x (Angle.degrees -70)
+                                                    |> Direction3d.rotateAround Axis3d.z
+                                                        (model.cameraRotation
+                                                            |> Quantity.plus (Angle.degrees -90)
+                                                        )
+                                            , chromaticity = Scene3d.Light.daylight
+                                            , intensity = Illuminance.lux 40000
+                                            }
+
+                                    environment =
+                                        Scene3d.Light.overhead
+                                            { upDirection = Direction3d.reverse Direction3d.positiveZ
+                                            , chromaticity = Scene3d.Light.daylight
+                                            , intensity = Illuminance.lux 15000
+                                            }
+                                in
+                                Scene3d.sixLights sun1 sun2 sky1 sky2 sky3 environment
+
+                            Editor ->
+                                let
+                                    sun =
+                                        Scene3d.Light.directional (Scene3d.Light.castsShadows True)
+                                            { direction =
+                                                Direction3d.negativeZ
+                                                    |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
+                                                    |> Direction3d.rotateAround Axis3d.z
+                                                        (model.cameraRotation
+                                                            |> Quantity.plus (Angle.degrees 90)
+                                                        )
+                                            , intensity = Illuminance.lux 80000
+                                            , chromaticity = Scene3d.Light.sunlight
+                                            }
+
+                                    sky =
+                                        Scene3d.Light.overhead
+                                            { upDirection = Direction3d.positiveZ
+                                            , chromaticity = Scene3d.Light.skylight
+                                            , intensity = Illuminance.lux 20000
+                                            }
+
+                                    upsideDownSky =
+                                        Scene3d.Light.overhead
+                                            { upDirection = Direction3d.negativeZ
+                                            , chromaticity = Scene3d.Light.skylight
+                                            , intensity = Illuminance.lux 40000
+                                            }
+
+                                    environment =
+                                        Scene3d.Light.overhead
+                                            { upDirection = Direction3d.reverse Direction3d.positiveZ
+                                            , chromaticity = Scene3d.Light.daylight
+                                            , intensity = Illuminance.lux 15000
+                                            }
+                                in
+                                Scene3d.fourLights sun sky environment upsideDownSky
+                  in
+                  Scene3d.custom
                     { clipDepth = Length.meters 1
                     , background = Scene3d.backgroundColor Color.gray
-                    , shadows = True
+                    , exposure = Scene3d.exposureValue 15
+                    , lights = lights
+                    , toneMapping = Scene3d.noToneMapping
+                    , whiteBalance = Scene3d.Light.daylight
+                    , antialiasing = Scene3d.multisampling
                     , dimensions = ( Pixels.int model.screenSize.width, Pixels.int model.screenSize.height )
-                    , upDirection = Direction3d.positiveZ
                     , camera =
                         case model.mode of
                             Game ->
@@ -1784,13 +1912,6 @@ view model =
 
                             Editor ->
                                 editorCamera model
-                    , sunlightDirection =
-                        Direction3d.positiveZ
-                            |> Direction3d.rotateAround Axis3d.x (Angle.degrees 60)
-                            |> Direction3d.rotateAround Axis3d.z
-                                (model.cameraRotation
-                                    |> Quantity.plus (Angle.degrees -60)
-                                )
                     , entities =
                         case model.mode of
                             Editor ->
@@ -2560,12 +2681,16 @@ viewBlock board model ( point, block ) =
         case block of
             Wall ->
                 Scene3d.blockWithShadow
-                    (Scene3d.Material.matte
-                        (Color.rgb
-                            (toFloat x * 1.2 / toFloat board.maxX)
-                            (toFloat y * 1.2 / toFloat board.maxY)
-                            (toFloat z * 1.2 / toFloat board.maxZ)
-                        )
+                    (Scene3d.Material.matte <|
+                        case model.blockPalette of
+                            SimpleBlocks ->
+                                Color.rgb
+                                    (toFloat x * 1.2 / toFloat board.maxX)
+                                    (toFloat y * 1.2 / toFloat board.maxY)
+                                    (toFloat z * 1.2 / toFloat board.maxZ)
+
+                            RainbowBlocks ->
+                                Color.gray
                     )
                     (Block3d.centeredOn
                         (Frame3d.atPoint

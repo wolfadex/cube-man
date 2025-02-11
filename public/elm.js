@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739239855543"
+    "1739241640117"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -10907,6 +10907,7 @@ var $author$project$Main$Forward = {$: 'Forward'};
 var $author$project$Main$NoInteraction = {$: 'NoInteraction'};
 var $author$project$Main$Orbit = {$: 'Orbit'};
 var $author$project$Main$Select = {$: 'Select'};
+var $author$project$Main$SimpleBlocks = {$: 'SimpleBlocks'};
 var $author$project$Main$Wall = {$: 'Wall'};
 var $ianmackenzie$elm_geometry$Geometry$Types$Frame3d = function (a) {
 	return {$: 'Frame3d', a: a};
@@ -12152,6 +12153,7 @@ var $author$project$Main$init = function (_v0) {
 	};
 	return _Utils_Tuple2(
 		{
+			blockPalette: $author$project$Main$SimpleBlocks,
 			board: board,
 			boardEncoding: A2(
 				$elm$json$Json$Encode$encode,
@@ -12849,6 +12851,7 @@ var $elm$core$Dict$get = F2(
 	});
 var $author$project$Main$Add = {$: 'Add'};
 var $author$project$Main$Pan = {$: 'Pan'};
+var $author$project$Main$RainbowBlocks = {$: 'RainbowBlocks'};
 var $author$project$Main$Remove = {$: 'Remove'};
 var $author$project$Main$Zoom = {$: 'Zoom'};
 var $author$project$Undo$redo = function (stack) {
@@ -12997,6 +13000,21 @@ var $author$project$Main$handleEditorKeyPressed = F2(
 				return $author$project$Main$undo(model);
 			case 'x':
 				return $author$project$Main$redo(model);
+			case 'p':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							blockPalette: function () {
+								var _v1 = model.blockPalette;
+								if (_v1.$ === 'SimpleBlocks') {
+									return $author$project$Main$RainbowBlocks;
+								} else {
+									return $author$project$Main$SimpleBlocks;
+								}
+							}()
+						}),
+					$elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
@@ -15566,500 +15584,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor = function (color) {
 };
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $author$project$Main$MouseDown = function (a) {
-	return {$: 'MouseDown', a: a};
-};
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $author$project$Main$decodeMouseDown = A2(
-	$elm$json$Json$Decode$andThen,
-	function (button) {
-		return (!button) ? A2(
-			$elm$json$Json$Decode$map,
-			$author$project$Main$MouseDown,
-			A2($elm$json$Json$Decode$field, 'pointerId', $elm$json$Json$Decode$value)) : $elm$json$Json$Decode$fail('Non-primary mouse button');
-	},
-	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
-var $author$project$Main$MouseUp = {$: 'MouseUp'};
-var $author$project$Main$decodeMouseUp = A2(
-	$elm$json$Json$Decode$andThen,
-	function (button) {
-		return (!button) ? $elm$json$Json$Decode$succeed($author$project$Main$MouseUp) : $elm$json$Json$Decode$fail('Non-primary mouse button');
-	},
-	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
-var $author$project$Main$MouseMove = F3(
-	function (a, b, c) {
-		return {$: 'MouseMove', a: a, b: b, c: c};
-	});
-var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $elm$json$Json$Decode$map4 = _Json_map4;
-var $author$project$Main$decodePointerMove = function (pointer) {
-	return A5(
-		$elm$json$Json$Decode$map4,
-		F4(
-			function (ox, oy, mx, my) {
-				return A3(
-					$author$project$Main$MouseMove,
-					pointer,
-					A2($ianmackenzie$elm_geometry$Point2d$pixels, ox, oy),
-					A2($ianmackenzie$elm_geometry$Point2d$pixels, mx, my));
-			}),
-		A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float),
-		A2($elm$json$Json$Decode$field, 'offsetY', $elm$json$Json$Decode$float),
-		A2($elm$json$Json$Decode$field, 'movementX', $elm$json$Json$Decode$float),
-		A2($elm$json$Json$Decode$field, 'movementY', $elm$json$Json$Decode$float));
-};
-var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$virtual_dom$VirtualDom$attribute = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_attribute,
-			_VirtualDom_noOnOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
-	});
-var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
-var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $elm$html$Html$input = _VirtualDom_node('input');
-var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
-var $elm$html$Html$Attributes$min = $elm$html$Html$Attributes$stringProperty('min');
-var $elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
-var $elm$html$Html$Events$targetValue = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	$elm$json$Json$Decode$string);
-var $elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		$elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysStop,
-			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
-};
-var $elm$html$Html$Attributes$step = function (n) {
-	return A2($elm$html$Html$Attributes$stringProperty, 'step', n);
-};
-var $elm$core$String$toFloat = _String_toFloat;
-var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
-var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
-var $author$project$Html$Extra$dualRange = F2(
-	function (attributes, config) {
-		var percent2 = (config.valueHigh / config.max) * 100;
-		var percent1 = (config.valueLow / config.max) * 100;
-		var colorMin = A2($elm$core$Maybe$withDefault, 'gray', config.colorMin);
-		var colorMid = A2($elm$core$Maybe$withDefault, 'cornflowerblue', config.colorMid);
-		var colorMax = A2($elm$core$Maybe$withDefault, 'gray', config.colorMax);
-		var backgroundColorRight = 'linear-gradient(to right, ' + (colorMin + (' 0%, ' + (colorMin + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, ' + (colorMid + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, ' + (colorMid + (' ' + ($elm$core$String$fromFloat(percent2) + ('%, ' + (colorMax + (' ' + ($elm$core$String$fromFloat(percent2) + ('%, ' + (colorMax + ' 100%)')))))))))))))))))));
-		var backgroundColorLeft = 'linear-gradient(to right, ' + (colorMin + (' 0%, ' + (colorMin + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, ' + (colorMid + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, rgba(0, 0, 0, 0) ' + ($elm$core$String$fromFloat(percent2) + ('%, rgba(0, 0, 0, 0) ' + ($elm$core$String$fromFloat(percent2) + '%, rgba(0, 0, 0, 0) 100%)')))))))))))));
-		return A2(
-			$elm$html$Html$div,
-			_Utils_ap(
-				attributes,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('dual-range__container')
-					])),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('dual-range__controls')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$input,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('dual-range__control-1'),
-									$elm$html$Html$Attributes$type_('range'),
-									$elm$html$Html$Attributes$value(
-									$elm$core$String$fromFloat(config.valueLow)),
-									$elm$html$Html$Events$onInput(
-									A2(
-										$elm$core$Basics$composeR,
-										$elm$core$String$toFloat,
-										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$Maybe$withDefault(config.valueLow),
-											config.onInputLow))),
-									$elm$html$Html$Attributes$min(
-									$elm$core$String$fromFloat(config.min)),
-									$elm$html$Html$Attributes$max(
-									$elm$core$String$fromFloat(config.max)),
-									$elm$html$Html$Attributes$step(
-									$elm$core$String$fromFloat(config.step)),
-									function () {
-									var _v0 = config.thumb1Image;
-									if (_v0.$ === 'Nothing') {
-										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorLeft + '; --thumb-image: white;'));
-									} else {
-										var thumb1Image = _v0.a;
-										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorLeft + ('; --thumb-image: white url(' + (thumb1Image + ') center center/contain no-repeat;'))));
-									}
-								}()
-								]),
-							_List_Nil),
-							A2(
-							$elm$html$Html$input,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('dual-range__control-2'),
-									$elm$html$Html$Attributes$type_('range'),
-									$elm$html$Html$Attributes$value(
-									$elm$core$String$fromFloat(config.valueHigh)),
-									$elm$html$Html$Events$onInput(
-									A2(
-										$elm$core$Basics$composeR,
-										$elm$core$String$toFloat,
-										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$Maybe$withDefault(config.valueHigh),
-											config.onInputHigh))),
-									$elm$html$Html$Attributes$min(
-									$elm$core$String$fromFloat(config.min)),
-									$elm$html$Html$Attributes$max(
-									$elm$core$String$fromFloat(config.max)),
-									$elm$html$Html$Attributes$step(
-									$elm$core$String$fromFloat(config.step)),
-									function () {
-									var _v1 = config.thumb2Image;
-									if (_v1.$ === 'Nothing') {
-										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorRight + '; --thumb-image: white;'));
-									} else {
-										var thumb2Image = _v1.a;
-										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorRight + ('; --thumb-image: white url(' + (thumb2Image + ') center center/contain no-repeat;'))));
-									}
-								}()
-								]),
-							_List_Nil)
-						]))
-				]));
-	});
-var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
-var $elm$html$Html$form = _VirtualDom_node('form');
-var $avh4$elm_color$Color$RgbaSpace = F4(
-	function (a, b, c, d) {
-		return {$: 'RgbaSpace', a: a, b: b, c: c, d: d};
-	});
-var $avh4$elm_color$Color$gray = A4($avh4$elm_color$Color$RgbaSpace, 211 / 255, 215 / 255, 207 / 255, 1.0);
-var $avh4$elm_color$Color$green = A4($avh4$elm_color$Color$RgbaSpace, 115 / 255, 210 / 255, 22 / 255, 1.0);
-var $elm$html$Html$hr = _VirtualDom_node('hr');
-var $ianmackenzie$elm_units$Pixels$int = function (numPixels) {
-	return $ianmackenzie$elm_units$Quantity$Quantity(numPixels);
-};
-var $elm$html$Html$label = _VirtualDom_node('label');
-var $ianmackenzie$elm_geometry$Vector3d$cross = F2(
-	function (_v0, _v1) {
-		var v2 = _v0.a;
-		var v1 = _v1.a;
-		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
-			{x: (v1.y * v2.z) - (v1.z * v2.y), y: (v1.z * v2.x) - (v1.x * v2.z), z: (v1.x * v2.y) - (v1.y * v2.x)});
-	});
-var $ianmackenzie$elm_geometry$Vector3d$from = F2(
-	function (_v0, _v1) {
-		var p1 = _v0.a;
-		var p2 = _v1.a;
-		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
-			{x: p2.x - p1.x, y: p2.y - p1.y, z: p2.z - p1.z});
-	});
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $ianmackenzie$elm_geometry$Vector3d$dot = F2(
-	function (_v0, _v1) {
-		var v2 = _v0.a;
-		var v1 = _v1.a;
-		return $ianmackenzie$elm_units$Quantity$Quantity(((v1.x * v2.x) + (v1.y * v2.y)) + (v1.z * v2.z));
-	});
-var $ianmackenzie$elm_units$Quantity$greaterThan = F2(
-	function (_v0, _v1) {
-		var y = _v0.a;
-		var x = _v1.a;
-		return _Utils_cmp(x, y) > 0;
-	});
-var $ianmackenzie$elm_geometry$Vector3d$minus = F2(
-	function (_v0, _v1) {
-		var v2 = _v0.a;
-		var v1 = _v1.a;
-		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
-			{x: v1.x - v2.x, y: v1.y - v2.y, z: v1.z - v2.z});
-	});
-var $ianmackenzie$elm_geometry$Vector3d$projectionIn = F2(
-	function (_v0, _v1) {
-		var d = _v0.a;
-		var v = _v1.a;
-		var projectedLength = ((v.x * d.x) + (v.y * d.y)) + (v.z * d.z);
-		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
-			{x: d.x * projectedLength, y: d.y * projectedLength, z: d.z * projectedLength});
-	});
-var $ianmackenzie$elm_geometry$Vector3d$reverse = function (_v0) {
-	var v = _v0.a;
-	return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
-		{x: -v.x, y: -v.y, z: -v.z});
-};
-var $ianmackenzie$elm_geometry$Direction3d$orthonormalize = F3(
-	function (xVector, xyVector, xyzVector) {
-		return A2(
-			$elm$core$Maybe$andThen,
-			function (xDirection) {
-				var yVector = A2(
-					$ianmackenzie$elm_geometry$Vector3d$minus,
-					A2($ianmackenzie$elm_geometry$Vector3d$projectionIn, xDirection, xyVector),
-					xyVector);
-				return A2(
-					$elm$core$Maybe$andThen,
-					function (yDirection) {
-						var rightHandedZVector = A2($ianmackenzie$elm_geometry$Vector3d$cross, xyVector, xVector);
-						var tripleProduct = A2($ianmackenzie$elm_geometry$Vector3d$dot, xyzVector, rightHandedZVector);
-						var zVector = A2($ianmackenzie$elm_units$Quantity$greaterThan, $ianmackenzie$elm_units$Quantity$zero, tripleProduct) ? rightHandedZVector : (A2($ianmackenzie$elm_units$Quantity$lessThan, $ianmackenzie$elm_units$Quantity$zero, tripleProduct) ? $ianmackenzie$elm_geometry$Vector3d$reverse(rightHandedZVector) : $ianmackenzie$elm_geometry$Vector3d$zero);
-						return A2(
-							$elm$core$Maybe$map,
-							function (zDirection) {
-								return _Utils_Tuple3(xDirection, yDirection, zDirection);
-							},
-							$ianmackenzie$elm_geometry$Vector3d$direction(zVector));
-					},
-					$ianmackenzie$elm_geometry$Vector3d$direction(yVector));
-			},
-			$ianmackenzie$elm_geometry$Vector3d$direction(xVector));
-	});
-var $ianmackenzie$elm_geometry$Direction3d$perpendicularTo = function (_v0) {
-	var d = _v0.a;
-	var absZ = $elm$core$Basics$abs(d.z);
-	var absY = $elm$core$Basics$abs(d.y);
-	var absX = $elm$core$Basics$abs(d.x);
-	if (_Utils_cmp(absX, absY) < 1) {
-		if (_Utils_cmp(absX, absZ) < 1) {
-			var scale = $elm$core$Basics$sqrt((d.z * d.z) + (d.y * d.y));
-			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-				{x: 0, y: (-d.z) / scale, z: d.y / scale});
-		} else {
-			var scale = $elm$core$Basics$sqrt((d.y * d.y) + (d.x * d.x));
-			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-				{x: (-d.y) / scale, y: d.x / scale, z: 0});
-		}
-	} else {
-		if (_Utils_cmp(absY, absZ) < 1) {
-			var scale = $elm$core$Basics$sqrt((d.z * d.z) + (d.x * d.x));
-			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-				{x: d.z / scale, y: 0, z: (-d.x) / scale});
-		} else {
-			var scale = $elm$core$Basics$sqrt((d.x * d.x) + (d.y * d.y));
-			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-				{x: (-d.y) / scale, y: d.x / scale, z: 0});
-		}
-	}
-};
-var $ianmackenzie$elm_geometry$Direction3d$perpendicularBasis = function (direction) {
-	var xDirection = $ianmackenzie$elm_geometry$Direction3d$perpendicularTo(direction);
-	var _v0 = xDirection;
-	var dX = _v0.a;
-	var _v1 = direction;
-	var d = _v1.a;
-	var yDirection = $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-		{x: (d.y * dX.z) - (d.z * dX.y), y: (d.z * dX.x) - (d.x * dX.z), z: (d.x * dX.y) - (d.y * dX.x)});
-	return _Utils_Tuple2(xDirection, yDirection);
-};
-var $ianmackenzie$elm_geometry$Frame3d$withZDirection = F2(
-	function (givenZDirection, givenOrigin) {
-		var _v0 = $ianmackenzie$elm_geometry$Direction3d$perpendicularBasis(givenZDirection);
-		var computedXDirection = _v0.a;
-		var computedYDirection = _v0.b;
-		return $ianmackenzie$elm_geometry$Frame3d$unsafe(
-			{originPoint: givenOrigin, xDirection: computedXDirection, yDirection: computedYDirection, zDirection: givenZDirection});
-	});
-var $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt = function (_arguments) {
-	var zVector = A2($ianmackenzie$elm_geometry$Vector3d$from, _arguments.focalPoint, _arguments.eyePoint);
-	var yVector = $ianmackenzie$elm_geometry$Direction3d$toVector(_arguments.upDirection);
-	var xVector = A2($ianmackenzie$elm_geometry$Vector3d$cross, zVector, yVector);
-	var _v0 = A3($ianmackenzie$elm_geometry$Direction3d$orthonormalize, zVector, yVector, xVector);
-	if (_v0.$ === 'Just') {
-		var _v1 = _v0.a;
-		var normalizedZDirection = _v1.a;
-		var normalizedYDirection = _v1.b;
-		var normalizedXDirection = _v1.c;
-		return $ianmackenzie$elm_3d_camera$Camera3d$Types$Viewpoint3d(
-			$ianmackenzie$elm_geometry$Frame3d$unsafe(
-				{originPoint: _arguments.eyePoint, xDirection: normalizedXDirection, yDirection: normalizedYDirection, zDirection: normalizedZDirection}));
-	} else {
-		var _v2 = $ianmackenzie$elm_geometry$Vector3d$direction(zVector);
-		if (_v2.$ === 'Just') {
-			var zDirection = _v2.a;
-			return $ianmackenzie$elm_3d_camera$Camera3d$Types$Viewpoint3d(
-				A2($ianmackenzie$elm_geometry$Frame3d$withZDirection, zDirection, _arguments.eyePoint));
-		} else {
-			var _v3 = $ianmackenzie$elm_geometry$Direction3d$perpendicularBasis(_arguments.upDirection);
-			var arbitraryZDirection = _v3.a;
-			var arbitraryXDirection = _v3.b;
-			return $ianmackenzie$elm_3d_camera$Camera3d$Types$Viewpoint3d(
-				$ianmackenzie$elm_geometry$Frame3d$unsafe(
-					{originPoint: _arguments.eyePoint, xDirection: arbitraryXDirection, yDirection: _arguments.upDirection, zDirection: arbitraryZDirection}));
-		}
-	}
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$EmptyNode = {$: 'EmptyNode'};
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity = function (a) {
-	return {$: 'Entity', a: a};
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty = $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity($ianmackenzie$elm_3d_scene$Scene3d$Types$EmptyNode);
-var $ianmackenzie$elm_3d_scene$Scene3d$nothing = $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $elm$html$Html$Events$alwaysPreventDefault = function (msg) {
-	return _Utils_Tuple2(msg, true);
-};
-var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
-	return {$: 'MayPreventDefault', a: a};
-};
-var $elm$html$Html$Events$preventDefaultOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
-	});
-var $elm$html$Html$Events$onSubmit = function (msg) {
-	return A2(
-		$elm$html$Html$Events$preventDefaultOn,
-		'submit',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysPreventDefault,
-			$elm$json$Json$Decode$succeed(msg)));
-};
-var $elm$virtual_dom$VirtualDom$property = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_property,
-			_VirtualDom_noInnerHtmlOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlJson(value));
-	});
-var $elm$html$Html$Attributes$property = $elm$virtual_dom$VirtualDom$property;
-var $avh4$elm_color$Color$red = A4($avh4$elm_color$Color$RgbaSpace, 204 / 255, 0 / 255, 0 / 255, 1.0);
-var $elm$html$Html$option = _VirtualDom_node('option');
-var $elm$html$Html$select = _VirtualDom_node('select');
-var $author$project$Html$Extra$selectChangeHelper = F3(
-	function (toKey, options, key) {
-		selectChangeHelper:
-		while (true) {
-			if (!options.b) {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var value = options.a;
-				var rest = options.b;
-				if (_Utils_eq(
-					toKey(value),
-					key)) {
-					return $elm$core$Maybe$Just(value);
-				} else {
-					var $temp$toKey = toKey,
-						$temp$options = rest,
-						$temp$key = key;
-					toKey = $temp$toKey;
-					options = $temp$options;
-					key = $temp$key;
-					continue selectChangeHelper;
-				}
-			}
-		}
-	});
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Html$Extra$select = F2(
-	function (attributes, config) {
-		return A2(
-			$elm$html$Html$select,
-			_Utils_ap(
-				attributes,
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onInput(
-						function (key) {
-							return config.onSelect(
-								A3($author$project$Html$Extra$selectChangeHelper, config.toKey, config.options, key));
-						}),
-						$elm$html$Html$Attributes$value(
-						function () {
-							var _v0 = config.value;
-							if (_v0.$ === 'Nothing') {
-								return '';
-							} else {
-								var value = _v0.a;
-								return config.toKey(value);
-							}
-						}())
-					])),
-			A2(
-				$elm$core$List$map,
-				function (option) {
-					return A2(
-						$elm$html$Html$option,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$value(
-								config.toKey(option))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								config.toLabel(option))
-							]));
-				},
-				config.options));
-	});
-var $elm$html$Html$small = _VirtualDom_node('small');
-var $elm$html$Html$span = _VirtualDom_node('span');
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $ianmackenzie$elm_3d_scene$Scene3d$Light$CastsShadows = function (a) {
 	return {$: 'CastsShadows', a: a};
 };
@@ -16096,9 +15620,12 @@ var $elm_explorations$webgl$WebGL$Internal$Stencil = function (a) {
 	return {$: 'Stencil', a: a};
 };
 var $elm_explorations$webgl$WebGL$stencil = $elm_explorations$webgl$WebGL$Internal$Stencil;
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$core$String$concat = function (strings) {
 	return A2($elm$core$String$join, '', strings);
 };
+var $elm$core$String$fromFloat = _String_fromNumber;
 var $avh4$elm_color$Color$toCssString = function (_v0) {
 	var r = _v0.a;
 	var g = _v0.b;
@@ -16828,6 +16355,9 @@ var $ianmackenzie$elm_3d_scene$Scene3d$getViewBounds = F4(
 var $elm_explorations$linear_algebra$Math$Vector3$getX = _MJS_v3getX;
 var $elm_explorations$linear_algebra$Math$Vector3$getY = _MJS_v3getY;
 var $elm_explorations$linear_algebra$Math$Vector3$getZ = _MJS_v3getZ;
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity = function (a) {
+	return {$: 'Entity', a: a};
+};
 var $ianmackenzie$elm_3d_scene$Scene3d$Types$Group = function (a) {
 	return {$: 'Group', a: a};
 };
@@ -17291,6 +16821,48 @@ var $ianmackenzie$elm_3d_scene$Scene3d$Light$chromaticity = function (xy) {
 };
 var $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight = $ianmackenzie$elm_3d_scene$Scene3d$Light$chromaticity(
 	{x: 0.31271, y: 0.32902});
+var $author$project$Main$MouseDown = function (a) {
+	return {$: 'MouseDown', a: a};
+};
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $author$project$Main$decodeMouseDown = A2(
+	$elm$json$Json$Decode$andThen,
+	function (button) {
+		return (!button) ? A2(
+			$elm$json$Json$Decode$map,
+			$author$project$Main$MouseDown,
+			A2($elm$json$Json$Decode$field, 'pointerId', $elm$json$Json$Decode$value)) : $elm$json$Json$Decode$fail('Non-primary mouse button');
+	},
+	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
+var $author$project$Main$MouseUp = {$: 'MouseUp'};
+var $author$project$Main$decodeMouseUp = A2(
+	$elm$json$Json$Decode$andThen,
+	function (button) {
+		return (!button) ? $elm$json$Json$Decode$succeed($author$project$Main$MouseUp) : $elm$json$Json$Decode$fail('Non-primary mouse button');
+	},
+	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
+var $author$project$Main$MouseMove = F3(
+	function (a, b, c) {
+		return {$: 'MouseMove', a: a, b: b, c: c};
+	});
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $elm$json$Json$Decode$map4 = _Json_map4;
+var $author$project$Main$decodePointerMove = function (pointer) {
+	return A5(
+		$elm$json$Json$Decode$map4,
+		F4(
+			function (ox, oy, mx, my) {
+				return A3(
+					$author$project$Main$MouseMove,
+					pointer,
+					A2($ianmackenzie$elm_geometry$Point2d$pixels, ox, oy),
+					A2($ianmackenzie$elm_geometry$Point2d$pixels, mx, my));
+			}),
+		A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float),
+		A2($elm$json$Json$Decode$field, 'offsetY', $elm$json$Json$Decode$float),
+		A2($elm$json$Json$Decode$field, 'movementX', $elm$json$Json$Decode$float),
+		A2($elm$json$Json$Decode$field, 'movementY', $elm$json$Json$Decode$float));
+};
 var $ianmackenzie$elm_3d_scene$Scene3d$Light$directional = F2(
 	function (_v0, light) {
 		var shadowFlag = _v0.a;
@@ -17313,6 +16885,161 @@ var $ianmackenzie$elm_3d_scene$Scene3d$Light$directional = F2(
 				z: -z
 			});
 	});
+var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
+var $elm$html$Html$input = _VirtualDom_node('input');
+var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
+var $elm$html$Html$Attributes$min = $elm$html$Html$Attributes$stringProperty('min');
+var $elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
+};
+var $elm$html$Html$Attributes$step = function (n) {
+	return A2($elm$html$Html$Attributes$stringProperty, 'step', n);
+};
+var $elm$core$String$toFloat = _String_toFloat;
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $author$project$Html$Extra$dualRange = F2(
+	function (attributes, config) {
+		var percent2 = (config.valueHigh / config.max) * 100;
+		var percent1 = (config.valueLow / config.max) * 100;
+		var colorMin = A2($elm$core$Maybe$withDefault, 'gray', config.colorMin);
+		var colorMid = A2($elm$core$Maybe$withDefault, 'cornflowerblue', config.colorMid);
+		var colorMax = A2($elm$core$Maybe$withDefault, 'gray', config.colorMax);
+		var backgroundColorRight = 'linear-gradient(to right, ' + (colorMin + (' 0%, ' + (colorMin + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, ' + (colorMid + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, ' + (colorMid + (' ' + ($elm$core$String$fromFloat(percent2) + ('%, ' + (colorMax + (' ' + ($elm$core$String$fromFloat(percent2) + ('%, ' + (colorMax + ' 100%)')))))))))))))))))));
+		var backgroundColorLeft = 'linear-gradient(to right, ' + (colorMin + (' 0%, ' + (colorMin + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, ' + (colorMid + (' ' + ($elm$core$String$fromFloat(percent1) + ('%, rgba(0, 0, 0, 0) ' + ($elm$core$String$fromFloat(percent2) + ('%, rgba(0, 0, 0, 0) ' + ($elm$core$String$fromFloat(percent2) + '%, rgba(0, 0, 0, 0) 100%)')))))))))))));
+		return A2(
+			$elm$html$Html$div,
+			_Utils_ap(
+				attributes,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('dual-range__container')
+					])),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('dual-range__controls')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$input,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('dual-range__control-1'),
+									$elm$html$Html$Attributes$type_('range'),
+									$elm$html$Html$Attributes$value(
+									$elm$core$String$fromFloat(config.valueLow)),
+									$elm$html$Html$Events$onInput(
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$String$toFloat,
+										A2(
+											$elm$core$Basics$composeR,
+											$elm$core$Maybe$withDefault(config.valueLow),
+											config.onInputLow))),
+									$elm$html$Html$Attributes$min(
+									$elm$core$String$fromFloat(config.min)),
+									$elm$html$Html$Attributes$max(
+									$elm$core$String$fromFloat(config.max)),
+									$elm$html$Html$Attributes$step(
+									$elm$core$String$fromFloat(config.step)),
+									function () {
+									var _v0 = config.thumb1Image;
+									if (_v0.$ === 'Nothing') {
+										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorLeft + '; --thumb-image: white;'));
+									} else {
+										var thumb1Image = _v0.a;
+										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorLeft + ('; --thumb-image: white url(' + (thumb1Image + ') center center/contain no-repeat;'))));
+									}
+								}()
+								]),
+							_List_Nil),
+							A2(
+							$elm$html$Html$input,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('dual-range__control-2'),
+									$elm$html$Html$Attributes$type_('range'),
+									$elm$html$Html$Attributes$value(
+									$elm$core$String$fromFloat(config.valueHigh)),
+									$elm$html$Html$Events$onInput(
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$String$toFloat,
+										A2(
+											$elm$core$Basics$composeR,
+											$elm$core$Maybe$withDefault(config.valueHigh),
+											config.onInputHigh))),
+									$elm$html$Html$Attributes$min(
+									$elm$core$String$fromFloat(config.min)),
+									$elm$html$Html$Attributes$max(
+									$elm$core$String$fromFloat(config.max)),
+									$elm$html$Html$Attributes$step(
+									$elm$core$String$fromFloat(config.step)),
+									function () {
+									var _v1 = config.thumb2Image;
+									if (_v1.$ === 'Nothing') {
+										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorRight + '; --thumb-image: white;'));
+									} else {
+										var thumb2Image = _v1.a;
+										return A2($elm$html$Html$Attributes$attribute, 'style', 'background: ' + (backgroundColorRight + ('; --thumb-image: white url(' + (thumb2Image + ') center center/contain no-repeat;'))));
+									}
+								}()
+								]),
+							_List_Nil)
+						]))
+				]));
+	});
 var $ianmackenzie$elm_3d_scene$Scene3d$Exposure = function (a) {
 	return {$: 'Exposure', a: a};
 };
@@ -17324,98 +17051,8 @@ var $ianmackenzie$elm_3d_scene$Scene3d$exposureValue = function (ev100) {
 		$ianmackenzie$elm_units$Luminance$nits(
 			1.2 * A2($elm$core$Basics$pow, 2, ev100)));
 };
-var $ianmackenzie$elm_units$Illuminance$lux = function (numLux) {
-	return $ianmackenzie$elm_units$Quantity$Quantity(numLux);
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Multisampling = {$: 'Multisampling'};
-var $ianmackenzie$elm_3d_scene$Scene3d$multisampling = $ianmackenzie$elm_3d_scene$Scene3d$Multisampling;
-var $ianmackenzie$elm_3d_scene$Scene3d$NoToneMapping = {$: 'NoToneMapping'};
-var $ianmackenzie$elm_3d_scene$Scene3d$noToneMapping = $ianmackenzie$elm_3d_scene$Scene3d$NoToneMapping;
-var $ianmackenzie$elm_units$Illuminance$inLux = function (_v0) {
-	var numLux = _v0.a;
-	return numLux;
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$soft = function (light) {
-	soft:
-	while (true) {
-		if (_Utils_eq(light.intensityAbove, $ianmackenzie$elm_units$Quantity$zero) && _Utils_eq(light.intensityBelow, $ianmackenzie$elm_units$Quantity$zero)) {
-			return $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled;
-		} else {
-			if (A2(
-				$ianmackenzie$elm_units$Quantity$greaterThan,
-				$ianmackenzie$elm_units$Quantity$abs(light.intensityAbove),
-				$ianmackenzie$elm_units$Quantity$abs(light.intensityBelow))) {
-				var $temp$light = {
-					chromaticity: light.chromaticity,
-					intensityAbove: light.intensityBelow,
-					intensityBelow: light.intensityAbove,
-					upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse(light.upDirection)
-				};
-				light = $temp$light;
-				continue soft;
-			} else {
-				var nitsBelow = $elm$core$Basics$abs(
-					$ianmackenzie$elm_units$Illuminance$inLux(light.intensityBelow) / $elm$core$Basics$pi);
-				var nitsAbove = $elm$core$Basics$abs(
-					$ianmackenzie$elm_units$Illuminance$inLux(light.intensityAbove) / $elm$core$Basics$pi);
-				var _v0 = $ianmackenzie$elm_geometry$Direction3d$unwrap(light.upDirection);
-				var x = _v0.x;
-				var y = _v0.y;
-				var z = _v0.z;
-				var _v1 = A2(
-					$ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToLinearRgb,
-					$ianmackenzie$elm_units$Quantity$float(1),
-					light.chromaticity);
-				var rgb = _v1.a;
-				return $ianmackenzie$elm_3d_scene$Scene3d$Types$Light(
-					{
-						b: nitsAbove * $elm_explorations$linear_algebra$Math$Vector3$getZ(rgb),
-						castsShadows: false,
-						g: nitsAbove * $elm_explorations$linear_algebra$Math$Vector3$getY(rgb),
-						parameter: nitsBelow / nitsAbove,
-						r: nitsAbove * $elm_explorations$linear_algebra$Math$Vector3$getX(rgb),
-						type_: 3,
-						x: x,
-						y: y,
-						z: z
-					});
-			}
-		}
-	}
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead = function (_arguments) {
-	return $ianmackenzie$elm_3d_scene$Scene3d$Light$soft(
-		{chromaticity: _arguments.chromaticity, intensityAbove: _arguments.intensity, intensityBelow: $ianmackenzie$elm_units$Quantity$zero, upDirection: _arguments.upDirection});
-};
-var $elm$core$Basics$clamp = F3(
-	function (low, high, number) {
-		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
-	});
-var $ianmackenzie$elm_units$Temperature$inKelvins = function (_v0) {
-	var numKelvins = _v0.a;
-	return numKelvins;
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature = function (temperature) {
-	var t = A3(
-		$elm$core$Basics$clamp,
-		1667,
-		25000,
-		$ianmackenzie$elm_units$Temperature$inKelvins(temperature));
-	var x = (t <= 4000) ? ((((((-0.2661239) * 1.0e9) / ((t * t) * t)) - ((0.2343589 * 1.0e6) / (t * t))) + ((0.8776956 * 1.0e3) / t)) + 0.17991) : ((((((-3.0258469) * 1.0e9) / ((t * t) * t)) + ((2.1070379 * 1.0e6) / (t * t))) + ((0.2226347 * 1.0e3) / t)) + 0.24039);
-	var y = (t <= 2222) ? (((((-1.1063814) * ((x * x) * x)) - (1.3481102 * (x * x))) + (2.18555832 * x)) - 0.20219683) : ((t <= 4000) ? (((((-0.9549476) * ((x * x) * x)) - (1.37418593 * (x * x))) + (2.09137015 * x)) - 0.16748867) : ((((3.081758 * ((x * x) * x)) - (5.8733867 * (x * x))) + (3.75112997 * x)) - 0.37001483));
-	return $ianmackenzie$elm_3d_scene$Scene3d$Light$chromaticity(
-		{x: x, y: y});
-};
-var $ianmackenzie$elm_units$Temperature$Temperature = function (a) {
-	return {$: 'Temperature', a: a};
-};
-var $ianmackenzie$elm_units$Temperature$kelvins = function (numKelvins) {
-	return $ianmackenzie$elm_units$Temperature$Temperature(numKelvins);
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight = $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature(
-	$ianmackenzie$elm_units$Temperature$kelvins(12000));
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight = $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature(
-	$ianmackenzie$elm_units$Temperature$kelvins(5600));
+var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
+var $elm$html$Html$form = _VirtualDom_node('form');
 var $ianmackenzie$elm_3d_scene$Scene3d$MultiplePasses = F2(
 	function (a, b) {
 		return {$: 'MultiplePasses', a: a, b: b};
@@ -17501,46 +17138,395 @@ var $ianmackenzie$elm_3d_scene$Scene3d$eightLights = F8(
 			}
 		}
 	});
-var $ianmackenzie$elm_3d_scene$Scene3d$threeLights = F3(
-	function (first, second, third) {
-		return A8($ianmackenzie$elm_3d_scene$Scene3d$eightLights, first, second, third, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled);
+var $ianmackenzie$elm_3d_scene$Scene3d$fourLights = F4(
+	function (first, second, third, fourth) {
+		return A8($ianmackenzie$elm_3d_scene$Scene3d$eightLights, first, second, third, fourth, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled);
 	});
-var $ianmackenzie$elm_3d_scene$Scene3d$sunny = function (_arguments) {
-	var sun = A2(
-		$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
-		$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(_arguments.shadows),
-		{
-			chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
-			direction: _arguments.sunlightDirection,
-			intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
-		});
-	var sky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-		{
-			chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-			intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
-			upDirection: _arguments.upDirection
-		});
-	var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-		{
-			chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
-			intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
-			upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse(_arguments.upDirection)
-		});
-	var lights = A3($ianmackenzie$elm_3d_scene$Scene3d$threeLights, sun, sky, environment);
-	return $ianmackenzie$elm_3d_scene$Scene3d$custom(
-		{
-			antialiasing: $ianmackenzie$elm_3d_scene$Scene3d$multisampling,
-			background: _arguments.background,
-			camera: _arguments.camera,
-			clipDepth: _arguments.clipDepth,
-			dimensions: _arguments.dimensions,
-			entities: _arguments.entities,
-			exposure: $ianmackenzie$elm_3d_scene$Scene3d$exposureValue(15),
-			lights: lights,
-			toneMapping: $ianmackenzie$elm_3d_scene$Scene3d$noToneMapping,
-			whiteBalance: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight
-		});
+var $avh4$elm_color$Color$RgbaSpace = F4(
+	function (a, b, c, d) {
+		return {$: 'RgbaSpace', a: a, b: b, c: c, d: d};
+	});
+var $avh4$elm_color$Color$gray = A4($avh4$elm_color$Color$RgbaSpace, 211 / 255, 215 / 255, 207 / 255, 1.0);
+var $avh4$elm_color$Color$green = A4($avh4$elm_color$Color$RgbaSpace, 115 / 255, 210 / 255, 22 / 255, 1.0);
+var $elm$html$Html$hr = _VirtualDom_node('hr');
+var $ianmackenzie$elm_units$Pixels$int = function (numPixels) {
+	return $ianmackenzie$elm_units$Quantity$Quantity(numPixels);
 };
+var $elm$html$Html$label = _VirtualDom_node('label');
+var $ianmackenzie$elm_geometry$Vector3d$cross = F2(
+	function (_v0, _v1) {
+		var v2 = _v0.a;
+		var v1 = _v1.a;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
+			{x: (v1.y * v2.z) - (v1.z * v2.y), y: (v1.z * v2.x) - (v1.x * v2.z), z: (v1.x * v2.y) - (v1.y * v2.x)});
+	});
+var $ianmackenzie$elm_geometry$Vector3d$from = F2(
+	function (_v0, _v1) {
+		var p1 = _v0.a;
+		var p2 = _v1.a;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
+			{x: p2.x - p1.x, y: p2.y - p1.y, z: p2.z - p1.z});
+	});
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $ianmackenzie$elm_geometry$Vector3d$dot = F2(
+	function (_v0, _v1) {
+		var v2 = _v0.a;
+		var v1 = _v1.a;
+		return $ianmackenzie$elm_units$Quantity$Quantity(((v1.x * v2.x) + (v1.y * v2.y)) + (v1.z * v2.z));
+	});
+var $ianmackenzie$elm_units$Quantity$greaterThan = F2(
+	function (_v0, _v1) {
+		var y = _v0.a;
+		var x = _v1.a;
+		return _Utils_cmp(x, y) > 0;
+	});
+var $ianmackenzie$elm_geometry$Vector3d$minus = F2(
+	function (_v0, _v1) {
+		var v2 = _v0.a;
+		var v1 = _v1.a;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
+			{x: v1.x - v2.x, y: v1.y - v2.y, z: v1.z - v2.z});
+	});
+var $ianmackenzie$elm_geometry$Vector3d$projectionIn = F2(
+	function (_v0, _v1) {
+		var d = _v0.a;
+		var v = _v1.a;
+		var projectedLength = ((v.x * d.x) + (v.y * d.y)) + (v.z * d.z);
+		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
+			{x: d.x * projectedLength, y: d.y * projectedLength, z: d.z * projectedLength});
+	});
+var $ianmackenzie$elm_geometry$Vector3d$reverse = function (_v0) {
+	var v = _v0.a;
+	return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
+		{x: -v.x, y: -v.y, z: -v.z});
+};
+var $ianmackenzie$elm_geometry$Direction3d$orthonormalize = F3(
+	function (xVector, xyVector, xyzVector) {
+		return A2(
+			$elm$core$Maybe$andThen,
+			function (xDirection) {
+				var yVector = A2(
+					$ianmackenzie$elm_geometry$Vector3d$minus,
+					A2($ianmackenzie$elm_geometry$Vector3d$projectionIn, xDirection, xyVector),
+					xyVector);
+				return A2(
+					$elm$core$Maybe$andThen,
+					function (yDirection) {
+						var rightHandedZVector = A2($ianmackenzie$elm_geometry$Vector3d$cross, xyVector, xVector);
+						var tripleProduct = A2($ianmackenzie$elm_geometry$Vector3d$dot, xyzVector, rightHandedZVector);
+						var zVector = A2($ianmackenzie$elm_units$Quantity$greaterThan, $ianmackenzie$elm_units$Quantity$zero, tripleProduct) ? rightHandedZVector : (A2($ianmackenzie$elm_units$Quantity$lessThan, $ianmackenzie$elm_units$Quantity$zero, tripleProduct) ? $ianmackenzie$elm_geometry$Vector3d$reverse(rightHandedZVector) : $ianmackenzie$elm_geometry$Vector3d$zero);
+						return A2(
+							$elm$core$Maybe$map,
+							function (zDirection) {
+								return _Utils_Tuple3(xDirection, yDirection, zDirection);
+							},
+							$ianmackenzie$elm_geometry$Vector3d$direction(zVector));
+					},
+					$ianmackenzie$elm_geometry$Vector3d$direction(yVector));
+			},
+			$ianmackenzie$elm_geometry$Vector3d$direction(xVector));
+	});
+var $ianmackenzie$elm_geometry$Direction3d$perpendicularTo = function (_v0) {
+	var d = _v0.a;
+	var absZ = $elm$core$Basics$abs(d.z);
+	var absY = $elm$core$Basics$abs(d.y);
+	var absX = $elm$core$Basics$abs(d.x);
+	if (_Utils_cmp(absX, absY) < 1) {
+		if (_Utils_cmp(absX, absZ) < 1) {
+			var scale = $elm$core$Basics$sqrt((d.z * d.z) + (d.y * d.y));
+			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+				{x: 0, y: (-d.z) / scale, z: d.y / scale});
+		} else {
+			var scale = $elm$core$Basics$sqrt((d.y * d.y) + (d.x * d.x));
+			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+				{x: (-d.y) / scale, y: d.x / scale, z: 0});
+		}
+	} else {
+		if (_Utils_cmp(absY, absZ) < 1) {
+			var scale = $elm$core$Basics$sqrt((d.z * d.z) + (d.x * d.x));
+			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+				{x: d.z / scale, y: 0, z: (-d.x) / scale});
+		} else {
+			var scale = $elm$core$Basics$sqrt((d.x * d.x) + (d.y * d.y));
+			return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+				{x: (-d.y) / scale, y: d.x / scale, z: 0});
+		}
+	}
+};
+var $ianmackenzie$elm_geometry$Direction3d$perpendicularBasis = function (direction) {
+	var xDirection = $ianmackenzie$elm_geometry$Direction3d$perpendicularTo(direction);
+	var _v0 = xDirection;
+	var dX = _v0.a;
+	var _v1 = direction;
+	var d = _v1.a;
+	var yDirection = $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+		{x: (d.y * dX.z) - (d.z * dX.y), y: (d.z * dX.x) - (d.x * dX.z), z: (d.x * dX.y) - (d.y * dX.x)});
+	return _Utils_Tuple2(xDirection, yDirection);
+};
+var $ianmackenzie$elm_geometry$Frame3d$withZDirection = F2(
+	function (givenZDirection, givenOrigin) {
+		var _v0 = $ianmackenzie$elm_geometry$Direction3d$perpendicularBasis(givenZDirection);
+		var computedXDirection = _v0.a;
+		var computedYDirection = _v0.b;
+		return $ianmackenzie$elm_geometry$Frame3d$unsafe(
+			{originPoint: givenOrigin, xDirection: computedXDirection, yDirection: computedYDirection, zDirection: givenZDirection});
+	});
+var $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt = function (_arguments) {
+	var zVector = A2($ianmackenzie$elm_geometry$Vector3d$from, _arguments.focalPoint, _arguments.eyePoint);
+	var yVector = $ianmackenzie$elm_geometry$Direction3d$toVector(_arguments.upDirection);
+	var xVector = A2($ianmackenzie$elm_geometry$Vector3d$cross, zVector, yVector);
+	var _v0 = A3($ianmackenzie$elm_geometry$Direction3d$orthonormalize, zVector, yVector, xVector);
+	if (_v0.$ === 'Just') {
+		var _v1 = _v0.a;
+		var normalizedZDirection = _v1.a;
+		var normalizedYDirection = _v1.b;
+		var normalizedXDirection = _v1.c;
+		return $ianmackenzie$elm_3d_camera$Camera3d$Types$Viewpoint3d(
+			$ianmackenzie$elm_geometry$Frame3d$unsafe(
+				{originPoint: _arguments.eyePoint, xDirection: normalizedXDirection, yDirection: normalizedYDirection, zDirection: normalizedZDirection}));
+	} else {
+		var _v2 = $ianmackenzie$elm_geometry$Vector3d$direction(zVector);
+		if (_v2.$ === 'Just') {
+			var zDirection = _v2.a;
+			return $ianmackenzie$elm_3d_camera$Camera3d$Types$Viewpoint3d(
+				A2($ianmackenzie$elm_geometry$Frame3d$withZDirection, zDirection, _arguments.eyePoint));
+		} else {
+			var _v3 = $ianmackenzie$elm_geometry$Direction3d$perpendicularBasis(_arguments.upDirection);
+			var arbitraryZDirection = _v3.a;
+			var arbitraryXDirection = _v3.b;
+			return $ianmackenzie$elm_3d_camera$Camera3d$Types$Viewpoint3d(
+				$ianmackenzie$elm_geometry$Frame3d$unsafe(
+					{originPoint: _arguments.eyePoint, xDirection: arbitraryXDirection, yDirection: _arguments.upDirection, zDirection: arbitraryZDirection}));
+		}
+	}
+};
+var $ianmackenzie$elm_units$Illuminance$lux = function (numLux) {
+	return $ianmackenzie$elm_units$Quantity$Quantity(numLux);
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Multisampling = {$: 'Multisampling'};
+var $ianmackenzie$elm_3d_scene$Scene3d$multisampling = $ianmackenzie$elm_3d_scene$Scene3d$Multisampling;
+var $ianmackenzie$elm_3d_scene$Scene3d$NoToneMapping = {$: 'NoToneMapping'};
+var $ianmackenzie$elm_3d_scene$Scene3d$noToneMapping = $ianmackenzie$elm_3d_scene$Scene3d$NoToneMapping;
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$EmptyNode = {$: 'EmptyNode'};
+var $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty = $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity($ianmackenzie$elm_3d_scene$Scene3d$Types$EmptyNode);
+var $ianmackenzie$elm_3d_scene$Scene3d$nothing = $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$html$Html$Events$alwaysPreventDefault = function (msg) {
+	return _Utils_Tuple2(msg, true);
+};
+var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
+	return {$: 'MayPreventDefault', a: a};
+};
+var $elm$html$Html$Events$preventDefaultOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
+	});
+var $elm$html$Html$Events$onSubmit = function (msg) {
+	return A2(
+		$elm$html$Html$Events$preventDefaultOn,
+		'submit',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysPreventDefault,
+			$elm$json$Json$Decode$succeed(msg)));
+};
+var $ianmackenzie$elm_units$Illuminance$inLux = function (_v0) {
+	var numLux = _v0.a;
+	return numLux;
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$soft = function (light) {
+	soft:
+	while (true) {
+		if (_Utils_eq(light.intensityAbove, $ianmackenzie$elm_units$Quantity$zero) && _Utils_eq(light.intensityBelow, $ianmackenzie$elm_units$Quantity$zero)) {
+			return $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled;
+		} else {
+			if (A2(
+				$ianmackenzie$elm_units$Quantity$greaterThan,
+				$ianmackenzie$elm_units$Quantity$abs(light.intensityAbove),
+				$ianmackenzie$elm_units$Quantity$abs(light.intensityBelow))) {
+				var $temp$light = {
+					chromaticity: light.chromaticity,
+					intensityAbove: light.intensityBelow,
+					intensityBelow: light.intensityAbove,
+					upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse(light.upDirection)
+				};
+				light = $temp$light;
+				continue soft;
+			} else {
+				var nitsBelow = $elm$core$Basics$abs(
+					$ianmackenzie$elm_units$Illuminance$inLux(light.intensityBelow) / $elm$core$Basics$pi);
+				var nitsAbove = $elm$core$Basics$abs(
+					$ianmackenzie$elm_units$Illuminance$inLux(light.intensityAbove) / $elm$core$Basics$pi);
+				var _v0 = $ianmackenzie$elm_geometry$Direction3d$unwrap(light.upDirection);
+				var x = _v0.x;
+				var y = _v0.y;
+				var z = _v0.z;
+				var _v1 = A2(
+					$ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToLinearRgb,
+					$ianmackenzie$elm_units$Quantity$float(1),
+					light.chromaticity);
+				var rgb = _v1.a;
+				return $ianmackenzie$elm_3d_scene$Scene3d$Types$Light(
+					{
+						b: nitsAbove * $elm_explorations$linear_algebra$Math$Vector3$getZ(rgb),
+						castsShadows: false,
+						g: nitsAbove * $elm_explorations$linear_algebra$Math$Vector3$getY(rgb),
+						parameter: nitsBelow / nitsAbove,
+						r: nitsAbove * $elm_explorations$linear_algebra$Math$Vector3$getX(rgb),
+						type_: 3,
+						x: x,
+						y: y,
+						z: z
+					});
+			}
+		}
+	}
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead = function (_arguments) {
+	return $ianmackenzie$elm_3d_scene$Scene3d$Light$soft(
+		{chromaticity: _arguments.chromaticity, intensityAbove: _arguments.intensity, intensityBelow: $ianmackenzie$elm_units$Quantity$zero, upDirection: _arguments.upDirection});
+};
+var $elm$virtual_dom$VirtualDom$property = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_property,
+			_VirtualDom_noInnerHtmlOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlJson(value));
+	});
+var $elm$html$Html$Attributes$property = $elm$virtual_dom$VirtualDom$property;
+var $avh4$elm_color$Color$red = A4($avh4$elm_color$Color$RgbaSpace, 204 / 255, 0 / 255, 0 / 255, 1.0);
+var $elm$html$Html$option = _VirtualDom_node('option');
+var $elm$html$Html$select = _VirtualDom_node('select');
+var $author$project$Html$Extra$selectChangeHelper = F3(
+	function (toKey, options, key) {
+		selectChangeHelper:
+		while (true) {
+			if (!options.b) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var value = options.a;
+				var rest = options.b;
+				if (_Utils_eq(
+					toKey(value),
+					key)) {
+					return $elm$core$Maybe$Just(value);
+				} else {
+					var $temp$toKey = toKey,
+						$temp$options = rest,
+						$temp$key = key;
+					toKey = $temp$toKey;
+					options = $temp$options;
+					key = $temp$key;
+					continue selectChangeHelper;
+				}
+			}
+		}
+	});
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Html$Extra$select = F2(
+	function (attributes, config) {
+		return A2(
+			$elm$html$Html$select,
+			_Utils_ap(
+				attributes,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onInput(
+						function (key) {
+							return config.onSelect(
+								A3($author$project$Html$Extra$selectChangeHelper, config.toKey, config.options, key));
+						}),
+						$elm$html$Html$Attributes$value(
+						function () {
+							var _v0 = config.value;
+							if (_v0.$ === 'Nothing') {
+								return '';
+							} else {
+								var value = _v0.a;
+								return config.toKey(value);
+							}
+						}())
+					])),
+			A2(
+				$elm$core$List$map,
+				function (option) {
+					return A2(
+						$elm$html$Html$option,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$value(
+								config.toKey(option))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								config.toLabel(option))
+							]));
+				},
+				config.options));
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$sixLights = F6(
+	function (first, second, third, fourth, fifth, sixth) {
+		return A8($ianmackenzie$elm_3d_scene$Scene3d$eightLights, first, second, third, fourth, fifth, sixth, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled);
+	});
+var $elm$core$Basics$clamp = F3(
+	function (low, high, number) {
+		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
+	});
+var $ianmackenzie$elm_units$Temperature$inKelvins = function (_v0) {
+	var numKelvins = _v0.a;
+	return numKelvins;
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature = function (temperature) {
+	var t = A3(
+		$elm$core$Basics$clamp,
+		1667,
+		25000,
+		$ianmackenzie$elm_units$Temperature$inKelvins(temperature));
+	var x = (t <= 4000) ? ((((((-0.2661239) * 1.0e9) / ((t * t) * t)) - ((0.2343589 * 1.0e6) / (t * t))) + ((0.8776956 * 1.0e3) / t)) + 0.17991) : ((((((-3.0258469) * 1.0e9) / ((t * t) * t)) + ((2.1070379 * 1.0e6) / (t * t))) + ((0.2226347 * 1.0e3) / t)) + 0.24039);
+	var y = (t <= 2222) ? (((((-1.1063814) * ((x * x) * x)) - (1.3481102 * (x * x))) + (2.18555832 * x)) - 0.20219683) : ((t <= 4000) ? (((((-0.9549476) * ((x * x) * x)) - (1.37418593 * (x * x))) + (2.09137015 * x)) - 0.16748867) : ((((3.081758 * ((x * x) * x)) - (5.8733867 * (x * x))) + (3.75112997 * x)) - 0.37001483));
+	return $ianmackenzie$elm_3d_scene$Scene3d$Light$chromaticity(
+		{x: x, y: y});
+};
+var $ianmackenzie$elm_units$Temperature$Temperature = function (a) {
+	return {$: 'Temperature', a: a};
+};
+var $ianmackenzie$elm_units$Temperature$kelvins = function (numKelvins) {
+	return $ianmackenzie$elm_units$Temperature$Temperature(numKelvins);
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight = $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature(
+	$ianmackenzie$elm_units$Temperature$kelvins(12000));
+var $elm$html$Html$small = _VirtualDom_node('small');
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight = $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature(
+	$ianmackenzie$elm_units$Temperature$kelvins(5600));
 var $ianmackenzie$elm_geometry$Geometry$Types$Sphere3d = function (a) {
 	return {$: 'Sphere3d', a: a};
 };
@@ -20503,7 +20489,14 @@ var $author$project$Main$viewBlock = F3(
 					return A2(
 						$ianmackenzie$elm_3d_scene$Scene3d$blockWithShadow,
 						$ianmackenzie$elm_3d_scene$Scene3d$Material$matte(
-							A3($avh4$elm_color$Color$rgb, (x * 1.2) / board.maxX, (y * 1.2) / board.maxY, (z * 1.2) / board.maxZ)),
+							function () {
+								var _v3 = model.blockPalette;
+								if (_v3.$ === 'SimpleBlocks') {
+									return A3($avh4$elm_color$Color$rgb, (x * 1.2) / board.maxX, (y * 1.2) / board.maxY, (z * 1.2) / board.maxZ);
+								} else {
+									return $avh4$elm_color$Color$gray;
+								}
+							}()),
 						A2(
 							$ianmackenzie$elm_geometry$Block3d$centeredOn,
 							$ianmackenzie$elm_geometry$Frame3d$atPoint(
@@ -20527,8 +20520,8 @@ var $author$project$Main$viewBlock = F3(
 				case 'PlayerSpawn':
 					var forward = block.a.forward;
 					var left = block.a.left;
-					var _v3 = model.mode;
-					if (_v3.$ === 'Game') {
+					var _v4 = model.mode;
+					if (_v4.$ === 'Game') {
 						return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 					} else {
 						var center = A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z);
@@ -20599,8 +20592,8 @@ var $author$project$Main$viewBlock = F3(
 				case 'Empty':
 					return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 				default:
-					var _v4 = model.mode;
-					if (_v4.$ === 'Game') {
+					var _v5 = model.mode;
+					if (_v5.$ === 'Game') {
 						return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 					} else {
 						return A2(
@@ -22902,114 +22895,222 @@ var $author$project$Main$view = function (model) {
 							}()),
 						_List_fromArray(
 							[
-								$ianmackenzie$elm_3d_scene$Scene3d$sunny(
-								{
-									background: $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor($avh4$elm_color$Color$gray),
-									camera: function () {
-										var _v5 = model.mode;
-										if (_v5.$ === 'Game') {
-											return $ianmackenzie$elm_3d_camera$Camera3d$perspective(
-												{
-													verticalFieldOfView: $ianmackenzie$elm_units$Angle$degrees(30),
-													viewpoint: function () {
-														var targetPos = $ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame);
-														return $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt(
-															{
-																eyePoint: A3(
-																	$ianmackenzie$elm_geometry$Point3d$translateIn,
-																	$ianmackenzie$elm_geometry$Frame3d$zDirection(model.playerFrame),
-																	$ianmackenzie$elm_units$Length$meters(15),
-																	targetPos),
-																focalPoint: targetPos,
-																upDirection: $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame)
-															});
-													}()
-												});
-										} else {
-											return $author$project$Main$editorCamera(model);
-										}
-									}(),
-									clipDepth: $ianmackenzie$elm_units$Length$meters(1),
-									dimensions: _Utils_Tuple2(
-										$ianmackenzie$elm_units$Pixels$int(model.screenSize.width),
-										$ianmackenzie$elm_units$Pixels$int(model.screenSize.height)),
-									entities: function () {
-										var _v6 = model.mode;
-										if (_v6.$ === 'Editor') {
-											var editorBoard = $author$project$Undo$value(model.editorBoard);
-											return $elm$core$List$concat(
-												_List_fromArray(
-													[
-														A2(
-														$elm$core$List$map,
-														A2($author$project$Main$viewBlock, editorBoard, model),
-														$elm$core$Dict$toList(editorBoard.blocks)),
-														_List_fromArray(
+								function () {
+								var lights = function () {
+									var _v10 = model.mode;
+									if (_v10.$ === 'Game') {
+										var sun2 = A2(
+											$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
+											$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
+											{
+												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
+												direction: A3(
+													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+													$ianmackenzie$elm_geometry$Axis3d$x,
+													$ianmackenzie$elm_units$Angle$degrees(-70),
+													$ianmackenzie$elm_geometry$Direction3d$positiveZ),
+												intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
+											});
+										var sun1 = A2(
+											$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
+											$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
+											{
+												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
+												direction: A3(
+													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+													$ianmackenzie$elm_geometry$Axis3d$x,
+													$ianmackenzie$elm_units$Angle$degrees(70),
+													$ianmackenzie$elm_geometry$Direction3d$negativeZ),
+												intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
+											});
+										var sky3 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+											{
+												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
+												intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
+												upDirection: A3(
+													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+													$ianmackenzie$elm_geometry$Axis3d$z,
+													A2(
+														$ianmackenzie$elm_units$Quantity$plus,
+														$ianmackenzie$elm_units$Angle$degrees(-90),
+														model.cameraRotation),
+													A3(
+														$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+														$ianmackenzie$elm_geometry$Axis3d$x,
+														$ianmackenzie$elm_units$Angle$degrees(-70),
+														$ianmackenzie$elm_geometry$Direction3d$positiveZ))
+											});
+										var sky2 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+											{
+												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+												intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
+												upDirection: A3(
+													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+													$ianmackenzie$elm_geometry$Axis3d$z,
+													A2(
+														$ianmackenzie$elm_units$Quantity$plus,
+														$ianmackenzie$elm_units$Angle$degrees(90),
+														model.cameraRotation),
+													A3(
+														$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+														$ianmackenzie$elm_geometry$Axis3d$x,
+														$ianmackenzie$elm_units$Angle$degrees(70),
+														$ianmackenzie$elm_geometry$Direction3d$positiveZ))
+											});
+										var sky1 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+											{
+												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+												intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
+												upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
+											});
+										var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+											{
+												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
+												intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
+												upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
+											});
+										return A6($ianmackenzie$elm_3d_scene$Scene3d$sixLights, sun1, sun2, sky1, sky2, sky3, environment);
+									} else {
+										var upsideDownSky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+											{
+												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+												intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
+												upDirection: $ianmackenzie$elm_geometry$Direction3d$negativeZ
+											});
+										var sun = A2(
+											$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
+											$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
+											{
+												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
+												direction: A3(
+													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+													$ianmackenzie$elm_geometry$Axis3d$z,
+													A2(
+														$ianmackenzie$elm_units$Quantity$plus,
+														$ianmackenzie$elm_units$Angle$degrees(90),
+														model.cameraRotation),
+													A3(
+														$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+														$ianmackenzie$elm_geometry$Axis3d$x,
+														$ianmackenzie$elm_units$Angle$degrees(70),
+														$ianmackenzie$elm_geometry$Direction3d$negativeZ)),
+												intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
+											});
+										var sky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+											{
+												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+												intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
+												upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
+											});
+										var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+											{
+												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
+												intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
+												upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
+											});
+										return A4($ianmackenzie$elm_3d_scene$Scene3d$fourLights, sun, sky, environment, upsideDownSky);
+									}
+								}();
+								return $ianmackenzie$elm_3d_scene$Scene3d$custom(
+									{
+										antialiasing: $ianmackenzie$elm_3d_scene$Scene3d$multisampling,
+										background: $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor($avh4$elm_color$Color$gray),
+										camera: function () {
+											var _v5 = model.mode;
+											if (_v5.$ === 'Game') {
+												return $ianmackenzie$elm_3d_camera$Camera3d$perspective(
+													{
+														verticalFieldOfView: $ianmackenzie$elm_units$Angle$degrees(30),
+														viewpoint: function () {
+															var targetPos = $ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame);
+															return $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt(
+																{
+																	eyePoint: A3(
+																		$ianmackenzie$elm_geometry$Point3d$translateIn,
+																		$ianmackenzie$elm_geometry$Frame3d$zDirection(model.playerFrame),
+																		$ianmackenzie$elm_units$Length$meters(15),
+																		targetPos),
+																	focalPoint: targetPos,
+																	upDirection: $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame)
+																});
+														}()
+													});
+											} else {
+												return $author$project$Main$editorCamera(model);
+											}
+										}(),
+										clipDepth: $ianmackenzie$elm_units$Length$meters(1),
+										dimensions: _Utils_Tuple2(
+											$ianmackenzie$elm_units$Pixels$int(model.screenSize.width),
+											$ianmackenzie$elm_units$Pixels$int(model.screenSize.height)),
+										entities: function () {
+											var _v6 = model.mode;
+											if (_v6.$ === 'Editor') {
+												var editorBoard = $author$project$Undo$value(model.editorBoard);
+												return $elm$core$List$concat(
+													_List_fromArray(
 														[
-															A3(
-															$author$project$Main$viewCursor,
-															function () {
-																var _v7 = model.editMode;
-																switch (_v7.$) {
-																	case 'Select':
-																		return $avh4$elm_color$Color$white;
-																	case 'Remove':
-																		return $avh4$elm_color$Color$red;
-																	default:
-																		return $avh4$elm_color$Color$green;
+															A2(
+															$elm$core$List$map,
+															A2($author$project$Main$viewBlock, editorBoard, model),
+															$elm$core$Dict$toList(editorBoard.blocks)),
+															_List_fromArray(
+															[
+																A3(
+																$author$project$Main$viewCursor,
+																function () {
+																	var _v7 = model.editMode;
+																	switch (_v7.$) {
+																		case 'Select':
+																			return $avh4$elm_color$Color$white;
+																		case 'Remove':
+																			return $avh4$elm_color$Color$red;
+																		default:
+																			return $avh4$elm_color$Color$green;
+																	}
+																}(),
+																model.cursorBounce,
+																model.editorCursor),
+																$author$project$Main$viewOrientationArrows,
+																function () {
+																var _v8 = model.selectedBlock;
+																if (_v8.$ === 'Nothing') {
+																	return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
+																} else {
+																	var _v9 = _v8.a;
+																	var point = _v9.a;
+																	return A3($author$project$Main$viewCursor, $avh4$elm_color$Color$yellow, model.cursorBounce, point);
 																}
 															}(),
-															model.cursorBounce,
-															model.editorCursor),
-															$author$project$Main$viewOrientationArrows,
-															function () {
-															var _v8 = model.selectedBlock;
-															if (_v8.$ === 'Nothing') {
-																return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
-															} else {
-																var _v9 = _v8.a;
-																var point = _v9.a;
-																return A3($author$project$Main$viewCursor, $avh4$elm_color$Color$yellow, model.cursorBounce, point);
-															}
-														}(),
-															model.showBoardBounds ? $author$project$Main$viewBounds(editorBoard) : $ianmackenzie$elm_3d_scene$Scene3d$nothing
-														])
-													]));
-										} else {
-											return $elm$core$List$concat(
-												_List_fromArray(
-													[
-														A2(
-														$elm$core$List$map,
-														A2($author$project$Main$viewBlock, model.board, model),
-														$elm$core$Dict$toList(model.board.blocks)),
-														_List_fromArray(
+																model.showBoardBounds ? $author$project$Main$viewBounds(editorBoard) : $ianmackenzie$elm_3d_scene$Scene3d$nothing
+															])
+														]));
+											} else {
+												return $elm$core$List$concat(
+													_List_fromArray(
 														[
-															A2($author$project$Main$viewPlayer, model.playerFacing, model.playerFrame)
-														])
-													]));
-										}
-									}(),
-									shadows: true,
-									sunlightDirection: A3(
-										$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-										$ianmackenzie$elm_geometry$Axis3d$z,
-										A2(
-											$ianmackenzie$elm_units$Quantity$plus,
-											$ianmackenzie$elm_units$Angle$degrees(-60),
-											model.cameraRotation),
-										A3(
-											$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-											$ianmackenzie$elm_geometry$Axis3d$x,
-											$ianmackenzie$elm_units$Angle$degrees(60),
-											$ianmackenzie$elm_geometry$Direction3d$positiveZ)),
-									upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
-								})
+															A2(
+															$elm$core$List$map,
+															A2($author$project$Main$viewBlock, model.board, model),
+															$elm$core$Dict$toList(model.board.blocks)),
+															_List_fromArray(
+															[
+																A2($author$project$Main$viewPlayer, model.playerFacing, model.playerFrame)
+															])
+														]));
+											}
+										}(),
+										exposure: $ianmackenzie$elm_3d_scene$Scene3d$exposureValue(15),
+										lights: lights,
+										toneMapping: $ianmackenzie$elm_3d_scene$Scene3d$noToneMapping,
+										whiteBalance: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight
+									});
+							}()
 							])),
 						$author$project$Main$viewHeader(model),
 						function () {
-						var _v10 = model.mode;
-						if (_v10.$ === 'Game') {
+						var _v11 = model.mode;
+						if (_v11.$ === 'Game') {
 							return A2(
 								$elm$html$Html$div,
 								_List_fromArray(
@@ -23047,8 +23148,8 @@ var $author$project$Main$view = function (model) {
 								_List_fromArray(
 									[
 										function () {
-										var _v11 = model.selectedBlock;
-										if (_v11.$ === 'Nothing') {
+										var _v12 = model.selectedBlock;
+										if (_v12.$ === 'Nothing') {
 											return A2(
 												$elm$html$Html$span,
 												_List_Nil,
@@ -23057,9 +23158,9 @@ var $author$project$Main$view = function (model) {
 														$elm$html$Html$text('No block selected')
 													]));
 										} else {
-											var _v12 = _v11.a;
-											var point = _v12.a;
-											var block = _v12.b;
+											var _v13 = _v12.a;
+											var point = _v13.a;
+											var block = _v13.b;
 											switch (block.$) {
 												case 'Empty':
 													return A2(
@@ -23437,11 +23538,11 @@ var $author$project$Main$view = function (model) {
 														$elm$html$Html$text('Load')
 													])),
 												function () {
-												var _v16 = model.boardLoadError;
-												if (_v16.$ === 'Nothing') {
+												var _v17 = model.boardLoadError;
+												if (_v17.$ === 'Nothing') {
 													return $elm$html$Html$text('');
 												} else {
-													var error = _v16.a;
+													var error = _v17.a;
 													return A2(
 														$elm$html$Html$small,
 														_List_Nil,
