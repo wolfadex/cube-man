@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739235356642"
+    "1739235609305"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -19588,8 +19588,8 @@ var $author$project$Main$update = F2(
 						return _Debug_todo(
 							'Main',
 							{
-								start: {line: 485, column: 29},
-								end: {line: 485, column: 39}
+								start: {line: 489, column: 29},
+								end: {line: 489, column: 39}
 							})('No player spawn found');
 					} else {
 						var spawnFrame = _v4.a;
