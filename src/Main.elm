@@ -57,6 +57,7 @@ main =
 
 type alias Model =
     { board : Board
+    , score : Int
     , editorBoard : Undo.Stack Board
     , boardLoadError : Maybe BoardLoadError
     , screenSize : { width : Int, height : Int }
@@ -302,6 +303,7 @@ init () =
       , zUpperVisible = maxZ - 1
       , selectedBlockType = Wall
       , board = board
+      , score = 0
       , editorBoard = Undo.init board
       , boardLoadError = Nothing
       , screenSize = { width = 800, height = 600 }
@@ -493,6 +495,10 @@ update msg model =
                                 | mode = Game
                                 , board = board
                                 , playerFrame = spawnFrame
+                                , score = 0
+                                , playerMovingAcrossEdge = Nothing
+                                , playerFacing = Forward
+                                , playerWantFacing = Forward
                               }
                             , Cmd.none
                             )
@@ -1236,59 +1242,114 @@ movePlayer deltaMs model =
                             |> point3dToPoint
                         )
                         model.board.blocks
-            in
-            case nearBlock of
-                Nothing ->
-                    model
 
-                Just Wall ->
-                    model
-
-                Just Edge ->
+                scorePoints m =
                     let
-                        ( playerFrame, distMoved ) =
-                            doEdgeMovement ()
+                        playerPoint =
+                            m.playerFrame
+                                |> Frame3d.originPoint
+
+                        blockPoint =
+                            playerPoint
+                                |> point3dToPoint
+
+                        currentBlock =
+                            Dict.get
+                                blockPoint
+                                m.board.blocks
                     in
-                    { model
-                        | playerFrame = playerFrame
-                        , playerMovingAcrossEdge = Just distMoved
-                    }
+                    case currentBlock of
+                        Nothing ->
+                            m
 
-                Just (PointPickup collected) ->
-                    if collected then
-                        treatAsEmpty ()
+                        Just Empty ->
+                            m
 
-                    else
+                        Just Wall ->
+                            m
+
+                        Just Edge ->
+                            m
+
+                        Just (PlayerSpawn _) ->
+                            m
+
+                        Just (PointPickup collected) ->
+                            if collected then
+                                m
+
+                            else if Point3d.distanceFrom playerPoint (pointToPoint3d blockPoint) |> Quantity.lessThan (Length.meters 0.25) then
+                                let
+                                    board =
+                                        m.board
+                                in
+                                { m
+                                    | score = m.score + 50
+                                    , board =
+                                        { board
+                                            | blocks =
+                                                Dict.insert blockPoint
+                                                    (PointPickup True)
+                                                    m.board.blocks
+                                        }
+                                }
+
+                            else
+                                m
+            in
+            scorePoints <|
+                case nearBlock of
+                    Nothing ->
+                        model
+
+                    Just Wall ->
+                        model
+
+                    Just Edge ->
+                        let
+                            ( playerFrame, distMoved ) =
+                                doEdgeMovement ()
+                        in
                         { model
-                            | playerFrame =
-                                model.playerFrame
-                                    |> Frame3d.translateIn
-                                        (case model.playerFacing of
-                                            Forward ->
-                                                Frame3d.xDirection model.playerFrame
-
-                                            Backward ->
-                                                Frame3d.xDirection model.playerFrame
-                                                    |> Direction3d.reverse
-
-                                            Right ->
-                                                Frame3d.yDirection model.playerFrame
-                                                    |> Direction3d.reverse
-
-                                            Left ->
-                                                Frame3d.yDirection model.playerFrame
-                                        )
-                                        (Length.meters 4
-                                            |> Quantity.per (Duration.seconds 1)
-                                            |> Quantity.for (Duration.milliseconds deltaMs)
-                                        )
+                            | playerFrame = playerFrame
+                            , playerMovingAcrossEdge = Just distMoved
                         }
 
-                Just Empty ->
-                    treatAsEmpty ()
+                    Just (PointPickup collected) ->
+                        if collected then
+                            treatAsEmpty ()
 
-                Just (PlayerSpawn _) ->
-                    treatAsEmpty ()
+                        else
+                            { model
+                                | playerFrame =
+                                    model.playerFrame
+                                        |> Frame3d.translateIn
+                                            (case model.playerFacing of
+                                                Forward ->
+                                                    Frame3d.xDirection model.playerFrame
+
+                                                Backward ->
+                                                    Frame3d.xDirection model.playerFrame
+                                                        |> Direction3d.reverse
+
+                                                Right ->
+                                                    Frame3d.yDirection model.playerFrame
+                                                        |> Direction3d.reverse
+
+                                                Left ->
+                                                    Frame3d.yDirection model.playerFrame
+                                            )
+                                            (Length.meters 4
+                                                |> Quantity.per (Duration.seconds 1)
+                                                |> Quantity.for (Duration.milliseconds deltaMs)
+                                            )
+                            }
+
+                    Just Empty ->
+                        treatAsEmpty ()
+
+                    Just (PlayerSpawn _) ->
+                        treatAsEmpty ()
 
         Just edgeDistTraveled ->
             let
@@ -1724,7 +1785,7 @@ view model =
                                     ]
                     }
                 ]
-            , viewEditorHeader model
+            , viewHeader model
             , case model.mode of
                 Game ->
                     Html.div
@@ -1977,11 +2038,19 @@ view model =
     }
 
 
-viewEditorHeader : Model -> Html Msg
-viewEditorHeader model =
+viewHeader : Model -> Html Msg
+viewHeader model =
     case model.mode of
         Game ->
-            Html.text ""
+            Html.div
+                [ Html.Attributes.style "grid-column" "1 /3"
+                , Html.Attributes.style "grid-row" "1"
+                , Html.Attributes.style "display" "flex"
+                , Html.Attributes.style "padding" "0.5rem"
+                , Html.Attributes.style "gap" "1rem"
+                ]
+                [ Html.h3 [] [ Html.text ("Score: " ++ String.fromInt model.score) ]
+                ]
 
         Editor ->
             Html.div

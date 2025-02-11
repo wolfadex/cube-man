@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739236029428"
+    "1739237318405"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -17412,6 +17412,7 @@ var $author$project$Main$init = function (_v0) {
 				A3($ianmackenzie$elm_geometry$Point3d$meters, 1, 4, 7)),
 			playerMovingAcrossEdge: $elm$core$Maybe$Nothing,
 			playerWantFacing: $author$project$Main$Forward,
+			score: 0,
 			screenSize: {height: 600, width: 800},
 			selectedBlock: $elm$core$Maybe$Nothing,
 			selectedBlockType: $author$project$Main$Wall,
@@ -19140,15 +19141,15 @@ var $ianmackenzie$elm_geometry$Direction3d$toVector = function (_v0) {
 };
 var $author$project$Main$movePlayer = F2(
 	function (deltaMs, model) {
-		var treatAsEmpty = function (_v12) {
+		var treatAsEmpty = function (_v16) {
 			return _Utils_update(
 				model,
 				{
 					playerFrame: A3(
 						$ianmackenzie$elm_geometry$Frame3d$translateIn,
 						function () {
-							var _v11 = model.playerFacing;
-							switch (_v11.$) {
+							var _v15 = model.playerFacing;
+							switch (_v15.$) {
 								case 'Forward':
 									return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
 								case 'Backward':
@@ -19171,7 +19172,7 @@ var $author$project$Main$movePlayer = F2(
 						model.playerFrame)
 				});
 		};
-		var doEdgeMovement = function (_v10) {
+		var doEdgeMovement = function (_v14) {
 			var edgeMovement = A2(
 				$ianmackenzie$elm_units$Quantity$for,
 				$ianmackenzie$elm_units$Duration$milliseconds(deltaMs),
@@ -19192,8 +19193,8 @@ var $author$project$Main$movePlayer = F2(
 								$author$project$Main$point3dToPoint(
 									$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame)))),
 						function () {
-							var _v9 = model.playerFacing;
-							switch (_v9.$) {
+							var _v13 = model.playerFacing;
+							switch (_v13.$) {
 								case 'Forward':
 									return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
 								case 'Backward':
@@ -19212,6 +19213,59 @@ var $author$project$Main$movePlayer = F2(
 		};
 		var _v0 = model.playerMovingAcrossEdge;
 		if (_v0.$ === 'Nothing') {
+			var scorePoints = function (m) {
+				var playerPoint = $ianmackenzie$elm_geometry$Frame3d$originPoint(m.playerFrame);
+				var blockPoint = $author$project$Main$point3dToPoint(playerPoint);
+				var currentBlock = A2($elm$core$Dict$get, blockPoint, m.board.blocks);
+				if (currentBlock.$ === 'Nothing') {
+					return m;
+				} else {
+					switch (currentBlock.a.$) {
+						case 'Empty':
+							var _v9 = currentBlock.a;
+							return m;
+						case 'Wall':
+							var _v10 = currentBlock.a;
+							return m;
+						case 'Edge':
+							var _v11 = currentBlock.a;
+							return m;
+						case 'PlayerSpawn':
+							return m;
+						default:
+							var collected = currentBlock.a.a;
+							if (collected) {
+								return m;
+							} else {
+								if (A2(
+									$ianmackenzie$elm_units$Quantity$lessThan,
+									$ianmackenzie$elm_units$Length$meters(0.25),
+									A2(
+										$ianmackenzie$elm_geometry$Point3d$distanceFrom,
+										playerPoint,
+										$author$project$Main$pointToPoint3d(blockPoint)))) {
+									var board = m.board;
+									return _Utils_update(
+										m,
+										{
+											board: _Utils_update(
+												board,
+												{
+													blocks: A3(
+														$elm$core$Dict$insert,
+														blockPoint,
+														$author$project$Main$PointPickup(true),
+														m.board.blocks)
+												}),
+											score: m.score + 50
+										});
+								} else {
+									return m;
+								}
+							}
+					}
+				}
+			};
 			var nearBlock = A2(
 				$elm$core$Dict$get,
 				$author$project$Main$point3dToPoint(
@@ -19236,67 +19290,70 @@ var $author$project$Main$movePlayer = F2(
 							$ianmackenzie$elm_units$Length$meters(0.6),
 							model.playerFrame))),
 				model.board.blocks);
-			if (nearBlock.$ === 'Nothing') {
-				return model;
-			} else {
-				switch (nearBlock.a.$) {
-					case 'Wall':
-						var _v2 = nearBlock.a;
+			return scorePoints(
+				function () {
+					if (nearBlock.$ === 'Nothing') {
 						return model;
-					case 'Edge':
-						var _v3 = nearBlock.a;
-						var _v4 = doEdgeMovement(_Utils_Tuple0);
-						var playerFrame = _v4.a;
-						var distMoved = _v4.b;
-						return _Utils_update(
-							model,
-							{
-								playerFrame: playerFrame,
-								playerMovingAcrossEdge: $elm$core$Maybe$Just(distMoved)
-							});
-					case 'PointPickup':
-						var collected = nearBlock.a.a;
-						return collected ? treatAsEmpty(_Utils_Tuple0) : _Utils_update(
-							model,
-							{
-								playerFrame: A3(
-									$ianmackenzie$elm_geometry$Frame3d$translateIn,
-									function () {
-										var _v5 = model.playerFacing;
-										switch (_v5.$) {
-											case 'Forward':
-												return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
-											case 'Backward':
-												return $ianmackenzie$elm_geometry$Direction3d$reverse(
-													$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame));
-											case 'Right':
-												return $ianmackenzie$elm_geometry$Direction3d$reverse(
-													$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame));
-											default:
-												return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
-										}
-									}(),
-									A2(
-										$ianmackenzie$elm_units$Quantity$for,
-										$ianmackenzie$elm_units$Duration$milliseconds(deltaMs),
-										A2(
-											$ianmackenzie$elm_units$Quantity$per,
-											$ianmackenzie$elm_units$Duration$seconds(1),
-											$ianmackenzie$elm_units$Length$meters(4))),
-									model.playerFrame)
-							});
-					case 'Empty':
-						var _v6 = nearBlock.a;
-						return treatAsEmpty(_Utils_Tuple0);
-					default:
-						return treatAsEmpty(_Utils_Tuple0);
-				}
-			}
+					} else {
+						switch (nearBlock.a.$) {
+							case 'Wall':
+								var _v2 = nearBlock.a;
+								return model;
+							case 'Edge':
+								var _v3 = nearBlock.a;
+								var _v4 = doEdgeMovement(_Utils_Tuple0);
+								var playerFrame = _v4.a;
+								var distMoved = _v4.b;
+								return _Utils_update(
+									model,
+									{
+										playerFrame: playerFrame,
+										playerMovingAcrossEdge: $elm$core$Maybe$Just(distMoved)
+									});
+							case 'PointPickup':
+								var collected = nearBlock.a.a;
+								return collected ? treatAsEmpty(_Utils_Tuple0) : _Utils_update(
+									model,
+									{
+										playerFrame: A3(
+											$ianmackenzie$elm_geometry$Frame3d$translateIn,
+											function () {
+												var _v5 = model.playerFacing;
+												switch (_v5.$) {
+													case 'Forward':
+														return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
+													case 'Backward':
+														return $ianmackenzie$elm_geometry$Direction3d$reverse(
+															$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame));
+													case 'Right':
+														return $ianmackenzie$elm_geometry$Direction3d$reverse(
+															$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame));
+													default:
+														return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
+												}
+											}(),
+											A2(
+												$ianmackenzie$elm_units$Quantity$for,
+												$ianmackenzie$elm_units$Duration$milliseconds(deltaMs),
+												A2(
+													$ianmackenzie$elm_units$Quantity$per,
+													$ianmackenzie$elm_units$Duration$seconds(1),
+													$ianmackenzie$elm_units$Length$meters(4))),
+											model.playerFrame)
+									});
+							case 'Empty':
+								var _v6 = nearBlock.a;
+								return treatAsEmpty(_Utils_Tuple0);
+							default:
+								return treatAsEmpty(_Utils_Tuple0);
+						}
+					}
+				}());
 		} else {
 			var edgeDistTraveled = _v0.a;
-			var _v8 = doEdgeMovement(_Utils_Tuple0);
-			var playerFrame = _v8.a;
-			var distMoved = _v8.b;
+			var _v12 = doEdgeMovement(_Utils_Tuple0);
+			var playerFrame = _v12.a;
+			var distMoved = _v12.b;
 			var totalMovement = A2($ianmackenzie$elm_units$Quantity$plus, edgeDistTraveled, distMoved);
 			var edgeTravelComplete = A3(
 				$ianmackenzie$elm_units$Quantity$equalWithin,
@@ -19606,15 +19663,15 @@ var $author$project$Main$update = F2(
 						return _Debug_todo(
 							'Main',
 							{
-								start: {line: 489, column: 29},
-								end: {line: 489, column: 39}
+								start: {line: 491, column: 29},
+								end: {line: 491, column: 39}
 							})('No player spawn found');
 					} else {
 						var spawnFrame = _v4.a;
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
-								{board: board, mode: $author$project$Main$Game, playerFrame: spawnFrame}),
+								{board: board, mode: $author$project$Main$Game, playerFacing: $author$project$Main$Forward, playerFrame: spawnFrame, playerMovingAcrossEdge: $elm$core$Maybe$Nothing, playerWantFacing: $author$project$Main$Forward, score: 0}),
 							$elm$core$Platform$Cmd$none);
 					}
 				} else {
@@ -26324,6 +26381,7 @@ var $phosphor_icons$phosphor_elm$Phosphor$gridNine = function (weight) {
 	}();
 	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
+var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $phosphor_icons$phosphor_elm$Phosphor$plus = function (weight) {
 	var elements = function () {
 		switch (weight.$) {
@@ -26542,10 +26600,30 @@ var $phosphor_icons$phosphor_elm$Phosphor$x = function (weight) {
 	}();
 	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
-var $author$project$Main$viewEditorHeader = function (model) {
+var $author$project$Main$viewHeader = function (model) {
 	var _v0 = model.mode;
 	if (_v0.$ === 'Game') {
-		return $elm$html$Html$text('');
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'grid-column', '1 /3'),
+					A2($elm$html$Html$Attributes$style, 'grid-row', '1'),
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
+					A2($elm$html$Html$Attributes$style, 'gap', '1rem')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$h3,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							'Score: ' + $elm$core$String$fromInt(model.score))
+						]))
+				]));
 	} else {
 		return A2(
 			$elm$html$Html$div,
@@ -27307,7 +27385,7 @@ var $author$project$Main$view = function (model) {
 									upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
 								})
 							])),
-						$author$project$Main$viewEditorHeader(model),
+						$author$project$Main$viewHeader(model),
 						function () {
 						var _v9 = model.mode;
 						if (_v9.$ === 'Game') {
