@@ -436,7 +436,7 @@ init () =
             , toggleSettings = ( ",", "" )
             }
       , showSettings = False
-      , screen = Editor
+      , screen = Menu
       }
     , Cmd.none
     )
@@ -454,16 +454,24 @@ type BoardLoadError
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    if model.showSettings then
-        Sub.none
+    case model.screen of
+        Menu ->
+            Sub.none
 
-    else
-        Sub.batch
-            [ Browser.Events.onAnimationFrameDelta Tick
-            , Browser.Events.onKeyPress decodeKeyPressed
-            , Browser.Events.onKeyDown decodeKeyDown
-            , Browser.Events.onKeyUp decodeKeyUp
-            ]
+        Game ->
+            Sub.none
+
+        Editor ->
+            if model.showSettings then
+                Sub.none
+
+            else
+                Sub.batch
+                    [ Browser.Events.onAnimationFrameDelta Tick
+                    , Browser.Events.onKeyPress decodeKeyPressed
+                    , Browser.Events.onKeyDown decodeKeyDown
+                    , Browser.Events.onKeyUp decodeKeyUp
+                    ]
 
 
 decodeKeyPressed : Json.Decode.Decoder Msg
@@ -519,6 +527,7 @@ type Msg
     | ShowBoardBounds Bool
     | ShowSettings Bool
     | SetMapping (InputMapping -> InputMapping)
+    | SetScreen Screen
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -988,6 +997,9 @@ update msg model =
 
         SetMapping fn ->
             ( { model | inputMapping = fn model.inputMapping }, Cmd.none )
+
+        SetScreen screen ->
+            ( { model | screen = screen }, Cmd.none )
 
         KeyPressed key ->
             case model.editorMode of
@@ -1827,541 +1839,590 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "Cube-Man"
     , body =
-        [ Html.div
-            [ Html.Attributes.style "display" "grid"
-            , Html.Attributes.style "grid-template-columns" <|
-                case model.editorMode of
-                    EditBoard ->
-                        "auto auto"
-
-                    TestGame ->
-                        "auto 8rem"
-            , Html.Attributes.style "grid-template-rows" <|
-                case model.editorMode of
-                    EditBoard ->
-                        "auto auto"
-
-                    TestGame ->
-                        "auto"
-            ]
-            [ Html.div
-                ([ Html.Attributes.style "grid-column" <|
-                    case model.editorMode of
-                        EditBoard ->
-                            "1"
-
-                        TestGame ->
-                            "1 / 2"
-                 , Html.Attributes.style "grid-row" <|
-                    case model.editorMode of
-                        EditBoard ->
-                            "2"
-
-                        TestGame ->
-                            "1"
-                 ]
-                    ++ (case model.mouseDragging of
-                            NoInteraction ->
-                                [ Html.Events.on "pointerdown" decodeMouseDown
-                                , Html.Events.on "pointermove" (decodePointerMove Json.Encode.null)
-                                , Html.Attributes.property "___setPointerCapture" Json.Encode.null
-                                ]
-
-                            InteractionStart pointer ->
-                                [ Html.Events.on "pointerup" decodeMouseUp
-                                , Html.Events.on "pointermove" (decodePointerMove pointer)
-                                , Html.Attributes.property "___setPointerCapture" pointer
-                                ]
-
-                            InteractionMoving pointer ->
-                                [ Html.Events.on "pointerup" decodeMouseUp
-                                , Html.Events.on "pointermove" (decodePointerMove pointer)
-                                , Html.Attributes.property "___setPointerCapture" pointer
-                                ]
-                       )
-                )
-                [ let
-                    lights =
-                        case model.editorMode of
-                            TestGame ->
-                                let
-                                    sun1 =
-                                        Scene3d.Light.directional (Scene3d.Light.castsShadows True)
-                                            { direction =
-                                                Direction3d.negativeZ
-                                                    |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
-                                            , intensity = Illuminance.lux 80000
-                                            , chromaticity = Scene3d.Light.sunlight
-                                            }
-
-                                    sun2 =
-                                        Scene3d.Light.directional (Scene3d.Light.castsShadows True)
-                                            { direction =
-                                                Direction3d.positiveZ
-                                                    |> Direction3d.rotateAround Axis3d.x (Angle.degrees -70)
-                                            , intensity = Illuminance.lux 80000
-                                            , chromaticity = Scene3d.Light.sunlight
-                                            }
-
-                                    sky1 =
-                                        Scene3d.Light.overhead
-                                            { upDirection =
-                                                Direction3d.positiveZ
-                                            , chromaticity = Scene3d.Light.skylight
-                                            , intensity = Illuminance.lux 20000
-                                            }
-
-                                    sky2 =
-                                        Scene3d.Light.overhead
-                                            { upDirection =
-                                                Direction3d.positiveZ
-                                                    |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
-                                                    |> Direction3d.rotateAround Axis3d.z
-                                                        (model.cameraRotation
-                                                            |> Quantity.plus (Angle.degrees 90)
-                                                        )
-                                            , chromaticity = Scene3d.Light.skylight
-                                            , intensity = Illuminance.lux 40000
-                                            }
-
-                                    sky3 =
-                                        Scene3d.Light.overhead
-                                            { upDirection =
-                                                Direction3d.positiveZ
-                                                    |> Direction3d.rotateAround Axis3d.x (Angle.degrees -70)
-                                                    |> Direction3d.rotateAround Axis3d.z
-                                                        (model.cameraRotation
-                                                            |> Quantity.plus (Angle.degrees -90)
-                                                        )
-                                            , chromaticity = Scene3d.Light.daylight
-                                            , intensity = Illuminance.lux 40000
-                                            }
-
-                                    environment =
-                                        Scene3d.Light.overhead
-                                            { upDirection = Direction3d.reverse Direction3d.positiveZ
-                                            , chromaticity = Scene3d.Light.daylight
-                                            , intensity = Illuminance.lux 15000
-                                            }
-                                in
-                                Scene3d.sixLights sun1 sun2 sky1 sky2 sky3 environment
-
-                            EditBoard ->
-                                let
-                                    sun =
-                                        Scene3d.Light.directional (Scene3d.Light.castsShadows True)
-                                            { direction =
-                                                Direction3d.negativeZ
-                                                    |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
-                                                    |> Direction3d.rotateAround Axis3d.z
-                                                        (model.cameraRotation
-                                                            |> Quantity.plus (Angle.degrees 90)
-                                                        )
-                                            , intensity = Illuminance.lux 80000
-                                            , chromaticity = Scene3d.Light.sunlight
-                                            }
-
-                                    sky =
-                                        Scene3d.Light.overhead
-                                            { upDirection = Direction3d.positiveZ
-                                            , chromaticity = Scene3d.Light.skylight
-                                            , intensity = Illuminance.lux 20000
-                                            }
-
-                                    upsideDownSky =
-                                        Scene3d.Light.overhead
-                                            { upDirection = Direction3d.negativeZ
-                                            , chromaticity = Scene3d.Light.skylight
-                                            , intensity = Illuminance.lux 40000
-                                            }
-
-                                    environment =
-                                        Scene3d.Light.overhead
-                                            { upDirection = Direction3d.reverse Direction3d.positiveZ
-                                            , chromaticity = Scene3d.Light.daylight
-                                            , intensity = Illuminance.lux 15000
-                                            }
-                                in
-                                Scene3d.fourLights sun sky environment upsideDownSky
-                  in
-                  Scene3d.custom
-                    { clipDepth = Length.meters 1
-                    , background = Scene3d.backgroundColor Color.gray
-                    , exposure = Scene3d.exposureValue 15
-                    , lights = lights
-                    , toneMapping = Scene3d.noToneMapping
-                    , whiteBalance = Scene3d.Light.daylight
-                    , antialiasing = Scene3d.multisampling
-                    , dimensions = ( Pixels.int model.screenSize.width, Pixels.int model.screenSize.height )
-                    , camera =
-                        case model.editorMode of
-                            TestGame ->
-                                Camera3d.perspective
-                                    { viewpoint =
-                                        let
-                                            targetPos =
-                                                Frame3d.originPoint model.playerFrame
-                                        in
-                                        Viewpoint3d.lookAt
-                                            { focalPoint = targetPos
-                                            , eyePoint =
-                                                targetPos
-                                                    |> Point3d.translateIn (Frame3d.zDirection model.playerFrame) (Length.meters 15)
-                                            , upDirection = Frame3d.xDirection model.playerFrame
-                                            }
-                                    , verticalFieldOfView = Angle.degrees 30
-                                    }
-
-                            EditBoard ->
-                                editorCamera model
-                    , entities =
-                        case model.editorMode of
-                            EditBoard ->
-                                let
-                                    editorBoard =
-                                        model.editorBoard
-                                            |> Undo.value
-                                in
-                                List.concat
-                                    [ editorBoard.blocks
-                                        |> Dict.toList
-                                        |> List.map (viewBlock editorBoard model)
-                                    , [ viewCursor
-                                            (case model.blockEditMode of
-                                                Select ->
-                                                    Color.white
-
-                                                Remove ->
-                                                    Color.red
-
-                                                Add ->
-                                                    Color.green
-                                            )
-                                            model.cursorBounce
-                                            model.editorCursor
-                                      , viewOrientationArrows
-                                      , case model.selectedBlock of
-                                            Nothing ->
-                                                Scene3d.nothing
-
-                                            Just ( point, _ ) ->
-                                                viewCursor Color.yellow model.cursorBounce point
-                                      , if model.showBoardBounds then
-                                            viewBounds editorBoard
-
-                                        else
-                                            Scene3d.nothing
-                                      ]
-                                    ]
-
-                            TestGame ->
-                                List.concat
-                                    [ model.board.blocks
-                                        |> Dict.toList
-                                        |> List.map (viewBlock model.board model)
-                                    , [ viewPlayer model.playerFacing model.playerFrame ]
-                                    ]
-                    }
-                ]
-            , viewHeader model
-            , case model.editorMode of
-                TestGame ->
-                    Html.div
+        case model.screen of
+            Menu ->
+                [ Html.div
+                    [ Html.Attributes.style "width" "100vw"
+                    , Html.Attributes.style "height" "100vh"
+                    , Html.Attributes.style "display" "grid"
+                    , Html.Attributes.style "grid-template-columns" "auto auto auto"
+                    ]
+                    [ Html.div
                         [ Html.Attributes.style "grid-column" "2"
-                        , Html.Attributes.style "grid-row" "1"
-                        , Html.Attributes.style "padding" "0.5rem"
+                        , Html.Attributes.style "margin-top" "5rem"
+                        , Html.Attributes.style "display" "flex"
+                        , Html.Attributes.style "flex-direction" "column"
+                        , Html.Attributes.style "gap" "1rem"
+                        , Html.Attributes.style "align-items" "center"
                         ]
-                        [ Html.button
-                            [ Html.Attributes.type_ "button"
-                            , Html.Events.onClick ChangeMode
+                        [ Html.h1
+                            [ Html.Attributes.style "text-align" "center"
                             ]
-                            [ Html.text "Edit Level"
-                            ]
-                        ]
-
-                EditBoard ->
-                    let
-                        editorBoard =
-                            model.editorBoard
-                                |> Undo.value
-                    in
-                    Html.div
-                        [ Html.Attributes.style "grid-column" "2"
-                        , Html.Attributes.style "grid-row" "2"
-                        , Html.Attributes.style "padding" "0.5rem"
-                        , Html.Attributes.style "height" "80vh"
-                        , Html.Attributes.style "overflow" "auto"
-                        ]
-                        [ case model.selectedBlock of
-                            Nothing ->
-                                Html.span [] [ Html.text "No block selected" ]
-
-                            Just ( point, block ) ->
-                                case block of
-                                    Empty ->
-                                        Html.span [] [ Html.text "Empty block" ]
-
-                                    Edge ->
-                                        Html.span [] [ Html.text "Edge" ]
-
-                                    Wall ->
-                                        Html.span [] [ Html.text "Wall" ]
-
-                                    PointPickup _ ->
-                                        Html.span [] [ Html.text "Point Pickup" ]
-
-                                    PlayerSpawn details ->
-                                        Html.form
-                                            []
-                                            [ Html.span [] [ Html.text "Player Spawn" ]
-                                            , Html.br [] []
-                                            , Html.label []
-                                                [ Html.span [] [ Html.text "Forward Direction " ]
-                                                , Html.Extra.select
-                                                    []
-                                                    { value = Just details.forward
-                                                    , options =
-                                                        [ PositiveX
-                                                        , NegativeX
-                                                        , PositiveY
-                                                        , NegativeY
-                                                        , PositiveZ
-                                                        , NegativeZ
-                                                        ]
-                                                    , toLabel = axisToLabel
-                                                    , toKey = axisToLabel
-                                                    , onSelect =
-                                                        \value ->
-                                                            case value of
-                                                                Nothing ->
-                                                                    SetBlock point (PlayerSpawn details)
-
-                                                                Just axis ->
-                                                                    SetBlock point (PlayerSpawn { details | forward = axis })
-                                                    }
-                                                ]
-                                            , Html.br [] []
-                                            , Html.label []
-                                                [ Html.span [] [ Html.text "Left Direction " ]
-                                                , Html.Extra.select
-                                                    []
-                                                    { value = Just details.left
-                                                    , options =
-                                                        [ PositiveX
-                                                        , NegativeX
-                                                        , PositiveY
-                                                        , NegativeY
-                                                        , PositiveZ
-                                                        , NegativeZ
-                                                        ]
-                                                    , toLabel = axisToLabel
-                                                    , toKey = axisToLabel
-                                                    , onSelect =
-                                                        \value ->
-                                                            case value of
-                                                                Nothing ->
-                                                                    SetBlock point (PlayerSpawn details)
-
-                                                                Just axis ->
-                                                                    SetBlock point (PlayerSpawn { details | left = axis })
-                                                    }
-                                                ]
-                                            ]
-                        , Html.hr [] []
-                        , Html.form []
-                            [ Html.fieldset []
-                                [ Html.label []
-                                    [ Html.span [] [ Html.text "X Size " ]
-                                    , Html.input
-                                        [ Html.Attributes.type_ "number"
-                                        , Html.Attributes.value model.editorMaxXRaw
-                                        , Html.Attributes.min "1"
-                                        , Html.Attributes.max "20"
-                                        , Html.Attributes.step "1"
-                                        , Html.Events.onInput MaxXChanged
-                                        ]
-                                        []
-                                    ]
-                                , Html.br [] []
-                                , Html.label []
-                                    [ Html.span [] [ Html.text "X Visibility" ]
-                                    , Html.Extra.dualRange
-                                        []
-                                        { valueLow = toFloat model.xLowerVisible
-                                        , valueHigh = toFloat model.xUpperVisible
-                                        , onInputLow = round >> XLowerVisibleChanged
-                                        , onInputHigh = round >> XUpperVisibleChanged
-                                        , min = 0
-                                        , max = toFloat (editorBoard.maxX - 1)
-                                        , step = 1
-                                        , colorMin = Nothing
-                                        , colorMid = Nothing
-                                        , colorMax = Nothing
-                                        , thumb1Image = Nothing
-                                        , thumb2Image = Nothing
-                                        }
-                                    ]
-                                ]
-                            , Html.br [] []
-                            , Html.fieldset []
-                                [ Html.label []
-                                    [ Html.span [] [ Html.text "Y Size " ]
-                                    , Html.input
-                                        [ Html.Attributes.type_ "number"
-                                        , Html.Attributes.value model.editorMaxYRaw
-                                        , Html.Attributes.min "1"
-                                        , Html.Attributes.max "20"
-                                        , Html.Attributes.step "1"
-                                        , Html.Events.onInput MaxYChanged
-                                        ]
-                                        []
-                                    ]
-                                , Html.br [] []
-                                , Html.label []
-                                    [ Html.span [] [ Html.text "Y Visibility" ]
-                                    , Html.Extra.dualRange
-                                        []
-                                        { valueLow = toFloat model.yLowerVisible
-                                        , valueHigh = toFloat model.yUpperVisible
-                                        , onInputLow = round >> YLowerVisibleChanged
-                                        , onInputHigh = round >> YUpperVisibleChanged
-                                        , min = 0
-                                        , max = toFloat (editorBoard.maxY - 1)
-                                        , step = 1
-                                        , colorMin = Nothing
-                                        , colorMid = Nothing
-                                        , colorMax = Nothing
-                                        , thumb1Image = Nothing
-                                        , thumb2Image = Nothing
-                                        }
-                                    ]
-                                ]
-                            , Html.br [] []
-                            , Html.fieldset []
-                                [ Html.label []
-                                    [ Html.span [] [ Html.text "Z Size " ]
-                                    , Html.input
-                                        [ Html.Attributes.type_ "number"
-                                        , Html.Attributes.value model.editorMaxZRaw
-                                        , Html.Attributes.min "1"
-                                        , Html.Attributes.max "20"
-                                        , Html.Attributes.step "1"
-                                        , Html.Events.onInput MaxZChanged
-                                        ]
-                                        []
-                                    ]
-                                , Html.br [] []
-                                , Html.label []
-                                    [ Html.span [] [ Html.text "Z Visibility" ]
-                                    , Html.Extra.dualRange
-                                        []
-                                        { valueLow = toFloat model.zLowerVisible
-                                        , valueHigh = toFloat model.zUpperVisible
-                                        , onInputLow = round >> ZLowerVisibleChanged
-                                        , onInputHigh = round >> ZUpperVisibleChanged
-                                        , min = 0
-                                        , max = toFloat (editorBoard.maxZ - 1)
-                                        , step = 1
-                                        , colorMin = Nothing
-                                        , colorMid = Nothing
-                                        , colorMax = Nothing
-                                        , thumb1Image = Nothing
-                                        , thumb2Image = Nothing
-                                        }
-                                    ]
-                                ]
-                            ]
-                        , Html.hr [] []
-                        , Html.form
-                            [ Html.Events.onSubmit (LoadBoard model.boardEncoding)
+                            [ Html.text "Cube-Man" ]
+                        , Html.div
+                            [ Html.Attributes.style "margin-top" "5rem"
                             , Html.Attributes.style "display" "flex"
+                            , Html.Attributes.style "flex-direction" "column"
                             , Html.Attributes.style "gap" "1rem"
                             ]
-                            [ Html.label
-                                [ Html.Attributes.style "display" "flex"
-                                , Html.Attributes.style "gap" "1rem"
-                                , Html.Attributes.style "align-items" "center"
+                            [ Html.button
+                                [ Html.Attributes.type_ "button"
+                                , Html.Attributes.style "text-align" "center"
+                                , Html.Attributes.style "padding" "0.5rem 2rem"
+                                , Html.Events.onClick (SetScreen Game)
                                 ]
-                                [ Html.span [] [ Html.text "Encoded Level:" ]
-                                , Html.input
-                                    [ Html.Attributes.value model.boardEncoding
-                                    , Html.Events.onInput EncodingChanged
-                                    ]
-                                    []
-                                ]
+                                [ Html.text "Free Play" ]
                             , Html.button
-                                [ Html.Attributes.type_ "submit" ]
-                                [ Html.text "Load" ]
-                            , case model.boardLoadError of
-                                Nothing ->
-                                    Html.text ""
-
-                                Just error ->
-                                    Html.small []
-                                        [ Html.text <|
-                                            case error of
-                                                DataCorrupted ->
-                                                    "Board data is corrupted"
-
-                                                SerializerOutOfDate ->
-                                                    "Board data is from a different version of the game"
-
-                                                OtherError ->
-                                                    "Unexpected error"
-                                        ]
-                            ]
-                        , Html.br [] []
-                        , Html.label []
-                            [ Html.span [] [ Html.text "Load an example board " ]
-                            , Html.Extra.select
-                                []
-                                { value = Nothing
-                                , options =
-                                    [ DefaultBoard
-                                    , BasicMiniBoard
-                                    , ZigZagBoard
-                                    ]
-                                , toLabel =
-                                    \value ->
-                                        case value of
-                                            DefaultBoard ->
-                                                "9 x 9 blank slate"
-
-                                            BasicMiniBoard ->
-                                                "Basic mini"
-
-                                            ZigZagBoard ->
-                                                "Zig zag"
-                                , toKey =
-                                    \value ->
-                                        case value of
-                                            DefaultBoard ->
-                                                "DefaultBoard"
-
-                                            BasicMiniBoard ->
-                                                "BasicMiniBoard"
-
-                                            ZigZagBoard ->
-                                                "ZigZagBoard"
-                                , onSelect =
-                                    \value ->
-                                        case value of
-                                            Nothing ->
-                                                NoOp
-
-                                            Just DefaultBoard ->
-                                                LoadBoard defaultBoard
-
-                                            Just BasicMiniBoard ->
-                                                LoadBoard basicMiniBoard
-
-                                            Just ZigZagBoard ->
-                                                LoadBoard zigZagBoard
-                                }
+                                [ Html.Attributes.type_ "button"
+                                , Html.Attributes.style "text-align" "center"
+                                , Html.Attributes.style "padding" "0.5rem 2rem"
+                                , Html.Events.onClick (SetScreen Editor)
+                                ]
+                                [ Html.text "Level Editor" ]
                             ]
                         ]
-            ]
-        ]
+                    ]
+                ]
+
+            Game ->
+                [ Html.text "Game" ]
+
+            Editor ->
+                [ Html.div
+                    [ Html.Attributes.style "display" "grid"
+                    , Html.Attributes.style "grid-template-columns" <|
+                        case model.editorMode of
+                            EditBoard ->
+                                "auto auto"
+
+                            TestGame ->
+                                "auto 8rem"
+                    , Html.Attributes.style "grid-template-rows" <|
+                        case model.editorMode of
+                            EditBoard ->
+                                "auto auto"
+
+                            TestGame ->
+                                "auto"
+                    ]
+                    [ Html.div
+                        ([ Html.Attributes.style "grid-column" <|
+                            case model.editorMode of
+                                EditBoard ->
+                                    "1"
+
+                                TestGame ->
+                                    "1 / 2"
+                         , Html.Attributes.style "grid-row" <|
+                            case model.editorMode of
+                                EditBoard ->
+                                    "2"
+
+                                TestGame ->
+                                    "1"
+                         ]
+                            ++ (case model.mouseDragging of
+                                    NoInteraction ->
+                                        [ Html.Events.on "pointerdown" decodeMouseDown
+                                        , Html.Events.on "pointermove" (decodePointerMove Json.Encode.null)
+                                        , Html.Attributes.property "___setPointerCapture" Json.Encode.null
+                                        ]
+
+                                    InteractionStart pointer ->
+                                        [ Html.Events.on "pointerup" decodeMouseUp
+                                        , Html.Events.on "pointermove" (decodePointerMove pointer)
+                                        , Html.Attributes.property "___setPointerCapture" pointer
+                                        ]
+
+                                    InteractionMoving pointer ->
+                                        [ Html.Events.on "pointerup" decodeMouseUp
+                                        , Html.Events.on "pointermove" (decodePointerMove pointer)
+                                        , Html.Attributes.property "___setPointerCapture" pointer
+                                        ]
+                               )
+                        )
+                        [ let
+                            lights =
+                                case model.editorMode of
+                                    TestGame ->
+                                        let
+                                            sun1 =
+                                                Scene3d.Light.directional (Scene3d.Light.castsShadows True)
+                                                    { direction =
+                                                        Direction3d.negativeZ
+                                                            |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
+                                                    , intensity = Illuminance.lux 80000
+                                                    , chromaticity = Scene3d.Light.sunlight
+                                                    }
+
+                                            sun2 =
+                                                Scene3d.Light.directional (Scene3d.Light.castsShadows True)
+                                                    { direction =
+                                                        Direction3d.positiveZ
+                                                            |> Direction3d.rotateAround Axis3d.x (Angle.degrees -70)
+                                                    , intensity = Illuminance.lux 80000
+                                                    , chromaticity = Scene3d.Light.sunlight
+                                                    }
+
+                                            sky1 =
+                                                Scene3d.Light.overhead
+                                                    { upDirection =
+                                                        Direction3d.positiveZ
+                                                    , chromaticity = Scene3d.Light.skylight
+                                                    , intensity = Illuminance.lux 20000
+                                                    }
+
+                                            sky2 =
+                                                Scene3d.Light.overhead
+                                                    { upDirection =
+                                                        Direction3d.positiveZ
+                                                            |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
+                                                            |> Direction3d.rotateAround Axis3d.z
+                                                                (model.cameraRotation
+                                                                    |> Quantity.plus (Angle.degrees 90)
+                                                                )
+                                                    , chromaticity = Scene3d.Light.skylight
+                                                    , intensity = Illuminance.lux 40000
+                                                    }
+
+                                            sky3 =
+                                                Scene3d.Light.overhead
+                                                    { upDirection =
+                                                        Direction3d.positiveZ
+                                                            |> Direction3d.rotateAround Axis3d.x (Angle.degrees -70)
+                                                            |> Direction3d.rotateAround Axis3d.z
+                                                                (model.cameraRotation
+                                                                    |> Quantity.plus (Angle.degrees -90)
+                                                                )
+                                                    , chromaticity = Scene3d.Light.daylight
+                                                    , intensity = Illuminance.lux 40000
+                                                    }
+
+                                            environment =
+                                                Scene3d.Light.overhead
+                                                    { upDirection = Direction3d.reverse Direction3d.positiveZ
+                                                    , chromaticity = Scene3d.Light.daylight
+                                                    , intensity = Illuminance.lux 15000
+                                                    }
+                                        in
+                                        Scene3d.sixLights sun1 sun2 sky1 sky2 sky3 environment
+
+                                    EditBoard ->
+                                        let
+                                            sun =
+                                                Scene3d.Light.directional (Scene3d.Light.castsShadows True)
+                                                    { direction =
+                                                        Direction3d.negativeZ
+                                                            |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
+                                                            |> Direction3d.rotateAround Axis3d.z
+                                                                (model.cameraRotation
+                                                                    |> Quantity.plus (Angle.degrees 90)
+                                                                )
+                                                    , intensity = Illuminance.lux 80000
+                                                    , chromaticity = Scene3d.Light.sunlight
+                                                    }
+
+                                            sky =
+                                                Scene3d.Light.overhead
+                                                    { upDirection = Direction3d.positiveZ
+                                                    , chromaticity = Scene3d.Light.skylight
+                                                    , intensity = Illuminance.lux 20000
+                                                    }
+
+                                            upsideDownSky =
+                                                Scene3d.Light.overhead
+                                                    { upDirection = Direction3d.negativeZ
+                                                    , chromaticity = Scene3d.Light.skylight
+                                                    , intensity = Illuminance.lux 40000
+                                                    }
+
+                                            environment =
+                                                Scene3d.Light.overhead
+                                                    { upDirection = Direction3d.reverse Direction3d.positiveZ
+                                                    , chromaticity = Scene3d.Light.daylight
+                                                    , intensity = Illuminance.lux 15000
+                                                    }
+                                        in
+                                        Scene3d.fourLights sun sky environment upsideDownSky
+                          in
+                          Scene3d.custom
+                            { clipDepth = Length.meters 1
+                            , background = Scene3d.backgroundColor Color.gray
+                            , exposure = Scene3d.exposureValue 15
+                            , lights = lights
+                            , toneMapping = Scene3d.noToneMapping
+                            , whiteBalance = Scene3d.Light.daylight
+                            , antialiasing = Scene3d.multisampling
+                            , dimensions = ( Pixels.int model.screenSize.width, Pixels.int model.screenSize.height )
+                            , camera =
+                                case model.editorMode of
+                                    TestGame ->
+                                        Camera3d.perspective
+                                            { viewpoint =
+                                                let
+                                                    targetPos =
+                                                        Frame3d.originPoint model.playerFrame
+                                                in
+                                                Viewpoint3d.lookAt
+                                                    { focalPoint = targetPos
+                                                    , eyePoint =
+                                                        targetPos
+                                                            |> Point3d.translateIn (Frame3d.zDirection model.playerFrame) (Length.meters 15)
+                                                    , upDirection = Frame3d.xDirection model.playerFrame
+                                                    }
+                                            , verticalFieldOfView = Angle.degrees 30
+                                            }
+
+                                    EditBoard ->
+                                        editorCamera model
+                            , entities =
+                                case model.editorMode of
+                                    EditBoard ->
+                                        let
+                                            editorBoard =
+                                                model.editorBoard
+                                                    |> Undo.value
+                                        in
+                                        List.concat
+                                            [ editorBoard.blocks
+                                                |> Dict.toList
+                                                |> List.map (viewBlock editorBoard model)
+                                            , [ viewCursor
+                                                    (case model.blockEditMode of
+                                                        Select ->
+                                                            Color.white
+
+                                                        Remove ->
+                                                            Color.red
+
+                                                        Add ->
+                                                            Color.green
+                                                    )
+                                                    model.cursorBounce
+                                                    model.editorCursor
+                                              , viewOrientationArrows
+                                              , case model.selectedBlock of
+                                                    Nothing ->
+                                                        Scene3d.nothing
+
+                                                    Just ( point, _ ) ->
+                                                        viewCursor Color.yellow model.cursorBounce point
+                                              , if model.showBoardBounds then
+                                                    viewBounds editorBoard
+
+                                                else
+                                                    Scene3d.nothing
+                                              ]
+                                            ]
+
+                                    TestGame ->
+                                        List.concat
+                                            [ model.board.blocks
+                                                |> Dict.toList
+                                                |> List.map (viewBlock model.board model)
+                                            , [ viewPlayer model.playerFacing model.playerFrame ]
+                                            ]
+                            }
+                        ]
+                    , viewHeader model
+                    , case model.editorMode of
+                        TestGame ->
+                            Html.div
+                                [ Html.Attributes.style "grid-column" "2"
+                                , Html.Attributes.style "grid-row" "1"
+                                , Html.Attributes.style "padding" "0.5rem"
+                                ]
+                                [ Html.button
+                                    [ Html.Attributes.type_ "button"
+                                    , Html.Events.onClick ChangeMode
+                                    ]
+                                    [ Html.text "Edit Level"
+                                    ]
+                                ]
+
+                        EditBoard ->
+                            let
+                                editorBoard =
+                                    model.editorBoard
+                                        |> Undo.value
+                            in
+                            Html.div
+                                [ Html.Attributes.style "grid-column" "2"
+                                , Html.Attributes.style "grid-row" "2"
+                                , Html.Attributes.style "padding" "0.5rem"
+                                , Html.Attributes.style "height" "80vh"
+                                , Html.Attributes.style "overflow" "auto"
+                                ]
+                                [ case model.selectedBlock of
+                                    Nothing ->
+                                        Html.span [] [ Html.text "No block selected" ]
+
+                                    Just ( point, block ) ->
+                                        case block of
+                                            Empty ->
+                                                Html.span [] [ Html.text "Empty block" ]
+
+                                            Edge ->
+                                                Html.span [] [ Html.text "Edge" ]
+
+                                            Wall ->
+                                                Html.span [] [ Html.text "Wall" ]
+
+                                            PointPickup _ ->
+                                                Html.span [] [ Html.text "Point Pickup" ]
+
+                                            PlayerSpawn details ->
+                                                Html.form
+                                                    []
+                                                    [ Html.span [] [ Html.text "Player Spawn" ]
+                                                    , Html.br [] []
+                                                    , Html.label []
+                                                        [ Html.span [] [ Html.text "Forward Direction " ]
+                                                        , Html.Extra.select
+                                                            []
+                                                            { value = Just details.forward
+                                                            , options =
+                                                                [ PositiveX
+                                                                , NegativeX
+                                                                , PositiveY
+                                                                , NegativeY
+                                                                , PositiveZ
+                                                                , NegativeZ
+                                                                ]
+                                                            , toLabel = axisToLabel
+                                                            , toKey = axisToLabel
+                                                            , onSelect =
+                                                                \value ->
+                                                                    case value of
+                                                                        Nothing ->
+                                                                            SetBlock point (PlayerSpawn details)
+
+                                                                        Just axis ->
+                                                                            SetBlock point (PlayerSpawn { details | forward = axis })
+                                                            }
+                                                        ]
+                                                    , Html.br [] []
+                                                    , Html.label []
+                                                        [ Html.span [] [ Html.text "Left Direction " ]
+                                                        , Html.Extra.select
+                                                            []
+                                                            { value = Just details.left
+                                                            , options =
+                                                                [ PositiveX
+                                                                , NegativeX
+                                                                , PositiveY
+                                                                , NegativeY
+                                                                , PositiveZ
+                                                                , NegativeZ
+                                                                ]
+                                                            , toLabel = axisToLabel
+                                                            , toKey = axisToLabel
+                                                            , onSelect =
+                                                                \value ->
+                                                                    case value of
+                                                                        Nothing ->
+                                                                            SetBlock point (PlayerSpawn details)
+
+                                                                        Just axis ->
+                                                                            SetBlock point (PlayerSpawn { details | left = axis })
+                                                            }
+                                                        ]
+                                                    ]
+                                , Html.hr [] []
+                                , Html.form []
+                                    [ Html.fieldset []
+                                        [ Html.label []
+                                            [ Html.span [] [ Html.text "X Size " ]
+                                            , Html.input
+                                                [ Html.Attributes.type_ "number"
+                                                , Html.Attributes.value model.editorMaxXRaw
+                                                , Html.Attributes.min "1"
+                                                , Html.Attributes.max "20"
+                                                , Html.Attributes.step "1"
+                                                , Html.Events.onInput MaxXChanged
+                                                ]
+                                                []
+                                            ]
+                                        , Html.br [] []
+                                        , Html.label []
+                                            [ Html.span [] [ Html.text "X Visibility" ]
+                                            , Html.Extra.dualRange
+                                                []
+                                                { valueLow = toFloat model.xLowerVisible
+                                                , valueHigh = toFloat model.xUpperVisible
+                                                , onInputLow = round >> XLowerVisibleChanged
+                                                , onInputHigh = round >> XUpperVisibleChanged
+                                                , min = 0
+                                                , max = toFloat (editorBoard.maxX - 1)
+                                                , step = 1
+                                                , colorMin = Nothing
+                                                , colorMid = Nothing
+                                                , colorMax = Nothing
+                                                , thumb1Image = Nothing
+                                                , thumb2Image = Nothing
+                                                }
+                                            ]
+                                        ]
+                                    , Html.br [] []
+                                    , Html.fieldset []
+                                        [ Html.label []
+                                            [ Html.span [] [ Html.text "Y Size " ]
+                                            , Html.input
+                                                [ Html.Attributes.type_ "number"
+                                                , Html.Attributes.value model.editorMaxYRaw
+                                                , Html.Attributes.min "1"
+                                                , Html.Attributes.max "20"
+                                                , Html.Attributes.step "1"
+                                                , Html.Events.onInput MaxYChanged
+                                                ]
+                                                []
+                                            ]
+                                        , Html.br [] []
+                                        , Html.label []
+                                            [ Html.span [] [ Html.text "Y Visibility" ]
+                                            , Html.Extra.dualRange
+                                                []
+                                                { valueLow = toFloat model.yLowerVisible
+                                                , valueHigh = toFloat model.yUpperVisible
+                                                , onInputLow = round >> YLowerVisibleChanged
+                                                , onInputHigh = round >> YUpperVisibleChanged
+                                                , min = 0
+                                                , max = toFloat (editorBoard.maxY - 1)
+                                                , step = 1
+                                                , colorMin = Nothing
+                                                , colorMid = Nothing
+                                                , colorMax = Nothing
+                                                , thumb1Image = Nothing
+                                                , thumb2Image = Nothing
+                                                }
+                                            ]
+                                        ]
+                                    , Html.br [] []
+                                    , Html.fieldset []
+                                        [ Html.label []
+                                            [ Html.span [] [ Html.text "Z Size " ]
+                                            , Html.input
+                                                [ Html.Attributes.type_ "number"
+                                                , Html.Attributes.value model.editorMaxZRaw
+                                                , Html.Attributes.min "1"
+                                                , Html.Attributes.max "20"
+                                                , Html.Attributes.step "1"
+                                                , Html.Events.onInput MaxZChanged
+                                                ]
+                                                []
+                                            ]
+                                        , Html.br [] []
+                                        , Html.label []
+                                            [ Html.span [] [ Html.text "Z Visibility" ]
+                                            , Html.Extra.dualRange
+                                                []
+                                                { valueLow = toFloat model.zLowerVisible
+                                                , valueHigh = toFloat model.zUpperVisible
+                                                , onInputLow = round >> ZLowerVisibleChanged
+                                                , onInputHigh = round >> ZUpperVisibleChanged
+                                                , min = 0
+                                                , max = toFloat (editorBoard.maxZ - 1)
+                                                , step = 1
+                                                , colorMin = Nothing
+                                                , colorMid = Nothing
+                                                , colorMax = Nothing
+                                                , thumb1Image = Nothing
+                                                , thumb2Image = Nothing
+                                                }
+                                            ]
+                                        ]
+                                    ]
+                                , Html.hr [] []
+                                , Html.form
+                                    [ Html.Events.onSubmit (LoadBoard model.boardEncoding)
+                                    , Html.Attributes.style "display" "flex"
+                                    , Html.Attributes.style "gap" "1rem"
+                                    ]
+                                    [ Html.label
+                                        [ Html.Attributes.style "display" "flex"
+                                        , Html.Attributes.style "gap" "1rem"
+                                        , Html.Attributes.style "align-items" "center"
+                                        ]
+                                        [ Html.span [] [ Html.text "Encoded Level:" ]
+                                        , Html.input
+                                            [ Html.Attributes.value model.boardEncoding
+                                            , Html.Events.onInput EncodingChanged
+                                            ]
+                                            []
+                                        ]
+                                    , Html.button
+                                        [ Html.Attributes.type_ "submit" ]
+                                        [ Html.text "Load" ]
+                                    , case model.boardLoadError of
+                                        Nothing ->
+                                            Html.text ""
+
+                                        Just error ->
+                                            Html.small []
+                                                [ Html.text <|
+                                                    case error of
+                                                        DataCorrupted ->
+                                                            "Board data is corrupted"
+
+                                                        SerializerOutOfDate ->
+                                                            "Board data is from a different version of the game"
+
+                                                        OtherError ->
+                                                            "Unexpected error"
+                                                ]
+                                    ]
+                                , Html.br [] []
+                                , Html.label []
+                                    [ Html.span [] [ Html.text "Load an example board " ]
+                                    , Html.Extra.select
+                                        []
+                                        { value = Nothing
+                                        , options =
+                                            [ DefaultBoard
+                                            , BasicMiniBoard
+                                            , ZigZagBoard
+                                            ]
+                                        , toLabel =
+                                            \value ->
+                                                case value of
+                                                    DefaultBoard ->
+                                                        "9 x 9 blank slate"
+
+                                                    BasicMiniBoard ->
+                                                        "Basic mini"
+
+                                                    ZigZagBoard ->
+                                                        "Zig zag"
+                                        , toKey =
+                                            \value ->
+                                                case value of
+                                                    DefaultBoard ->
+                                                        "DefaultBoard"
+
+                                                    BasicMiniBoard ->
+                                                        "BasicMiniBoard"
+
+                                                    ZigZagBoard ->
+                                                        "ZigZagBoard"
+                                        , onSelect =
+                                            \value ->
+                                                case value of
+                                                    Nothing ->
+                                                        NoOp
+
+                                                    Just DefaultBoard ->
+                                                        LoadBoard defaultBoard
+
+                                                    Just BasicMiniBoard ->
+                                                        LoadBoard basicMiniBoard
+
+                                                    Just ZigZagBoard ->
+                                                        LoadBoard zigZagBoard
+                                        }
+                                    ]
+                                ]
+                    ]
+                ]
     }
 
 
@@ -2565,11 +2626,16 @@ viewHeader model =
                     [ Html.Attributes.type_ "button"
                     , Html.Events.onClick (ShowSettings True)
                     , Html.Attributes.title ("Settings - " ++ viewInputKeyHoverText model.inputMapping.toggleSettings)
-                    , Html.Attributes.style "margin-left" "auto"
                     ]
                     [ Phosphor.gear Phosphor.Regular
                         |> Phosphor.toHtml []
                     ]
+                , Html.button
+                    [ Html.Attributes.type_ "button"
+                    , Html.Events.onClick (SetScreen Menu)
+                    , Html.Attributes.style "margin-left" "auto"
+                    ]
+                    [ Html.text "Exit" ]
                 , Html.Extra.modal { open = model.showSettings, onClose = ShowSettings False }
                     []
                     [ Html.h2

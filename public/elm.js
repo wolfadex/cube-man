@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739251314201"
+    "1739252302350"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -16273,8 +16273,8 @@ var $elm$core$Basics$never = function (_v0) {
 };
 var $elm$browser$Browser$document = _Browser_document;
 var $author$project$Main$EditBoard = {$: 'EditBoard'};
-var $author$project$Main$Editor = {$: 'Editor'};
 var $author$project$Main$Forward = {$: 'Forward'};
+var $author$project$Main$Menu = {$: 'Menu'};
 var $author$project$Main$NoInteraction = {$: 'NoInteraction'};
 var $author$project$Main$Orbit = {$: 'Orbit'};
 var $author$project$Main$Select = {$: 'Select'};
@@ -17437,7 +17437,7 @@ var $author$project$Main$init = function (_v0) {
 			playerMovingAcrossEdge: $elm$core$Maybe$Nothing,
 			playerWantFacing: $author$project$Main$Forward,
 			score: 0,
-			screen: $author$project$Main$Editor,
+			screen: $author$project$Main$Menu,
 			screenSize: {height: 600, width: 800},
 			selectedBlock: $elm$core$Maybe$Nothing,
 			selectedBlockType: $author$project$Main$Wall,
@@ -17782,14 +17782,22 @@ var $elm$browser$Browser$Events$onKeyDown = A2($elm$browser$Browser$Events$on, $
 var $elm$browser$Browser$Events$onKeyPress = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keypress');
 var $elm$browser$Browser$Events$onKeyUp = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keyup');
 var $author$project$Main$subscriptions = function (model) {
-	return model.showSettings ? $elm$core$Platform$Sub$none : $elm$core$Platform$Sub$batch(
-		_List_fromArray(
-			[
-				$elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Main$Tick),
-				$elm$browser$Browser$Events$onKeyPress($author$project$Main$decodeKeyPressed),
-				$elm$browser$Browser$Events$onKeyDown($author$project$Main$decodeKeyDown),
-				$elm$browser$Browser$Events$onKeyUp($author$project$Main$decodeKeyUp)
-			]));
+	var _v0 = model.screen;
+	switch (_v0.$) {
+		case 'Menu':
+			return $elm$core$Platform$Sub$none;
+		case 'Game':
+			return $elm$core$Platform$Sub$none;
+		default:
+			return model.showSettings ? $elm$core$Platform$Sub$none : $elm$core$Platform$Sub$batch(
+				_List_fromArray(
+					[
+						$elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Main$Tick),
+						$elm$browser$Browser$Events$onKeyPress($author$project$Main$decodeKeyPressed),
+						$elm$browser$Browser$Events$onKeyDown($author$project$Main$decodeKeyDown),
+						$elm$browser$Browser$Events$onKeyUp($author$project$Main$decodeKeyUp)
+					]));
+	}
 };
 var $author$project$Main$DataCorrupted = {$: 'DataCorrupted'};
 var $author$project$Main$InteractionStart = function (a) {
@@ -20189,6 +20197,13 @@ var $author$project$Main$update = F2(
 							inputMapping: fn(model.inputMapping)
 						}),
 					$elm$core$Platform$Cmd$none);
+			case 'SetScreen':
+				var screen = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{screen: screen}),
+					$elm$core$Platform$Cmd$none);
 			default:
 				var key = msg.a;
 				var _v15 = model.editorMode;
@@ -20202,9 +20217,11 @@ var $author$project$Main$update = F2(
 var $author$project$Main$BasicMiniBoard = {$: 'BasicMiniBoard'};
 var $author$project$Main$ChangeMode = {$: 'ChangeMode'};
 var $author$project$Main$DefaultBoard = {$: 'DefaultBoard'};
+var $author$project$Main$Editor = {$: 'Editor'};
 var $author$project$Main$EncodingChanged = function (a) {
 	return {$: 'EncodingChanged', a: a};
 };
+var $author$project$Main$Game = {$: 'Game'};
 var $author$project$Main$LoadBoard = function (a) {
 	return {$: 'LoadBoard', a: a};
 };
@@ -20222,6 +20239,9 @@ var $author$project$Main$SetBlock = F2(
 	function (a, b) {
 		return {$: 'SetBlock', a: a, b: b};
 	});
+var $author$project$Main$SetScreen = function (a) {
+	return {$: 'SetScreen', a: a};
+};
 var $author$project$Main$XLowerVisibleChanged = function (a) {
 	return {$: 'XLowerVisibleChanged', a: a};
 };
@@ -21765,6 +21785,7 @@ var $avh4$elm_color$Color$RgbaSpace = F4(
 	});
 var $avh4$elm_color$Color$gray = A4($avh4$elm_color$Color$RgbaSpace, 211 / 255, 215 / 255, 207 / 255, 1.0);
 var $avh4$elm_color$Color$green = A4($avh4$elm_color$Color$RgbaSpace, 115 / 255, 210 / 255, 22 / 255, 1.0);
+var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $elm$html$Html$hr = _VirtualDom_node('hr');
 var $ianmackenzie$elm_units$Pixels$int = function (numPixels) {
 	return $ianmackenzie$elm_units$Quantity$Quantity(numPixels);
@@ -27290,8 +27311,7 @@ var $author$project$Main$viewHeader = function (model) {
 							$elm$html$Html$Events$onClick(
 							$author$project$Main$ShowSettings(true)),
 							$elm$html$Html$Attributes$title(
-							'Settings - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.toggleSettings)),
-							A2($elm$html$Html$Attributes$style, 'margin-left', 'auto')
+							'Settings - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.toggleSettings))
 						]),
 					_List_fromArray(
 						[
@@ -27299,6 +27319,19 @@ var $author$project$Main$viewHeader = function (model) {
 							$phosphor_icons$phosphor_elm$Phosphor$toHtml,
 							_List_Nil,
 							$phosphor_icons$phosphor_elm$Phosphor$gear($phosphor_icons$phosphor_elm$Phosphor$Regular))
+						])),
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$type_('button'),
+							$elm$html$Html$Events$onClick(
+							$author$project$Main$SetScreen($author$project$Main$Menu)),
+							A2($elm$html$Html$Attributes$style, 'margin-left', 'auto')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Exit')
 						])),
 					A3(
 					$author$project$Html$Extra$modal,
@@ -28250,841 +28283,932 @@ var $ianmackenzie$elm_geometry$Axis3d$z = A2($ianmackenzie$elm_geometry$Axis3d$t
 var $author$project$Main$zigZagBoard = '[1,[9,9,9,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[1]],[[0,0,3],[1]],[[0,0,4],[1]],[[0,0,5],[1]],[[0,0,6],[1]],[[0,0,7],[1]],[[0,0,8],[1]],[[0,1,0],[2]],[[0,1,1],[0]],[[0,1,2],[3,false]],[[0,1,3],[1]],[[0,1,4],[1]],[[0,1,5],[1]],[[0,1,6],[3,false]],[[0,1,7],[0]],[[0,1,8],[2]],[[0,2,0],[1]],[[0,2,1],[1]],[[0,2,2],[3,false]],[[0,2,3],[1]],[[0,2,4],[1]],[[0,2,5],[1]],[[0,2,6],[3,false]],[[0,2,7],[1]],[[0,2,8],[1]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[3,false]],[[0,3,3],[1]],[[0,3,4],[1]],[[0,3,5],[1]],[[0,3,6],[3,false]],[[0,3,7],[1]],[[0,3,8],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[3,false]],[[0,4,3],[3,false]],[[0,4,4],[3,false]],[[0,4,5],[3,false]],[[0,4,6],[3,false]],[[0,4,7],[1]],[[0,4,8],[1]],[[0,5,0],[1]],[[0,5,1],[1]],[[0,5,2],[3,false]],[[0,5,3],[1]],[[0,5,4],[1]],[[0,5,5],[1]],[[0,5,6],[3,false]],[[0,5,7],[1]],[[0,5,8],[1]],[[0,6,0],[1]],[[0,6,1],[1]],[[0,6,2],[3,false]],[[0,6,3],[1]],[[0,6,4],[1]],[[0,6,5],[1]],[[0,6,6],[3,false]],[[0,6,7],[1]],[[0,6,8],[1]],[[0,7,0],[2]],[[0,7,1],[0]],[[0,7,2],[3,false]],[[0,7,3],[1]],[[0,7,4],[1]],[[0,7,5],[1]],[[0,7,6],[3,false]],[[0,7,7],[0]],[[0,7,8],[2]],[[0,8,0],[1]],[[0,8,1],[1]],[[0,8,2],[1]],[[0,8,3],[1]],[[0,8,4],[1]],[[0,8,5],[1]],[[0,8,6],[1]],[[0,8,7],[1]],[[0,8,8],[1]],[[1,0,0],[2]],[[1,0,1],[0]],[[1,0,2],[3,false]],[[1,0,3],[1]],[[1,0,4],[1]],[[1,0,5],[1]],[[1,0,6],[3,false]],[[1,0,7],[0]],[[1,0,8],[2]],[[1,1,0],[0]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,1,5],[1]],[[1,1,6],[1]],[[1,1,7],[1]],[[1,1,8],[0]],[[1,2,0],[3,false]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[1]],[[1,2,5],[1]],[[1,2,6],[1]],[[1,2,7],[1]],[[1,2,8],[1]],[[1,3,0],[3,false]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,3,5],[1]],[[1,3,6],[1]],[[1,3,7],[1]],[[1,3,8],[1]],[[1,4,0],[3,false]],[[1,4,1],[1]],[[1,4,2],[1]],[[1,4,3],[1]],[[1,4,4],[1]],[[1,4,5],[1]],[[1,4,6],[1]],[[1,4,7],[1]],[[1,4,8],[1]],[[1,5,0],[3,false]],[[1,5,1],[1]],[[1,5,2],[1]],[[1,5,3],[1]],[[1,5,4],[1]],[[1,5,5],[1]],[[1,5,6],[1]],[[1,5,7],[1]],[[1,5,8],[1]],[[1,6,0],[3,false]],[[1,6,1],[1]],[[1,6,2],[1]],[[1,6,3],[1]],[[1,6,4],[1]],[[1,6,5],[1]],[[1,6,6],[1]],[[1,6,7],[1]],[[1,6,8],[1]],[[1,7,0],[0]],[[1,7,1],[1]],[[1,7,2],[1]],[[1,7,3],[1]],[[1,7,4],[1]],[[1,7,5],[1]],[[1,7,6],[1]],[[1,7,7],[1]],[[1,7,8],[0]],[[1,8,0],[2]],[[1,8,1],[0]],[[1,8,2],[3,false]],[[1,8,3],[1]],[[1,8,4],[1]],[[1,8,5],[1]],[[1,8,6],[3,false]],[[1,8,7],[0]],[[1,8,8],[2]],[[2,0,0],[1]],[[2,0,1],[1]],[[2,0,2],[3,false]],[[2,0,3],[1]],[[2,0,4],[1]],[[2,0,5],[1]],[[2,0,6],[3,false]],[[2,0,7],[1]],[[2,0,8],[1]],[[2,1,0],[1]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[1]],[[2,1,5],[1]],[[2,1,6],[1]],[[2,1,7],[1]],[[2,1,8],[3,false]],[[2,2,0],[1]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[1]],[[2,2,5],[1]],[[2,2,6],[1]],[[2,2,7],[1]],[[2,2,8],[1]],[[2,3,0],[1]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[1]],[[2,3,5],[1]],[[2,3,6],[1]],[[2,3,7],[1]],[[2,3,8],[1]],[[2,4,0],[3,false]],[[2,4,1],[1]],[[2,4,2],[1]],[[2,4,3],[1]],[[2,4,4],[1]],[[2,4,5],[1]],[[2,4,6],[1]],[[2,4,7],[1]],[[2,4,8],[1]],[[2,5,0],[1]],[[2,5,1],[1]],[[2,5,2],[1]],[[2,5,3],[1]],[[2,5,4],[1]],[[2,5,5],[1]],[[2,5,6],[1]],[[2,5,7],[1]],[[2,5,8],[1]],[[2,6,0],[1]],[[2,6,1],[1]],[[2,6,2],[1]],[[2,6,3],[1]],[[2,6,4],[1]],[[2,6,5],[1]],[[2,6,6],[1]],[[2,6,7],[1]],[[2,6,8],[1]],[[2,7,0],[1]],[[2,7,1],[1]],[[2,7,2],[1]],[[2,7,3],[1]],[[2,7,4],[1]],[[2,7,5],[1]],[[2,7,6],[1]],[[2,7,7],[1]],[[2,7,8],[3,false]],[[2,8,0],[1]],[[2,8,1],[1]],[[2,8,2],[3,false]],[[2,8,3],[1]],[[2,8,4],[1]],[[2,8,5],[1]],[[2,8,6],[3,false]],[[2,8,7],[1]],[[2,8,8],[1]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[3,false]],[[3,0,3],[1]],[[3,0,4],[1]],[[3,0,5],[1]],[[3,0,6],[3,false]],[[3,0,7],[1]],[[3,0,8],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,1,5],[1]],[[3,1,6],[1]],[[3,1,7],[1]],[[3,1,8],[3,false]],[[3,2,0],[1]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[1]],[[3,2,5],[1]],[[3,2,6],[1]],[[3,2,7],[1]],[[3,2,8],[1]],[[3,3,0],[1]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,3,5],[1]],[[3,3,6],[1]],[[3,3,7],[1]],[[3,3,8],[1]],[[3,4,0],[3,false]],[[3,4,1],[1]],[[3,4,2],[1]],[[3,4,3],[1]],[[3,4,4],[1]],[[3,4,5],[1]],[[3,4,6],[1]],[[3,4,7],[1]],[[3,4,8],[1]],[[3,5,0],[1]],[[3,5,1],[1]],[[3,5,2],[1]],[[3,5,3],[1]],[[3,5,4],[1]],[[3,5,5],[1]],[[3,5,6],[1]],[[3,5,7],[1]],[[3,5,8],[1]],[[3,6,0],[1]],[[3,6,1],[1]],[[3,6,2],[1]],[[3,6,3],[1]],[[3,6,4],[1]],[[3,6,5],[1]],[[3,6,6],[1]],[[3,6,7],[1]],[[3,6,8],[1]],[[3,7,0],[1]],[[3,7,1],[1]],[[3,7,2],[1]],[[3,7,3],[1]],[[3,7,4],[1]],[[3,7,5],[1]],[[3,7,6],[1]],[[3,7,7],[1]],[[3,7,8],[3,false]],[[3,8,0],[1]],[[3,8,1],[1]],[[3,8,2],[3,false]],[[3,8,3],[1]],[[3,8,4],[1]],[[3,8,5],[1]],[[3,8,6],[3,false]],[[3,8,7],[1]],[[3,8,8],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[3,false]],[[4,0,3],[3,false]],[[4,0,4],[3,false]],[[4,0,5],[3,false]],[[4,0,6],[3,false]],[[4,0,7],[1]],[[4,0,8],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[1]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,1,5],[1]],[[4,1,6],[1]],[[4,1,7],[1]],[[4,1,8],[3,false]],[[4,2,0],[1]],[[4,2,1],[1]],[[4,2,2],[1]],[[4,2,3],[1]],[[4,2,4],[1]],[[4,2,5],[1]],[[4,2,6],[1]],[[4,2,7],[1]],[[4,2,8],[3,false]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[1]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,3,5],[1]],[[4,3,6],[1]],[[4,3,7],[1]],[[4,3,8],[3,false]],[[4,4,0],[3,false]],[[4,4,1],[1]],[[4,4,2],[1]],[[4,4,3],[1]],[[4,4,4],[1]],[[4,4,5],[1]],[[4,4,6],[1]],[[4,4,7],[1]],[[4,4,8],[3,false]],[[4,5,0],[1]],[[4,5,1],[1]],[[4,5,2],[1]],[[4,5,3],[1]],[[4,5,4],[1]],[[4,5,5],[1]],[[4,5,6],[1]],[[4,5,7],[1]],[[4,5,8],[3,false]],[[4,6,0],[1]],[[4,6,1],[1]],[[4,6,2],[1]],[[4,6,3],[1]],[[4,6,4],[1]],[[4,6,5],[1]],[[4,6,6],[1]],[[4,6,7],[1]],[[4,6,8],[3,false]],[[4,7,0],[1]],[[4,7,1],[1]],[[4,7,2],[1]],[[4,7,3],[1]],[[4,7,4],[1]],[[4,7,5],[1]],[[4,7,6],[1]],[[4,7,7],[1]],[[4,7,8],[3,false]],[[4,8,0],[1]],[[4,8,1],[1]],[[4,8,2],[3,false]],[[4,8,3],[0]],[[4,8,4],[0]],[[4,8,5],[4,[[5],[1]]]],[[4,8,6],[3,false]],[[4,8,7],[1]],[[4,8,8],[1]],[[5,0,0],[1]],[[5,0,1],[1]],[[5,0,2],[3,false]],[[5,0,3],[1]],[[5,0,4],[1]],[[5,0,5],[1]],[[5,0,6],[3,false]],[[5,0,7],[1]],[[5,0,8],[1]],[[5,1,0],[1]],[[5,1,1],[1]],[[5,1,2],[1]],[[5,1,3],[1]],[[5,1,4],[1]],[[5,1,5],[1]],[[5,1,6],[1]],[[5,1,7],[1]],[[5,1,8],[3,false]],[[5,2,0],[1]],[[5,2,1],[1]],[[5,2,2],[1]],[[5,2,3],[1]],[[5,2,4],[1]],[[5,2,5],[1]],[[5,2,6],[1]],[[5,2,7],[1]],[[5,2,8],[1]],[[5,3,0],[1]],[[5,3,1],[1]],[[5,3,2],[1]],[[5,3,3],[1]],[[5,3,4],[1]],[[5,3,5],[1]],[[5,3,6],[1]],[[5,3,7],[1]],[[5,3,8],[1]],[[5,4,0],[3,false]],[[5,4,1],[1]],[[5,4,2],[1]],[[5,4,3],[1]],[[5,4,4],[1]],[[5,4,5],[1]],[[5,4,6],[1]],[[5,4,7],[1]],[[5,4,8],[1]],[[5,5,0],[1]],[[5,5,1],[1]],[[5,5,2],[1]],[[5,5,3],[1]],[[5,5,4],[1]],[[5,5,5],[1]],[[5,5,6],[1]],[[5,5,7],[1]],[[5,5,8],[1]],[[5,6,0],[1]],[[5,6,1],[1]],[[5,6,2],[1]],[[5,6,3],[1]],[[5,6,4],[1]],[[5,6,5],[1]],[[5,6,6],[1]],[[5,6,7],[1]],[[5,6,8],[1]],[[5,7,0],[1]],[[5,7,1],[1]],[[5,7,2],[1]],[[5,7,3],[1]],[[5,7,4],[1]],[[5,7,5],[1]],[[5,7,6],[1]],[[5,7,7],[1]],[[5,7,8],[3,false]],[[5,8,0],[1]],[[5,8,1],[1]],[[5,8,2],[3,false]],[[5,8,3],[1]],[[5,8,4],[1]],[[5,8,5],[1]],[[5,8,6],[3,false]],[[5,8,7],[1]],[[5,8,8],[1]],[[6,0,0],[1]],[[6,0,1],[1]],[[6,0,2],[3,false]],[[6,0,3],[1]],[[6,0,4],[1]],[[6,0,5],[1]],[[6,0,6],[3,false]],[[6,0,7],[1]],[[6,0,8],[1]],[[6,1,0],[1]],[[6,1,1],[1]],[[6,1,2],[1]],[[6,1,3],[1]],[[6,1,4],[1]],[[6,1,5],[1]],[[6,1,6],[1]],[[6,1,7],[1]],[[6,1,8],[3,false]],[[6,2,0],[1]],[[6,2,1],[1]],[[6,2,2],[1]],[[6,2,3],[1]],[[6,2,4],[1]],[[6,2,5],[1]],[[6,2,6],[1]],[[6,2,7],[1]],[[6,2,8],[1]],[[6,3,0],[1]],[[6,3,1],[1]],[[6,3,2],[1]],[[6,3,3],[1]],[[6,3,4],[1]],[[6,3,5],[1]],[[6,3,6],[1]],[[6,3,7],[1]],[[6,3,8],[1]],[[6,4,0],[3,false]],[[6,4,1],[1]],[[6,4,2],[1]],[[6,4,3],[1]],[[6,4,4],[1]],[[6,4,5],[1]],[[6,4,6],[1]],[[6,4,7],[1]],[[6,4,8],[1]],[[6,5,0],[1]],[[6,5,1],[1]],[[6,5,2],[1]],[[6,5,3],[1]],[[6,5,4],[1]],[[6,5,5],[1]],[[6,5,6],[1]],[[6,5,7],[1]],[[6,5,8],[1]],[[6,6,0],[1]],[[6,6,1],[1]],[[6,6,2],[1]],[[6,6,3],[1]],[[6,6,4],[1]],[[6,6,5],[1]],[[6,6,6],[1]],[[6,6,7],[1]],[[6,6,8],[1]],[[6,7,0],[1]],[[6,7,1],[1]],[[6,7,2],[1]],[[6,7,3],[1]],[[6,7,4],[1]],[[6,7,5],[1]],[[6,7,6],[1]],[[6,7,7],[1]],[[6,7,8],[3,false]],[[6,8,0],[1]],[[6,8,1],[1]],[[6,8,2],[3,false]],[[6,8,3],[1]],[[6,8,4],[1]],[[6,8,5],[1]],[[6,8,6],[3,false]],[[6,8,7],[1]],[[6,8,8],[1]],[[7,0,0],[2]],[[7,0,1],[0]],[[7,0,2],[3,false]],[[7,0,3],[1]],[[7,0,4],[1]],[[7,0,5],[1]],[[7,0,6],[3,false]],[[7,0,7],[0]],[[7,0,8],[2]],[[7,1,0],[0]],[[7,1,1],[1]],[[7,1,2],[1]],[[7,1,3],[1]],[[7,1,4],[1]],[[7,1,5],[1]],[[7,1,6],[1]],[[7,1,7],[1]],[[7,1,8],[0]],[[7,2,0],[3,false]],[[7,2,1],[1]],[[7,2,2],[1]],[[7,2,3],[1]],[[7,2,4],[1]],[[7,2,5],[1]],[[7,2,6],[1]],[[7,2,7],[1]],[[7,2,8],[1]],[[7,3,0],[3,false]],[[7,3,1],[1]],[[7,3,2],[1]],[[7,3,3],[1]],[[7,3,4],[1]],[[7,3,5],[1]],[[7,3,6],[1]],[[7,3,7],[1]],[[7,3,8],[1]],[[7,4,0],[3,false]],[[7,4,1],[1]],[[7,4,2],[1]],[[7,4,3],[1]],[[7,4,4],[1]],[[7,4,5],[1]],[[7,4,6],[1]],[[7,4,7],[1]],[[7,4,8],[1]],[[7,5,0],[3,false]],[[7,5,1],[1]],[[7,5,2],[1]],[[7,5,3],[1]],[[7,5,4],[1]],[[7,5,5],[1]],[[7,5,6],[1]],[[7,5,7],[1]],[[7,5,8],[1]],[[7,6,0],[3,false]],[[7,6,1],[1]],[[7,6,2],[1]],[[7,6,3],[1]],[[7,6,4],[1]],[[7,6,5],[1]],[[7,6,6],[1]],[[7,6,7],[1]],[[7,6,8],[1]],[[7,7,0],[0]],[[7,7,1],[1]],[[7,7,2],[1]],[[7,7,3],[1]],[[7,7,4],[1]],[[7,7,5],[1]],[[7,7,6],[1]],[[7,7,7],[1]],[[7,7,8],[0]],[[7,8,0],[2]],[[7,8,1],[0]],[[7,8,2],[3,false]],[[7,8,3],[1]],[[7,8,4],[1]],[[7,8,5],[1]],[[7,8,6],[3,false]],[[7,8,7],[0]],[[7,8,8],[2]],[[8,0,0],[1]],[[8,0,1],[1]],[[8,0,2],[1]],[[8,0,3],[1]],[[8,0,4],[1]],[[8,0,5],[1]],[[8,0,6],[1]],[[8,0,7],[1]],[[8,0,8],[1]],[[8,1,0],[2]],[[8,1,1],[0]],[[8,1,2],[3,false]],[[8,1,3],[1]],[[8,1,4],[1]],[[8,1,5],[1]],[[8,1,6],[3,false]],[[8,1,7],[0]],[[8,1,8],[2]],[[8,2,0],[1]],[[8,2,1],[1]],[[8,2,2],[3,false]],[[8,2,3],[1]],[[8,2,4],[1]],[[8,2,5],[1]],[[8,2,6],[3,false]],[[8,2,7],[1]],[[8,2,8],[1]],[[8,3,0],[1]],[[8,3,1],[1]],[[8,3,2],[3,false]],[[8,3,3],[1]],[[8,3,4],[1]],[[8,3,5],[1]],[[8,3,6],[3,false]],[[8,3,7],[1]],[[8,3,8],[1]],[[8,4,0],[1]],[[8,4,1],[1]],[[8,4,2],[3,false]],[[8,4,3],[3,false]],[[8,4,4],[3,false]],[[8,4,5],[3,false]],[[8,4,6],[3,false]],[[8,4,7],[1]],[[8,4,8],[1]],[[8,5,0],[1]],[[8,5,1],[1]],[[8,5,2],[3,false]],[[8,5,3],[1]],[[8,5,4],[1]],[[8,5,5],[1]],[[8,5,6],[3,false]],[[8,5,7],[1]],[[8,5,8],[1]],[[8,6,0],[1]],[[8,6,1],[1]],[[8,6,2],[3,false]],[[8,6,3],[1]],[[8,6,4],[1]],[[8,6,5],[1]],[[8,6,6],[3,false]],[[8,6,7],[1]],[[8,6,8],[1]],[[8,7,0],[2]],[[8,7,1],[0]],[[8,7,2],[3,false]],[[8,7,3],[1]],[[8,7,4],[1]],[[8,7,5],[1]],[[8,7,6],[3,false]],[[8,7,7],[0]],[[8,7,8],[2]],[[8,8,0],[1]],[[8,8,1],[1]],[[8,8,2],[1]],[[8,8,3],[1]],[[8,8,4],[1]],[[8,8,5],[1]],[[8,8,6],[1]],[[8,8,7],[1]],[[8,8,8],[1]]]]]';
 var $author$project$Main$view = function (model) {
 	return {
-		body: _List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						A2($elm$html$Html$Attributes$style, 'display', 'grid'),
-						A2(
-						$elm$html$Html$Attributes$style,
-						'grid-template-columns',
-						function () {
-							var _v0 = model.editorMode;
-							if (_v0.$ === 'EditBoard') {
-								return 'auto auto';
-							} else {
-								return 'auto 8rem';
-							}
-						}()),
-						A2(
-						$elm$html$Html$Attributes$style,
-						'grid-template-rows',
-						function () {
-							var _v1 = model.editorMode;
-							if (_v1.$ === 'EditBoard') {
-								return 'auto auto';
-							} else {
-								return 'auto';
-							}
-						}())
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_Utils_ap(
+		body: function () {
+			var _v0 = model.screen;
+			switch (_v0.$) {
+				case 'Menu':
+					return _List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'width', '100vw'),
+									A2($elm$html$Html$Attributes$style, 'height', '100vh'),
+									A2($elm$html$Html$Attributes$style, 'display', 'grid'),
+									A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'auto auto auto')
+								]),
 							_List_fromArray(
 								[
 									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
+											A2($elm$html$Html$Attributes$style, 'margin-top', '5rem'),
+											A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+											A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+											A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
+											A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$h1,
+											_List_fromArray(
+												[
+													A2($elm$html$Html$Attributes$style, 'text-align', 'center')
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Cube-Man')
+												])),
+											A2(
+											$elm$html$Html$div,
+											_List_fromArray(
+												[
+													A2($elm$html$Html$Attributes$style, 'margin-top', '5rem'),
+													A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+													A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+													A2($elm$html$Html$Attributes$style, 'gap', '1rem')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$button,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$type_('button'),
+															A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+															A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
+															$elm$html$Html$Events$onClick(
+															$author$project$Main$SetScreen($author$project$Main$Game))
+														]),
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Free Play')
+														])),
+													A2(
+													$elm$html$Html$button,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$type_('button'),
+															A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+															A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
+															$elm$html$Html$Events$onClick(
+															$author$project$Main$SetScreen($author$project$Main$Editor))
+														]),
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Level Editor')
+														]))
+												]))
+										]))
+								]))
+						]);
+				case 'Game':
+					return _List_fromArray(
+						[
+							$elm$html$Html$text('Game')
+						]);
+				default:
+					return _List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'display', 'grid'),
+									A2(
 									$elm$html$Html$Attributes$style,
-									'grid-column',
+									'grid-template-columns',
 									function () {
-										var _v2 = model.editorMode;
-										if (_v2.$ === 'EditBoard') {
-											return '1';
+										var _v1 = model.editorMode;
+										if (_v1.$ === 'EditBoard') {
+											return 'auto auto';
 										} else {
-											return '1 / 2';
+											return 'auto 8rem';
 										}
 									}()),
 									A2(
 									$elm$html$Html$Attributes$style,
-									'grid-row',
+									'grid-template-rows',
 									function () {
-										var _v3 = model.editorMode;
-										if (_v3.$ === 'EditBoard') {
-											return '2';
+										var _v2 = model.editorMode;
+										if (_v2.$ === 'EditBoard') {
+											return 'auto auto';
 										} else {
-											return '1';
+											return 'auto';
 										}
 									}())
 								]),
-							function () {
-								var _v4 = model.mouseDragging;
-								switch (_v4.$) {
-									case 'NoInteraction':
-										return _List_fromArray(
-											[
-												A2($elm$html$Html$Events$on, 'pointerdown', $author$project$Main$decodeMouseDown),
-												A2(
-												$elm$html$Html$Events$on,
-												'pointermove',
-												$author$project$Main$decodePointerMove($elm$json$Json$Encode$null)),
-												A2($elm$html$Html$Attributes$property, '___setPointerCapture', $elm$json$Json$Encode$null)
-											]);
-									case 'InteractionStart':
-										var pointer = _v4.a;
-										return _List_fromArray(
-											[
-												A2($elm$html$Html$Events$on, 'pointerup', $author$project$Main$decodeMouseUp),
-												A2(
-												$elm$html$Html$Events$on,
-												'pointermove',
-												$author$project$Main$decodePointerMove(pointer)),
-												A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
-											]);
-									default:
-										var pointer = _v4.a;
-										return _List_fromArray(
-											[
-												A2($elm$html$Html$Events$on, 'pointerup', $author$project$Main$decodeMouseUp),
-												A2(
-												$elm$html$Html$Events$on,
-												'pointermove',
-												$author$project$Main$decodePointerMove(pointer)),
-												A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
-											]);
-								}
-							}()),
-						_List_fromArray(
-							[
-								function () {
-								var lights = function () {
-									var _v10 = model.editorMode;
-									if (_v10.$ === 'TestGame') {
-										var sun2 = A2(
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
-												direction: A3(
-													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-													$ianmackenzie$elm_geometry$Axis3d$x,
-													$ianmackenzie$elm_units$Angle$degrees(-70),
-													$ianmackenzie$elm_geometry$Direction3d$positiveZ),
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
-											});
-										var sun1 = A2(
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
-												direction: A3(
-													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-													$ianmackenzie$elm_geometry$Axis3d$x,
-													$ianmackenzie$elm_units$Angle$degrees(70),
-													$ianmackenzie$elm_geometry$Direction3d$negativeZ),
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
-											});
-										var sky3 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
-												upDirection: A3(
-													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-													$ianmackenzie$elm_geometry$Axis3d$z,
-													A2(
-														$ianmackenzie$elm_units$Quantity$plus,
-														$ianmackenzie$elm_units$Angle$degrees(-90),
-														model.cameraRotation),
-													A3(
-														$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-														$ianmackenzie$elm_geometry$Axis3d$x,
-														$ianmackenzie$elm_units$Angle$degrees(-70),
-														$ianmackenzie$elm_geometry$Direction3d$positiveZ))
-											});
-										var sky2 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
-												upDirection: A3(
-													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-													$ianmackenzie$elm_geometry$Axis3d$z,
-													A2(
-														$ianmackenzie$elm_units$Quantity$plus,
-														$ianmackenzie$elm_units$Angle$degrees(90),
-														model.cameraRotation),
-													A3(
-														$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-														$ianmackenzie$elm_geometry$Axis3d$x,
-														$ianmackenzie$elm_units$Angle$degrees(70),
-														$ianmackenzie$elm_geometry$Direction3d$positiveZ))
-											});
-										var sky1 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
-											});
-										var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
-											});
-										return A6($ianmackenzie$elm_3d_scene$Scene3d$sixLights, sun1, sun2, sky1, sky2, sky3, environment);
-									} else {
-										var upsideDownSky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$negativeZ
-											});
-										var sun = A2(
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
-												direction: A3(
-													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-													$ianmackenzie$elm_geometry$Axis3d$z,
-													A2(
-														$ianmackenzie$elm_units$Quantity$plus,
-														$ianmackenzie$elm_units$Angle$degrees(90),
-														model.cameraRotation),
-													A3(
-														$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-														$ianmackenzie$elm_geometry$Axis3d$x,
-														$ianmackenzie$elm_units$Angle$degrees(70),
-														$ianmackenzie$elm_geometry$Direction3d$negativeZ)),
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
-											});
-										var sky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
-											});
-										var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
-											});
-										return A4($ianmackenzie$elm_3d_scene$Scene3d$fourLights, sun, sky, environment, upsideDownSky);
-									}
-								}();
-								return $ianmackenzie$elm_3d_scene$Scene3d$custom(
-									{
-										antialiasing: $ianmackenzie$elm_3d_scene$Scene3d$multisampling,
-										background: $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor($avh4$elm_color$Color$gray),
-										camera: function () {
-											var _v5 = model.editorMode;
-											if (_v5.$ === 'TestGame') {
-												return $ianmackenzie$elm_3d_camera$Camera3d$perspective(
-													{
-														verticalFieldOfView: $ianmackenzie$elm_units$Angle$degrees(30),
-														viewpoint: function () {
-															var targetPos = $ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame);
-															return $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt(
-																{
-																	eyePoint: A3(
-																		$ianmackenzie$elm_geometry$Point3d$translateIn,
-																		$ianmackenzie$elm_geometry$Frame3d$zDirection(model.playerFrame),
-																		$ianmackenzie$elm_units$Length$meters(15),
-																		targetPos),
-																	focalPoint: targetPos,
-																	upDirection: $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame)
-																});
-														}()
-													});
-											} else {
-												return $author$project$Main$editorCamera(model);
-											}
-										}(),
-										clipDepth: $ianmackenzie$elm_units$Length$meters(1),
-										dimensions: _Utils_Tuple2(
-											$ianmackenzie$elm_units$Pixels$int(model.screenSize.width),
-											$ianmackenzie$elm_units$Pixels$int(model.screenSize.height)),
-										entities: function () {
-											var _v6 = model.editorMode;
-											if (_v6.$ === 'EditBoard') {
-												var editorBoard = $author$project$Undo$value(model.editorBoard);
-												return $elm$core$List$concat(
-													_List_fromArray(
-														[
-															A2(
-															$elm$core$List$map,
-															A2($author$project$Main$viewBlock, editorBoard, model),
-															$elm$core$Dict$toList(editorBoard.blocks)),
-															_List_fromArray(
-															[
-																A3(
-																$author$project$Main$viewCursor,
-																function () {
-																	var _v7 = model.blockEditMode;
-																	switch (_v7.$) {
-																		case 'Select':
-																			return $avh4$elm_color$Color$white;
-																		case 'Remove':
-																			return $avh4$elm_color$Color$red;
-																		default:
-																			return $avh4$elm_color$Color$green;
-																	}
-																}(),
-																model.cursorBounce,
-																model.editorCursor),
-																$author$project$Main$viewOrientationArrows,
-																function () {
-																var _v8 = model.selectedBlock;
-																if (_v8.$ === 'Nothing') {
-																	return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
-																} else {
-																	var _v9 = _v8.a;
-																	var point = _v9.a;
-																	return A3($author$project$Main$viewCursor, $avh4$elm_color$Color$yellow, model.cursorBounce, point);
-																}
-															}(),
-																model.showBoardBounds ? $author$project$Main$viewBounds(editorBoard) : $ianmackenzie$elm_3d_scene$Scene3d$nothing
-															])
-														]));
-											} else {
-												return $elm$core$List$concat(
-													_List_fromArray(
-														[
-															A2(
-															$elm$core$List$map,
-															A2($author$project$Main$viewBlock, model.board, model),
-															$elm$core$Dict$toList(model.board.blocks)),
-															_List_fromArray(
-															[
-																A2($author$project$Main$viewPlayer, model.playerFacing, model.playerFrame)
-															])
-														]));
-											}
-										}(),
-										exposure: $ianmackenzie$elm_3d_scene$Scene3d$exposureValue(15),
-										lights: lights,
-										toneMapping: $ianmackenzie$elm_3d_scene$Scene3d$noToneMapping,
-										whiteBalance: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight
-									});
-							}()
-							])),
-						$author$project$Main$viewHeader(model),
-						function () {
-						var _v11 = model.editorMode;
-						if (_v11.$ === 'TestGame') {
-							return A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
-										A2($elm$html$Html$Attributes$style, 'grid-row', '1'),
-										A2($elm$html$Html$Attributes$style, 'padding', '0.5rem')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$button,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$type_('button'),
-												$elm$html$Html$Events$onClick($author$project$Main$ChangeMode)
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Edit Level')
-											]))
-									]));
-						} else {
-							var editorBoard = $author$project$Undo$value(model.editorBoard);
-							return A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
-										A2($elm$html$Html$Attributes$style, 'grid-row', '2'),
-										A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
-										A2($elm$html$Html$Attributes$style, 'height', '80vh'),
-										A2($elm$html$Html$Attributes$style, 'overflow', 'auto')
-									]),
-								_List_fromArray(
-									[
-										function () {
-										var _v12 = model.selectedBlock;
-										if (_v12.$ === 'Nothing') {
-											return A2(
-												$elm$html$Html$span,
-												_List_Nil,
-												_List_fromArray(
-													[
-														$elm$html$Html$text('No block selected')
-													]));
-										} else {
-											var _v13 = _v12.a;
-											var point = _v13.a;
-											var block = _v13.b;
-											switch (block.$) {
-												case 'Empty':
-													return A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Empty block')
-															]));
-												case 'Edge':
-													return A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Edge')
-															]));
-												case 'Wall':
-													return A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Wall')
-															]));
-												case 'PointPickup':
-													return A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Point Pickup')
-															]));
-												default:
-													var details = block.a;
-													return A2(
-														$elm$html$Html$form,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Player Spawn')
-																	])),
-																A2($elm$html$Html$br, _List_Nil, _List_Nil),
-																A2(
-																$elm$html$Html$label,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		A2(
-																		$elm$html$Html$span,
-																		_List_Nil,
-																		_List_fromArray(
-																			[
-																				$elm$html$Html$text('Forward Direction ')
-																			])),
-																		A2(
-																		$author$project$Html$Extra$select,
-																		_List_Nil,
-																		{
-																			onSelect: function (value) {
-																				if (value.$ === 'Nothing') {
-																					return A2(
-																						$author$project$Main$SetBlock,
-																						point,
-																						$author$project$Main$PlayerSpawn(details));
-																				} else {
-																					var axis = value.a;
-																					return A2(
-																						$author$project$Main$SetBlock,
-																						point,
-																						$author$project$Main$PlayerSpawn(
-																							_Utils_update(
-																								details,
-																								{forward: axis})));
-																				}
-																			},
-																			options: _List_fromArray(
-																				[$author$project$Main$PositiveX, $author$project$Main$NegativeX, $author$project$Main$PositiveY, $author$project$Main$NegativeY, $author$project$Main$PositiveZ, $author$project$Main$NegativeZ]),
-																			toKey: $author$project$Main$axisToLabel,
-																			toLabel: $author$project$Main$axisToLabel,
-																			value: $elm$core$Maybe$Just(details.forward)
-																		})
-																	])),
-																A2($elm$html$Html$br, _List_Nil, _List_Nil),
-																A2(
-																$elm$html$Html$label,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		A2(
-																		$elm$html$Html$span,
-																		_List_Nil,
-																		_List_fromArray(
-																			[
-																				$elm$html$Html$text('Left Direction ')
-																			])),
-																		A2(
-																		$author$project$Html$Extra$select,
-																		_List_Nil,
-																		{
-																			onSelect: function (value) {
-																				if (value.$ === 'Nothing') {
-																					return A2(
-																						$author$project$Main$SetBlock,
-																						point,
-																						$author$project$Main$PlayerSpawn(details));
-																				} else {
-																					var axis = value.a;
-																					return A2(
-																						$author$project$Main$SetBlock,
-																						point,
-																						$author$project$Main$PlayerSpawn(
-																							_Utils_update(
-																								details,
-																								{left: axis})));
-																				}
-																			},
-																			options: _List_fromArray(
-																				[$author$project$Main$PositiveX, $author$project$Main$NegativeX, $author$project$Main$PositiveY, $author$project$Main$NegativeY, $author$project$Main$PositiveZ, $author$project$Main$NegativeZ]),
-																			toKey: $author$project$Main$axisToLabel,
-																			toLabel: $author$project$Main$axisToLabel,
-																			value: $elm$core$Maybe$Just(details.left)
-																		})
-																	]))
-															]));
-											}
-										}
-									}(),
-										A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-										A2(
-										$elm$html$Html$form,
-										_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_Utils_ap(
 										_List_fromArray(
 											[
 												A2(
-												$elm$html$Html$fieldset,
-												_List_Nil,
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('X Size ')
-																	])),
-																A2(
-																$elm$html$Html$input,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Attributes$type_('number'),
-																		$elm$html$Html$Attributes$value(model.editorMaxXRaw),
-																		$elm$html$Html$Attributes$min('1'),
-																		$elm$html$Html$Attributes$max('20'),
-																		$elm$html$Html$Attributes$step('1'),
-																		$elm$html$Html$Events$onInput($author$project$Main$MaxXChanged)
-																	]),
-																_List_Nil)
-															])),
-														A2($elm$html$Html$br, _List_Nil, _List_Nil),
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('X Visibility')
-																	])),
-																A2(
-																$author$project$Html$Extra$dualRange,
-																_List_Nil,
-																{
-																	colorMax: $elm$core$Maybe$Nothing,
-																	colorMid: $elm$core$Maybe$Nothing,
-																	colorMin: $elm$core$Maybe$Nothing,
-																	max: editorBoard.maxX - 1,
-																	min: 0,
-																	onInputHigh: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$XUpperVisibleChanged),
-																	onInputLow: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$XLowerVisibleChanged),
-																	step: 1,
-																	thumb1Image: $elm$core$Maybe$Nothing,
-																	thumb2Image: $elm$core$Maybe$Nothing,
-																	valueHigh: model.xUpperVisible,
-																	valueLow: model.xLowerVisible
-																})
-															]))
-													])),
-												A2($elm$html$Html$br, _List_Nil, _List_Nil),
-												A2(
-												$elm$html$Html$fieldset,
-												_List_Nil,
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Y Size ')
-																	])),
-																A2(
-																$elm$html$Html$input,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Attributes$type_('number'),
-																		$elm$html$Html$Attributes$value(model.editorMaxYRaw),
-																		$elm$html$Html$Attributes$min('1'),
-																		$elm$html$Html$Attributes$max('20'),
-																		$elm$html$Html$Attributes$step('1'),
-																		$elm$html$Html$Events$onInput($author$project$Main$MaxYChanged)
-																	]),
-																_List_Nil)
-															])),
-														A2($elm$html$Html$br, _List_Nil, _List_Nil),
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Y Visibility')
-																	])),
-																A2(
-																$author$project$Html$Extra$dualRange,
-																_List_Nil,
-																{
-																	colorMax: $elm$core$Maybe$Nothing,
-																	colorMid: $elm$core$Maybe$Nothing,
-																	colorMin: $elm$core$Maybe$Nothing,
-																	max: editorBoard.maxY - 1,
-																	min: 0,
-																	onInputHigh: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$YUpperVisibleChanged),
-																	onInputLow: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$YLowerVisibleChanged),
-																	step: 1,
-																	thumb1Image: $elm$core$Maybe$Nothing,
-																	thumb2Image: $elm$core$Maybe$Nothing,
-																	valueHigh: model.yUpperVisible,
-																	valueLow: model.yLowerVisible
-																})
-															]))
-													])),
-												A2($elm$html$Html$br, _List_Nil, _List_Nil),
-												A2(
-												$elm$html$Html$fieldset,
-												_List_Nil,
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Z Size ')
-																	])),
-																A2(
-																$elm$html$Html$input,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Attributes$type_('number'),
-																		$elm$html$Html$Attributes$value(model.editorMaxZRaw),
-																		$elm$html$Html$Attributes$min('1'),
-																		$elm$html$Html$Attributes$max('20'),
-																		$elm$html$Html$Attributes$step('1'),
-																		$elm$html$Html$Events$onInput($author$project$Main$MaxZChanged)
-																	]),
-																_List_Nil)
-															])),
-														A2($elm$html$Html$br, _List_Nil, _List_Nil),
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Z Visibility')
-																	])),
-																A2(
-																$author$project$Html$Extra$dualRange,
-																_List_Nil,
-																{
-																	colorMax: $elm$core$Maybe$Nothing,
-																	colorMid: $elm$core$Maybe$Nothing,
-																	colorMin: $elm$core$Maybe$Nothing,
-																	max: editorBoard.maxZ - 1,
-																	min: 0,
-																	onInputHigh: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$ZUpperVisibleChanged),
-																	onInputLow: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$ZLowerVisibleChanged),
-																	step: 1,
-																	thumb1Image: $elm$core$Maybe$Nothing,
-																	thumb2Image: $elm$core$Maybe$Nothing,
-																	valueHigh: model.zUpperVisible,
-																	valueLow: model.zLowerVisible
-																})
-															]))
-													]))
-											])),
-										A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-										A2(
-										$elm$html$Html$form,
-										_List_fromArray(
-											[
-												$elm$html$Html$Events$onSubmit(
-												$author$project$Main$LoadBoard(model.boardEncoding)),
-												A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-												A2($elm$html$Html$Attributes$style, 'gap', '1rem')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$label,
-												_List_fromArray(
-													[
-														A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-														A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
-														A2($elm$html$Html$Attributes$style, 'align-items', 'center')
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Encoded Level:')
-															])),
-														A2(
-														$elm$html$Html$input,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$value(model.boardEncoding),
-																$elm$html$Html$Events$onInput($author$project$Main$EncodingChanged)
-															]),
-														_List_Nil)
-													])),
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$type_('submit')
-													]),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Load')
-													])),
+												$elm$html$Html$Attributes$style,
+												'grid-column',
 												function () {
-												var _v17 = model.boardLoadError;
-												if (_v17.$ === 'Nothing') {
-													return $elm$html$Html$text('');
+													var _v3 = model.editorMode;
+													if (_v3.$ === 'EditBoard') {
+														return '1';
+													} else {
+														return '1 / 2';
+													}
+												}()),
+												A2(
+												$elm$html$Html$Attributes$style,
+												'grid-row',
+												function () {
+													var _v4 = model.editorMode;
+													if (_v4.$ === 'EditBoard') {
+														return '2';
+													} else {
+														return '1';
+													}
+												}())
+											]),
+										function () {
+											var _v5 = model.mouseDragging;
+											switch (_v5.$) {
+												case 'NoInteraction':
+													return _List_fromArray(
+														[
+															A2($elm$html$Html$Events$on, 'pointerdown', $author$project$Main$decodeMouseDown),
+															A2(
+															$elm$html$Html$Events$on,
+															'pointermove',
+															$author$project$Main$decodePointerMove($elm$json$Json$Encode$null)),
+															A2($elm$html$Html$Attributes$property, '___setPointerCapture', $elm$json$Json$Encode$null)
+														]);
+												case 'InteractionStart':
+													var pointer = _v5.a;
+													return _List_fromArray(
+														[
+															A2($elm$html$Html$Events$on, 'pointerup', $author$project$Main$decodeMouseUp),
+															A2(
+															$elm$html$Html$Events$on,
+															'pointermove',
+															$author$project$Main$decodePointerMove(pointer)),
+															A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
+														]);
+												default:
+													var pointer = _v5.a;
+													return _List_fromArray(
+														[
+															A2($elm$html$Html$Events$on, 'pointerup', $author$project$Main$decodeMouseUp),
+															A2(
+															$elm$html$Html$Events$on,
+															'pointermove',
+															$author$project$Main$decodePointerMove(pointer)),
+															A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
+														]);
+											}
+										}()),
+									_List_fromArray(
+										[
+											function () {
+											var lights = function () {
+												var _v11 = model.editorMode;
+												if (_v11.$ === 'TestGame') {
+													var sun2 = A2(
+														$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
+														$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
+														{
+															chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
+															direction: A3(
+																$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+																$ianmackenzie$elm_geometry$Axis3d$x,
+																$ianmackenzie$elm_units$Angle$degrees(-70),
+																$ianmackenzie$elm_geometry$Direction3d$positiveZ),
+															intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
+														});
+													var sun1 = A2(
+														$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
+														$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
+														{
+															chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
+															direction: A3(
+																$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+																$ianmackenzie$elm_geometry$Axis3d$x,
+																$ianmackenzie$elm_units$Angle$degrees(70),
+																$ianmackenzie$elm_geometry$Direction3d$negativeZ),
+															intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
+														});
+													var sky3 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+														{
+															chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
+															intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
+															upDirection: A3(
+																$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+																$ianmackenzie$elm_geometry$Axis3d$z,
+																A2(
+																	$ianmackenzie$elm_units$Quantity$plus,
+																	$ianmackenzie$elm_units$Angle$degrees(-90),
+																	model.cameraRotation),
+																A3(
+																	$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+																	$ianmackenzie$elm_geometry$Axis3d$x,
+																	$ianmackenzie$elm_units$Angle$degrees(-70),
+																	$ianmackenzie$elm_geometry$Direction3d$positiveZ))
+														});
+													var sky2 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+														{
+															chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+															intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
+															upDirection: A3(
+																$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+																$ianmackenzie$elm_geometry$Axis3d$z,
+																A2(
+																	$ianmackenzie$elm_units$Quantity$plus,
+																	$ianmackenzie$elm_units$Angle$degrees(90),
+																	model.cameraRotation),
+																A3(
+																	$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+																	$ianmackenzie$elm_geometry$Axis3d$x,
+																	$ianmackenzie$elm_units$Angle$degrees(70),
+																	$ianmackenzie$elm_geometry$Direction3d$positiveZ))
+														});
+													var sky1 = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+														{
+															chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+															intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
+															upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
+														});
+													var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+														{
+															chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
+															intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
+															upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
+														});
+													return A6($ianmackenzie$elm_3d_scene$Scene3d$sixLights, sun1, sun2, sky1, sky2, sky3, environment);
 												} else {
-													var error = _v17.a;
-													return A2(
-														$elm$html$Html$small,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text(
-																function () {
-																	switch (error.$) {
-																		case 'DataCorrupted':
-																			return 'Board data is corrupted';
-																		case 'SerializerOutOfDate':
-																			return 'Board data is from a different version of the game';
-																		default:
-																			return 'Unexpected error';
-																	}
-																}())
-															]));
+													var upsideDownSky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+														{
+															chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+															intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
+															upDirection: $ianmackenzie$elm_geometry$Direction3d$negativeZ
+														});
+													var sun = A2(
+														$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
+														$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
+														{
+															chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
+															direction: A3(
+																$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+																$ianmackenzie$elm_geometry$Axis3d$z,
+																A2(
+																	$ianmackenzie$elm_units$Quantity$plus,
+																	$ianmackenzie$elm_units$Angle$degrees(90),
+																	model.cameraRotation),
+																A3(
+																	$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+																	$ianmackenzie$elm_geometry$Axis3d$x,
+																	$ianmackenzie$elm_units$Angle$degrees(70),
+																	$ianmackenzie$elm_geometry$Direction3d$negativeZ)),
+															intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
+														});
+													var sky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+														{
+															chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+															intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
+															upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
+														});
+													var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+														{
+															chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
+															intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
+															upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
+														});
+													return A4($ianmackenzie$elm_3d_scene$Scene3d$fourLights, sun, sky, environment, upsideDownSky);
 												}
-											}()
-											])),
-										A2($elm$html$Html$br, _List_Nil, _List_Nil),
-										A2(
-										$elm$html$Html$label,
-										_List_Nil,
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$span,
-												_List_Nil,
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Load an example board ')
-													])),
-												A2(
-												$author$project$Html$Extra$select,
-												_List_Nil,
+											}();
+											return $ianmackenzie$elm_3d_scene$Scene3d$custom(
 												{
-													onSelect: function (value) {
-														if (value.$ === 'Nothing') {
-															return $author$project$Main$NoOp;
+													antialiasing: $ianmackenzie$elm_3d_scene$Scene3d$multisampling,
+													background: $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor($avh4$elm_color$Color$gray),
+													camera: function () {
+														var _v6 = model.editorMode;
+														if (_v6.$ === 'TestGame') {
+															return $ianmackenzie$elm_3d_camera$Camera3d$perspective(
+																{
+																	verticalFieldOfView: $ianmackenzie$elm_units$Angle$degrees(30),
+																	viewpoint: function () {
+																		var targetPos = $ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame);
+																		return $ianmackenzie$elm_3d_camera$Viewpoint3d$lookAt(
+																			{
+																				eyePoint: A3(
+																					$ianmackenzie$elm_geometry$Point3d$translateIn,
+																					$ianmackenzie$elm_geometry$Frame3d$zDirection(model.playerFrame),
+																					$ianmackenzie$elm_units$Length$meters(15),
+																					targetPos),
+																				focalPoint: targetPos,
+																				upDirection: $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame)
+																			});
+																	}()
+																});
 														} else {
-															switch (value.a.$) {
-																case 'DefaultBoard':
-																	var _v20 = value.a;
-																	return $author$project$Main$LoadBoard($author$project$Main$defaultBoard);
-																case 'BasicMiniBoard':
-																	var _v21 = value.a;
-																	return $author$project$Main$LoadBoard($author$project$Main$basicMiniBoard);
-																default:
-																	var _v22 = value.a;
-																	return $author$project$Main$LoadBoard($author$project$Main$zigZagBoard);
+															return $author$project$Main$editorCamera(model);
+														}
+													}(),
+													clipDepth: $ianmackenzie$elm_units$Length$meters(1),
+													dimensions: _Utils_Tuple2(
+														$ianmackenzie$elm_units$Pixels$int(model.screenSize.width),
+														$ianmackenzie$elm_units$Pixels$int(model.screenSize.height)),
+													entities: function () {
+														var _v7 = model.editorMode;
+														if (_v7.$ === 'EditBoard') {
+															var editorBoard = $author$project$Undo$value(model.editorBoard);
+															return $elm$core$List$concat(
+																_List_fromArray(
+																	[
+																		A2(
+																		$elm$core$List$map,
+																		A2($author$project$Main$viewBlock, editorBoard, model),
+																		$elm$core$Dict$toList(editorBoard.blocks)),
+																		_List_fromArray(
+																		[
+																			A3(
+																			$author$project$Main$viewCursor,
+																			function () {
+																				var _v8 = model.blockEditMode;
+																				switch (_v8.$) {
+																					case 'Select':
+																						return $avh4$elm_color$Color$white;
+																					case 'Remove':
+																						return $avh4$elm_color$Color$red;
+																					default:
+																						return $avh4$elm_color$Color$green;
+																				}
+																			}(),
+																			model.cursorBounce,
+																			model.editorCursor),
+																			$author$project$Main$viewOrientationArrows,
+																			function () {
+																			var _v9 = model.selectedBlock;
+																			if (_v9.$ === 'Nothing') {
+																				return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
+																			} else {
+																				var _v10 = _v9.a;
+																				var point = _v10.a;
+																				return A3($author$project$Main$viewCursor, $avh4$elm_color$Color$yellow, model.cursorBounce, point);
+																			}
+																		}(),
+																			model.showBoardBounds ? $author$project$Main$viewBounds(editorBoard) : $ianmackenzie$elm_3d_scene$Scene3d$nothing
+																		])
+																	]));
+														} else {
+															return $elm$core$List$concat(
+																_List_fromArray(
+																	[
+																		A2(
+																		$elm$core$List$map,
+																		A2($author$project$Main$viewBlock, model.board, model),
+																		$elm$core$Dict$toList(model.board.blocks)),
+																		_List_fromArray(
+																		[
+																			A2($author$project$Main$viewPlayer, model.playerFacing, model.playerFrame)
+																		])
+																	]));
+														}
+													}(),
+													exposure: $ianmackenzie$elm_3d_scene$Scene3d$exposureValue(15),
+													lights: lights,
+													toneMapping: $ianmackenzie$elm_3d_scene$Scene3d$noToneMapping,
+													whiteBalance: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight
+												});
+										}()
+										])),
+									$author$project$Main$viewHeader(model),
+									function () {
+									var _v12 = model.editorMode;
+									if (_v12.$ === 'TestGame') {
+										return A2(
+											$elm$html$Html$div,
+											_List_fromArray(
+												[
+													A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
+													A2($elm$html$Html$Attributes$style, 'grid-row', '1'),
+													A2($elm$html$Html$Attributes$style, 'padding', '0.5rem')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$button,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$type_('button'),
+															$elm$html$Html$Events$onClick($author$project$Main$ChangeMode)
+														]),
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Edit Level')
+														]))
+												]));
+									} else {
+										var editorBoard = $author$project$Undo$value(model.editorBoard);
+										return A2(
+											$elm$html$Html$div,
+											_List_fromArray(
+												[
+													A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
+													A2($elm$html$Html$Attributes$style, 'grid-row', '2'),
+													A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
+													A2($elm$html$Html$Attributes$style, 'height', '80vh'),
+													A2($elm$html$Html$Attributes$style, 'overflow', 'auto')
+												]),
+											_List_fromArray(
+												[
+													function () {
+													var _v13 = model.selectedBlock;
+													if (_v13.$ === 'Nothing') {
+														return A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('No block selected')
+																]));
+													} else {
+														var _v14 = _v13.a;
+														var point = _v14.a;
+														var block = _v14.b;
+														switch (block.$) {
+															case 'Empty':
+																return A2(
+																	$elm$html$Html$span,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Empty block')
+																		]));
+															case 'Edge':
+																return A2(
+																	$elm$html$Html$span,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Edge')
+																		]));
+															case 'Wall':
+																return A2(
+																	$elm$html$Html$span,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Wall')
+																		]));
+															case 'PointPickup':
+																return A2(
+																	$elm$html$Html$span,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Point Pickup')
+																		]));
+															default:
+																var details = block.a;
+																return A2(
+																	$elm$html$Html$form,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			A2(
+																			$elm$html$Html$span,
+																			_List_Nil,
+																			_List_fromArray(
+																				[
+																					$elm$html$Html$text('Player Spawn')
+																				])),
+																			A2($elm$html$Html$br, _List_Nil, _List_Nil),
+																			A2(
+																			$elm$html$Html$label,
+																			_List_Nil,
+																			_List_fromArray(
+																				[
+																					A2(
+																					$elm$html$Html$span,
+																					_List_Nil,
+																					_List_fromArray(
+																						[
+																							$elm$html$Html$text('Forward Direction ')
+																						])),
+																					A2(
+																					$author$project$Html$Extra$select,
+																					_List_Nil,
+																					{
+																						onSelect: function (value) {
+																							if (value.$ === 'Nothing') {
+																								return A2(
+																									$author$project$Main$SetBlock,
+																									point,
+																									$author$project$Main$PlayerSpawn(details));
+																							} else {
+																								var axis = value.a;
+																								return A2(
+																									$author$project$Main$SetBlock,
+																									point,
+																									$author$project$Main$PlayerSpawn(
+																										_Utils_update(
+																											details,
+																											{forward: axis})));
+																							}
+																						},
+																						options: _List_fromArray(
+																							[$author$project$Main$PositiveX, $author$project$Main$NegativeX, $author$project$Main$PositiveY, $author$project$Main$NegativeY, $author$project$Main$PositiveZ, $author$project$Main$NegativeZ]),
+																						toKey: $author$project$Main$axisToLabel,
+																						toLabel: $author$project$Main$axisToLabel,
+																						value: $elm$core$Maybe$Just(details.forward)
+																					})
+																				])),
+																			A2($elm$html$Html$br, _List_Nil, _List_Nil),
+																			A2(
+																			$elm$html$Html$label,
+																			_List_Nil,
+																			_List_fromArray(
+																				[
+																					A2(
+																					$elm$html$Html$span,
+																					_List_Nil,
+																					_List_fromArray(
+																						[
+																							$elm$html$Html$text('Left Direction ')
+																						])),
+																					A2(
+																					$author$project$Html$Extra$select,
+																					_List_Nil,
+																					{
+																						onSelect: function (value) {
+																							if (value.$ === 'Nothing') {
+																								return A2(
+																									$author$project$Main$SetBlock,
+																									point,
+																									$author$project$Main$PlayerSpawn(details));
+																							} else {
+																								var axis = value.a;
+																								return A2(
+																									$author$project$Main$SetBlock,
+																									point,
+																									$author$project$Main$PlayerSpawn(
+																										_Utils_update(
+																											details,
+																											{left: axis})));
+																							}
+																						},
+																						options: _List_fromArray(
+																							[$author$project$Main$PositiveX, $author$project$Main$NegativeX, $author$project$Main$PositiveY, $author$project$Main$NegativeY, $author$project$Main$PositiveZ, $author$project$Main$NegativeZ]),
+																						toKey: $author$project$Main$axisToLabel,
+																						toLabel: $author$project$Main$axisToLabel,
+																						value: $elm$core$Maybe$Just(details.left)
+																					})
+																				]))
+																		]));
+														}
+													}
+												}(),
+													A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+													A2(
+													$elm$html$Html$form,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$fieldset,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$label,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			A2(
+																			$elm$html$Html$span,
+																			_List_Nil,
+																			_List_fromArray(
+																				[
+																					$elm$html$Html$text('X Size ')
+																				])),
+																			A2(
+																			$elm$html$Html$input,
+																			_List_fromArray(
+																				[
+																					$elm$html$Html$Attributes$type_('number'),
+																					$elm$html$Html$Attributes$value(model.editorMaxXRaw),
+																					$elm$html$Html$Attributes$min('1'),
+																					$elm$html$Html$Attributes$max('20'),
+																					$elm$html$Html$Attributes$step('1'),
+																					$elm$html$Html$Events$onInput($author$project$Main$MaxXChanged)
+																				]),
+																			_List_Nil)
+																		])),
+																	A2($elm$html$Html$br, _List_Nil, _List_Nil),
+																	A2(
+																	$elm$html$Html$label,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			A2(
+																			$elm$html$Html$span,
+																			_List_Nil,
+																			_List_fromArray(
+																				[
+																					$elm$html$Html$text('X Visibility')
+																				])),
+																			A2(
+																			$author$project$Html$Extra$dualRange,
+																			_List_Nil,
+																			{
+																				colorMax: $elm$core$Maybe$Nothing,
+																				colorMid: $elm$core$Maybe$Nothing,
+																				colorMin: $elm$core$Maybe$Nothing,
+																				max: editorBoard.maxX - 1,
+																				min: 0,
+																				onInputHigh: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$XUpperVisibleChanged),
+																				onInputLow: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$XLowerVisibleChanged),
+																				step: 1,
+																				thumb1Image: $elm$core$Maybe$Nothing,
+																				thumb2Image: $elm$core$Maybe$Nothing,
+																				valueHigh: model.xUpperVisible,
+																				valueLow: model.xLowerVisible
+																			})
+																		]))
+																])),
+															A2($elm$html$Html$br, _List_Nil, _List_Nil),
+															A2(
+															$elm$html$Html$fieldset,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$label,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			A2(
+																			$elm$html$Html$span,
+																			_List_Nil,
+																			_List_fromArray(
+																				[
+																					$elm$html$Html$text('Y Size ')
+																				])),
+																			A2(
+																			$elm$html$Html$input,
+																			_List_fromArray(
+																				[
+																					$elm$html$Html$Attributes$type_('number'),
+																					$elm$html$Html$Attributes$value(model.editorMaxYRaw),
+																					$elm$html$Html$Attributes$min('1'),
+																					$elm$html$Html$Attributes$max('20'),
+																					$elm$html$Html$Attributes$step('1'),
+																					$elm$html$Html$Events$onInput($author$project$Main$MaxYChanged)
+																				]),
+																			_List_Nil)
+																		])),
+																	A2($elm$html$Html$br, _List_Nil, _List_Nil),
+																	A2(
+																	$elm$html$Html$label,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			A2(
+																			$elm$html$Html$span,
+																			_List_Nil,
+																			_List_fromArray(
+																				[
+																					$elm$html$Html$text('Y Visibility')
+																				])),
+																			A2(
+																			$author$project$Html$Extra$dualRange,
+																			_List_Nil,
+																			{
+																				colorMax: $elm$core$Maybe$Nothing,
+																				colorMid: $elm$core$Maybe$Nothing,
+																				colorMin: $elm$core$Maybe$Nothing,
+																				max: editorBoard.maxY - 1,
+																				min: 0,
+																				onInputHigh: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$YUpperVisibleChanged),
+																				onInputLow: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$YLowerVisibleChanged),
+																				step: 1,
+																				thumb1Image: $elm$core$Maybe$Nothing,
+																				thumb2Image: $elm$core$Maybe$Nothing,
+																				valueHigh: model.yUpperVisible,
+																				valueLow: model.yLowerVisible
+																			})
+																		]))
+																])),
+															A2($elm$html$Html$br, _List_Nil, _List_Nil),
+															A2(
+															$elm$html$Html$fieldset,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$label,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			A2(
+																			$elm$html$Html$span,
+																			_List_Nil,
+																			_List_fromArray(
+																				[
+																					$elm$html$Html$text('Z Size ')
+																				])),
+																			A2(
+																			$elm$html$Html$input,
+																			_List_fromArray(
+																				[
+																					$elm$html$Html$Attributes$type_('number'),
+																					$elm$html$Html$Attributes$value(model.editorMaxZRaw),
+																					$elm$html$Html$Attributes$min('1'),
+																					$elm$html$Html$Attributes$max('20'),
+																					$elm$html$Html$Attributes$step('1'),
+																					$elm$html$Html$Events$onInput($author$project$Main$MaxZChanged)
+																				]),
+																			_List_Nil)
+																		])),
+																	A2($elm$html$Html$br, _List_Nil, _List_Nil),
+																	A2(
+																	$elm$html$Html$label,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			A2(
+																			$elm$html$Html$span,
+																			_List_Nil,
+																			_List_fromArray(
+																				[
+																					$elm$html$Html$text('Z Visibility')
+																				])),
+																			A2(
+																			$author$project$Html$Extra$dualRange,
+																			_List_Nil,
+																			{
+																				colorMax: $elm$core$Maybe$Nothing,
+																				colorMid: $elm$core$Maybe$Nothing,
+																				colorMin: $elm$core$Maybe$Nothing,
+																				max: editorBoard.maxZ - 1,
+																				min: 0,
+																				onInputHigh: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$ZUpperVisibleChanged),
+																				onInputLow: A2($elm$core$Basics$composeR, $elm$core$Basics$round, $author$project$Main$ZLowerVisibleChanged),
+																				step: 1,
+																				thumb1Image: $elm$core$Maybe$Nothing,
+																				thumb2Image: $elm$core$Maybe$Nothing,
+																				valueHigh: model.zUpperVisible,
+																				valueLow: model.zLowerVisible
+																			})
+																		]))
+																]))
+														])),
+													A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+													A2(
+													$elm$html$Html$form,
+													_List_fromArray(
+														[
+															$elm$html$Html$Events$onSubmit(
+															$author$project$Main$LoadBoard(model.boardEncoding)),
+															A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+															A2($elm$html$Html$Attributes$style, 'gap', '1rem')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$label,
+															_List_fromArray(
+																[
+																	A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+																	A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
+																	A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+																]),
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$span,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Encoded Level:')
+																		])),
+																	A2(
+																	$elm$html$Html$input,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$value(model.boardEncoding),
+																			$elm$html$Html$Events$onInput($author$project$Main$EncodingChanged)
+																		]),
+																	_List_Nil)
+																])),
+															A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('submit')
+																]),
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('Load')
+																])),
+															function () {
+															var _v18 = model.boardLoadError;
+															if (_v18.$ === 'Nothing') {
+																return $elm$html$Html$text('');
+															} else {
+																var error = _v18.a;
+																return A2(
+																	$elm$html$Html$small,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text(
+																			function () {
+																				switch (error.$) {
+																					case 'DataCorrupted':
+																						return 'Board data is corrupted';
+																					case 'SerializerOutOfDate':
+																						return 'Board data is from a different version of the game';
+																					default:
+																						return 'Unexpected error';
+																				}
+																			}())
+																		]));
 															}
-														}
-													},
-													options: _List_fromArray(
-														[$author$project$Main$DefaultBoard, $author$project$Main$BasicMiniBoard, $author$project$Main$ZigZagBoard]),
-													toKey: function (value) {
-														switch (value.$) {
-															case 'DefaultBoard':
-																return 'DefaultBoard';
-															case 'BasicMiniBoard':
-																return 'BasicMiniBoard';
-															default:
-																return 'ZigZagBoard';
-														}
-													},
-													toLabel: function (value) {
-														switch (value.$) {
-															case 'DefaultBoard':
-																return '9 x 9 blank slate';
-															case 'BasicMiniBoard':
-																return 'Basic mini';
-															default:
-																return 'Zig zag';
-														}
-													},
-													value: $elm$core$Maybe$Nothing
-												})
-											]))
-									]));
-						}
-					}()
-					]))
-			]),
+														}()
+														])),
+													A2($elm$html$Html$br, _List_Nil, _List_Nil),
+													A2(
+													$elm$html$Html$label,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('Load an example board ')
+																])),
+															A2(
+															$author$project$Html$Extra$select,
+															_List_Nil,
+															{
+																onSelect: function (value) {
+																	if (value.$ === 'Nothing') {
+																		return $author$project$Main$NoOp;
+																	} else {
+																		switch (value.a.$) {
+																			case 'DefaultBoard':
+																				var _v21 = value.a;
+																				return $author$project$Main$LoadBoard($author$project$Main$defaultBoard);
+																			case 'BasicMiniBoard':
+																				var _v22 = value.a;
+																				return $author$project$Main$LoadBoard($author$project$Main$basicMiniBoard);
+																			default:
+																				var _v23 = value.a;
+																				return $author$project$Main$LoadBoard($author$project$Main$zigZagBoard);
+																		}
+																	}
+																},
+																options: _List_fromArray(
+																	[$author$project$Main$DefaultBoard, $author$project$Main$BasicMiniBoard, $author$project$Main$ZigZagBoard]),
+																toKey: function (value) {
+																	switch (value.$) {
+																		case 'DefaultBoard':
+																			return 'DefaultBoard';
+																		case 'BasicMiniBoard':
+																			return 'BasicMiniBoard';
+																		default:
+																			return 'ZigZagBoard';
+																	}
+																},
+																toLabel: function (value) {
+																	switch (value.$) {
+																		case 'DefaultBoard':
+																			return '9 x 9 blank slate';
+																		case 'BasicMiniBoard':
+																			return 'Basic mini';
+																		default:
+																			return 'Zig zag';
+																	}
+																},
+																value: $elm$core$Maybe$Nothing
+															})
+														]))
+												]));
+									}
+								}()
+								]))
+						]);
+			}
+		}(),
 		title: 'Cube-Man'
 	};
 };
 var $author$project$Main$main = $elm$browser$Browser$document(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.InputMapping":{"args":[],"type":"{ moveUp : ( String.String, String.String ), moveDown : ( String.String, String.String ), moveLeft : ( String.String, String.String ), moveRight : ( String.String, String.String ), cameraOrbit : ( String.String, String.String ), cameraPan : ( String.String, String.String ), cameraZoom : ( String.String, String.String ), cameraReset : ( String.String, String.String ), blockSelect : ( String.String, String.String ), blockAdd : ( String.String, String.String ), blockRemove : ( String.String, String.String ), blockTypeWall : ( String.String, String.String ), blockTypeEdge : ( String.String, String.String ), blockTypePointPickup : ( String.String, String.String ), blockTypePlayerSpawn : ( String.String, String.String ), undo : ( String.String, String.String ), redo : ( String.String, String.String ), toggleSettings : ( String.String, String.String ) }"},"Main.Point":{"args":[],"type":"( Basics.Int, Basics.Int, Basics.Int )"},"Point2d.Point2d":{"args":["units","coordinates"],"type":"Geometry.Types.Point2d units coordinates"},"Json.Decode.Value":{"args":[],"type":"Json.Encode.Value"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"Tick":["Basics.Float"],"KeyPressed":["String.String"],"KeyDown":["String.String"],"KeyUp":["String.String"],"MouseDown":["Json.Decode.Value"],"MouseUp":[],"MouseMove":["Json.Decode.Value","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates"],"EncodingChanged":["String.String"],"LoadBoard":["String.String"],"ChangeMode":[],"SetBlockEditMode":["Main.BlockEditMode"],"SetCameraMode":["Main.CameraMode"],"ResetCamera":[],"Undo":[],"Redo":[],"XLowerVisibleChanged":["Basics.Int"],"XUpperVisibleChanged":["Basics.Int"],"YLowerVisibleChanged":["Basics.Int"],"YUpperVisibleChanged":["Basics.Int"],"ZLowerVisibleChanged":["Basics.Int"],"ZUpperVisibleChanged":["Basics.Int"],"BlockTypeSelected":["Main.Block"],"SetBlock":["Main.Point","Main.Block"],"MaxXChanged":["String.String"],"MaxYChanged":["String.String"],"MaxZChanged":["String.String"],"ShowBoardBounds":["Basics.Bool"],"ShowSettings":["Basics.Bool"],"SetMapping":["Main.InputMapping -> Main.InputMapping"]}},"Main.Block":{"args":[],"tags":{"Empty":[],"Wall":[],"Edge":[],"PointPickup":["Basics.Bool"],"PlayerSpawn":["{ forward : Main.Axis, left : Main.Axis }"]}},"Main.BlockEditMode":{"args":[],"tags":{"Add":[],"Remove":[],"Select":[]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Main.CameraMode":{"args":[],"tags":{"Orbit":[],"Pan":[],"Zoom":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Pixels.Pixels":{"args":[],"tags":{"Pixels":[]}},"Geometry.Types.Point2d":{"args":["units","coordinates"],"tags":{"Point2d":["{ x : Basics.Float, y : Basics.Float }"]}},"Main.ScreenCoordinates":{"args":[],"tags":{"ScreenCoordinates":["Basics.Never"]}},"String.String":{"args":[],"tags":{"String":[]}},"Json.Encode.Value":{"args":[],"tags":{"Value":[]}},"Main.Axis":{"args":[],"tags":{"PositiveX":[],"NegativeX":[],"PositiveY":[],"NegativeY":[],"PositiveZ":[],"NegativeZ":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.InputMapping":{"args":[],"type":"{ moveUp : ( String.String, String.String ), moveDown : ( String.String, String.String ), moveLeft : ( String.String, String.String ), moveRight : ( String.String, String.String ), cameraOrbit : ( String.String, String.String ), cameraPan : ( String.String, String.String ), cameraZoom : ( String.String, String.String ), cameraReset : ( String.String, String.String ), blockSelect : ( String.String, String.String ), blockAdd : ( String.String, String.String ), blockRemove : ( String.String, String.String ), blockTypeWall : ( String.String, String.String ), blockTypeEdge : ( String.String, String.String ), blockTypePointPickup : ( String.String, String.String ), blockTypePlayerSpawn : ( String.String, String.String ), undo : ( String.String, String.String ), redo : ( String.String, String.String ), toggleSettings : ( String.String, String.String ) }"},"Main.Point":{"args":[],"type":"( Basics.Int, Basics.Int, Basics.Int )"},"Point2d.Point2d":{"args":["units","coordinates"],"type":"Geometry.Types.Point2d units coordinates"},"Json.Decode.Value":{"args":[],"type":"Json.Encode.Value"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"Tick":["Basics.Float"],"KeyPressed":["String.String"],"KeyDown":["String.String"],"KeyUp":["String.String"],"MouseDown":["Json.Decode.Value"],"MouseUp":[],"MouseMove":["Json.Decode.Value","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates"],"EncodingChanged":["String.String"],"LoadBoard":["String.String"],"ChangeMode":[],"SetBlockEditMode":["Main.BlockEditMode"],"SetCameraMode":["Main.CameraMode"],"ResetCamera":[],"Undo":[],"Redo":[],"XLowerVisibleChanged":["Basics.Int"],"XUpperVisibleChanged":["Basics.Int"],"YLowerVisibleChanged":["Basics.Int"],"YUpperVisibleChanged":["Basics.Int"],"ZLowerVisibleChanged":["Basics.Int"],"ZUpperVisibleChanged":["Basics.Int"],"BlockTypeSelected":["Main.Block"],"SetBlock":["Main.Point","Main.Block"],"MaxXChanged":["String.String"],"MaxYChanged":["String.String"],"MaxZChanged":["String.String"],"ShowBoardBounds":["Basics.Bool"],"ShowSettings":["Basics.Bool"],"SetMapping":["Main.InputMapping -> Main.InputMapping"],"SetScreen":["Main.Screen"]}},"Main.Block":{"args":[],"tags":{"Empty":[],"Wall":[],"Edge":[],"PointPickup":["Basics.Bool"],"PlayerSpawn":["{ forward : Main.Axis, left : Main.Axis }"]}},"Main.BlockEditMode":{"args":[],"tags":{"Add":[],"Remove":[],"Select":[]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Main.CameraMode":{"args":[],"tags":{"Orbit":[],"Pan":[],"Zoom":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Pixels.Pixels":{"args":[],"tags":{"Pixels":[]}},"Geometry.Types.Point2d":{"args":["units","coordinates"],"tags":{"Point2d":["{ x : Basics.Float, y : Basics.Float }"]}},"Main.Screen":{"args":[],"tags":{"Editor":[],"Game":[],"Menu":[]}},"Main.ScreenCoordinates":{"args":[],"tags":{"ScreenCoordinates":["Basics.Never"]}},"String.String":{"args":[],"tags":{"String":[]}},"Json.Encode.Value":{"args":[],"tags":{"Value":[]}},"Main.Axis":{"args":[],"tags":{"PositiveX":[],"NegativeX":[],"PositiveY":[],"NegativeY":[],"PositiveZ":[],"NegativeZ":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}}}}})}});}(this));
