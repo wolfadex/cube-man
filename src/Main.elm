@@ -57,12 +57,18 @@ main =
 
 
 type alias Model =
-    { board : Board
+    { -- Game play
+      board : Board
     , score : Int
+    , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : {} }
+    , playerFacing : Facing
+    , playerWantFacing : Facing
+    , playerMovingAcrossEdge : Maybe Angle
+
+    -- EditBoard
     , editorBoard : Undo.Stack Board
     , boardLoadError : Maybe BoardLoadError
     , boardPlayError : Maybe BoardPlayError
-    , screenSize : { width : Int, height : Int }
     , xLowerVisible : Int
     , xUpperVisible : Int
     , yLowerVisible : Int
@@ -79,21 +85,21 @@ type alias Model =
     , mouseDragging : EditorMouseInteraction
     , cursorBounce : Animation Float
     , boardEncoding : String
-    , mode : Mode
-    , editMode : EditMode
+    , editorMode : EditorMode
+    , blockEditMode : BlockEditMode
     , cameraMode : CameraMode
     , showBoardBounds : Bool
     , selectedBlock : Maybe ( Point, Block )
-    , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : {} }
-    , playerFacing : Facing
-    , playerWantFacing : Facing
-    , playerMovingAcrossEdge : Maybe Angle
     , editorMaxXRaw : String
     , editorMaxYRaw : String
     , editorMaxZRaw : String
+
+    -- Common
+    , screenSize : { width : Int, height : Int }
     , blockPalette : BlockPalette
     , inputMapping : InputMapping
     , showSettings : Bool
+    , screen : Screen
     }
 
 
@@ -130,6 +136,12 @@ type alias InputMapping =
     }
 
 
+type Screen
+    = Editor
+    | Game
+    | Menu
+
+
 type BlockPalette
     = SimpleBlocks
     | RainbowBlocks
@@ -141,12 +153,12 @@ type EditorMouseInteraction
     | InteractionMoving Json.Decode.Value
 
 
-type Mode
-    = Editor
-    | Game
+type EditorMode
+    = EditBoard
+    | TestGame
 
 
-type EditMode
+type BlockEditMode
     = Add
     | Remove
     | Select
@@ -375,8 +387,8 @@ init () =
                   }
                 ]
                 |> Animation.withLoop
-      , mode = Editor
-      , editMode = Select
+      , editorMode = EditBoard
+      , blockEditMode = Select
       , cameraMode = Orbit
       , showBoardBounds = True
       , selectedBlock = Nothing
@@ -424,6 +436,7 @@ init () =
             , toggleSettings = ( ",", "" )
             }
       , showSettings = False
+      , screen = Editor
       }
     , Cmd.none
     )
@@ -487,7 +500,7 @@ type Msg
     | EncodingChanged String
     | LoadBoard String
     | ChangeMode
-    | SetEditMode EditMode
+    | SetBlockEditMode BlockEditMode
     | SetCameraMode CameraMode
     | ResetCamera
     | Undo
@@ -566,8 +579,8 @@ update msg model =
                     )
 
         ChangeMode ->
-            case model.mode of
-                Editor ->
+            case model.editorMode of
+                EditBoard ->
                     let
                         board =
                             Undo.value model.editorBoard
@@ -578,7 +591,7 @@ update msg model =
 
                         Just spawnFrame ->
                             ( { model
-                                | mode = Game
+                                | editorMode = TestGame
                                 , board = board
                                 , playerFrame = spawnFrame
                                 , score = 0
@@ -590,15 +603,15 @@ update msg model =
                             , Cmd.none
                             )
 
-                Game ->
+                TestGame ->
                     ( { model
-                        | mode = Editor
+                        | editorMode = EditBoard
                       }
                     , Cmd.none
                     )
 
-        SetEditMode editMode ->
-            ( { model | editMode = editMode }, Cmd.none )
+        SetBlockEditMode blockEditMode ->
+            ( { model | blockEditMode = blockEditMode }, Cmd.none )
 
         SetCameraMode cameraMode ->
             ( { model | cameraMode = cameraMode }, Cmd.none )
@@ -626,7 +639,7 @@ update msg model =
                 ( { model | mouseDragging = NoInteraction }, Cmd.none )
 
             else
-                case model.editMode of
+                case model.blockEditMode of
                     Remove ->
                         let
                             editorBoard =
@@ -977,11 +990,11 @@ update msg model =
             ( { model | inputMapping = fn model.inputMapping }, Cmd.none )
 
         KeyPressed key ->
-            case model.mode of
-                Editor ->
+            case model.editorMode of
+                EditBoard ->
                     handleEditorKeyPressed key model
 
-                Game ->
+                TestGame ->
                     handleGameKeyPressed key model
 
 
@@ -1161,7 +1174,7 @@ moveCursorByMouse offset model =
         Just ( intersection, _ ) ->
             ( { model
                 | editorCursor =
-                    case model.editMode of
+                    case model.blockEditMode of
                         Remove ->
                             Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
                                 |> Point3d.Extra.constrain
@@ -1223,11 +1236,11 @@ editorViewpoint model =
 
 tickPlayer : Float -> Model -> Model
 tickPlayer deltaMs model =
-    case model.mode of
-        Editor ->
+    case model.editorMode of
+        EditBoard ->
             model
 
-        Game ->
+        TestGame ->
             model
                 |> setPlayerFacing
                 |> movePlayer deltaMs
@@ -1700,13 +1713,13 @@ handleEditorKeyPressed key model =
         resetCamera model
 
     else if isInputKey model.inputMapping.blockSelect key then
-        ( { model | editMode = Select }, Cmd.none )
+        ( { model | blockEditMode = Select }, Cmd.none )
 
     else if isInputKey model.inputMapping.blockAdd key then
-        ( { model | editMode = Add }, Cmd.none )
+        ( { model | blockEditMode = Add }, Cmd.none )
 
     else if isInputKey model.inputMapping.blockRemove key then
-        ( { model | editMode = Remove }, Cmd.none )
+        ( { model | blockEditMode = Remove }, Cmd.none )
 
     else if isInputKey model.inputMapping.blockTypeWall key then
         ( { model | selectedBlockType = Wall }, Cmd.none )
@@ -1817,34 +1830,34 @@ view model =
         [ Html.div
             [ Html.Attributes.style "display" "grid"
             , Html.Attributes.style "grid-template-columns" <|
-                case model.mode of
-                    Editor ->
+                case model.editorMode of
+                    EditBoard ->
                         "auto auto"
 
-                    Game ->
+                    TestGame ->
                         "auto 8rem"
             , Html.Attributes.style "grid-template-rows" <|
-                case model.mode of
-                    Editor ->
+                case model.editorMode of
+                    EditBoard ->
                         "auto auto"
 
-                    Game ->
+                    TestGame ->
                         "auto"
             ]
             [ Html.div
                 ([ Html.Attributes.style "grid-column" <|
-                    case model.mode of
-                        Editor ->
+                    case model.editorMode of
+                        EditBoard ->
                             "1"
 
-                        Game ->
+                        TestGame ->
                             "1 / 2"
                  , Html.Attributes.style "grid-row" <|
-                    case model.mode of
-                        Editor ->
+                    case model.editorMode of
+                        EditBoard ->
                             "2"
 
-                        Game ->
+                        TestGame ->
                             "1"
                  ]
                     ++ (case model.mouseDragging of
@@ -1869,8 +1882,8 @@ view model =
                 )
                 [ let
                     lights =
-                        case model.mode of
-                            Game ->
+                        case model.editorMode of
+                            TestGame ->
                                 let
                                     sun1 =
                                         Scene3d.Light.directional (Scene3d.Light.castsShadows True)
@@ -1933,7 +1946,7 @@ view model =
                                 in
                                 Scene3d.sixLights sun1 sun2 sky1 sky2 sky3 environment
 
-                            Editor ->
+                            EditBoard ->
                                 let
                                     sun =
                                         Scene3d.Light.directional (Scene3d.Light.castsShadows True)
@@ -1981,8 +1994,8 @@ view model =
                     , antialiasing = Scene3d.multisampling
                     , dimensions = ( Pixels.int model.screenSize.width, Pixels.int model.screenSize.height )
                     , camera =
-                        case model.mode of
-                            Game ->
+                        case model.editorMode of
+                            TestGame ->
                                 Camera3d.perspective
                                     { viewpoint =
                                         let
@@ -1999,11 +2012,11 @@ view model =
                                     , verticalFieldOfView = Angle.degrees 30
                                     }
 
-                            Editor ->
+                            EditBoard ->
                                 editorCamera model
                     , entities =
-                        case model.mode of
-                            Editor ->
+                        case model.editorMode of
+                            EditBoard ->
                                 let
                                     editorBoard =
                                         model.editorBoard
@@ -2014,7 +2027,7 @@ view model =
                                         |> Dict.toList
                                         |> List.map (viewBlock editorBoard model)
                                     , [ viewCursor
-                                            (case model.editMode of
+                                            (case model.blockEditMode of
                                                 Select ->
                                                     Color.white
 
@@ -2041,7 +2054,7 @@ view model =
                                       ]
                                     ]
 
-                            Game ->
+                            TestGame ->
                                 List.concat
                                     [ model.board.blocks
                                         |> Dict.toList
@@ -2051,8 +2064,8 @@ view model =
                     }
                 ]
             , viewHeader model
-            , case model.mode of
-                Game ->
+            , case model.editorMode of
+                TestGame ->
                     Html.div
                         [ Html.Attributes.style "grid-column" "2"
                         , Html.Attributes.style "grid-row" "1"
@@ -2066,7 +2079,7 @@ view model =
                             ]
                         ]
 
-                Editor ->
+                EditBoard ->
                     let
                         editorBoard =
                             model.editorBoard
@@ -2363,8 +2376,8 @@ viewInputKeyHoverText ( primary, secondary ) =
 
 viewHeader : Model -> Html Msg
 viewHeader model =
-    case model.mode of
-        Game ->
+    case model.editorMode of
+        TestGame ->
             Html.div
                 [ Html.Attributes.style "grid-column" "1 /3"
                 , Html.Attributes.style "grid-row" "1"
@@ -2375,7 +2388,7 @@ viewHeader model =
                 [ Html.h3 [] [ Html.text ("Score: " ++ String.fromInt model.score) ]
                 ]
 
-        Editor ->
+        EditBoard ->
             Html.div
                 [ Html.Attributes.style "grid-column" "1 /3"
                 , Html.Attributes.style "grid-row" "1"
@@ -2469,30 +2482,30 @@ viewHeader model =
                     [ Html.Attributes.attribute "role" "group" ]
                     [ Html.button
                         [ Html.Attributes.type_ "button"
-                        , Html.Events.onClick (SetEditMode Select)
+                        , Html.Events.onClick (SetBlockEditMode Select)
                         , Html.Attributes.title ("Select block - " ++ viewInputKeyHoverText model.inputMapping.blockSelect)
                         , Html.Attributes.Extra.aria "current" <|
-                            Html.Attributes.Extra.bool (model.editMode == Select)
+                            Html.Attributes.Extra.bool (model.blockEditMode == Select)
                         ]
                         [ Phosphor.cursor Phosphor.Regular
                             |> Phosphor.toHtml []
                         ]
                     , Html.button
                         [ Html.Attributes.type_ "button"
-                        , Html.Events.onClick (SetEditMode Add)
+                        , Html.Events.onClick (SetBlockEditMode Add)
                         , Html.Attributes.title ("Add block - " ++ viewInputKeyHoverText model.inputMapping.blockAdd)
                         , Html.Attributes.Extra.aria "current" <|
-                            Html.Attributes.Extra.bool (model.editMode == Add)
+                            Html.Attributes.Extra.bool (model.blockEditMode == Add)
                         ]
                         [ Phosphor.plus Phosphor.Regular
                             |> Phosphor.toHtml []
                         ]
                     , Html.button
                         [ Html.Attributes.type_ "button"
-                        , Html.Events.onClick (SetEditMode Remove)
+                        , Html.Events.onClick (SetBlockEditMode Remove)
                         , Html.Attributes.title ("Remove block - " ++ viewInputKeyHoverText model.inputMapping.blockRemove)
                         , Html.Attributes.Extra.aria "current" <|
-                            Html.Attributes.Extra.bool (model.editMode == Remove)
+                            Html.Attributes.Extra.bool (model.blockEditMode == Remove)
                         ]
                         [ Phosphor.x Phosphor.Regular
                             |> Phosphor.toHtml []
@@ -3242,7 +3255,7 @@ viewBlock board model ( point, block ) =
                     )
 
             PointPickup collected ->
-                if collected && model.mode == Game then
+                if collected && model.editorMode == TestGame then
                     Scene3d.nothing
 
                 else
@@ -3261,11 +3274,11 @@ viewBlock board model ( point, block ) =
                         )
 
             PlayerSpawn { forward, left } ->
-                case model.mode of
-                    Game ->
+                case model.editorMode of
+                    TestGame ->
                         Scene3d.nothing
 
-                    Editor ->
+                    EditBoard ->
                         let
                             center =
                                 Point3d.meters
@@ -3327,11 +3340,11 @@ viewBlock board model ( point, block ) =
                 Scene3d.nothing
 
             Edge ->
-                case model.mode of
-                    Game ->
+                case model.editorMode of
+                    TestGame ->
                         Scene3d.nothing
 
-                    Editor ->
+                    EditBoard ->
                         Scene3d.blockWithShadow
                             (Scene3d.Material.metal
                                 { baseColor = Color.orange

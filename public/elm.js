@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739249691894"
+    "1739251097678"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -16272,6 +16272,7 @@ var $elm$core$Basics$never = function (_v0) {
 	}
 };
 var $elm$browser$Browser$document = _Browser_document;
+var $author$project$Main$EditBoard = {$: 'EditBoard'};
 var $author$project$Main$Editor = {$: 'Editor'};
 var $author$project$Main$Forward = {$: 'Forward'};
 var $author$project$Main$NoInteraction = {$: 'NoInteraction'};
@@ -17378,6 +17379,7 @@ var $author$project$Main$init = function (_v0) {
 	};
 	return _Utils_Tuple2(
 		{
+			blockEditMode: $author$project$Main$Select,
 			blockPalette: $author$project$Main$SimpleBlocks,
 			board: board,
 			boardEncoding: A2(
@@ -17401,13 +17403,13 @@ var $author$project$Main$init = function (_v0) {
 							{offset: 500, value: 1},
 							{offset: 500, value: 0}
 						]))),
-			editMode: $author$project$Main$Select,
 			editorBoard: $author$project$Undo$init(board),
 			editorCursor: _Utils_Tuple3(0, 0, 0),
 			editorKeysDown: $elm$core$Set$empty,
 			editorMaxXRaw: $elm$core$String$fromInt(maxX),
 			editorMaxYRaw: $elm$core$String$fromInt(maxY),
 			editorMaxZRaw: $elm$core$String$fromInt(maxZ),
+			editorMode: $author$project$Main$EditBoard,
 			inputMapping: {
 				blockAdd: _Utils_Tuple2('w', ''),
 				blockRemove: _Utils_Tuple2('e', ''),
@@ -17428,7 +17430,6 @@ var $author$project$Main$init = function (_v0) {
 				toggleSettings: _Utils_Tuple2(',', ''),
 				undo: _Utils_Tuple2('z', '')
 			},
-			mode: $author$project$Main$Editor,
 			mouseDragging: $author$project$Main$NoInteraction,
 			playerFacing: $author$project$Main$Forward,
 			playerFrame: $ianmackenzie$elm_geometry$Frame3d$atPoint(
@@ -17436,6 +17437,7 @@ var $author$project$Main$init = function (_v0) {
 			playerMovingAcrossEdge: $elm$core$Maybe$Nothing,
 			playerWantFacing: $author$project$Main$Forward,
 			score: 0,
+			screen: $author$project$Main$Editor,
 			screenSize: {height: 600, width: 800},
 			selectedBlock: $elm$core$Maybe$Nothing,
 			selectedBlockType: $author$project$Main$Wall,
@@ -17790,13 +17792,13 @@ var $author$project$Main$subscriptions = function (model) {
 			]));
 };
 var $author$project$Main$DataCorrupted = {$: 'DataCorrupted'};
-var $author$project$Main$Game = {$: 'Game'};
 var $author$project$Main$InteractionStart = function (a) {
 	return {$: 'InteractionStart', a: a};
 };
 var $author$project$Main$MissingPlayerSpawn = {$: 'MissingPlayerSpawn'};
 var $author$project$Main$OtherError = {$: 'OtherError'};
 var $author$project$Main$SerializerOutOfDate = {$: 'SerializerOutOfDate'};
+var $author$project$Main$TestGame = {$: 'TestGame'};
 var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
@@ -18057,15 +18059,15 @@ var $author$project$Main$handleEditorKeyPressed = F2(
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.cameraReset, key) ? $author$project$Main$resetCamera(model) : (A2($author$project$Main$isInputKey, model.inputMapping.blockSelect, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{editMode: $author$project$Main$Select}),
+				{blockEditMode: $author$project$Main$Select}),
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.blockAdd, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{editMode: $author$project$Main$Add}),
+				{blockEditMode: $author$project$Main$Add}),
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.blockRemove, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{editMode: $author$project$Main$Remove}),
+				{blockEditMode: $author$project$Main$Remove}),
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Main$isInputKey, model.inputMapping.blockTypeWall, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
@@ -19092,7 +19094,7 @@ var $author$project$Main$moveCursorByMouse = F2(
 					model,
 					{
 						editorCursor: function () {
-							var _v2 = model.editMode;
+							var _v2 = model.blockEditMode;
 							switch (_v2.$) {
 								case 'Remove':
 									return $author$project$Main$point3dToPoint(
@@ -19625,8 +19627,8 @@ var $author$project$Main$setPlayerFacing = function (model) {
 };
 var $author$project$Main$tickPlayer = F2(
 	function (deltaMs, model) {
-		var _v0 = model.mode;
-		if (_v0.$ === 'Editor') {
+		var _v0 = model.editorMode;
+		if (_v0.$ === 'EditBoard') {
 			return model;
 		} else {
 			return A2(
@@ -19709,8 +19711,8 @@ var $author$project$Main$update = F2(
 						$elm$core$Platform$Cmd$none);
 				}
 			case 'ChangeMode':
-				var _v3 = model.mode;
-				if (_v3.$ === 'Editor') {
+				var _v3 = model.editorMode;
+				if (_v3.$ === 'EditBoard') {
 					var board = $author$project$Undo$value(model.editorBoard);
 					var _v4 = $author$project$Main$findSpawn(board);
 					if (_v4.$ === 'Nothing') {
@@ -19726,22 +19728,22 @@ var $author$project$Main$update = F2(
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
-								{board: board, boardPlayError: $elm$core$Maybe$Nothing, mode: $author$project$Main$Game, playerFacing: $author$project$Main$Forward, playerFrame: spawnFrame, playerMovingAcrossEdge: $elm$core$Maybe$Nothing, playerWantFacing: $author$project$Main$Forward, score: 0}),
+								{board: board, boardPlayError: $elm$core$Maybe$Nothing, editorMode: $author$project$Main$TestGame, playerFacing: $author$project$Main$Forward, playerFrame: spawnFrame, playerMovingAcrossEdge: $elm$core$Maybe$Nothing, playerWantFacing: $author$project$Main$Forward, score: 0}),
 							$elm$core$Platform$Cmd$none);
 					}
 				} else {
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{mode: $author$project$Main$Editor}),
+							{editorMode: $author$project$Main$EditBoard}),
 						$elm$core$Platform$Cmd$none);
 				}
-			case 'SetEditMode':
-				var editMode = msg.a;
+			case 'SetBlockEditMode':
+				var blockEditMode = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{editMode: editMode}),
+						{blockEditMode: blockEditMode}),
 					$elm$core$Platform$Cmd$none);
 			case 'SetCameraMode':
 				var cameraMode = msg.a;
@@ -19791,7 +19793,7 @@ var $author$project$Main$update = F2(
 							{mouseDragging: $author$project$Main$NoInteraction}),
 						$elm$core$Platform$Cmd$none);
 				} else {
-					var _v5 = model.editMode;
+					var _v5 = model.blockEditMode;
 					switch (_v5.$) {
 						case 'Remove':
 							var editorBoard = A2(
@@ -20189,8 +20191,8 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			default:
 				var key = msg.a;
-				var _v15 = model.mode;
-				if (_v15.$ === 'Editor') {
+				var _v15 = model.editorMode;
+				if (_v15.$ === 'EditBoard') {
 					return A2($author$project$Main$handleEditorKeyPressed, key, model);
 				} else {
 					return A2($author$project$Main$handleGameKeyPressed, key, model);
@@ -25017,7 +25019,7 @@ var $author$project$Main$viewBlock = F3(
 								$ianmackenzie$elm_units$Length$meters(1))));
 				case 'PointPickup':
 					var collected = block.a;
-					return (collected && _Utils_eq(model.mode, $author$project$Main$Game)) ? $ianmackenzie$elm_3d_scene$Scene3d$nothing : A2(
+					return (collected && _Utils_eq(model.editorMode, $author$project$Main$TestGame)) ? $ianmackenzie$elm_3d_scene$Scene3d$nothing : A2(
 						$ianmackenzie$elm_3d_scene$Scene3d$sphereWithShadow,
 						A2(
 							$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
@@ -25030,8 +25032,8 @@ var $author$project$Main$viewBlock = F3(
 				case 'PlayerSpawn':
 					var forward = block.a.forward;
 					var left = block.a.left;
-					var _v4 = model.mode;
-					if (_v4.$ === 'Game') {
+					var _v4 = model.editorMode;
+					if (_v4.$ === 'TestGame') {
 						return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 					} else {
 						var center = A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z);
@@ -25102,8 +25104,8 @@ var $author$project$Main$viewBlock = F3(
 				case 'Empty':
 					return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 				default:
-					var _v5 = model.mode;
-					if (_v5.$ === 'Game') {
+					var _v5 = model.editorMode;
+					if (_v5.$ === 'TestGame') {
 						return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 					} else {
 						return A2(
@@ -25741,11 +25743,11 @@ var $author$project$Main$BlockTypeSelected = function (a) {
 var $author$project$Main$Redo = {$: 'Redo'};
 var $phosphor_icons$phosphor_elm$Phosphor$Regular = {$: 'Regular'};
 var $author$project$Main$ResetCamera = {$: 'ResetCamera'};
+var $author$project$Main$SetBlockEditMode = function (a) {
+	return {$: 'SetBlockEditMode', a: a};
+};
 var $author$project$Main$SetCameraMode = function (a) {
 	return {$: 'SetCameraMode', a: a};
-};
-var $author$project$Main$SetEditMode = function (a) {
-	return {$: 'SetEditMode', a: a};
 };
 var $author$project$Main$ShowBoardBounds = function (a) {
 	return {$: 'ShowBoardBounds', a: a};
@@ -26883,8 +26885,8 @@ var $phosphor_icons$phosphor_elm$Phosphor$xCircle = function (weight) {
 	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
 var $author$project$Main$viewHeader = function (model) {
-	var _v0 = model.mode;
-	if (_v0.$ === 'Game') {
+	var _v0 = model.editorMode;
+	if (_v0.$ === 'TestGame') {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -27106,14 +27108,14 @@ var $author$project$Main$viewHeader = function (model) {
 								[
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick(
-									$author$project$Main$SetEditMode($author$project$Main$Select)),
+									$author$project$Main$SetBlockEditMode($author$project$Main$Select)),
 									$elm$html$Html$Attributes$title(
 									'Select block - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.blockSelect)),
 									A2(
 									$author$project$Html$Attributes$Extra$aria,
 									'current',
 									$author$project$Html$Attributes$Extra$bool(
-										_Utils_eq(model.editMode, $author$project$Main$Select)))
+										_Utils_eq(model.blockEditMode, $author$project$Main$Select)))
 								]),
 							_List_fromArray(
 								[
@@ -27128,14 +27130,14 @@ var $author$project$Main$viewHeader = function (model) {
 								[
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick(
-									$author$project$Main$SetEditMode($author$project$Main$Add)),
+									$author$project$Main$SetBlockEditMode($author$project$Main$Add)),
 									$elm$html$Html$Attributes$title(
 									'Add block - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.blockAdd)),
 									A2(
 									$author$project$Html$Attributes$Extra$aria,
 									'current',
 									$author$project$Html$Attributes$Extra$bool(
-										_Utils_eq(model.editMode, $author$project$Main$Add)))
+										_Utils_eq(model.blockEditMode, $author$project$Main$Add)))
 								]),
 							_List_fromArray(
 								[
@@ -27150,14 +27152,14 @@ var $author$project$Main$viewHeader = function (model) {
 								[
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick(
-									$author$project$Main$SetEditMode($author$project$Main$Remove)),
+									$author$project$Main$SetBlockEditMode($author$project$Main$Remove)),
 									$elm$html$Html$Attributes$title(
 									'Remove block - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.blockRemove)),
 									A2(
 									$author$project$Html$Attributes$Extra$aria,
 									'current',
 									$author$project$Html$Attributes$Extra$bool(
-										_Utils_eq(model.editMode, $author$project$Main$Remove)))
+										_Utils_eq(model.blockEditMode, $author$project$Main$Remove)))
 								]),
 							_List_fromArray(
 								[
@@ -28259,8 +28261,8 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$Attributes$style,
 						'grid-template-columns',
 						function () {
-							var _v0 = model.mode;
-							if (_v0.$ === 'Editor') {
+							var _v0 = model.editorMode;
+							if (_v0.$ === 'EditBoard') {
 								return 'auto auto';
 							} else {
 								return 'auto 8rem';
@@ -28270,8 +28272,8 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$Attributes$style,
 						'grid-template-rows',
 						function () {
-							var _v1 = model.mode;
-							if (_v1.$ === 'Editor') {
+							var _v1 = model.editorMode;
+							if (_v1.$ === 'EditBoard') {
 								return 'auto auto';
 							} else {
 								return 'auto';
@@ -28289,8 +28291,8 @@ var $author$project$Main$view = function (model) {
 									$elm$html$Html$Attributes$style,
 									'grid-column',
 									function () {
-										var _v2 = model.mode;
-										if (_v2.$ === 'Editor') {
+										var _v2 = model.editorMode;
+										if (_v2.$ === 'EditBoard') {
 											return '1';
 										} else {
 											return '1 / 2';
@@ -28300,8 +28302,8 @@ var $author$project$Main$view = function (model) {
 									$elm$html$Html$Attributes$style,
 									'grid-row',
 									function () {
-										var _v3 = model.mode;
-										if (_v3.$ === 'Editor') {
+										var _v3 = model.editorMode;
+										if (_v3.$ === 'EditBoard') {
 											return '2';
 										} else {
 											return '1';
@@ -28349,8 +28351,8 @@ var $author$project$Main$view = function (model) {
 							[
 								function () {
 								var lights = function () {
-									var _v10 = model.mode;
-									if (_v10.$ === 'Game') {
+									var _v10 = model.editorMode;
+									if (_v10.$ === 'TestGame') {
 										var sun2 = A2(
 											$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
 											$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
@@ -28468,8 +28470,8 @@ var $author$project$Main$view = function (model) {
 										antialiasing: $ianmackenzie$elm_3d_scene$Scene3d$multisampling,
 										background: $ianmackenzie$elm_3d_scene$Scene3d$backgroundColor($avh4$elm_color$Color$gray),
 										camera: function () {
-											var _v5 = model.mode;
-											if (_v5.$ === 'Game') {
+											var _v5 = model.editorMode;
+											if (_v5.$ === 'TestGame') {
 												return $ianmackenzie$elm_3d_camera$Camera3d$perspective(
 													{
 														verticalFieldOfView: $ianmackenzie$elm_units$Angle$degrees(30),
@@ -28496,8 +28498,8 @@ var $author$project$Main$view = function (model) {
 											$ianmackenzie$elm_units$Pixels$int(model.screenSize.width),
 											$ianmackenzie$elm_units$Pixels$int(model.screenSize.height)),
 										entities: function () {
-											var _v6 = model.mode;
-											if (_v6.$ === 'Editor') {
+											var _v6 = model.editorMode;
+											if (_v6.$ === 'EditBoard') {
 												var editorBoard = $author$project$Undo$value(model.editorBoard);
 												return $elm$core$List$concat(
 													_List_fromArray(
@@ -28511,7 +28513,7 @@ var $author$project$Main$view = function (model) {
 																A3(
 																$author$project$Main$viewCursor,
 																function () {
-																	var _v7 = model.editMode;
+																	var _v7 = model.blockEditMode;
 																	switch (_v7.$) {
 																		case 'Select':
 																			return $avh4$elm_color$Color$white;
@@ -28561,8 +28563,8 @@ var $author$project$Main$view = function (model) {
 							])),
 						$author$project$Main$viewHeader(model),
 						function () {
-						var _v11 = model.mode;
-						if (_v11.$ === 'Game') {
+						var _v11 = model.editorMode;
+						if (_v11.$ === 'TestGame') {
 							return A2(
 								$elm$html$Html$div,
 								_List_fromArray(
@@ -29085,4 +29087,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$document(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.InputMapping":{"args":[],"type":"{ moveUp : ( String.String, String.String ), moveDown : ( String.String, String.String ), moveLeft : ( String.String, String.String ), moveRight : ( String.String, String.String ), cameraOrbit : ( String.String, String.String ), cameraPan : ( String.String, String.String ), cameraZoom : ( String.String, String.String ), cameraReset : ( String.String, String.String ), blockSelect : ( String.String, String.String ), blockAdd : ( String.String, String.String ), blockRemove : ( String.String, String.String ), blockTypeWall : ( String.String, String.String ), blockTypeEdge : ( String.String, String.String ), blockTypePointPickup : ( String.String, String.String ), blockTypePlayerSpawn : ( String.String, String.String ), undo : ( String.String, String.String ), redo : ( String.String, String.String ), toggleSettings : ( String.String, String.String ) }"},"Main.Point":{"args":[],"type":"( Basics.Int, Basics.Int, Basics.Int )"},"Point2d.Point2d":{"args":["units","coordinates"],"type":"Geometry.Types.Point2d units coordinates"},"Json.Decode.Value":{"args":[],"type":"Json.Encode.Value"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"Tick":["Basics.Float"],"KeyPressed":["String.String"],"KeyDown":["String.String"],"KeyUp":["String.String"],"MouseDown":["Json.Decode.Value"],"MouseUp":[],"MouseMove":["Json.Decode.Value","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates"],"EncodingChanged":["String.String"],"LoadBoard":["String.String"],"ChangeMode":[],"SetEditMode":["Main.EditMode"],"SetCameraMode":["Main.CameraMode"],"ResetCamera":[],"Undo":[],"Redo":[],"XLowerVisibleChanged":["Basics.Int"],"XUpperVisibleChanged":["Basics.Int"],"YLowerVisibleChanged":["Basics.Int"],"YUpperVisibleChanged":["Basics.Int"],"ZLowerVisibleChanged":["Basics.Int"],"ZUpperVisibleChanged":["Basics.Int"],"BlockTypeSelected":["Main.Block"],"SetBlock":["Main.Point","Main.Block"],"MaxXChanged":["String.String"],"MaxYChanged":["String.String"],"MaxZChanged":["String.String"],"ShowBoardBounds":["Basics.Bool"],"ShowSettings":["Basics.Bool"],"SetMapping":["Main.InputMapping -> Main.InputMapping"]}},"Main.Block":{"args":[],"tags":{"Empty":[],"Wall":[],"Edge":[],"PointPickup":["Basics.Bool"],"PlayerSpawn":["{ forward : Main.Axis, left : Main.Axis }"]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Main.CameraMode":{"args":[],"tags":{"Orbit":[],"Pan":[],"Zoom":[]}},"Main.EditMode":{"args":[],"tags":{"Add":[],"Remove":[],"Select":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Pixels.Pixels":{"args":[],"tags":{"Pixels":[]}},"Geometry.Types.Point2d":{"args":["units","coordinates"],"tags":{"Point2d":["{ x : Basics.Float, y : Basics.Float }"]}},"Main.ScreenCoordinates":{"args":[],"tags":{"ScreenCoordinates":["Basics.Never"]}},"String.String":{"args":[],"tags":{"String":[]}},"Json.Encode.Value":{"args":[],"tags":{"Value":[]}},"Main.Axis":{"args":[],"tags":{"PositiveX":[],"NegativeX":[],"PositiveY":[],"NegativeY":[],"PositiveZ":[],"NegativeZ":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.InputMapping":{"args":[],"type":"{ moveUp : ( String.String, String.String ), moveDown : ( String.String, String.String ), moveLeft : ( String.String, String.String ), moveRight : ( String.String, String.String ), cameraOrbit : ( String.String, String.String ), cameraPan : ( String.String, String.String ), cameraZoom : ( String.String, String.String ), cameraReset : ( String.String, String.String ), blockSelect : ( String.String, String.String ), blockAdd : ( String.String, String.String ), blockRemove : ( String.String, String.String ), blockTypeWall : ( String.String, String.String ), blockTypeEdge : ( String.String, String.String ), blockTypePointPickup : ( String.String, String.String ), blockTypePlayerSpawn : ( String.String, String.String ), undo : ( String.String, String.String ), redo : ( String.String, String.String ), toggleSettings : ( String.String, String.String ) }"},"Main.Point":{"args":[],"type":"( Basics.Int, Basics.Int, Basics.Int )"},"Point2d.Point2d":{"args":["units","coordinates"],"type":"Geometry.Types.Point2d units coordinates"},"Json.Decode.Value":{"args":[],"type":"Json.Encode.Value"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"Tick":["Basics.Float"],"KeyPressed":["String.String"],"KeyDown":["String.String"],"KeyUp":["String.String"],"MouseDown":["Json.Decode.Value"],"MouseUp":[],"MouseMove":["Json.Decode.Value","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates"],"EncodingChanged":["String.String"],"LoadBoard":["String.String"],"ChangeMode":[],"SetBlockEditMode":["Main.BlockEditMode"],"SetCameraMode":["Main.CameraMode"],"ResetCamera":[],"Undo":[],"Redo":[],"XLowerVisibleChanged":["Basics.Int"],"XUpperVisibleChanged":["Basics.Int"],"YLowerVisibleChanged":["Basics.Int"],"YUpperVisibleChanged":["Basics.Int"],"ZLowerVisibleChanged":["Basics.Int"],"ZUpperVisibleChanged":["Basics.Int"],"BlockTypeSelected":["Main.Block"],"SetBlock":["Main.Point","Main.Block"],"MaxXChanged":["String.String"],"MaxYChanged":["String.String"],"MaxZChanged":["String.String"],"ShowBoardBounds":["Basics.Bool"],"ShowSettings":["Basics.Bool"],"SetMapping":["Main.InputMapping -> Main.InputMapping"]}},"Main.Block":{"args":[],"tags":{"Empty":[],"Wall":[],"Edge":[],"PointPickup":["Basics.Bool"],"PlayerSpawn":["{ forward : Main.Axis, left : Main.Axis }"]}},"Main.BlockEditMode":{"args":[],"tags":{"Add":[],"Remove":[],"Select":[]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Main.CameraMode":{"args":[],"tags":{"Orbit":[],"Pan":[],"Zoom":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Pixels.Pixels":{"args":[],"tags":{"Pixels":[]}},"Geometry.Types.Point2d":{"args":["units","coordinates"],"tags":{"Point2d":["{ x : Basics.Float, y : Basics.Float }"]}},"Main.ScreenCoordinates":{"args":[],"tags":{"ScreenCoordinates":["Basics.Never"]}},"String.String":{"args":[],"tags":{"String":[]}},"Json.Encode.Value":{"args":[],"tags":{"Value":[]}},"Main.Axis":{"args":[],"tags":{"PositiveX":[],"NegativeX":[],"PositiveY":[],"NegativeY":[],"PositiveZ":[],"NegativeZ":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}}}}})}});}(this));
