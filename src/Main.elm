@@ -479,10 +479,14 @@ subscriptions model =
                     Sub.none
 
                 FreePlayBoardLoaded ->
-                    Sub.batch
-                        [ Browser.Events.onAnimationFrameDelta Tick
-                        , Browser.Events.onKeyPress decodeKeyPressed
-                        ]
+                    if model.showFreePlayMenu then
+                        Sub.none
+
+                    else
+                        Sub.batch
+                            [ Browser.Events.onAnimationFrameDelta Tick
+                            , Browser.Events.onKeyPress decodeKeyPressed
+                            ]
 
         Editor ->
             if model.showSettings then
@@ -2182,6 +2186,121 @@ viewFreePlayScreen model =
                     ]
                     [ Html.text "Select another board"
                     ]
+                , Html.br [] []
+                , Html.br [] []
+                , let
+                    viewMapping mapping =
+                        let
+                            ( primary, secondary ) =
+                                mapping.keys
+                        in
+                        Html.tr []
+                            [ Html.th [ Html.Attributes.attribute "align" "left" ] [ Html.text mapping.label ]
+                            , Html.td [ Html.Attributes.attribute "align" "center" ]
+                                [ Html.input
+                                    [ Html.Attributes.value primary
+                                    , Html.Attributes.placeholder "Must be set"
+                                    , Html.Events.custom "input" (decodeInputMappingChange mapping.setPrimary)
+                                    , Html.Attributes.style "text-align" "center"
+                                    ]
+                                    []
+                                ]
+                            , Html.td [ Html.Attributes.attribute "align" "center" ]
+                                [ Html.input
+                                    [ Html.Attributes.value secondary
+                                    , Html.Attributes.placeholder "Not set"
+                                    , Html.Events.custom "input" (decodeInputMappingChange mapping.setSecondary)
+                                    , Html.Attributes.style "text-align" "center"
+                                    ]
+                                    []
+                                ]
+                            ]
+                  in
+                  Html.table
+                    []
+                    [ Html.thead []
+                        [ Html.tr []
+                            [ Html.th [ Html.Attributes.attribute "align" "left" ] [ Html.text "Input" ]
+                            , Html.th [] [ Html.text "Primary Key" ]
+                            , Html.th [] [ Html.text "Secondary Key" ]
+                            ]
+                        ]
+                    , Html.tbody []
+                        (Html.tr []
+                            [ Html.th [] [ Html.h3 [] [ Html.text "Character Movement" ] ]
+                            ]
+                            :: List.map viewMapping
+                                [ { label = "Face up"
+                                  , keys = model.inputMapping.moveUp
+                                  , setPrimary =
+                                        \key inputMapping ->
+                                            let
+                                                ( _, secondary ) =
+                                                    inputMapping.moveUp
+                                            in
+                                            { inputMapping | moveUp = ( key, secondary ) }
+                                  , setSecondary =
+                                        \key inputMapping ->
+                                            let
+                                                ( primary, _ ) =
+                                                    inputMapping.moveUp
+                                            in
+                                            { inputMapping | moveUp = ( primary, key ) }
+                                  }
+                                , { label = "Face down"
+                                  , keys = model.inputMapping.moveDown
+                                  , setPrimary =
+                                        \key inputMapping ->
+                                            let
+                                                ( _, secondary ) =
+                                                    inputMapping.moveDown
+                                            in
+                                            { inputMapping | moveDown = ( key, secondary ) }
+                                  , setSecondary =
+                                        \key inputMapping ->
+                                            let
+                                                ( primary, _ ) =
+                                                    inputMapping.moveDown
+                                            in
+                                            { inputMapping | moveDown = ( primary, key ) }
+                                  }
+                                , { label = "Face left"
+                                  , keys = model.inputMapping.moveLeft
+                                  , setPrimary =
+                                        \key inputMapping ->
+                                            let
+                                                ( _, secondary ) =
+                                                    inputMapping.moveLeft
+                                            in
+                                            { inputMapping | moveLeft = ( key, secondary ) }
+                                  , setSecondary =
+                                        \key inputMapping ->
+                                            let
+                                                ( primary, _ ) =
+                                                    inputMapping.moveLeft
+                                            in
+                                            { inputMapping | moveLeft = ( primary, key ) }
+                                  }
+                                , { label = "Face right"
+                                  , keys = model.inputMapping.moveRight
+                                  , setPrimary =
+                                        \key inputMapping ->
+                                            let
+                                                ( _, secondary ) =
+                                                    inputMapping.moveRight
+                                            in
+                                            { inputMapping | moveRight = ( key, secondary ) }
+                                  , setSecondary =
+                                        \key inputMapping ->
+                                            let
+                                                ( primary, _ ) =
+                                                    inputMapping.moveRight
+                                            in
+                                            { inputMapping | moveRight = ( primary, key ) }
+                                  }
+                                ]
+                        )
+                    ]
                 ]
             ]
 
@@ -2989,6 +3108,9 @@ viewHeader model =
                                 |> Phosphor.toHtml []
                             ]
                         ]
+                    , Html.span [] [ Html.text "Hold 'Shift' and move mouse to use camera actions (orbit, pan, zoom)" ]
+                    , Html.br [] []
+                    , Html.br [] []
                     , let
                         viewMapping mapping =
                             let
