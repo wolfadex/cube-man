@@ -96,6 +96,7 @@ type alias Model =
 
     -- Free play
     , freePlayMode : FreePlayMode
+    , showFreePlayMenu : Bool
 
     -- Common
     , screenSize : { width : Int, height : Int }
@@ -447,6 +448,7 @@ init () =
       , showSettings = False
       , screen = Menu
       , freePlayMode = FreePlayBoardSelection
+      , showFreePlayMenu = False
       }
     , Cmd.none
     )
@@ -550,6 +552,8 @@ type Msg
     | SetMapping (InputMapping -> InputMapping)
     | SetScreen Screen
     | LoadFreePlayBoard String
+    | ExitFreePlayBoard
+    | ShowFreePlayMenu Bool
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -608,6 +612,14 @@ update msg model =
                       }
                     , Cmd.none
                     )
+
+        ExitFreePlayBoard ->
+            ( { model
+                | freePlayMode = FreePlayBoardSelection
+                , showFreePlayMenu = False
+              }
+            , Cmd.none
+            )
 
         LoadFreePlayBoard encoding ->
             let
@@ -1070,13 +1082,33 @@ update msg model =
         SetScreen screen ->
             ( { model | screen = screen }, Cmd.none )
 
-        KeyPressed key ->
-            case model.editorMode of
-                EditBoard ->
-                    handleEditorKeyPressed key model
+        ShowFreePlayMenu show ->
+            ( { model | showFreePlayMenu = show }, Cmd.none )
 
-                TestGame ->
-                    handleGameKeyPressed key model
+        KeyPressed key ->
+            case model.screen of
+                Editor ->
+                    case model.editorMode of
+                        EditBoard ->
+                            handleEditorKeyPressed key model
+
+                        TestGame ->
+                            handleGameKeyPressed key model
+
+                FreePlay ->
+                    case model.freePlayMode of
+                        FreePlayBoardSelection ->
+                            ( model, Cmd.none )
+
+                        FreePlayBoardLoaded ->
+                            handleGameKeyPressed key model
+
+                Menu ->
+                    ( model, Cmd.none )
+
+                Game ->
+                    -- TODO: handleGameKeyPressed key model
+                    ( model, Cmd.none )
 
 
 showSettings : Bool -> Model -> ( Model, Cmd Msg )
@@ -1317,14 +1349,33 @@ editorViewpoint model =
 
 tickPlayer : Float -> Model -> Model
 tickPlayer deltaMs model =
-    case model.editorMode of
-        EditBoard ->
+    case model.screen of
+        Editor ->
+            case model.editorMode of
+                EditBoard ->
+                    model
+
+                TestGame ->
+                    model
+                        |> setPlayerFacing
+                        |> movePlayer deltaMs
+
+        FreePlay ->
+            case model.freePlayMode of
+                FreePlayBoardSelection ->
+                    model
+
+                FreePlayBoardLoaded ->
+                    model
+                        |> setPlayerFacing
+                        |> movePlayer deltaMs
+
+        Menu ->
             model
 
-        TestGame ->
+        Game ->
+            -- TODO: will need to tick here
             model
-                |> setPlayerFacing
-                |> movePlayer deltaMs
 
 
 movePlayer : Float -> Model -> Model
@@ -1924,7 +1975,7 @@ view model =
 
 
 viewStartScreen : Model -> List (Html Msg)
-viewStartScreen model =
+viewStartScreen _ =
     [ Html.div
         [ Html.Attributes.style "width" "100vw"
         , Html.Attributes.style "height" "100vh"
@@ -1980,7 +2031,7 @@ viewStartScreen model =
 
 
 viewGameScreen : Model -> List (Html Msg)
-viewGameScreen model =
+viewGameScreen _ =
     [ Html.div
         [ Html.Attributes.style "width" "100vw"
         , Html.Attributes.style "height" "100vh"
@@ -2086,6 +2137,52 @@ viewFreePlayScreen model =
                     , [ viewPlayer model.playerFacing model.playerFrame ]
                     ]
                 )
+            , Html.div
+                [ Html.Attributes.style "position" "absolute"
+                , Html.Attributes.style "padding" "0.5rem"
+                , Html.Attributes.style "top" "0"
+                , Html.Attributes.style "left" "0"
+                ]
+                [ Html.h3 [] [ Html.text ("Score: " ++ String.fromInt model.score) ]
+                ]
+            , Html.div
+                [ Html.Attributes.style "position" "absolute"
+                , Html.Attributes.style "padding" "0.5rem"
+                , Html.Attributes.style "top" "0"
+                , Html.Attributes.style "right" "0"
+                ]
+                [ Html.button
+                    [ Html.Attributes.type_ "button"
+                    , Html.Events.onClick (ShowFreePlayMenu True)
+                    ]
+                    [ Html.text "Menu"
+                    ]
+                ]
+            , Html.Extra.modal { open = model.showFreePlayMenu, onClose = ShowFreePlayMenu False }
+                []
+                [ Html.h2
+                    [ Html.Attributes.style "width" "100%"
+                    , Html.Attributes.style "margin-top" "0"
+                    ]
+                    [ Html.text "Free Play"
+                    , Html.button
+                        [ Html.Attributes.style "float" "right"
+                        , Html.Attributes.style "background" "none"
+                        , Html.Attributes.type_ "button"
+                        , Html.Attributes.title "Close"
+                        , Html.Events.onClick (ShowFreePlayMenu False)
+                        ]
+                        [ Phosphor.xCircle Phosphor.Regular
+                            |> Phosphor.toHtml []
+                        ]
+                    ]
+                , Html.button
+                    [ Html.Attributes.type_ "button"
+                    , Html.Events.onClick ExitFreePlayBoard
+                    ]
+                    [ Html.text "Select another board"
+                    ]
+                ]
             ]
 
 

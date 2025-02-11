@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739255767403"
+    "1739256514953"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -17444,6 +17444,7 @@ var $author$project$Main$init = function (_v0) {
 			selectedBlock: $elm$core$Maybe$Nothing,
 			selectedBlockType: $author$project$Main$Wall,
 			showBoardBounds: true,
+			showFreePlayMenu: false,
 			showSettings: false,
 			xLowerVisible: 0,
 			xUpperVisible: maxX - 1,
@@ -19650,14 +19651,32 @@ var $author$project$Main$setPlayerFacing = function (model) {
 };
 var $author$project$Main$tickPlayer = F2(
 	function (deltaMs, model) {
-		var _v0 = model.editorMode;
-		if (_v0.$ === 'EditBoard') {
-			return model;
-		} else {
-			return A2(
-				$author$project$Main$movePlayer,
-				deltaMs,
-				$author$project$Main$setPlayerFacing(model));
+		var _v0 = model.screen;
+		switch (_v0.$) {
+			case 'Editor':
+				var _v1 = model.editorMode;
+				if (_v1.$ === 'EditBoard') {
+					return model;
+				} else {
+					return A2(
+						$author$project$Main$movePlayer,
+						deltaMs,
+						$author$project$Main$setPlayerFacing(model));
+				}
+			case 'FreePlay':
+				var _v2 = model.freePlayMode;
+				if (_v2.$ === 'FreePlayBoardSelection') {
+					return model;
+				} else {
+					return A2(
+						$author$project$Main$movePlayer,
+						deltaMs,
+						$author$project$Main$setPlayerFacing(model));
+				}
+			case 'Menu':
+				return model;
+			default:
+				return model;
 		}
 	});
 var $elm$core$Result$withDefault = F2(
@@ -19733,6 +19752,12 @@ var $author$project$Main$update = F2(
 							}),
 						$elm$core$Platform$Cmd$none);
 				}
+			case 'ExitFreePlayBoard':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{freePlayMode: $author$project$Main$FreePlayBoardSelection, showFreePlayMenu: false}),
+					$elm$core$Platform$Cmd$none);
 			case 'LoadFreePlayBoard':
 				var encoding = msg.a;
 				var loadedBoard = A2(
@@ -20269,13 +20294,35 @@ var $author$project$Main$update = F2(
 						model,
 						{screen: screen}),
 					$elm$core$Platform$Cmd$none);
+			case 'ShowFreePlayMenu':
+				var show = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{showFreePlayMenu: show}),
+					$elm$core$Platform$Cmd$none);
 			default:
 				var key = msg.a;
-				var _v18 = model.editorMode;
-				if (_v18.$ === 'EditBoard') {
-					return A2($author$project$Main$handleEditorKeyPressed, key, model);
-				} else {
-					return A2($author$project$Main$handleGameKeyPressed, key, model);
+				var _v18 = model.screen;
+				switch (_v18.$) {
+					case 'Editor':
+						var _v19 = model.editorMode;
+						if (_v19.$ === 'EditBoard') {
+							return A2($author$project$Main$handleEditorKeyPressed, key, model);
+						} else {
+							return A2($author$project$Main$handleGameKeyPressed, key, model);
+						}
+					case 'FreePlay':
+						var _v20 = model.freePlayMode;
+						if (_v20.$ === 'FreePlayBoardSelection') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							return A2($author$project$Main$handleGameKeyPressed, key, model);
+						}
+					case 'Menu':
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					default:
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
 		}
 	});
@@ -29202,6 +29249,10 @@ var $author$project$Main$viewEditorScreen = function (model) {
 				]))
 		]);
 };
+var $author$project$Main$ExitFreePlayBoard = {$: 'ExitFreePlayBoard'};
+var $author$project$Main$ShowFreePlayMenu = function (a) {
+	return {$: 'ShowFreePlayMenu', a: a};
+};
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $author$project$Main$LoadFreePlayBoard = function (a) {
 	return {$: 'LoadFreePlayBoard', a: a};
@@ -29332,11 +29383,105 @@ var $author$project$Main$viewFreePlayScreen = function (model) {
 							[
 								A2($author$project$Main$viewPlayer, model.playerFacing, model.playerFrame)
 							])
-						])))
+						]))),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+						A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
+						A2($elm$html$Html$Attributes$style, 'top', '0'),
+						A2($elm$html$Html$Attributes$style, 'left', '0')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$h3,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								'Score: ' + $elm$core$String$fromInt(model.score))
+							]))
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+						A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
+						A2($elm$html$Html$Attributes$style, 'top', '0'),
+						A2($elm$html$Html$Attributes$style, 'right', '0')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$type_('button'),
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$ShowFreePlayMenu(true))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Menu')
+							]))
+					])),
+				A3(
+				$author$project$Html$Extra$modal,
+				{
+					onClose: $author$project$Main$ShowFreePlayMenu(false),
+					open: model.showFreePlayMenu
+				},
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$h2,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'width', '100%'),
+								A2($elm$html$Html$Attributes$style, 'margin-top', '0')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Free Play'),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										A2($elm$html$Html$Attributes$style, 'float', 'right'),
+										A2($elm$html$Html$Attributes$style, 'background', 'none'),
+										$elm$html$Html$Attributes$type_('button'),
+										$elm$html$Html$Attributes$title('Close'),
+										$elm$html$Html$Events$onClick(
+										$author$project$Main$ShowFreePlayMenu(false))
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+										_List_Nil,
+										$phosphor_icons$phosphor_elm$Phosphor$xCircle($phosphor_icons$phosphor_elm$Phosphor$Regular))
+									]))
+							])),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$type_('button'),
+								$elm$html$Html$Events$onClick($author$project$Main$ExitFreePlayBoard)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Select another board')
+							]))
+					]))
 			]);
 	}
 };
-var $author$project$Main$viewGameScreen = function (model) {
+var $author$project$Main$viewGameScreen = function (_v0) {
 	return _List_fromArray(
 		[
 			A2(
@@ -29403,7 +29548,7 @@ var $author$project$Main$viewGameScreen = function (model) {
 };
 var $author$project$Main$FreePlay = {$: 'FreePlay'};
 var $author$project$Main$Game = {$: 'Game'};
-var $author$project$Main$viewStartScreen = function (model) {
+var $author$project$Main$viewStartScreen = function (_v0) {
 	return _List_fromArray(
 		[
 			A2(
@@ -29536,4 +29681,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$document(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.InputMapping":{"args":[],"type":"{ moveUp : ( String.String, String.String ), moveDown : ( String.String, String.String ), moveLeft : ( String.String, String.String ), moveRight : ( String.String, String.String ), cameraOrbit : ( String.String, String.String ), cameraPan : ( String.String, String.String ), cameraZoom : ( String.String, String.String ), cameraReset : ( String.String, String.String ), blockSelect : ( String.String, String.String ), blockAdd : ( String.String, String.String ), blockRemove : ( String.String, String.String ), blockTypeWall : ( String.String, String.String ), blockTypeEdge : ( String.String, String.String ), blockTypePointPickup : ( String.String, String.String ), blockTypePlayerSpawn : ( String.String, String.String ), undo : ( String.String, String.String ), redo : ( String.String, String.String ), toggleSettings : ( String.String, String.String ) }"},"Main.Point":{"args":[],"type":"( Basics.Int, Basics.Int, Basics.Int )"},"Point2d.Point2d":{"args":["units","coordinates"],"type":"Geometry.Types.Point2d units coordinates"},"Json.Decode.Value":{"args":[],"type":"Json.Encode.Value"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"Tick":["Basics.Float"],"KeyPressed":["String.String"],"KeyDown":["String.String"],"KeyUp":["String.String"],"MouseDown":["Json.Decode.Value"],"MouseUp":[],"MouseMove":["Json.Decode.Value","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates"],"EncodingChanged":["String.String"],"LoadEditorBoard":["String.String"],"ChangeMode":[],"SetBlockEditMode":["Main.BlockEditMode"],"SetCameraMode":["Main.CameraMode"],"ResetCamera":[],"Undo":[],"Redo":[],"XLowerVisibleChanged":["Basics.Int"],"XUpperVisibleChanged":["Basics.Int"],"YLowerVisibleChanged":["Basics.Int"],"YUpperVisibleChanged":["Basics.Int"],"ZLowerVisibleChanged":["Basics.Int"],"ZUpperVisibleChanged":["Basics.Int"],"BlockTypeSelected":["Main.Block"],"SetBlock":["Main.Point","Main.Block"],"MaxXChanged":["String.String"],"MaxYChanged":["String.String"],"MaxZChanged":["String.String"],"ShowBoardBounds":["Basics.Bool"],"ShowSettings":["Basics.Bool"],"SetMapping":["Main.InputMapping -> Main.InputMapping"],"SetScreen":["Main.Screen"],"LoadFreePlayBoard":["String.String"]}},"Main.Block":{"args":[],"tags":{"Empty":[],"Wall":[],"Edge":[],"PointPickup":["Basics.Bool"],"PlayerSpawn":["{ forward : Main.Axis, left : Main.Axis }"]}},"Main.BlockEditMode":{"args":[],"tags":{"Add":[],"Remove":[],"Select":[]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Main.CameraMode":{"args":[],"tags":{"Orbit":[],"Pan":[],"Zoom":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Pixels.Pixels":{"args":[],"tags":{"Pixels":[]}},"Geometry.Types.Point2d":{"args":["units","coordinates"],"tags":{"Point2d":["{ x : Basics.Float, y : Basics.Float }"]}},"Main.Screen":{"args":[],"tags":{"Editor":[],"Game":[],"FreePlay":[],"Menu":[]}},"Main.ScreenCoordinates":{"args":[],"tags":{"ScreenCoordinates":["Basics.Never"]}},"String.String":{"args":[],"tags":{"String":[]}},"Json.Encode.Value":{"args":[],"tags":{"Value":[]}},"Main.Axis":{"args":[],"tags":{"PositiveX":[],"NegativeX":[],"PositiveY":[],"NegativeY":[],"PositiveZ":[],"NegativeZ":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.InputMapping":{"args":[],"type":"{ moveUp : ( String.String, String.String ), moveDown : ( String.String, String.String ), moveLeft : ( String.String, String.String ), moveRight : ( String.String, String.String ), cameraOrbit : ( String.String, String.String ), cameraPan : ( String.String, String.String ), cameraZoom : ( String.String, String.String ), cameraReset : ( String.String, String.String ), blockSelect : ( String.String, String.String ), blockAdd : ( String.String, String.String ), blockRemove : ( String.String, String.String ), blockTypeWall : ( String.String, String.String ), blockTypeEdge : ( String.String, String.String ), blockTypePointPickup : ( String.String, String.String ), blockTypePlayerSpawn : ( String.String, String.String ), undo : ( String.String, String.String ), redo : ( String.String, String.String ), toggleSettings : ( String.String, String.String ) }"},"Main.Point":{"args":[],"type":"( Basics.Int, Basics.Int, Basics.Int )"},"Point2d.Point2d":{"args":["units","coordinates"],"type":"Geometry.Types.Point2d units coordinates"},"Json.Decode.Value":{"args":[],"type":"Json.Encode.Value"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"Tick":["Basics.Float"],"KeyPressed":["String.String"],"KeyDown":["String.String"],"KeyUp":["String.String"],"MouseDown":["Json.Decode.Value"],"MouseUp":[],"MouseMove":["Json.Decode.Value","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates","Point2d.Point2d Pixels.Pixels Main.ScreenCoordinates"],"EncodingChanged":["String.String"],"LoadEditorBoard":["String.String"],"ChangeMode":[],"SetBlockEditMode":["Main.BlockEditMode"],"SetCameraMode":["Main.CameraMode"],"ResetCamera":[],"Undo":[],"Redo":[],"XLowerVisibleChanged":["Basics.Int"],"XUpperVisibleChanged":["Basics.Int"],"YLowerVisibleChanged":["Basics.Int"],"YUpperVisibleChanged":["Basics.Int"],"ZLowerVisibleChanged":["Basics.Int"],"ZUpperVisibleChanged":["Basics.Int"],"BlockTypeSelected":["Main.Block"],"SetBlock":["Main.Point","Main.Block"],"MaxXChanged":["String.String"],"MaxYChanged":["String.String"],"MaxZChanged":["String.String"],"ShowBoardBounds":["Basics.Bool"],"ShowSettings":["Basics.Bool"],"SetMapping":["Main.InputMapping -> Main.InputMapping"],"SetScreen":["Main.Screen"],"LoadFreePlayBoard":["String.String"],"ExitFreePlayBoard":[],"ShowFreePlayMenu":["Basics.Bool"]}},"Main.Block":{"args":[],"tags":{"Empty":[],"Wall":[],"Edge":[],"PointPickup":["Basics.Bool"],"PlayerSpawn":["{ forward : Main.Axis, left : Main.Axis }"]}},"Main.BlockEditMode":{"args":[],"tags":{"Add":[],"Remove":[],"Select":[]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Main.CameraMode":{"args":[],"tags":{"Orbit":[],"Pan":[],"Zoom":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Pixels.Pixels":{"args":[],"tags":{"Pixels":[]}},"Geometry.Types.Point2d":{"args":["units","coordinates"],"tags":{"Point2d":["{ x : Basics.Float, y : Basics.Float }"]}},"Main.Screen":{"args":[],"tags":{"Editor":[],"Game":[],"FreePlay":[],"Menu":[]}},"Main.ScreenCoordinates":{"args":[],"tags":{"ScreenCoordinates":["Basics.Never"]}},"String.String":{"args":[],"tags":{"String":[]}},"Json.Encode.Value":{"args":[],"tags":{"Value":[]}},"Main.Axis":{"args":[],"tags":{"PositiveX":[],"NegativeX":[],"PositiveY":[],"NegativeY":[],"PositiveZ":[],"NegativeZ":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}}}}})}});}(this));
