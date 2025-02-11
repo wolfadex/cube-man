@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739237480484"
+    "1739237952429"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -12158,6 +12158,7 @@ var $author$project$Main$init = function (_v0) {
 				0,
 				A2($MartinSStewart$elm_serialize$Serialize$encodeToJson, $author$project$Main$boardCodec, board)),
 			boardLoadError: $elm$core$Maybe$Nothing,
+			boardPlayError: $elm$core$Maybe$Nothing,
 			cameraDistance: $ianmackenzie$elm_units$Length$meters(30),
 			cameraElevation: $ianmackenzie$elm_units$Angle$degrees(25),
 			cameraFocalPoint: A3($ianmackenzie$elm_geometry$Point3d$meters, (maxX - 1) / 2, (maxY - 1) / 2, (maxZ - 1) / 2),
@@ -12655,6 +12656,7 @@ var $author$project$Main$Game = {$: 'Game'};
 var $author$project$Main$InteractionStart = function (a) {
 	return {$: 'InteractionStart', a: a};
 };
+var $author$project$Main$MissingPlayerSpawn = {$: 'MissingPlayerSpawn'};
 var $author$project$Main$OtherError = {$: 'OtherError'};
 var $author$project$Main$SerializerOutOfDate = {$: 'SerializerOutOfDate'};
 var $elm$core$Basics$min = F2(
@@ -14894,7 +14896,6 @@ var $author$project$Main$tickPlayer = F2(
 				$author$project$Main$setPlayerFacing(model));
 		}
 	});
-var $elm$core$Debug$todo = _Debug_todo;
 var $author$project$Undo$undo = function (stack) {
 	var _v0 = stack.a;
 	var before = _v0.a;
@@ -14990,18 +14991,19 @@ var $author$project$Main$update = F2(
 					var board = $author$project$Undo$value(model.editorBoard);
 					var _v4 = $author$project$Main$findSpawn(board);
 					if (_v4.$ === 'Nothing') {
-						return _Debug_todo(
-							'Main',
-							{
-								start: {line: 491, column: 29},
-								end: {line: 491, column: 39}
-							})('No player spawn found');
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									boardPlayError: $elm$core$Maybe$Just($author$project$Main$MissingPlayerSpawn)
+								}),
+							$elm$core$Platform$Cmd$none);
 					} else {
 						var spawnFrame = _v4.a;
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
-								{board: board, mode: $author$project$Main$Game, playerFacing: $author$project$Main$Forward, playerFrame: spawnFrame, playerMovingAcrossEdge: $elm$core$Maybe$Nothing, playerWantFacing: $author$project$Main$Forward, score: 0}),
+								{board: board, boardPlayError: $elm$core$Maybe$Nothing, mode: $author$project$Main$Game, playerFacing: $author$project$Main$Forward, playerFrame: spawnFrame, playerMovingAcrossEdge: $elm$core$Maybe$Nothing, playerWantFacing: $author$project$Main$Forward, score: 0}),
 							$elm$core$Platform$Cmd$none);
 					}
 				} else {
@@ -15127,8 +15129,8 @@ var $author$project$Main$update = F2(
 										board,
 										{
 											blocks: function () {
-												var _v6 = model.selectedBlockType;
-												if (_v6.$ === 'PlayerSpawn') {
+												var _v9 = model.selectedBlockType;
+												if (_v9.$ === 'PlayerSpawn') {
 													return A3(
 														$elm$core$Dict$insert,
 														model.editorCursor,
@@ -15136,7 +15138,7 @@ var $author$project$Main$update = F2(
 														A2(
 															$elm$core$Dict$map,
 															F2(
-																function (_v7, block) {
+																function (_v10, block) {
 																	if (block.$ === 'PlayerSpawn') {
 																		return $author$project$Main$Empty;
 																	} else {
@@ -15162,6 +15164,21 @@ var $author$project$Main$update = F2(
 												$MartinSStewart$elm_serialize$Serialize$encodeToJson,
 												$author$project$Main$boardCodec,
 												$author$project$Undo$value(editorBoard))),
+										boardPlayError: function () {
+											var _v6 = model.boardPlayError;
+											if (_v6.$ === 'Nothing') {
+												return model.boardPlayError;
+											} else {
+												var _v7 = _v6.a;
+												var _v8 = $author$project$Main$findSpawn(
+													$author$project$Undo$value(editorBoard));
+												if (_v8.$ === 'Nothing') {
+													return model.boardPlayError;
+												} else {
+													return $elm$core$Maybe$Nothing;
+												}
+											}
+										}(),
 										editorBoard: editorBoard,
 										mouseDragging: $author$project$Main$NoInteraction,
 										selectedBlock: function () {
@@ -15291,13 +15308,13 @@ var $author$project$Main$update = F2(
 				var maxXStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v9 = $elm$core$String$toInt(maxXStr);
-						if (_v9.$ === 'Nothing') {
+						var _v12 = $elm$core$String$toInt(maxXStr);
+						if (_v12.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxXRaw: maxXStr});
 						} else {
-							var maxX = _v9.a;
+							var maxX = _v12.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -15346,13 +15363,13 @@ var $author$project$Main$update = F2(
 				var maxYStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v10 = $elm$core$String$toInt(maxYStr);
-						if (_v10.$ === 'Nothing') {
+						var _v13 = $elm$core$String$toInt(maxYStr);
+						if (_v13.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxYRaw: maxYStr});
 						} else {
-							var maxY = _v10.a;
+							var maxY = _v13.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -15401,13 +15418,13 @@ var $author$project$Main$update = F2(
 				var maxZStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v11 = $elm$core$String$toInt(maxZStr);
-						if (_v11.$ === 'Nothing') {
+						var _v14 = $elm$core$String$toInt(maxZStr);
+						if (_v14.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxZRaw: maxZStr});
 						} else {
-							var maxZ = _v11.a;
+							var maxZ = _v14.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -15461,8 +15478,8 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			default:
 				var key = msg.a;
-				var _v12 = model.mode;
-				if (_v12.$ === 'Editor') {
+				var _v15 = model.mode;
+				if (_v15.$ === 'Editor') {
 					return A2($author$project$Main$handleEditorKeyPressed, key, model);
 				} else {
 					return A2($author$project$Main$handleGameKeyPressed, key, model);
@@ -22152,6 +22169,25 @@ var $author$project$Main$viewHeader = function (model) {
 					_List_fromArray(
 						[
 							$elm$html$Html$text('Play Level')
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'width', '12rem'),
+							A2($elm$html$Html$Attributes$style, 'color', 'red')
+						]),
+					_List_fromArray(
+						[
+							function () {
+							var _v1 = model.boardPlayError;
+							if (_v1.$ === 'Nothing') {
+								return $elm$html$Html$text('');
+							} else {
+								var _v2 = _v1.a;
+								return $elm$html$Html$text('Missing Player Spawn');
+							}
+						}()
 						])),
 					A2(
 					$elm$html$Html$div,
