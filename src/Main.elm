@@ -92,6 +92,41 @@ type alias Model =
     , editorMaxYRaw : String
     , editorMaxZRaw : String
     , blockPalette : BlockPalette
+    , inputMapping : InputMapping
+    , showSettings : Bool
+    }
+
+
+type alias InputMapping =
+    { moveUp : ( String, String )
+    , moveDown : ( String, String )
+    , moveLeft : ( String, String )
+    , moveRight : ( String, String )
+
+    --
+    --
+    , cameraOrbit : ( String, String )
+    , cameraPan : ( String, String )
+    , cameraZoom : ( String, String )
+    , cameraReset : ( String, String )
+
+    --
+    , blockSelect : ( String, String )
+    , blockAdd : ( String, String )
+    , blockRemove : ( String, String )
+
+    --
+    , blockTypeWall : ( String, String )
+    , blockTypeEdge : ( String, String )
+    , blockTypePointPickup : ( String, String )
+    , blockTypePlayerSpawn : ( String, String )
+
+    --
+    , undo : ( String, String )
+    , redo : ( String, String )
+
+    --
+    , toggleSettings : ( String, String )
     }
 
 
@@ -357,6 +392,38 @@ init () =
       , editorMaxYRaw = String.fromInt maxY
       , editorMaxZRaw = String.fromInt maxZ
       , blockPalette = SimpleBlocks
+      , inputMapping =
+            { moveUp = ( "w", "" )
+            , moveDown = ( "s", "" )
+            , moveLeft = ( "a", "" )
+            , moveRight = ( "d", "" )
+
+            --
+            --
+            , cameraOrbit = ( "1", "" )
+            , cameraPan = ( "2", "" )
+            , cameraZoom = ( "3", "" )
+            , cameraReset = ( "4", "" )
+
+            --
+            , blockSelect = ( "q", "" )
+            , blockAdd = ( "w", "" )
+            , blockRemove = ( "e", "" )
+
+            --
+            , blockTypeWall = ( "a", "" )
+            , blockTypeEdge = ( "s", "" )
+            , blockTypePointPickup = ( "d", "" )
+            , blockTypePlayerSpawn = ( "f", "" )
+
+            --
+            , undo = ( "z", "" )
+            , redo = ( "x", "" )
+
+            --
+            , toggleSettings = ( ",", "" )
+            }
+      , showSettings = False
       }
     , Cmd.none
     )
@@ -373,13 +440,17 @@ type BoardLoadError
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.batch
-        [ Browser.Events.onAnimationFrameDelta Tick
-        , Browser.Events.onKeyPress decodeKeyPressed
-        , Browser.Events.onKeyDown decodeKeyDown
-        , Browser.Events.onKeyUp decodeKeyUp
-        ]
+subscriptions model =
+    if model.showSettings then
+        Sub.none
+
+    else
+        Sub.batch
+            [ Browser.Events.onAnimationFrameDelta Tick
+            , Browser.Events.onKeyPress decodeKeyPressed
+            , Browser.Events.onKeyDown decodeKeyDown
+            , Browser.Events.onKeyUp decodeKeyUp
+            ]
 
 
 decodeKeyPressed : Json.Decode.Decoder Msg
@@ -433,6 +504,8 @@ type Msg
     | MaxYChanged String
     | MaxZChanged String
     | ShowBoardBounds Bool
+    | ShowSettings Bool
+    | SetMapping (InputMapping -> InputMapping)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -897,6 +970,12 @@ update msg model =
         ShowBoardBounds show ->
             ( { model | showBoardBounds = show }, Cmd.none )
 
+        ShowSettings show ->
+            showSettings show model
+
+        SetMapping fn ->
+            ( { model | inputMapping = fn model.inputMapping }, Cmd.none )
+
         KeyPressed key ->
             case model.mode of
                 Editor ->
@@ -904,6 +983,11 @@ update msg model =
 
                 Game ->
                     handleGameKeyPressed key model
+
+
+showSettings : Bool -> Model -> ( Model, Cmd Msg )
+showSettings show model =
+    ( { model | showSettings = show }, Cmd.none )
 
 
 findSpawn : Board -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : {} })
@@ -1603,80 +1687,86 @@ redo model =
 
 handleEditorKeyPressed : String -> Model -> ( Model, Cmd Msg )
 handleEditorKeyPressed key model =
-    case key of
-        "1" ->
-            ( { model | cameraMode = Orbit }, Cmd.none )
+    if isInputKey model.inputMapping.cameraOrbit key then
+        ( { model | cameraMode = Orbit }, Cmd.none )
 
-        "2" ->
-            ( { model | cameraMode = Pan }, Cmd.none )
+    else if isInputKey model.inputMapping.cameraPan key then
+        ( { model | cameraMode = Pan }, Cmd.none )
 
-        "3" ->
-            ( { model | cameraMode = Zoom }, Cmd.none )
+    else if isInputKey model.inputMapping.cameraZoom key then
+        ( { model | cameraMode = Zoom }, Cmd.none )
 
-        "4" ->
-            resetCamera model
+    else if isInputKey model.inputMapping.cameraReset key then
+        resetCamera model
 
-        "q" ->
-            ( { model | editMode = Select }, Cmd.none )
+    else if isInputKey model.inputMapping.blockSelect key then
+        ( { model | editMode = Select }, Cmd.none )
 
-        "w" ->
-            ( { model | editMode = Add }, Cmd.none )
+    else if isInputKey model.inputMapping.blockAdd key then
+        ( { model | editMode = Add }, Cmd.none )
 
-        "e" ->
-            ( { model | editMode = Remove }, Cmd.none )
+    else if isInputKey model.inputMapping.blockRemove key then
+        ( { model | editMode = Remove }, Cmd.none )
 
-        "a" ->
-            ( { model | selectedBlockType = Wall }, Cmd.none )
+    else if isInputKey model.inputMapping.blockTypeWall key then
+        ( { model | selectedBlockType = Wall }, Cmd.none )
 
-        "s" ->
-            ( { model | selectedBlockType = Edge }, Cmd.none )
+    else if isInputKey model.inputMapping.blockTypeEdge key then
+        ( { model | selectedBlockType = Edge }, Cmd.none )
 
-        "d" ->
-            ( { model | selectedBlockType = PointPickup False }, Cmd.none )
+    else if isInputKey model.inputMapping.blockTypePointPickup key then
+        ( { model | selectedBlockType = PointPickup False }, Cmd.none )
 
-        "f" ->
-            ( { model | selectedBlockType = PlayerSpawn { forward = PositiveX, left = PositiveY } }, Cmd.none )
+    else if isInputKey model.inputMapping.blockTypePlayerSpawn key then
+        ( { model | selectedBlockType = PlayerSpawn { forward = PositiveX, left = PositiveY } }, Cmd.none )
 
-        "z" ->
-            undo model
+    else if isInputKey model.inputMapping.undo key then
+        undo model
 
-        "x" ->
-            redo model
+    else if isInputKey model.inputMapping.redo key then
+        redo model
 
-        "p" ->
-            ( { model
-                | blockPalette =
-                    case model.blockPalette of
-                        SimpleBlocks ->
-                            RainbowBlocks
+    else if isInputKey model.inputMapping.toggleSettings key then
+        showSettings (not model.showSettings) model
 
-                        RainbowBlocks ->
-                            SimpleBlocks
-              }
-            , Cmd.none
-            )
+    else if key == "p" then
+        ( { model
+            | blockPalette =
+                case model.blockPalette of
+                    SimpleBlocks ->
+                        RainbowBlocks
 
-        _ ->
-            ( model, Cmd.none )
+                    RainbowBlocks ->
+                        SimpleBlocks
+          }
+        , Cmd.none
+        )
+
+    else
+        ( model, Cmd.none )
 
 
 handleGameKeyPressed : String -> Model -> ( Model, Cmd Msg )
 handleGameKeyPressed key model =
-    case key of
-        "w" ->
-            ( { model | playerWantFacing = Forward }, Cmd.none )
+    if isInputKey model.inputMapping.moveUp key then
+        ( { model | playerWantFacing = Forward }, Cmd.none )
 
-        "s" ->
-            ( { model | playerWantFacing = Backward }, Cmd.none )
+    else if isInputKey model.inputMapping.moveDown key then
+        ( { model | playerWantFacing = Backward }, Cmd.none )
 
-        "d" ->
-            ( { model | playerWantFacing = Right }, Cmd.none )
+    else if isInputKey model.inputMapping.moveLeft key then
+        ( { model | playerWantFacing = Left }, Cmd.none )
 
-        "a" ->
-            ( { model | playerWantFacing = Left }, Cmd.none )
+    else if isInputKey model.inputMapping.moveRight key then
+        ( { model | playerWantFacing = Right }, Cmd.none )
 
-        _ ->
-            ( model, Cmd.none )
+    else
+        ( model, Cmd.none )
+
+
+isInputKey : ( String, String ) -> String -> Bool
+isInputKey ( primary, secondary ) key =
+    key == primary || key == secondary
 
 
 decodeMouseDown : Json.Decode.Decoder Msg
@@ -2207,10 +2297,68 @@ view model =
                                                     "Unexpected error"
                                         ]
                             ]
+                        , Html.br [] []
+                        , Html.label []
+                            [ Html.span [] [ Html.text "Load an example board " ]
+                            , Html.Extra.select
+                                []
+                                { value = Nothing
+                                , options =
+                                    [ DefaultBoard
+                                    , BasicMiniBoard
+                                    , ZigZagBoard
+                                    ]
+                                , toLabel =
+                                    \value ->
+                                        case value of
+                                            DefaultBoard ->
+                                                "9 x 9 blank slate"
+
+                                            BasicMiniBoard ->
+                                                "Basic mini"
+
+                                            ZigZagBoard ->
+                                                "Zig zag"
+                                , toKey =
+                                    \value ->
+                                        case value of
+                                            DefaultBoard ->
+                                                "DefaultBoard"
+
+                                            BasicMiniBoard ->
+                                                "BasicMiniBoard"
+
+                                            ZigZagBoard ->
+                                                "ZigZagBoard"
+                                , onSelect =
+                                    \value ->
+                                        case value of
+                                            Nothing ->
+                                                NoOp
+
+                                            Just DefaultBoard ->
+                                                LoadBoard defaultBoard
+
+                                            Just BasicMiniBoard ->
+                                                LoadBoard basicMiniBoard
+
+                                            Just ZigZagBoard ->
+                                                LoadBoard zigZagBoard
+                                }
+                            ]
                         ]
             ]
         ]
     }
+
+
+viewInputKeyHoverText : ( String, String ) -> String
+viewInputKeyHoverText ( primary, secondary ) =
+    if secondary == "" then
+        primary
+
+    else
+        primary ++ " | " ++ secondary
 
 
 viewHeader : Model -> Html Msg
@@ -2258,7 +2406,7 @@ viewHeader model =
                     [ Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick Undo
-                        , Html.Attributes.title "Undo"
+                        , Html.Attributes.title ("Undo - " ++ viewInputKeyHoverText model.inputMapping.undo)
                         , Html.Attributes.Extra.aria "disabled" <|
                             Html.Attributes.Extra.bool (not <| Undo.canUndo model.editorBoard)
                         ]
@@ -2268,7 +2416,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick Redo
-                        , Html.Attributes.title "Redo"
+                        , Html.Attributes.title ("Redo - " ++ viewInputKeyHoverText model.inputMapping.redo)
                         , Html.Attributes.Extra.aria "disabled" <|
                             Html.Attributes.Extra.bool (not <| Undo.canRedo model.editorBoard)
                         ]
@@ -2281,7 +2429,7 @@ viewHeader model =
                     [ Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetCameraMode Orbit)
-                        , Html.Attributes.title "Camera orbit"
+                        , Html.Attributes.title ("Camera orbit - " ++ viewInputKeyHoverText model.inputMapping.cameraOrbit)
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.cameraMode == Orbit)
                         ]
@@ -2291,7 +2439,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetCameraMode Pan)
-                        , Html.Attributes.title "Camera pan"
+                        , Html.Attributes.title ("Camera pan - " ++ viewInputKeyHoverText model.inputMapping.cameraPan)
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.cameraMode == Pan)
                         ]
@@ -2301,7 +2449,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetCameraMode Zoom)
-                        , Html.Attributes.title "Camera zoom"
+                        , Html.Attributes.title ("Camera zoom - " ++ viewInputKeyHoverText model.inputMapping.cameraZoom)
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.cameraMode == Zoom)
                         ]
@@ -2311,7 +2459,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick ResetCamera
-                        , Html.Attributes.title "Camera reset"
+                        , Html.Attributes.title ("Camera reset - " ++ viewInputKeyHoverText model.inputMapping.cameraReset)
                         ]
                         [ Phosphor.clockCounterClockwise Phosphor.Regular
                             |> Phosphor.toHtml []
@@ -2322,7 +2470,7 @@ viewHeader model =
                     [ Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetEditMode Select)
-                        , Html.Attributes.title "Select block"
+                        , Html.Attributes.title ("Select block - " ++ viewInputKeyHoverText model.inputMapping.blockSelect)
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.editMode == Select)
                         ]
@@ -2332,7 +2480,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetEditMode Add)
-                        , Html.Attributes.title "Add block"
+                        , Html.Attributes.title ("Add block - " ++ viewInputKeyHoverText model.inputMapping.blockAdd)
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.editMode == Add)
                         ]
@@ -2342,7 +2490,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetEditMode Remove)
-                        , Html.Attributes.title "Remove block"
+                        , Html.Attributes.title ("Remove block - " ++ viewInputKeyHoverText model.inputMapping.blockRemove)
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.editMode == Remove)
                         ]
@@ -2358,6 +2506,7 @@ viewHeader model =
                             Html.Attributes.Extra.bool (model.selectedBlockType == Wall)
                         , Html.Attributes.type_ "button"
                         , Html.Events.onClick (BlockTypeSelected Wall)
+                        , Html.Attributes.title ("Wall - " ++ viewInputKeyHoverText model.inputMapping.blockTypeWall)
                         ]
                         [ Html.text "Wall"
                         ]
@@ -2366,6 +2515,7 @@ viewHeader model =
                             Html.Attributes.Extra.bool (model.selectedBlockType == Edge)
                         , Html.Attributes.type_ "button"
                         , Html.Events.onClick (BlockTypeSelected Edge)
+                        , Html.Attributes.title ("Edge - " ++ viewInputKeyHoverText model.inputMapping.blockTypeEdge)
                         ]
                         [ Html.text "Edge"
                         ]
@@ -2374,6 +2524,7 @@ viewHeader model =
                             Html.Attributes.Extra.bool (model.selectedBlockType == PointPickup False)
                         , Html.Attributes.type_ "button"
                         , Html.Events.onClick (BlockTypeSelected (PointPickup False))
+                        , Html.Attributes.title ("Point Pickup - " ++ viewInputKeyHoverText model.inputMapping.blockTypePointPickup)
                         ]
                         [ Html.text "Point Pickup"
                         ]
@@ -2382,6 +2533,7 @@ viewHeader model =
                             Html.Attributes.Extra.bool (model.selectedBlockType == PlayerSpawn { forward = PositiveX, left = PositiveY })
                         , Html.Attributes.type_ "button"
                         , Html.Events.onClick (BlockTypeSelected (PlayerSpawn { forward = PositiveX, left = PositiveY }))
+                        , Html.Attributes.title ("Player Spawn - " ++ viewInputKeyHoverText model.inputMapping.blockTypePlayerSpawn)
                         ]
                         [ Html.text "Player Spawn"
                         ]
@@ -2396,55 +2548,442 @@ viewHeader model =
                     [ Phosphor.gridNine Phosphor.Regular
                         |> Phosphor.toHtml []
                     ]
-                , Html.label []
-                    [ Html.span [] [ Html.text "Load an example board " ]
-                    , Html.Extra.select
-                        []
-                        { value = Nothing
-                        , options =
-                            [ DefaultBoard
-                            , BasicMiniBoard
-                            , ZigZagBoard
+                , Html.button
+                    [ Html.Attributes.type_ "button"
+                    , Html.Events.onClick (ShowSettings True)
+                    , Html.Attributes.title ("Settings - " ++ viewInputKeyHoverText model.inputMapping.toggleSettings)
+                    , Html.Attributes.style "margin-left" "auto"
+                    ]
+                    [ Phosphor.gear Phosphor.Regular
+                        |> Phosphor.toHtml []
+                    ]
+                , Html.Extra.modal { open = model.showSettings, onClose = ShowSettings False }
+                    []
+                    [ Html.h2
+                        [ Html.Attributes.style "width" "100%"
+                        , Html.Attributes.style "margin-top" "0"
+                        ]
+                        [ Html.text "Settings"
+                        , Html.button
+                            [ Html.Attributes.style "float" "right"
+                            , Html.Attributes.style "background" "none"
+                            , Html.Attributes.type_ "button"
+                            , Html.Attributes.title "Close"
+                            , Html.Events.onClick (ShowSettings False)
                             ]
-                        , toLabel =
-                            \value ->
-                                case value of
-                                    DefaultBoard ->
-                                        "9 x 9 blank slate"
-
-                                    BasicMiniBoard ->
-                                        "Basic mini"
-
-                                    ZigZagBoard ->
-                                        "Zig zag"
-                        , toKey =
-                            \value ->
-                                case value of
-                                    DefaultBoard ->
-                                        "DefaultBoard"
-
-                                    BasicMiniBoard ->
-                                        "BasicMiniBoard"
-
-                                    ZigZagBoard ->
-                                        "ZigZagBoard"
-                        , onSelect =
-                            \value ->
-                                case value of
-                                    Nothing ->
-                                        NoOp
-
-                                    Just DefaultBoard ->
-                                        LoadBoard defaultBoard
-
-                                    Just BasicMiniBoard ->
-                                        LoadBoard basicMiniBoard
-
-                                    Just ZigZagBoard ->
-                                        LoadBoard zigZagBoard
-                        }
+                            [ Phosphor.xCircle Phosphor.Regular
+                                |> Phosphor.toHtml []
+                            ]
+                        ]
+                    , let
+                        viewMapping mapping =
+                            let
+                                ( primary, secondary ) =
+                                    mapping.keys
+                            in
+                            Html.tr []
+                                [ Html.th [ Html.Attributes.attribute "align" "left" ] [ Html.text mapping.label ]
+                                , Html.td [ Html.Attributes.attribute "align" "center" ]
+                                    [ Html.input
+                                        [ Html.Attributes.value primary
+                                        , Html.Attributes.placeholder "Must be set"
+                                        , Html.Events.custom "input" (decodeInputMappingChange mapping.setPrimary)
+                                        , Html.Attributes.style "text-align" "center"
+                                        ]
+                                        []
+                                    ]
+                                , Html.td [ Html.Attributes.attribute "align" "center" ]
+                                    [ Html.input
+                                        [ Html.Attributes.value secondary
+                                        , Html.Attributes.placeholder "Not set"
+                                        , Html.Events.custom "input" (decodeInputMappingChange mapping.setSecondary)
+                                        , Html.Attributes.style "text-align" "center"
+                                        ]
+                                        []
+                                    ]
+                                ]
+                      in
+                      Html.table
+                        []
+                        [ Html.thead []
+                            [ Html.tr []
+                                [ Html.th [ Html.Attributes.attribute "align" "left" ] [ Html.text "Input" ]
+                                , Html.th [] [ Html.text "Primary Key" ]
+                                , Html.th [] [ Html.text "Secondary Key" ]
+                                ]
+                            ]
+                        , Html.tbody []
+                            (Html.tr []
+                                [ Html.th [] [ Html.h3 [] [ Html.text "Character Movement" ] ]
+                                ]
+                                :: List.map viewMapping
+                                    [ { label = "Face up"
+                                      , keys = model.inputMapping.moveUp
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.moveUp
+                                                in
+                                                { inputMapping | moveUp = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.moveUp
+                                                in
+                                                { inputMapping | moveUp = ( primary, key ) }
+                                      }
+                                    , { label = "Face down"
+                                      , keys = model.inputMapping.moveDown
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.moveDown
+                                                in
+                                                { inputMapping | moveDown = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.moveDown
+                                                in
+                                                { inputMapping | moveDown = ( primary, key ) }
+                                      }
+                                    , { label = "Face left"
+                                      , keys = model.inputMapping.moveLeft
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.moveLeft
+                                                in
+                                                { inputMapping | moveLeft = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.moveLeft
+                                                in
+                                                { inputMapping | moveLeft = ( primary, key ) }
+                                      }
+                                    , { label = "Face right"
+                                      , keys = model.inputMapping.moveRight
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.moveRight
+                                                in
+                                                { inputMapping | moveRight = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.moveRight
+                                                in
+                                                { inputMapping | moveRight = ( primary, key ) }
+                                      }
+                                    ]
+                                ++ [ Html.tr []
+                                        [ Html.th [] [ Html.h3 [] [ Html.text "Editor" ] ]
+                                        ]
+                                   , Html.tr []
+                                        [ Html.th [] [ Html.text "Camera" ]
+                                        ]
+                                   ]
+                                ++ List.map viewMapping
+                                    [ { label = "Orbit"
+                                      , keys = model.inputMapping.cameraOrbit
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.cameraOrbit
+                                                in
+                                                { inputMapping | cameraOrbit = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.cameraOrbit
+                                                in
+                                                { inputMapping | cameraOrbit = ( primary, key ) }
+                                      }
+                                    , { label = "Pan"
+                                      , keys = model.inputMapping.cameraPan
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.cameraPan
+                                                in
+                                                { inputMapping | cameraPan = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.cameraPan
+                                                in
+                                                { inputMapping | cameraPan = ( primary, key ) }
+                                      }
+                                    , { label = "Zoom"
+                                      , keys = model.inputMapping.cameraZoom
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.cameraZoom
+                                                in
+                                                { inputMapping | cameraZoom = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.cameraZoom
+                                                in
+                                                { inputMapping | cameraZoom = ( primary, key ) }
+                                      }
+                                    , { label = "Reset"
+                                      , keys = model.inputMapping.cameraReset
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.cameraReset
+                                                in
+                                                { inputMapping | cameraReset = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.cameraReset
+                                                in
+                                                { inputMapping | cameraReset = ( primary, key ) }
+                                      }
+                                    ]
+                                ++ [ Html.tr []
+                                        [ Html.th [] [ Html.text "Block Edit" ]
+                                        ]
+                                   ]
+                                ++ List.map viewMapping
+                                    [ { label = "Select"
+                                      , keys = model.inputMapping.blockSelect
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.blockSelect
+                                                in
+                                                { inputMapping | blockSelect = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.blockSelect
+                                                in
+                                                { inputMapping | blockSelect = ( primary, key ) }
+                                      }
+                                    , { label = "Add"
+                                      , keys = model.inputMapping.blockAdd
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.blockAdd
+                                                in
+                                                { inputMapping | blockAdd = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.blockAdd
+                                                in
+                                                { inputMapping | blockAdd = ( primary, key ) }
+                                      }
+                                    , { label = "Remove"
+                                      , keys = model.inputMapping.blockRemove
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.blockRemove
+                                                in
+                                                { inputMapping | blockRemove = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.blockRemove
+                                                in
+                                                { inputMapping | blockRemove = ( primary, key ) }
+                                      }
+                                    ]
+                                ++ [ Html.tr []
+                                        [ Html.th [] [ Html.text "Block Type" ]
+                                        ]
+                                   ]
+                                ++ List.map viewMapping
+                                    [ { label = "Wall"
+                                      , keys = model.inputMapping.blockTypeWall
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.blockTypeWall
+                                                in
+                                                { inputMapping | blockTypeWall = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.blockTypeWall
+                                                in
+                                                { inputMapping | blockTypeWall = ( primary, key ) }
+                                      }
+                                    , { label = "Edge"
+                                      , keys = model.inputMapping.blockTypeEdge
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.blockTypeEdge
+                                                in
+                                                { inputMapping | blockTypeEdge = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.blockTypeEdge
+                                                in
+                                                { inputMapping | blockTypeEdge = ( primary, key ) }
+                                      }
+                                    , { label = "Point Pickup"
+                                      , keys = model.inputMapping.blockTypePointPickup
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.blockTypePointPickup
+                                                in
+                                                { inputMapping | blockTypePointPickup = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.blockTypePointPickup
+                                                in
+                                                { inputMapping | blockTypePointPickup = ( primary, key ) }
+                                      }
+                                    , { label = "Player Spawn"
+                                      , keys = model.inputMapping.blockTypePlayerSpawn
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.blockTypePlayerSpawn
+                                                in
+                                                { inputMapping | blockTypePlayerSpawn = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.blockTypePlayerSpawn
+                                                in
+                                                { inputMapping | blockTypePlayerSpawn = ( primary, key ) }
+                                      }
+                                    ]
+                                ++ [ Html.tr []
+                                        [ Html.th [] [ Html.text "Undo / Redo" ]
+                                        ]
+                                   ]
+                                ++ List.map viewMapping
+                                    [ { label = "Undo"
+                                      , keys = model.inputMapping.undo
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.undo
+                                                in
+                                                { inputMapping | undo = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.undo
+                                                in
+                                                { inputMapping | undo = ( primary, key ) }
+                                      }
+                                    , { label = "Redo"
+                                      , keys = model.inputMapping.redo
+                                      , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.redo
+                                                in
+                                                { inputMapping | redo = ( key, secondary ) }
+                                      , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.redo
+                                                in
+                                                { inputMapping | redo = ( primary, key ) }
+                                      }
+                                    ]
+                                ++ [ Html.tr []
+                                        [ Html.th [] [ Html.text "Other" ]
+                                        ]
+                                   , viewMapping
+                                        { label = "Open Settings"
+                                        , keys = model.inputMapping.toggleSettings
+                                        , setPrimary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( _, secondary ) =
+                                                        inputMapping.toggleSettings
+                                                in
+                                                { inputMapping | toggleSettings = ( key, secondary ) }
+                                        , setSecondary =
+                                            \key inputMapping ->
+                                                let
+                                                    ( primary, _ ) =
+                                                        inputMapping.toggleSettings
+                                                in
+                                                { inputMapping | toggleSettings = ( primary, key ) }
+                                        }
+                                   ]
+                            )
+                        ]
                     ]
                 ]
+
+
+decodeInputMappingChange : (String -> InputMapping -> InputMapping) -> Json.Decode.Decoder { message : Msg, preventDefault : Bool, stopPropagation : Bool }
+decodeInputMappingChange fn =
+    Json.Decode.field "data" Json.Decode.string
+        |> Json.Decode.andThen
+            (\data ->
+                let
+                    trimmed =
+                        data
+                            |> String.trim
+                            |> String.right 1
+                            |> String.trim
+                in
+                if String.isEmpty trimmed then
+                    Json.Decode.fail "Not a valid input mapping"
+
+                else
+                    Json.Decode.succeed
+                        { message = SetMapping (fn trimmed)
+                        , preventDefault = True
+                        , stopPropagation = True
+                        }
+            )
 
 
 type ExampleBoards
