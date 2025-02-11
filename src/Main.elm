@@ -20,7 +20,6 @@ import Html.Attributes
 import Html.Attributes.Extra
 import Html.Events
 import Html.Extra
-import Html.Range
 import Json.Decode
 import Json.Encode
 import Length exposing (Length)
@@ -1541,7 +1540,7 @@ view model =
             , Html.Attributes.style "grid-template-columns" <|
                 case model.mode of
                     Editor ->
-                        "auto 20rem"
+                        "auto auto"
 
                     Game ->
                         "auto 8rem"
@@ -1766,77 +1765,106 @@ view model =
                                             ]
                         , Html.hr [] []
                         , Html.form []
-                            [ Html.label []
-                                [ Html.span [] [ Html.text "X Size " ]
-                                , Html.input
-                                    [ Html.Attributes.type_ "number"
-                                    , Html.Attributes.value model.editorMaxXRaw
-                                    , Html.Attributes.min "1"
-                                    , Html.Attributes.max "20"
-                                    , Html.Attributes.step "1"
-                                    , Html.Events.onInput MaxXChanged
+                            [ Html.fieldset []
+                                [ Html.label []
+                                    [ Html.span [] [ Html.text "X Size " ]
+                                    , Html.input
+                                        [ Html.Attributes.type_ "number"
+                                        , Html.Attributes.value model.editorMaxXRaw
+                                        , Html.Attributes.min "1"
+                                        , Html.Attributes.max "20"
+                                        , Html.Attributes.step "1"
+                                        , Html.Events.onInput MaxXChanged
+                                        ]
+                                        []
                                     ]
-                                    []
+                                , Html.br [] []
+                                , Html.label []
+                                    [ Html.span [] [ Html.text "X Visibility" ]
+                                    , Html.Extra.dualRange
+                                        []
+                                        { valueLow = toFloat model.xLowerVisible
+                                        , valueHigh = toFloat model.xUpperVisible
+                                        , onInputLow = round >> XLowerVisibleChanged
+                                        , onInputHigh = round >> XUpperVisibleChanged
+                                        , min = 0
+                                        , max = toFloat (editorBoard.maxX - 1)
+                                        , step = 1
+                                        , colorMin = Nothing
+                                        , colorMid = Nothing
+                                        , colorMax = Nothing
+                                        , thumb1Image = Nothing
+                                        , thumb2Image = Nothing
+                                        }
+                                    ]
                                 ]
                             , Html.br [] []
-                            , Html.label []
-                                [ Html.span [] [ Html.text "X Visibility" ]
-                                , Html.Range.view
-                                    { max = toFloat (editorBoard.maxX - 1)
-                                    , min = 0
-                                    , lowValue = toFloat model.xLowerVisible
-                                    , highValue = toFloat model.xUpperVisible
-                                    , onLowChange = round >> XLowerVisibleChanged
-                                    , onHighChange = round >> XUpperVisibleChanged
-                                    }
-                                ]
-                            , Html.label []
-                                [ Html.span [] [ Html.text "Y Size " ]
-                                , Html.input
-                                    [ Html.Attributes.type_ "number"
-                                    , Html.Attributes.value model.editorMaxYRaw
-                                    , Html.Attributes.min "1"
-                                    , Html.Attributes.max "20"
-                                    , Html.Attributes.step "1"
-                                    , Html.Events.onInput MaxYChanged
+                            , Html.fieldset []
+                                [ Html.label []
+                                    [ Html.span [] [ Html.text "Y Size " ]
+                                    , Html.input
+                                        [ Html.Attributes.type_ "number"
+                                        , Html.Attributes.value model.editorMaxYRaw
+                                        , Html.Attributes.min "1"
+                                        , Html.Attributes.max "20"
+                                        , Html.Attributes.step "1"
+                                        , Html.Events.onInput MaxYChanged
+                                        ]
+                                        []
                                     ]
-                                    []
+                                , Html.br [] []
+                                , Html.label []
+                                    [ Html.span [] [ Html.text "Y Visibility" ]
+                                    , Html.Extra.dualRange
+                                        []
+                                        { valueLow = toFloat model.yLowerVisible
+                                        , valueHigh = toFloat model.yUpperVisible
+                                        , onInputLow = round >> YLowerVisibleChanged
+                                        , onInputHigh = round >> YUpperVisibleChanged
+                                        , min = 0
+                                        , max = toFloat (editorBoard.maxY - 1)
+                                        , step = 1
+                                        , colorMin = Nothing
+                                        , colorMid = Nothing
+                                        , colorMax = Nothing
+                                        , thumb1Image = Nothing
+                                        , thumb2Image = Nothing
+                                        }
+                                    ]
                                 ]
                             , Html.br [] []
-                            , Html.label []
-                                [ Html.span [] [ Html.text "Y Visibility" ]
-                                , Html.Range.view
-                                    { max = toFloat (editorBoard.maxY - 1)
-                                    , min = 0
-                                    , lowValue = toFloat model.yLowerVisible
-                                    , highValue = toFloat model.yUpperVisible
-                                    , onLowChange = round >> YLowerVisibleChanged
-                                    , onHighChange = round >> YUpperVisibleChanged
-                                    }
-                                ]
-                            , Html.label []
-                                [ Html.span [] [ Html.text "Z Size " ]
-                                , Html.input
-                                    [ Html.Attributes.type_ "number"
-                                    , Html.Attributes.value model.editorMaxZRaw
-                                    , Html.Attributes.min "1"
-                                    , Html.Attributes.max "20"
-                                    , Html.Attributes.step "1"
-                                    , Html.Events.onInput MaxZChanged
+                            , Html.fieldset []
+                                [ Html.label []
+                                    [ Html.span [] [ Html.text "Z Size " ]
+                                    , Html.input
+                                        [ Html.Attributes.type_ "number"
+                                        , Html.Attributes.value model.editorMaxZRaw
+                                        , Html.Attributes.min "1"
+                                        , Html.Attributes.max "20"
+                                        , Html.Attributes.step "1"
+                                        , Html.Events.onInput MaxZChanged
+                                        ]
+                                        []
                                     ]
-                                    []
-                                ]
-                            , Html.br [] []
-                            , Html.label []
-                                [ Html.span [] [ Html.text "Z Visibility" ]
-                                , Html.Range.view
-                                    { max = toFloat (editorBoard.maxZ - 1)
-                                    , min = 0
-                                    , lowValue = toFloat model.zLowerVisible
-                                    , highValue = toFloat model.zUpperVisible
-                                    , onLowChange = round >> ZLowerVisibleChanged
-                                    , onHighChange = round >> ZUpperVisibleChanged
-                                    }
+                                , Html.br [] []
+                                , Html.label []
+                                    [ Html.span [] [ Html.text "Z Visibility" ]
+                                    , Html.Extra.dualRange
+                                        []
+                                        { valueLow = toFloat model.zLowerVisible
+                                        , valueHigh = toFloat model.zUpperVisible
+                                        , onInputLow = round >> ZLowerVisibleChanged
+                                        , onInputHigh = round >> ZUpperVisibleChanged
+                                        , min = 0
+                                        , max = toFloat (editorBoard.maxZ - 1)
+                                        , step = 1
+                                        , colorMin = Nothing
+                                        , colorMid = Nothing
+                                        , colorMax = Nothing
+                                        , thumb1Image = Nothing
+                                        , thumb2Image = Nothing
+                                        }
+                                    ]
                                 ]
                             ]
                         , Html.hr [] []
