@@ -2,7 +2,8 @@
     "name": "cube-man",
     "scripts": {
         "dev": "elm-watch hot",
-        "review": "elm-review --watch --fix"
+        "review": "elm-review --watch --fix",
+        "build": "elm-watch make --optimize"
     },
     "volta": {
         "node": "22.13.1"
