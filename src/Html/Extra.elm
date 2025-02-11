@@ -1,11 +1,14 @@
 module Html.Extra exposing
     ( dualRange
+    , modal
     , select
     )
 
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events
+import Json.Decode
+import Json.Encode
 
 
 select :
@@ -189,3 +192,45 @@ dualRange attributes config =
                 []
             ]
         ]
+
+
+modal : { open : Bool, onClose : msg } -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
+modal config attributes children =
+    Html.node "dialog"
+        ([ Html.Attributes.property "___modal-open" (Json.Encode.bool config.open)
+
+         -- , Html.Attributes.attribute "data-state" <|
+         --    if config.open then
+         --        "open"
+         --    else
+         --        "closed"
+         , Html.Events.on "close" (Json.Decode.succeed config.onClose)
+
+         -- , Html.Attributes.classList
+         --    ([ ( "rt-BaseDialogContent", True )
+         --     , ( "rt-BaseDialogContent-overrides", True )
+         --     , ( "rt-DialogContent", config.style == PlainModal || config.style == DialogModal )
+         --     , ( "rt-AlertDialogContent", config.style == AlertDialogModal )
+         --     , ( "rt-r-size-" ++ String.fromInt config.size, True )
+         --     , ( "rt-r-w", config.width /= Nothing )
+         --     , ( "rt-r-min-w", config.minWidth /= Nothing )
+         --     , ( "rt-r-max-w", True )
+         --     ]
+         --        ++ config.customClassList
+         --    )
+         -- , Radix.styles
+         --    (List.filterMap identity
+         --        [ Maybe.map
+         --            (\width -> ( "--width", width ))
+         --            config.width
+         --        , Maybe.map
+         --            (\minWidth -> ( "--min-width", minWidth ))
+         --            config.minWidth
+         --        , Just ( "--max-width", config.maxWidth )
+         --        ]
+         --        ++ config.customStyles
+         --    )
+         ]
+            ++ attributes
+        )
+        children
