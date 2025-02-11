@@ -26,6 +26,13 @@ select attributes config =
                         config.onSelect
                             (selectChangeHelper config.toKey config.options key)
                     )
+               , Html.Attributes.value <|
+                    case config.value of
+                        Nothing ->
+                            ""
+
+                        Just value ->
+                            config.toKey value
                ]
         )
         (List.map
