@@ -889,7 +889,7 @@ update msg model =
         KeyPressed key ->
             case model.mode of
                 Editor ->
-                    ( model, Cmd.none )
+                    handleEditorKeyPressed key model
 
                 Game ->
                     handleGameKeyPressed key model
@@ -1469,6 +1469,43 @@ oppositeFacings faceA faceB =
 
         _ ->
             False
+
+
+handleEditorKeyPressed : String -> Model -> ( Model, Cmd Msg )
+handleEditorKeyPressed key model =
+    case key of
+        "q" ->
+            ( { model | cameraMode = Orbit }, Cmd.none )
+
+        "w" ->
+            ( { model | cameraMode = Pan }, Cmd.none )
+
+        "e" ->
+            ( { model | cameraMode = Zoom }, Cmd.none )
+
+        "a" ->
+            ( { model | editMode = Select }, Cmd.none )
+
+        "s" ->
+            ( { model | editMode = Add }, Cmd.none )
+
+        "d" ->
+            ( { model | editMode = Remove }, Cmd.none )
+
+        "z" ->
+            ( { model | selectedBlockType = Wall }, Cmd.none )
+
+        "x" ->
+            ( { model | selectedBlockType = Edge }, Cmd.none )
+
+        "c" ->
+            ( { model | selectedBlockType = PointPickup False }, Cmd.none )
+
+        "v" ->
+            ( { model | selectedBlockType = PlayerSpawn { forward = PositiveX, left = PositiveY } }, Cmd.none )
+
+        _ ->
+            ( model, Cmd.none )
 
 
 handleGameKeyPressed : String -> Model -> ( Model, Cmd Msg )

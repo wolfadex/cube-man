@@ -29,7 +29,7 @@ hr {
     margin: 1rem 0;
 }
 
-/*  */
+/* Custom dual-range input */
 
 .dual-range__container {
     display: flex;

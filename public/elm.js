@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739233029284"
+    "1739235356642"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -17922,6 +17922,82 @@ var $author$project$Main$findSpawn = function (board) {
 	return $author$project$Main$findSpawnHelper(
 		$elm$core$Dict$toList(board.blocks));
 };
+var $author$project$Main$Add = {$: 'Add'};
+var $author$project$Main$Pan = {$: 'Pan'};
+var $author$project$Main$Remove = {$: 'Remove'};
+var $author$project$Main$Zoom = {$: 'Zoom'};
+var $author$project$Main$handleEditorKeyPressed = F2(
+	function (key, model) {
+		switch (key) {
+			case 'q':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{cameraMode: $author$project$Main$Orbit}),
+					$elm$core$Platform$Cmd$none);
+			case 'w':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{cameraMode: $author$project$Main$Pan}),
+					$elm$core$Platform$Cmd$none);
+			case 'e':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{cameraMode: $author$project$Main$Zoom}),
+					$elm$core$Platform$Cmd$none);
+			case 'a':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{editMode: $author$project$Main$Select}),
+					$elm$core$Platform$Cmd$none);
+			case 's':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{editMode: $author$project$Main$Add}),
+					$elm$core$Platform$Cmd$none);
+			case 'd':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{editMode: $author$project$Main$Remove}),
+					$elm$core$Platform$Cmd$none);
+			case 'z':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{selectedBlockType: $author$project$Main$Wall}),
+					$elm$core$Platform$Cmd$none);
+			case 'x':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{selectedBlockType: $author$project$Main$Edge}),
+					$elm$core$Platform$Cmd$none);
+			case 'c':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							selectedBlockType: $author$project$Main$PointPickup(false)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'v':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							selectedBlockType: $author$project$Main$PlayerSpawn(
+								{forward: $author$project$Main$PositiveX, left: $author$project$Main$PositiveY})
+						}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		}
+	});
 var $author$project$Main$Backward = {$: 'Backward'};
 var $author$project$Main$Left = {$: 'Left'};
 var $author$project$Main$Right = {$: 'Right'};
@@ -19982,7 +20058,7 @@ var $author$project$Main$update = F2(
 				var key = msg.a;
 				var _v12 = model.mode;
 				if (_v12.$ === 'Editor') {
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					return A2($author$project$Main$handleEditorKeyPressed, key, model);
 				} else {
 					return A2($author$project$Main$handleGameKeyPressed, key, model);
 				}
@@ -25533,14 +25609,11 @@ var $author$project$Main$viewCursor = F3(
 							$ianmackenzie$elm_units$Length$meters(0.1))))
 				]));
 	});
-var $author$project$Main$Add = {$: 'Add'};
 var $author$project$Main$BlockTypeSelected = function (a) {
 	return {$: 'BlockTypeSelected', a: a};
 };
-var $author$project$Main$Pan = {$: 'Pan'};
 var $author$project$Main$Redo = {$: 'Redo'};
 var $phosphor_icons$phosphor_elm$Phosphor$Regular = {$: 'Regular'};
-var $author$project$Main$Remove = {$: 'Remove'};
 var $author$project$Main$ResetCamera = {$: 'ResetCamera'};
 var $author$project$Main$SetCameraMode = function (a) {
 	return {$: 'SetCameraMode', a: a};
@@ -25552,7 +25625,6 @@ var $author$project$Main$ShowBoardBounds = function (a) {
 	return {$: 'ShowBoardBounds', a: a};
 };
 var $author$project$Main$Undo = {$: 'Undo'};
-var $author$project$Main$Zoom = {$: 'Zoom'};
 var $author$project$Html$Attributes$Extra$aria = F2(
 	function (attrib, value) {
 		return A2($elm$html$Html$Attributes$attribute, 'aria-' + attrib, value);
