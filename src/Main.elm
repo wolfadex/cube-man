@@ -65,7 +65,7 @@ type alias Model =
     , playerWantFacing : Facing
     , playerMovingAcrossEdge : Maybe Angle
 
-    -- EditBoard
+    -- Editor
     , editorBoard : Undo.Stack Board
     , boardLoadError : Maybe BoardLoadError
     , boardPlayError : Maybe BoardPlayError
@@ -94,6 +94,9 @@ type alias Model =
     , editorMaxYRaw : String
     , editorMaxZRaw : String
 
+    -- Free play
+    , freePlayMode : FreePlayMode
+
     -- Common
     , screenSize : { width : Int, height : Int }
     , blockPalette : BlockPalette
@@ -101,6 +104,11 @@ type alias Model =
     , showSettings : Bool
     , screen : Screen
     }
+
+
+type FreePlayMode
+    = FreePlayBoardLoaded
+    | FreePlayBoardSelection
 
 
 type alias InputMapping =
@@ -438,6 +446,7 @@ init () =
             }
       , showSettings = False
       , screen = Menu
+      , freePlayMode = FreePlayBoardSelection
       }
     , Cmd.none
     )
@@ -463,7 +472,15 @@ subscriptions model =
             Sub.none
 
         FreePlay ->
-            Sub.none
+            case model.freePlayMode of
+                FreePlayBoardSelection ->
+                    Sub.none
+
+                FreePlayBoardLoaded ->
+                    Sub.batch
+                        [ Browser.Events.onAnimationFrameDelta Tick
+                        , Browser.Events.onKeyPress decodeKeyPressed
+                        ]
 
         Editor ->
             if model.showSettings then
@@ -510,7 +527,7 @@ type Msg
     | MouseUp
     | MouseMove Json.Decode.Value (Point2d Pixels ScreenCoordinates) (Point2d Pixels ScreenCoordinates)
     | EncodingChanged String
-    | LoadBoard String
+    | LoadEditorBoard String
     | ChangeMode
     | SetBlockEditMode BlockEditMode
     | SetCameraMode CameraMode
@@ -532,6 +549,7 @@ type Msg
     | ShowSettings Bool
     | SetMapping (InputMapping -> InputMapping)
     | SetScreen Screen
+    | LoadFreePlayBoard String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -549,7 +567,7 @@ update msg model =
         EncodingChanged boardEncoding ->
             ( { model | boardEncoding = boardEncoding }, Cmd.none )
 
-        LoadBoard encoding ->
+        LoadEditorBoard encoding ->
             let
                 loadedBoard =
                     encoding
@@ -583,6 +601,53 @@ update msg model =
                             , zLowerVisible = 0
                             , zUpperVisible = editorBoard.maxZ - 1
                         }
+
+                Err error ->
+                    ( { model
+                        | boardLoadError = Just error
+                      }
+                    , Cmd.none
+                    )
+
+        LoadFreePlayBoard encoding ->
+            let
+                loadedBoard =
+                    encoding
+                        |> Json.Decode.decodeString Json.Decode.value
+                        |> Result.withDefault Json.Encode.null
+                        |> Serialize.decodeFromJson boardCodec
+                        |> Result.mapError
+                            (\error ->
+                                case error of
+                                    Serialize.CustomError _ ->
+                                        OtherError
+
+                                    Serialize.DataCorrupted ->
+                                        DataCorrupted
+
+                                    Serialize.SerializerOutOfDate ->
+                                        SerializerOutOfDate
+                            )
+            in
+            case loadedBoard of
+                Ok board ->
+                    case findSpawn board of
+                        Nothing ->
+                            ( { model | boardPlayError = Just MissingPlayerSpawn }, Cmd.none )
+
+                        Just spawnFrame ->
+                            ( { model
+                                | freePlayMode = FreePlayBoardLoaded
+                                , board = board
+                                , playerFrame = spawnFrame
+                                , score = 0
+                                , playerMovingAcrossEdge = Nothing
+                                , playerFacing = Forward
+                                , playerWantFacing = Forward
+                                , boardPlayError = Nothing
+                              }
+                            , Cmd.none
+                            )
 
                 Err error ->
                     ( { model
@@ -1952,60 +2017,176 @@ viewGameScreen model =
 
 viewFreePlayScreen : Model -> List (Html Msg)
 viewFreePlayScreen model =
-    [ Html.div
-        [ Html.Attributes.style "width" "100vw"
-        , Html.Attributes.style "height" "100vh"
-        , Html.Attributes.style "display" "flex"
-        , Html.Attributes.style "flex-direction" "column"
-        , Html.Attributes.style "align-items" "center"
-        ]
-        [ Html.div
-            [ Html.Attributes.style "margin-top" "5rem"
-            , Html.Attributes.style "display" "flex"
-            , Html.Attributes.style "flex-direction" "column"
-            , Html.Attributes.style "gap" "1rem"
-            , Html.Attributes.style "align-items" "center"
-            ]
-            [ Html.h1
-                [ Html.Attributes.style "text-align" "center"
+    case model.freePlayMode of
+        FreePlayBoardSelection ->
+            [ Html.div
+                [ Html.Attributes.style "width" "100vw"
+                , Html.Attributes.style "height" "100vh"
+                , Html.Attributes.style "display" "flex"
+                , Html.Attributes.style "flex-direction" "column"
+                , Html.Attributes.style "align-items" "center"
                 ]
-                [ Html.text "Pick a Board" ]
-            , Html.button
-                [ Html.Attributes.type_ "button"
-                , Html.Attributes.style "text-align" "center"
-                , Html.Attributes.style "padding" "0.5rem 2rem"
-                , Html.Events.onClick (SetScreen Menu)
-                ]
-                [ Html.text "Main Menu" ]
-            ]
-        , Html.div
-            [ Html.Attributes.style "width" "100vw"
-            , Html.Attributes.style "display" "grid"
-            , Html.Attributes.style "grid-template-columns" "repeat(5, 1fr)"
-            , Html.Attributes.style "gap" "2rem"
-            , Html.Attributes.style "padding" "2rem"
-
-            -- , Html.Attributes.style "grid-template-rows" "auto auto"
-            ]
-            (List.map viewBoardPreviewTile
-                [ { name = "Mini"
-                  , boardEncoding = basicMiniBoard
-                  }
-                , { name = "Zig-Zag"
-                  , boardEncoding = zigZagBoard
-                  }
-                ]
-                ++ [ Html.div
-                        [ Html.Attributes.style "display" "flex"
-                        , Html.Attributes.style "align-items" "center"
-                        , Html.Attributes.style "justify-content" "center"
-                        , Html.Attributes.style "height" "8rem"
+                [ Html.div
+                    [ Html.Attributes.style "margin-top" "5rem"
+                    , Html.Attributes.style "display" "flex"
+                    , Html.Attributes.style "flex-direction" "column"
+                    , Html.Attributes.style "gap" "1rem"
+                    , Html.Attributes.style "align-items" "center"
+                    ]
+                    [ Html.h1
+                        [ Html.Attributes.style "text-align" "center"
                         ]
-                        [ Html.text "More coming soon..." ]
-                   ]
-            )
-        ]
-    ]
+                        [ Html.text "Pick a Board" ]
+                    , Html.button
+                        [ Html.Attributes.type_ "button"
+                        , Html.Attributes.style "text-align" "center"
+                        , Html.Attributes.style "padding" "0.5rem 2rem"
+                        , Html.Events.onClick (SetScreen Menu)
+                        ]
+                        [ Html.text "Main Menu" ]
+                    ]
+                , Html.div
+                    [ Html.Attributes.style "width" "100vw"
+                    , Html.Attributes.style "display" "grid"
+                    , Html.Attributes.style "grid-template-columns" "repeat(5, 1fr)"
+                    , Html.Attributes.style "gap" "2rem"
+                    , Html.Attributes.style "padding" "2rem"
+
+                    -- , Html.Attributes.style "grid-template-rows" "auto auto"
+                    ]
+                    (List.map viewBoardPreviewTile
+                        [ { name = "Mini"
+                          , boardEncoding = basicMiniBoard
+                          }
+                        , { name = "Zig-Zag"
+                          , boardEncoding = zigZagBoard
+                          }
+                        ]
+                        ++ [ Html.div
+                                [ Html.Attributes.style "display" "flex"
+                                , Html.Attributes.style "align-items" "center"
+                                , Html.Attributes.style "justify-content" "center"
+                                , Html.Attributes.style "height" "8rem"
+                                ]
+                                [ Html.text "More coming soon..." ]
+                           ]
+                    )
+                ]
+            ]
+
+        FreePlayBoardLoaded ->
+            [ view3dScene
+                (gameLights model)
+                model.screenSize
+                (gamePlayCamera model)
+                (List.concat
+                    [ model.board.blocks
+                        |> Dict.toList
+                        |> List.map (viewBlock model.board model)
+                    , [ viewPlayer model.playerFacing model.playerFrame ]
+                    ]
+                )
+            ]
+
+
+view3dScene : Scene3d.Lights WorldCoordinates -> { width : Int, height : Int } -> Camera3d Length.Meters WorldCoordinates -> List (Scene3d.Entity WorldCoordinates) -> Html Msg
+view3dScene lights screenSize camera entities =
+    Scene3d.custom
+        { clipDepth = Length.meters 1
+        , background = Scene3d.backgroundColor Color.gray
+        , exposure = Scene3d.exposureValue 15
+        , lights = lights
+        , toneMapping = Scene3d.noToneMapping
+        , whiteBalance = Scene3d.Light.daylight
+        , antialiasing = Scene3d.multisampling
+        , dimensions = ( Pixels.int screenSize.width, Pixels.int screenSize.height )
+        , camera = camera
+        , entities = entities
+        }
+
+
+gameLights : Model -> Scene3d.Lights WorldCoordinates
+gameLights model =
+    let
+        sun1 =
+            Scene3d.Light.directional (Scene3d.Light.castsShadows True)
+                { direction =
+                    Direction3d.negativeZ
+                        |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
+                , intensity = Illuminance.lux 80000
+                , chromaticity = Scene3d.Light.sunlight
+                }
+
+        sun2 =
+            Scene3d.Light.directional (Scene3d.Light.castsShadows True)
+                { direction =
+                    Direction3d.positiveZ
+                        |> Direction3d.rotateAround Axis3d.x (Angle.degrees -70)
+                , intensity = Illuminance.lux 80000
+                , chromaticity = Scene3d.Light.sunlight
+                }
+
+        sky1 =
+            Scene3d.Light.overhead
+                { upDirection =
+                    Direction3d.positiveZ
+                , chromaticity = Scene3d.Light.skylight
+                , intensity = Illuminance.lux 20000
+                }
+
+        sky2 =
+            Scene3d.Light.overhead
+                { upDirection =
+                    Direction3d.positiveZ
+                        |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
+                        |> Direction3d.rotateAround Axis3d.z
+                            (model.cameraRotation
+                                |> Quantity.plus (Angle.degrees 90)
+                            )
+                , chromaticity = Scene3d.Light.skylight
+                , intensity = Illuminance.lux 40000
+                }
+
+        sky3 =
+            Scene3d.Light.overhead
+                { upDirection =
+                    Direction3d.positiveZ
+                        |> Direction3d.rotateAround Axis3d.x (Angle.degrees -70)
+                        |> Direction3d.rotateAround Axis3d.z
+                            (model.cameraRotation
+                                |> Quantity.plus (Angle.degrees -90)
+                            )
+                , chromaticity = Scene3d.Light.daylight
+                , intensity = Illuminance.lux 40000
+                }
+
+        environment =
+            Scene3d.Light.overhead
+                { upDirection = Direction3d.reverse Direction3d.positiveZ
+                , chromaticity = Scene3d.Light.daylight
+                , intensity = Illuminance.lux 15000
+                }
+    in
+    Scene3d.sixLights sun1 sun2 sky1 sky2 sky3 environment
+
+
+gamePlayCamera : Model -> Camera3d Length.Meters WorldCoordinates
+gamePlayCamera model =
+    Camera3d.perspective
+        { viewpoint =
+            let
+                targetPos =
+                    Frame3d.originPoint model.playerFrame
+            in
+            Viewpoint3d.lookAt
+                { focalPoint = targetPos
+                , eyePoint =
+                    targetPos
+                        |> Point3d.translateIn (Frame3d.zDirection model.playerFrame) (Length.meters 15)
+                , upDirection = Frame3d.xDirection model.playerFrame
+                }
+        , verticalFieldOfView = Angle.degrees 30
+        }
 
 
 viewBoardPreviewTile : BoardPreviewTile -> Html Msg
@@ -2014,8 +2195,7 @@ viewBoardPreviewTile board =
         [ Html.Attributes.type_ "button"
         , Html.Attributes.style "text-align" "center"
         , Html.Attributes.style "height" "8rem"
-
-        -- , Html.Events.onClick (SetScreen Menu)
+        , Html.Events.onClick (LoadFreePlayBoard board.boardEncoding)
         ]
         [ Html.text board.name ]
 
@@ -2085,67 +2265,7 @@ viewEditorScreen model =
                 lights =
                     case model.editorMode of
                         TestGame ->
-                            let
-                                sun1 =
-                                    Scene3d.Light.directional (Scene3d.Light.castsShadows True)
-                                        { direction =
-                                            Direction3d.negativeZ
-                                                |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
-                                        , intensity = Illuminance.lux 80000
-                                        , chromaticity = Scene3d.Light.sunlight
-                                        }
-
-                                sun2 =
-                                    Scene3d.Light.directional (Scene3d.Light.castsShadows True)
-                                        { direction =
-                                            Direction3d.positiveZ
-                                                |> Direction3d.rotateAround Axis3d.x (Angle.degrees -70)
-                                        , intensity = Illuminance.lux 80000
-                                        , chromaticity = Scene3d.Light.sunlight
-                                        }
-
-                                sky1 =
-                                    Scene3d.Light.overhead
-                                        { upDirection =
-                                            Direction3d.positiveZ
-                                        , chromaticity = Scene3d.Light.skylight
-                                        , intensity = Illuminance.lux 20000
-                                        }
-
-                                sky2 =
-                                    Scene3d.Light.overhead
-                                        { upDirection =
-                                            Direction3d.positiveZ
-                                                |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
-                                                |> Direction3d.rotateAround Axis3d.z
-                                                    (model.cameraRotation
-                                                        |> Quantity.plus (Angle.degrees 90)
-                                                    )
-                                        , chromaticity = Scene3d.Light.skylight
-                                        , intensity = Illuminance.lux 40000
-                                        }
-
-                                sky3 =
-                                    Scene3d.Light.overhead
-                                        { upDirection =
-                                            Direction3d.positiveZ
-                                                |> Direction3d.rotateAround Axis3d.x (Angle.degrees -70)
-                                                |> Direction3d.rotateAround Axis3d.z
-                                                    (model.cameraRotation
-                                                        |> Quantity.plus (Angle.degrees -90)
-                                                    )
-                                        , chromaticity = Scene3d.Light.daylight
-                                        , intensity = Illuminance.lux 40000
-                                        }
-
-                                environment =
-                                    Scene3d.Light.overhead
-                                        { upDirection = Direction3d.reverse Direction3d.positiveZ
-                                        , chromaticity = Scene3d.Light.daylight
-                                        , intensity = Illuminance.lux 15000
-                                        }
-                            in
-                            Scene3d.sixLights sun1 sun2 sky1 sky2 sky3 environment
+                            gameLights model
 
                         EditBoard ->
                             let
@@ -2185,84 +2305,63 @@ viewEditorScreen model =
                             in
                             Scene3d.fourLights sun sky environment upsideDownSky
               in
-              Scene3d.custom
-                { clipDepth = Length.meters 1
-                , background = Scene3d.backgroundColor Color.gray
-                , exposure = Scene3d.exposureValue 15
-                , lights = lights
-                , toneMapping = Scene3d.noToneMapping
-                , whiteBalance = Scene3d.Light.daylight
-                , antialiasing = Scene3d.multisampling
-                , dimensions = ( Pixels.int model.screenSize.width, Pixels.int model.screenSize.height )
-                , camera =
-                    case model.editorMode of
-                        TestGame ->
-                            Camera3d.perspective
-                                { viewpoint =
-                                    let
-                                        targetPos =
-                                            Frame3d.originPoint model.playerFrame
-                                    in
-                                    Viewpoint3d.lookAt
-                                        { focalPoint = targetPos
-                                        , eyePoint =
-                                            targetPos
-                                                |> Point3d.translateIn (Frame3d.zDirection model.playerFrame) (Length.meters 15)
-                                        , upDirection = Frame3d.xDirection model.playerFrame
-                                        }
-                                , verticalFieldOfView = Angle.degrees 30
-                                }
+              view3dScene
+                lights
+                model.screenSize
+                (case model.editorMode of
+                    TestGame ->
+                        gamePlayCamera model
 
-                        EditBoard ->
-                            editorCamera model
-                , entities =
-                    case model.editorMode of
-                        EditBoard ->
-                            let
-                                editorBoard =
-                                    model.editorBoard
-                                        |> Undo.value
-                            in
-                            List.concat
-                                [ editorBoard.blocks
-                                    |> Dict.toList
-                                    |> List.map (viewBlock editorBoard model)
-                                , [ viewCursor
-                                        (case model.blockEditMode of
-                                            Select ->
-                                                Color.white
+                    EditBoard ->
+                        editorCamera model
+                )
+                (case model.editorMode of
+                    EditBoard ->
+                        let
+                            editorBoard =
+                                model.editorBoard
+                                    |> Undo.value
+                        in
+                        List.concat
+                            [ editorBoard.blocks
+                                |> Dict.toList
+                                |> List.map (viewBlock editorBoard model)
+                            , [ viewCursor
+                                    (case model.blockEditMode of
+                                        Select ->
+                                            Color.white
 
-                                            Remove ->
-                                                Color.red
+                                        Remove ->
+                                            Color.red
 
-                                            Add ->
-                                                Color.green
-                                        )
-                                        model.cursorBounce
-                                        model.editorCursor
-                                  , viewOrientationArrows
-                                  , case model.selectedBlock of
-                                        Nothing ->
-                                            Scene3d.nothing
-
-                                        Just ( point, _ ) ->
-                                            viewCursor Color.yellow model.cursorBounce point
-                                  , if model.showBoardBounds then
-                                        viewBounds editorBoard
-
-                                    else
+                                        Add ->
+                                            Color.green
+                                    )
+                                    model.cursorBounce
+                                    model.editorCursor
+                              , viewOrientationArrows
+                              , case model.selectedBlock of
+                                    Nothing ->
                                         Scene3d.nothing
-                                  ]
-                                ]
 
-                        TestGame ->
-                            List.concat
-                                [ model.board.blocks
-                                    |> Dict.toList
-                                    |> List.map (viewBlock model.board model)
-                                , [ viewPlayer model.playerFacing model.playerFrame ]
-                                ]
-                }
+                                    Just ( point, _ ) ->
+                                        viewCursor Color.yellow model.cursorBounce point
+                              , if model.showBoardBounds then
+                                    viewBounds editorBoard
+
+                                else
+                                    Scene3d.nothing
+                              ]
+                            ]
+
+                    TestGame ->
+                        List.concat
+                            [ model.board.blocks
+                                |> Dict.toList
+                                |> List.map (viewBlock model.board model)
+                            , [ viewPlayer model.playerFacing model.playerFrame ]
+                            ]
+                )
             ]
         , viewHeader model
         , case model.editorMode of
@@ -2474,7 +2573,7 @@ viewEditorScreen model =
                         ]
                     , Html.hr [] []
                     , Html.form
-                        [ Html.Events.onSubmit (LoadBoard model.boardEncoding)
+                        [ Html.Events.onSubmit (LoadEditorBoard model.boardEncoding)
                         , Html.Attributes.style "display" "flex"
                         , Html.Attributes.style "gap" "1rem"
                         ]
@@ -2551,13 +2650,13 @@ viewEditorScreen model =
                                             NoOp
 
                                         Just DefaultBoard ->
-                                            LoadBoard defaultBoard
+                                            LoadEditorBoard defaultBoard
 
                                         Just BasicMiniBoard ->
-                                            LoadBoard basicMiniBoard
+                                            LoadEditorBoard basicMiniBoard
 
                                         Just ZigZagBoard ->
-                                            LoadBoard zigZagBoard
+                                            LoadEditorBoard zigZagBoard
                             }
                         ]
                     ]
@@ -3460,7 +3559,7 @@ viewBlock board model ( point, block ) =
                     )
 
             PointPickup collected ->
-                if collected && model.editorMode == TestGame then
+                if collected && (model.screen /= Editor || model.editorMode == TestGame) then
                     Scene3d.nothing
 
                 else
@@ -3479,93 +3578,103 @@ viewBlock board model ( point, block ) =
                         )
 
             PlayerSpawn { forward, left } ->
-                case model.editorMode of
-                    TestGame ->
+                case model.screen of
+                    Editor ->
+                        case model.editorMode of
+                            TestGame ->
+                                Scene3d.nothing
+
+                            EditBoard ->
+                                let
+                                    center =
+                                        Point3d.meters
+                                            (toFloat x)
+                                            (toFloat y)
+                                            (toFloat z)
+
+                                    carl =
+                                        SketchPlane3d.unsafe
+                                            { originPoint = pointToPoint3d point
+                                            , xDirection = axisToDirection3d forward
+                                            , yDirection = axisToDirection3d left
+                                            }
+                                            |> SketchPlane3d.toFrame
+                                in
+                                Scene3d.group
+                                    [ Scene3d.sphereWithShadow
+                                        (Scene3d.Material.emissive
+                                            (Scene3d.Light.color Color.white)
+                                            (Luminance.nits 100000)
+                                        )
+                                        (Sphere3d.atPoint
+                                            center
+                                            (Length.meters 0.25)
+                                        )
+                                    , Scene3d.coneWithShadow
+                                        (Scene3d.Material.emissive (Scene3d.Light.color Color.red)
+                                            (Luminance.nits 10000)
+                                        )
+                                        (Cone3d.startingAt center
+                                            (Frame3d.xDirection carl)
+                                            { radius = Length.meters 0.125
+                                            , length = Length.meters 0.75
+                                            }
+                                        )
+                                    , Scene3d.coneWithShadow
+                                        (Scene3d.Material.emissive (Scene3d.Light.color Color.green)
+                                            (Luminance.nits 10000)
+                                        )
+                                        (Cone3d.startingAt center
+                                            (Frame3d.yDirection carl)
+                                            { radius = Length.meters 0.125
+                                            , length = Length.meters 0.75
+                                            }
+                                        )
+                                    , Scene3d.coneWithShadow
+                                        (Scene3d.Material.emissive (Scene3d.Light.color Color.blue)
+                                            (Luminance.nits 10000)
+                                        )
+                                        (Cone3d.startingAt center
+                                            (Frame3d.zDirection carl)
+                                            { radius = Length.meters 0.125
+                                            , length = Length.meters 0.75
+                                            }
+                                        )
+                                    ]
+
+                    _ ->
                         Scene3d.nothing
-
-                    EditBoard ->
-                        let
-                            center =
-                                Point3d.meters
-                                    (toFloat x)
-                                    (toFloat y)
-                                    (toFloat z)
-
-                            carl =
-                                SketchPlane3d.unsafe
-                                    { originPoint = pointToPoint3d point
-                                    , xDirection = axisToDirection3d forward
-                                    , yDirection = axisToDirection3d left
-                                    }
-                                    |> SketchPlane3d.toFrame
-                        in
-                        Scene3d.group
-                            [ Scene3d.sphereWithShadow
-                                (Scene3d.Material.emissive
-                                    (Scene3d.Light.color Color.white)
-                                    (Luminance.nits 100000)
-                                )
-                                (Sphere3d.atPoint
-                                    center
-                                    (Length.meters 0.25)
-                                )
-                            , Scene3d.coneWithShadow
-                                (Scene3d.Material.emissive (Scene3d.Light.color Color.red)
-                                    (Luminance.nits 10000)
-                                )
-                                (Cone3d.startingAt center
-                                    (Frame3d.xDirection carl)
-                                    { radius = Length.meters 0.125
-                                    , length = Length.meters 0.75
-                                    }
-                                )
-                            , Scene3d.coneWithShadow
-                                (Scene3d.Material.emissive (Scene3d.Light.color Color.green)
-                                    (Luminance.nits 10000)
-                                )
-                                (Cone3d.startingAt center
-                                    (Frame3d.yDirection carl)
-                                    { radius = Length.meters 0.125
-                                    , length = Length.meters 0.75
-                                    }
-                                )
-                            , Scene3d.coneWithShadow
-                                (Scene3d.Material.emissive (Scene3d.Light.color Color.blue)
-                                    (Luminance.nits 10000)
-                                )
-                                (Cone3d.startingAt center
-                                    (Frame3d.zDirection carl)
-                                    { radius = Length.meters 0.125
-                                    , length = Length.meters 0.75
-                                    }
-                                )
-                            ]
 
             Empty ->
                 Scene3d.nothing
 
             Edge ->
-                case model.editorMode of
-                    TestGame ->
-                        Scene3d.nothing
+                case model.screen of
+                    Editor ->
+                        case model.editorMode of
+                            TestGame ->
+                                Scene3d.nothing
 
-                    EditBoard ->
-                        Scene3d.blockWithShadow
-                            (Scene3d.Material.metal
-                                { baseColor = Color.orange
-                                , roughness = 1
-                                }
-                            )
-                            (Block3d.centeredOn
-                                (Frame3d.atPoint
-                                    (Point3d.meters
-                                        (toFloat x)
-                                        (toFloat y)
-                                        (toFloat z)
+                            EditBoard ->
+                                Scene3d.blockWithShadow
+                                    (Scene3d.Material.metal
+                                        { baseColor = Color.orange
+                                        , roughness = 1
+                                        }
                                     )
-                                )
-                                ( Length.meters 0.5, Length.meters 0.5, Length.meters 0.5 )
-                            )
+                                    (Block3d.centeredOn
+                                        (Frame3d.atPoint
+                                            (Point3d.meters
+                                                (toFloat x)
+                                                (toFloat y)
+                                                (toFloat z)
+                                            )
+                                        )
+                                        ( Length.meters 0.5, Length.meters 0.5, Length.meters 0.5 )
+                                    )
+
+                    _ ->
+                        Scene3d.nothing
 
 
 viewCursor : Color -> Animation Float -> Point -> Scene3d.Entity WorldCoordinates
