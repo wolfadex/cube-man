@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739244469487"
+    "1739244887444"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -22051,6 +22051,11 @@ var $phosphor_icons$phosphor_elm$Phosphor$toHtml = F2(
 				$elm$svg$Svg$map($elm$core$Basics$never),
 				src));
 	});
+var $author$project$Main$viewInputKeyHoverText = function (_v0) {
+	var primary = _v0.a;
+	var secondary = _v0.b;
+	return (secondary === '') ? primary : (primary + (' | ' + secondary));
+};
 var $phosphor_icons$phosphor_elm$Phosphor$x = function (weight) {
 	var elements = function () {
 		switch (weight.$) {
@@ -22215,7 +22220,8 @@ var $author$project$Main$viewHeader = function (model) {
 								[
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick($author$project$Main$Undo),
-									$elm$html$Html$Attributes$title('Undo | z'),
+									$elm$html$Html$Attributes$title(
+									'Undo - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.undo)),
 									A2(
 									$author$project$Html$Attributes$Extra$aria,
 									'disabled',
@@ -22235,7 +22241,8 @@ var $author$project$Main$viewHeader = function (model) {
 								[
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick($author$project$Main$Redo),
-									$elm$html$Html$Attributes$title('Redo | x'),
+									$elm$html$Html$Attributes$title(
+									'Redo - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.redo)),
 									A2(
 									$author$project$Html$Attributes$Extra$aria,
 									'disabled',
@@ -22265,7 +22272,8 @@ var $author$project$Main$viewHeader = function (model) {
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick(
 									$author$project$Main$SetCameraMode($author$project$Main$Orbit)),
-									$elm$html$Html$Attributes$title('Camera orbit | 1'),
+									$elm$html$Html$Attributes$title(
+									'Camera orbit - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.cameraOrbit)),
 									A2(
 									$author$project$Html$Attributes$Extra$aria,
 									'current',
@@ -22286,7 +22294,8 @@ var $author$project$Main$viewHeader = function (model) {
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick(
 									$author$project$Main$SetCameraMode($author$project$Main$Pan)),
-									$elm$html$Html$Attributes$title('Camera pan | 2'),
+									$elm$html$Html$Attributes$title(
+									'Camera pan - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.cameraPan)),
 									A2(
 									$author$project$Html$Attributes$Extra$aria,
 									'current',
@@ -22307,7 +22316,8 @@ var $author$project$Main$viewHeader = function (model) {
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick(
 									$author$project$Main$SetCameraMode($author$project$Main$Zoom)),
-									$elm$html$Html$Attributes$title('Camera zoom | 3'),
+									$elm$html$Html$Attributes$title(
+									'Camera zoom - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.cameraZoom)),
 									A2(
 									$author$project$Html$Attributes$Extra$aria,
 									'current',
@@ -22327,7 +22337,8 @@ var $author$project$Main$viewHeader = function (model) {
 								[
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick($author$project$Main$ResetCamera),
-									$elm$html$Html$Attributes$title('Camera reset | 4')
+									$elm$html$Html$Attributes$title(
+									'Camera reset - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.cameraReset))
 								]),
 							_List_fromArray(
 								[
@@ -22352,7 +22363,8 @@ var $author$project$Main$viewHeader = function (model) {
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick(
 									$author$project$Main$SetEditMode($author$project$Main$Select)),
-									$elm$html$Html$Attributes$title('Select block | q'),
+									$elm$html$Html$Attributes$title(
+									'Select block - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.blockSelect)),
 									A2(
 									$author$project$Html$Attributes$Extra$aria,
 									'current',
@@ -22373,7 +22385,8 @@ var $author$project$Main$viewHeader = function (model) {
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick(
 									$author$project$Main$SetEditMode($author$project$Main$Add)),
-									$elm$html$Html$Attributes$title('Add block | w'),
+									$elm$html$Html$Attributes$title(
+									'Add block - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.blockAdd)),
 									A2(
 									$author$project$Html$Attributes$Extra$aria,
 									'current',
@@ -22394,7 +22407,8 @@ var $author$project$Main$viewHeader = function (model) {
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick(
 									$author$project$Main$SetEditMode($author$project$Main$Remove)),
-									$elm$html$Html$Attributes$title('Remove block | e'),
+									$elm$html$Html$Attributes$title(
+									'Remove block - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.blockRemove)),
 									A2(
 									$author$project$Html$Attributes$Extra$aria,
 									'current',
@@ -22429,7 +22443,8 @@ var $author$project$Main$viewHeader = function (model) {
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick(
 									$author$project$Main$BlockTypeSelected($author$project$Main$Wall)),
-									$elm$html$Html$Attributes$title('Wall | a')
+									$elm$html$Html$Attributes$title(
+									'Wall - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.blockTypeWall))
 								]),
 							_List_fromArray(
 								[
@@ -22447,7 +22462,8 @@ var $author$project$Main$viewHeader = function (model) {
 									$elm$html$Html$Attributes$type_('button'),
 									$elm$html$Html$Events$onClick(
 									$author$project$Main$BlockTypeSelected($author$project$Main$Edge)),
-									$elm$html$Html$Attributes$title('Edge | s')
+									$elm$html$Html$Attributes$title(
+									'Edge - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.blockTypeEdge))
 								]),
 							_List_fromArray(
 								[
@@ -22468,7 +22484,8 @@ var $author$project$Main$viewHeader = function (model) {
 									$elm$html$Html$Events$onClick(
 									$author$project$Main$BlockTypeSelected(
 										$author$project$Main$PointPickup(false))),
-									$elm$html$Html$Attributes$title('Point Pickup | d')
+									$elm$html$Html$Attributes$title(
+									'Point Pickup - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.blockTypePointPickup))
 								]),
 							_List_fromArray(
 								[
@@ -22491,7 +22508,8 @@ var $author$project$Main$viewHeader = function (model) {
 									$author$project$Main$BlockTypeSelected(
 										$author$project$Main$PlayerSpawn(
 											{forward: $author$project$Main$PositiveX, left: $author$project$Main$PositiveY}))),
-									$elm$html$Html$Attributes$title('Player Spawn | f')
+									$elm$html$Html$Attributes$title(
+									'Player Spawn - ' + $author$project$Main$viewInputKeyHoverText(model.inputMapping.blockTypePlayerSpawn))
 								]),
 							_List_fromArray(
 								[

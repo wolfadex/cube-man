@@ -2275,6 +2275,15 @@ view model =
     }
 
 
+viewInputKeyHoverText : ( String, String ) -> String
+viewInputKeyHoverText ( primary, secondary ) =
+    if secondary == "" then
+        primary
+
+    else
+        primary ++ " | " ++ secondary
+
+
 viewHeader : Model -> Html Msg
 viewHeader model =
     case model.mode of
@@ -2320,7 +2329,7 @@ viewHeader model =
                     [ Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick Undo
-                        , Html.Attributes.title "Undo | z"
+                        , Html.Attributes.title ("Undo - " ++ viewInputKeyHoverText model.inputMapping.undo)
                         , Html.Attributes.Extra.aria "disabled" <|
                             Html.Attributes.Extra.bool (not <| Undo.canUndo model.editorBoard)
                         ]
@@ -2330,7 +2339,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick Redo
-                        , Html.Attributes.title "Redo | x"
+                        , Html.Attributes.title ("Redo - " ++ viewInputKeyHoverText model.inputMapping.redo)
                         , Html.Attributes.Extra.aria "disabled" <|
                             Html.Attributes.Extra.bool (not <| Undo.canRedo model.editorBoard)
                         ]
@@ -2343,7 +2352,7 @@ viewHeader model =
                     [ Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetCameraMode Orbit)
-                        , Html.Attributes.title "Camera orbit | 1"
+                        , Html.Attributes.title ("Camera orbit - " ++ viewInputKeyHoverText model.inputMapping.cameraOrbit)
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.cameraMode == Orbit)
                         ]
@@ -2353,7 +2362,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetCameraMode Pan)
-                        , Html.Attributes.title "Camera pan | 2"
+                        , Html.Attributes.title ("Camera pan - " ++ viewInputKeyHoverText model.inputMapping.cameraPan)
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.cameraMode == Pan)
                         ]
@@ -2363,7 +2372,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetCameraMode Zoom)
-                        , Html.Attributes.title "Camera zoom | 3"
+                        , Html.Attributes.title ("Camera zoom - " ++ viewInputKeyHoverText model.inputMapping.cameraZoom)
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.cameraMode == Zoom)
                         ]
@@ -2373,7 +2382,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick ResetCamera
-                        , Html.Attributes.title "Camera reset | 4"
+                        , Html.Attributes.title ("Camera reset - " ++ viewInputKeyHoverText model.inputMapping.cameraReset)
                         ]
                         [ Phosphor.clockCounterClockwise Phosphor.Regular
                             |> Phosphor.toHtml []
@@ -2384,7 +2393,7 @@ viewHeader model =
                     [ Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetEditMode Select)
-                        , Html.Attributes.title "Select block | q"
+                        , Html.Attributes.title ("Select block - " ++ viewInputKeyHoverText model.inputMapping.blockSelect)
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.editMode == Select)
                         ]
@@ -2394,7 +2403,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetEditMode Add)
-                        , Html.Attributes.title "Add block | w"
+                        , Html.Attributes.title ("Add block - " ++ viewInputKeyHoverText model.inputMapping.blockAdd)
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.editMode == Add)
                         ]
@@ -2404,7 +2413,7 @@ viewHeader model =
                     , Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (SetEditMode Remove)
-                        , Html.Attributes.title "Remove block | e"
+                        , Html.Attributes.title ("Remove block - " ++ viewInputKeyHoverText model.inputMapping.blockRemove)
                         , Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.editMode == Remove)
                         ]
@@ -2420,7 +2429,7 @@ viewHeader model =
                             Html.Attributes.Extra.bool (model.selectedBlockType == Wall)
                         , Html.Attributes.type_ "button"
                         , Html.Events.onClick (BlockTypeSelected Wall)
-                        , Html.Attributes.title "Wall | a"
+                        , Html.Attributes.title ("Wall - " ++ viewInputKeyHoverText model.inputMapping.blockTypeWall)
                         ]
                         [ Html.text "Wall"
                         ]
@@ -2429,7 +2438,7 @@ viewHeader model =
                             Html.Attributes.Extra.bool (model.selectedBlockType == Edge)
                         , Html.Attributes.type_ "button"
                         , Html.Events.onClick (BlockTypeSelected Edge)
-                        , Html.Attributes.title "Edge | s"
+                        , Html.Attributes.title ("Edge - " ++ viewInputKeyHoverText model.inputMapping.blockTypeEdge)
                         ]
                         [ Html.text "Edge"
                         ]
@@ -2438,7 +2447,7 @@ viewHeader model =
                             Html.Attributes.Extra.bool (model.selectedBlockType == PointPickup False)
                         , Html.Attributes.type_ "button"
                         , Html.Events.onClick (BlockTypeSelected (PointPickup False))
-                        , Html.Attributes.title "Point Pickup | d"
+                        , Html.Attributes.title ("Point Pickup - " ++ viewInputKeyHoverText model.inputMapping.blockTypePointPickup)
                         ]
                         [ Html.text "Point Pickup"
                         ]
@@ -2447,7 +2456,7 @@ viewHeader model =
                             Html.Attributes.Extra.bool (model.selectedBlockType == PlayerSpawn { forward = PositiveX, left = PositiveY })
                         , Html.Attributes.type_ "button"
                         , Html.Events.onClick (BlockTypeSelected (PlayerSpawn { forward = PositiveX, left = PositiveY }))
-                        , Html.Attributes.title "Player Spawn | f"
+                        , Html.Attributes.title ("Player Spawn - " ++ viewInputKeyHoverText model.inputMapping.blockTypePlayerSpawn)
                         ]
                         [ Html.text "Player Spawn"
                         ]
