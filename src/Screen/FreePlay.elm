@@ -21,7 +21,7 @@ import Shared
 type alias Model =
     { board : Board
     , score : Int
-    , playerFrame : Frame3d Length.Meters Board.WorldCoordinates { defines : {} }
+    , playerFrame : Frame3d Length.Meters Board.WorldCoordinates { defines : Board.WorldCoordinates }
     , playerFacing : Board.Facing
     , playerWantFacing : Board.Facing
     , playerMovingAcrossEdge : Maybe Angle
@@ -87,7 +87,7 @@ type Msg
     | ShowFreePlayMenu Bool
 
 
-update : Shared.Model -> Msg -> Model -> ( Model, Cmd Msg )
+update : Shared.LoadedModel -> Msg -> Model -> ( Model, Cmd Msg )
 update sharedModel msg model =
     case msg of
         Tick deltaMs ->
@@ -175,7 +175,7 @@ tickPlayer deltaMs model =
                 |> Board.movePlayer deltaMs
 
 
-handleGameKeyPressed : Shared.Model -> String -> Model -> ( Model, Cmd Msg )
+handleGameKeyPressed : Shared.LoadedModel -> String -> Model -> ( Model, Cmd Msg )
 handleGameKeyPressed sharedModel key model =
     if Input.isInputKey sharedModel.inputMapping.moveUp key then
         ( { model | playerWantFacing = Board.Forward }, Cmd.none )
@@ -193,7 +193,7 @@ handleGameKeyPressed sharedModel key model =
         ( model, Cmd.none )
 
 
-view : (Shared.Msg -> msg) -> Shared.Model -> (Msg -> msg) -> Model -> List (Html msg)
+view : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> List (Html msg)
 view toSharedMsg sharedModel toMsg model =
     case model.freePlayMode of
         FreePlayBoardSelection ->
@@ -261,7 +261,7 @@ view toSharedMsg sharedModel toMsg model =
                     [ model.board.blocks
                         |> Dict.toList
                         |> List.map Board.viewBlock
-                    , [ Board.viewPlayer model.playerFacing model.playerFrame ]
+                    , [ Board.viewPlayer sharedModel.playerMesh model.playerFacing model.playerFrame ]
                     ]
                 )
             , Html.div

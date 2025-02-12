@@ -50,7 +50,7 @@ import Viewpoint3d exposing (Viewpoint3d)
 type alias Model =
     { board : Board
     , score : Int
-    , playerFrame : Frame3d Length.Meters Board.WorldCoordinates { defines : {} }
+    , playerFrame : Frame3d Length.Meters Board.WorldCoordinates { defines : Board.WorldCoordinates }
     , playerFacing : Board.Facing
     , playerWantFacing : Board.Facing
     , playerMovingAcrossEdge : Maybe Angle
@@ -267,7 +267,7 @@ type Msg
     | ShowSettings Bool
 
 
-update : (Shared.Msg -> msg) -> Shared.Model -> (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
+update : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
 update toSharedMsg sharedModel toMsg msg model =
     case msg of
         NoOp ->
@@ -939,7 +939,7 @@ tickPlayer deltaMs model =
                 |> Board.movePlayer deltaMs
 
 
-handleEditorKeyPressed : (Shared.Msg -> msg) -> Shared.Model -> (Msg -> msg) -> String -> Model -> ( Model, Cmd msg )
+handleEditorKeyPressed : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> String -> Model -> ( Model, Cmd msg )
 handleEditorKeyPressed toSharedMsg sharedModel _ key model =
     if Input.isInputKey sharedModel.inputMapping.cameraOrbit key then
         ( { model | cameraMode = Orbit }, Cmd.none )
@@ -1056,7 +1056,7 @@ redo model =
     )
 
 
-handleGameKeyPressed : Shared.Model -> String -> Model -> ( Model, Cmd msg )
+handleGameKeyPressed : Shared.LoadedModel -> String -> Model -> ( Model, Cmd msg )
 handleGameKeyPressed sharedModel key model =
     if Input.isInputKey sharedModel.inputMapping.moveUp key then
         ( { model | playerWantFacing = Board.Forward }, Cmd.none )
@@ -1074,7 +1074,7 @@ handleGameKeyPressed sharedModel key model =
         ( model, Cmd.none )
 
 
-view : (Shared.Msg -> msg) -> Shared.Model -> (Msg -> msg) -> Model -> List (Html msg)
+view : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> List (Html msg)
 view toSharedMsg sharedModel toMsg model =
     [ Html.div
         [ Html.Attributes.style "display" "grid"
@@ -1227,7 +1227,7 @@ view toSharedMsg sharedModel toMsg model =
                             [ model.board.blocks
                                 |> Dict.toList
                                 |> List.map (viewBlock sharedModel model.board model)
-                            , [ Board.viewPlayer model.playerFacing model.playerFrame ]
+                            , [ Board.viewPlayer sharedModel.playerMesh model.playerFacing model.playerFrame ]
                             ]
                 )
             ]
@@ -1597,7 +1597,7 @@ decodePointerMove toMsg pointer =
         (Json.Decode.field "movementY" Json.Decode.float)
 
 
-viewBlock : Shared.Model -> Board -> Model -> ( Board.Point, Board.Block ) -> Scene3d.Entity Board.WorldCoordinates
+viewBlock : Shared.LoadedModel -> Board -> Model -> ( Board.Point, Board.Block ) -> Scene3d.Entity Board.WorldCoordinates
 viewBlock sharedModel board model ( point, block ) =
     let
         ( x, y, z ) =
@@ -2024,7 +2024,7 @@ viewBounds board =
         )
 
 
-viewHeader : (Shared.Msg -> msg) -> Shared.Model -> (Msg -> msg) -> Model -> Html msg
+viewHeader : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> Html msg
 viewHeader toSharedMsg sharedModel toMsg model =
     case model.editorMode of
         TestGame ->

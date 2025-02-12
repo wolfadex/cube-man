@@ -34,8 +34,7 @@ import Angle exposing (Angle)
 import Axis3d
 import Block3d
 import Camera3d exposing (Camera3d)
-import Color
-import Cone3d
+import Color exposing (Color)
 import Dict exposing (Dict)
 import Direction3d exposing (Direction3d)
 import Duration
@@ -50,6 +49,7 @@ import Quantity
 import Scene3d
 import Scene3d.Light
 import Scene3d.Material
+import Scene3d.Mesh
 import Serialize
 import SketchPlane3d
 import Sphere3d
@@ -357,7 +357,7 @@ gameLights =
     Scene3d.sixLights sun1 sun2 sky1 sky2 sky3 environment
 
 
-gamePlayCamera : Frame3d Length.Meters WorldCoordinates { defines : {} } -> Camera3d Length.Meters WorldCoordinates
+gamePlayCamera : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates } -> Camera3d Length.Meters WorldCoordinates
 gamePlayCamera playerFrame =
     Camera3d.perspective
         { viewpoint =
@@ -392,25 +392,35 @@ view3dScene lights screenSize camera entities =
         }
 
 
-viewPlayer : Facing -> Frame3d Length.Meters WorldCoordinates { defines : {} } -> Scene3d.Entity WorldCoordinates
-viewPlayer facing frame =
-    Scene3d.group
-        [ Scene3d.sphereWithShadow
-            (Scene3d.Material.matte Color.gray)
-            (Sphere3d.atPoint Point3d.origin
-                (Length.meters 0.5)
-                |> Sphere3d.placeIn frame
-            )
-        , Scene3d.coneWithShadow
-            (Scene3d.Material.matte Color.red)
-            (Cone3d.startingAt Point3d.origin
-                Direction3d.positiveX
-                { radius = Length.meters 0.5
-                , length = Length.meters 0.75
-                }
-                |> Cone3d.placeIn frame
-            )
-        ]
+viewPlayer : ( Scene3d.Mesh.Unlit WorldCoordinates, Scene3d.Material.Texture Color ) -> Facing -> Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates } -> Scene3d.Entity WorldCoordinates
+viewPlayer ( playerMesh, playerTexture ) facing frame =
+    let
+        point =
+            Frame3d.originPoint frame
+    in
+    -- Scene3d.group
+    --     [ Scene3d.sphereWithShadow
+    --         (Scene3d.Material.matte Color.gray)
+    --         (Sphere3d.atPoint Point3d.origin
+    --             (Length.meters 0.5)
+    --             |> Sphere3d.placeIn frame
+    --         )
+    --     , Scene3d.coneWithShadow
+    --         (Scene3d.Material.matte Color.red)
+    --         (Cone3d.startingAt Point3d.origin
+    --             Direction3d.positiveX
+    --             { radius = Length.meters 0.5
+    --             , length = Length.meters 0.75
+    --             }
+    --             |> Cone3d.placeIn frame
+    --         )
+    --     ]
+    Scene3d.meshWithShadow
+        (Scene3d.Material.color Color.gray)
+        playerMesh
+        (Scene3d.Mesh.shadow playerMesh)
+        |> Scene3d.scaleAbout Point3d.origin 0.3
+        |> Scene3d.translateBy (Vector3d.from Point3d.origin (Frame3d.originPoint frame))
         |> Scene3d.rotateAround (Axis3d.through (Frame3d.originPoint frame) (Frame3d.zDirection frame))
             (Angle.degrees <|
                 case facing of
@@ -485,7 +495,7 @@ setPlayerFacing :
         | playerFacing : Facing
         , playerWantFacing : Facing
         , playerMovingAcrossEdge : Maybe Angle
-        , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : {} }
+        , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
         , board : Board
     }
     ->
@@ -493,7 +503,7 @@ setPlayerFacing :
             | playerFacing : Facing
             , playerWantFacing : Facing
             , playerMovingAcrossEdge : Maybe Angle
-            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : {} }
+            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
             , board : Board
         }
 setPlayerFacing model =
@@ -632,7 +642,7 @@ movePlayer :
         { m
             | playerFacing : Facing
             , playerMovingAcrossEdge : Maybe Angle
-            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : {} }
+            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
             , board : Board
             , score : Int
         }
@@ -640,7 +650,7 @@ movePlayer :
         { m
             | playerFacing : Facing
             , playerMovingAcrossEdge : Maybe Angle
-            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : {} }
+            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
             , board : Board
             , score : Int
         }
@@ -905,12 +915,12 @@ movePlayer deltaMs model =
             }
 
 
-findSpawn : Board -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : {} })
+findSpawn : Board -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates })
 findSpawn board =
     findSpawnHelper (Dict.toList board.blocks)
 
 
-findSpawnHelper : List ( Point, Block ) -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : {} })
+findSpawnHelper : List ( Point, Block ) -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates })
 findSpawnHelper blocks =
     case blocks of
         [] ->

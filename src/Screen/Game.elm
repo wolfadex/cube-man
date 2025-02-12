@@ -13,7 +13,7 @@ import Shared
 type alias Model =
     { board : Board
     , score : Int
-    , playerFrame : Frame3d Length.Meters Board.WorldCoordinates { defines : {} }
+    , playerFrame : Frame3d Length.Meters Board.WorldCoordinates { defines : Board.WorldCoordinates }
     , playerFacing : Board.Facing
     , playerWantFacing : Board.Facing
     , playerMovingAcrossEdge : Maybe Angle
@@ -42,12 +42,12 @@ type Msg
     = NoOp
 
 
-update : Shared.Model -> Msg -> Model -> ( Model, Cmd Msg )
+update : Shared.LoadedModel -> Msg -> Model -> ( Model, Cmd Msg )
 update _ _ model =
     ( model, Cmd.none )
 
 
-view : (Shared.Msg -> msg) -> Shared.Model -> (Msg -> msg) -> Model -> List (Html msg)
+view : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> List (Html msg)
 view toSharedMsg _ _ _ =
     [ Html.div
         [ Html.Attributes.style "width" "100vw"
