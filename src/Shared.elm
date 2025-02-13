@@ -35,7 +35,8 @@ type alias LoadedModel =
     , screen : Screen
 
     --
-    , playerMesh : TexturedMesh
+    -- , playerMesh : TexturedMesh
+    -- , wallMesh : TexturedMesh
     }
 
 
@@ -52,15 +53,21 @@ init =
         ( loadingState, loadingCmd ) =
             loadMeshes
     in
-    ( Loading loadingState
+    ( -- Loading loadingState
+      Loaded
+        { screenSize = { width = 800, height = 600 }
+        , blockPalette = Board.SimpleBlocks
+        , inputMapping = Input.defaultMapping
+        , screen = Menu
+        }
     , loadingCmd
     )
 
 
 loadMeshes =
     Task.Parallel.attempt2
-        { task1 = loadMesh "player_pawn"
-        , task2 = loadMesh "player_pawn"
+        { task1 = loadMesh "wall_3"
+        , task2 = loadMesh "wall_3"
         , onUpdates = TaskStateUpdated
         , onSuccess = AllTasksCompleted
         , onFailure = OneTaskFailed
@@ -68,7 +75,9 @@ loadMeshes =
 
 
 type alias TexturedMesh =
-    ( Scene3d.Mesh.Unlit Board.WorldCoordinates, Scene3d.Material.Texture Color )
+    ( Scene3d.Mesh.Textured Board.WorldCoordinates
+    , Scene3d.Material.Texture Color
+    )
 
 
 type Error
@@ -78,7 +87,12 @@ type Error
 
 loadMesh : String -> Task Error TexturedMesh
 loadMesh name =
-    Task.map2 (\mesh texture -> ( Scene3d.Mesh.texturedTriangles mesh, texture ))
+    Task.map2
+        (\mesh texture ->
+            ( Scene3d.Mesh.texturedFacets mesh
+            , texture
+            )
+        )
         (Http.task
             { method = "GET"
             , headers = []
@@ -147,13 +161,15 @@ update msg model =
         ( Loading _, OneTaskFailed error ) ->
             ( Failed error, Cmd.none )
 
-        ( Loading _, AllTasksCompleted playerMesh _ ) ->
+        ( Loading _, AllTasksCompleted wallMesh _ ) ->
             ( Loaded
                 { screenSize = { width = 800, height = 600 }
                 , blockPalette = Board.SimpleBlocks
                 , inputMapping = Input.defaultMapping
                 , screen = Menu
-                , playerMesh = playerMesh
+
+                -- , playerMesh = playerMesh
+                -- , wallMesh = wallMesh
                 }
             , Cmd.none
             )

@@ -260,8 +260,12 @@ view toSharedMsg sharedModel toMsg model =
                 (List.concat
                     [ model.board.blocks
                         |> Dict.toList
-                        |> List.map Board.viewBlock
-                    , [ Board.viewPlayer sharedModel.playerMesh model.playerFacing model.playerFrame ]
+                        |> List.map
+                            (Board.viewBlock
+                             -- { wallMesh = sharedModel.wallMesh
+                             -- }
+                            )
+                    , [ Board.viewPlayer model.playerFacing model.playerFrame ]
                     ]
                 )
             , Html.div

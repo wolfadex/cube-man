@@ -35,6 +35,7 @@ import Axis3d
 import Block3d
 import Camera3d exposing (Camera3d)
 import Color exposing (Color)
+import Cone3d
 import Dict exposing (Dict)
 import Direction3d exposing (Direction3d)
 import Duration
@@ -392,35 +393,41 @@ view3dScene lights screenSize camera entities =
         }
 
 
-viewPlayer : ( Scene3d.Mesh.Unlit WorldCoordinates, Scene3d.Material.Texture Color ) -> Facing -> Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates } -> Scene3d.Entity WorldCoordinates
-viewPlayer ( playerMesh, playerTexture ) facing frame =
+type alias TexturedMesh =
+    ( Scene3d.Mesh.Textured WorldCoordinates
+    , Scene3d.Material.Texture Color
+    )
+
+
+viewPlayer : Facing -> Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates } -> Scene3d.Entity WorldCoordinates
+viewPlayer facing frame =
     let
         point =
             Frame3d.originPoint frame
     in
-    -- Scene3d.group
-    --     [ Scene3d.sphereWithShadow
-    --         (Scene3d.Material.matte Color.gray)
-    --         (Sphere3d.atPoint Point3d.origin
-    --             (Length.meters 0.5)
-    --             |> Sphere3d.placeIn frame
-    --         )
-    --     , Scene3d.coneWithShadow
-    --         (Scene3d.Material.matte Color.red)
-    --         (Cone3d.startingAt Point3d.origin
-    --             Direction3d.positiveX
-    --             { radius = Length.meters 0.5
-    --             , length = Length.meters 0.75
-    --             }
-    --             |> Cone3d.placeIn frame
-    --         )
-    --     ]
-    Scene3d.meshWithShadow
-        (Scene3d.Material.color Color.gray)
-        playerMesh
-        (Scene3d.Mesh.shadow playerMesh)
-        |> Scene3d.scaleAbout Point3d.origin 0.3
-        |> Scene3d.translateBy (Vector3d.from Point3d.origin (Frame3d.originPoint frame))
+    Scene3d.group
+        [ Scene3d.sphereWithShadow
+            (Scene3d.Material.matte Color.gray)
+            (Sphere3d.atPoint Point3d.origin
+                (Length.meters 0.5)
+                |> Sphere3d.placeIn frame
+            )
+        , Scene3d.coneWithShadow
+            (Scene3d.Material.matte Color.red)
+            (Cone3d.startingAt Point3d.origin
+                Direction3d.positiveX
+                { radius = Length.meters 0.5
+                , length = Length.meters 0.75
+                }
+                |> Cone3d.placeIn frame
+            )
+        ]
+        -- Scene3d.meshWithShadow
+        --     (Scene3d.Material.color Color.gray)
+        --     playerMesh
+        --     (Scene3d.Mesh.shadow playerMesh)
+        -- |> Scene3d.scaleAbout Point3d.origin 0.3
+        -- |> Scene3d.translateBy (Vector3d.from Point3d.origin (Frame3d.originPoint frame))
         |> Scene3d.rotateAround (Axis3d.through (Frame3d.originPoint frame) (Frame3d.zDirection frame))
             (Angle.degrees <|
                 case facing of
@@ -446,6 +453,10 @@ viewBlock ( point, block ) =
     in
     case block of
         Wall ->
+            -- let
+            --     ( wallMesh, wallTexture ) =
+            --         meshes.wallMesh
+            -- in
             Scene3d.blockWithShadow
                 (Scene3d.Material.matte <|
                     Color.gray
@@ -461,6 +472,19 @@ viewBlock ( point, block ) =
                     ( Length.meters 1, Length.meters 1, Length.meters 1 )
                 )
 
+        -- Scene3d.meshWithShadow
+        --     (Scene3d.Material.texturedColor wallTexture)
+        --     wallMesh
+        --     (Scene3d.Mesh.shadow wallMesh)
+        --     |> Scene3d.scaleAbout Point3d.origin 0.5
+        --     |> Scene3d.translateBy
+        --         (Vector3d.from Point3d.origin
+        --             (Point3d.meters
+        --                 (toFloat x)
+        --                 (toFloat y)
+        --                 (toFloat z)
+        --             )
+        --         )
         PointPickup collected ->
             if collected then
                 Scene3d.nothing

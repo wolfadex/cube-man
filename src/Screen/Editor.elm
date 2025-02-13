@@ -37,6 +37,7 @@ import Rectangle2d
 import Scene3d
 import Scene3d.Light
 import Scene3d.Material
+import Scene3d.Mesh
 import Serialize
 import Set exposing (Set)
 import Shared
@@ -1227,7 +1228,7 @@ view toSharedMsg sharedModel toMsg model =
                             [ model.board.blocks
                                 |> Dict.toList
                                 |> List.map (viewBlock sharedModel model.board model)
-                            , [ Board.viewPlayer sharedModel.playerMesh model.playerFacing model.playerFrame ]
+                            , [ Board.viewPlayer model.playerFacing model.playerFrame ]
                             ]
                 )
             ]
@@ -1609,6 +1610,10 @@ viewBlock sharedModel board model ( point, block ) =
     else
         case block of
             Board.Wall ->
+                -- let
+                --     ( wallMesh, wallTexture ) =
+                --         sharedModel.wallMesh
+                -- in
                 Scene3d.blockWithShadow
                     (Scene3d.Material.matte <|
                         case sharedModel.blockPalette of
@@ -1632,6 +1637,10 @@ viewBlock sharedModel board model ( point, block ) =
                         ( Length.meters 1, Length.meters 1, Length.meters 1 )
                     )
 
+            -- Scene3d.meshWithShadow
+            --     (Scene3d.Material.color Color.gray)
+            --     wallMesh
+            --     (Scene3d.Mesh.shadow wallMesh)
             Board.PointPickup collected ->
                 if collected && (model.editorMode == TestGame) then
                     Scene3d.nothing
