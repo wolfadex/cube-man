@@ -1,22 +1,9 @@
 module Screen.Menu exposing (Model, Msg(..), init, subscriptions, update, view)
 
-import Angle
-import Board
-import Camera3d
-import Color
-import Direction3d
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events
-import Length
-import LineSegment3d
-import Pixels
-import Point3d
-import Scene3d
-import Scene3d.Material
-import Scene3d.Mesh
 import Shared
-import Viewpoint3d
 
 
 type alias Model =
@@ -154,27 +141,3 @@ view toSharedMsg sharedModel _ _ =
         --     }
         ]
     ]
-
-
-viewOrientationArrows : Scene3d.Entity Board.WorldCoordinates
-viewOrientationArrows =
-    Scene3d.group
-        [ Scene3d.lineSegment
-            (Scene3d.Material.color Color.red)
-            (LineSegment3d.from
-                Point3d.origin
-                (Point3d.meters 1 0 0)
-            )
-        , Scene3d.lineSegment
-            (Scene3d.Material.color Color.green)
-            (LineSegment3d.from
-                Point3d.origin
-                (Point3d.meters 0 1 0)
-            )
-        , Scene3d.lineSegment
-            (Scene3d.Material.color Color.blue)
-            (LineSegment3d.from
-                Point3d.origin
-                (Point3d.meters 0 0 1)
-            )
-        ]

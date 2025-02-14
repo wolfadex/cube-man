@@ -41,9 +41,9 @@ import Direction3d exposing (Direction3d)
 import Duration
 import Frame3d exposing (Frame3d)
 import Html exposing (Html)
-import Illuminance
 import Length
 import Luminance
+import LuminousFlux
 import Pixels
 import Point3d exposing (Point3d)
 import Quantity
@@ -297,65 +297,81 @@ type BlockPalette
     | RainbowBlocks
 
 
-gameLights : Scene3d.Lights WorldCoordinates
-gameLights =
+gameLights : Board -> Point3d Length.Meters WorldCoordinates -> Scene3d.Lights WorldCoordinates
+gameLights board playerPoint =
     let
-        sun1 =
-            Scene3d.Light.directional (Scene3d.Light.castsShadows True)
-                { direction =
-                    Direction3d.negativeZ
-                        |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
-                , intensity = Illuminance.lux 80000
-                , chromaticity = Scene3d.Light.sunlight
-                }
-
-        sun2 =
-            Scene3d.Light.directional (Scene3d.Light.castsShadows True)
-                { direction =
-                    Direction3d.positiveZ
-                        |> Direction3d.rotateAround Axis3d.x (Angle.degrees -70)
-                , intensity = Illuminance.lux 80000
-                , chromaticity = Scene3d.Light.sunlight
-                }
-
-        sky1 =
-            Scene3d.Light.overhead
-                { upDirection =
-                    Direction3d.positiveZ
-                , chromaticity = Scene3d.Light.skylight
-                , intensity = Illuminance.lux 20000
-                }
-
-        sky2 =
-            Scene3d.Light.overhead
-                { upDirection =
-                    Direction3d.positiveZ
-                        |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
-                        |> Direction3d.rotateAround Axis3d.z
-                            (Angle.degrees 90)
-                , chromaticity = Scene3d.Light.skylight
-                , intensity = Illuminance.lux 40000
-                }
-
-        sky3 =
-            Scene3d.Light.overhead
-                { upDirection =
-                    Direction3d.positiveZ
-                        |> Direction3d.rotateAround Axis3d.x (Angle.degrees -70)
-                        |> Direction3d.rotateAround Axis3d.z
-                            (Angle.degrees -90)
+        playerLight =
+            Scene3d.Light.point
+                (Scene3d.Light.castsShadows True)
+                { position = playerPoint
                 , chromaticity = Scene3d.Light.daylight
-                , intensity = Illuminance.lux 40000
+                , intensity = LuminousFlux.lumens 640000
                 }
 
-        environment =
-            Scene3d.Light.overhead
-                { upDirection = Direction3d.reverse Direction3d.positiveZ
-                , chromaticity = Scene3d.Light.daylight
-                , intensity = Illuminance.lux 15000
+        nearestPoints =
+            board.blocks
+                |> Dict.foldl
+                    (\point block acc ->
+                        case block of
+                            PointPickup False ->
+                                let
+                                    p3 =
+                                        pointToPoint3d point
+                                in
+                                ( p3
+                                , p3
+                                    |> Point3d.distanceFrom playerPoint
+                                    |> Length.inMeters
+                                )
+                                    :: acc
+
+                            _ ->
+                                acc
+                    )
+                    []
+                |> List.sortBy Tuple.second
+                |> List.take 7
+
+        withShadow p =
+            Scene3d.Light.point
+                (Scene3d.Light.castsShadows True)
+                { position = p
+                , chromaticity = Scene3d.Light.fluorescent
+                , intensity = LuminousFlux.lumens 160000
+                }
+
+        withoutShadow p =
+            Scene3d.Light.point
+                Scene3d.Light.neverCastsShadows
+                { position = p
+                , chromaticity = Scene3d.Light.fluorescent
+                , intensity = LuminousFlux.lumens 160000
                 }
     in
-    Scene3d.sixLights sun1 sun2 sky1 sky2 sky3 environment
+    case nearestPoints of
+        [ ( one, _ ), ( two, _ ), ( three, _ ), ( four, _ ), ( five, _ ), ( six, _ ), ( seven, _ ) ] ->
+            Scene3d.eightLights playerLight (withShadow one) (withShadow two) (withShadow three) (withoutShadow four) (withoutShadow five) (withoutShadow six) (withoutShadow seven)
+
+        [ ( one, _ ), ( two, _ ), ( three, _ ), ( four, _ ), ( five, _ ), ( six, _ ) ] ->
+            Scene3d.sevenLights playerLight (withShadow one) (withShadow two) (withShadow three) (withoutShadow four) (withoutShadow five) (withoutShadow six)
+
+        [ ( one, _ ), ( two, _ ), ( three, _ ), ( four, _ ), ( five, _ ) ] ->
+            Scene3d.sixLights playerLight (withShadow one) (withShadow two) (withShadow three) (withoutShadow four) (withoutShadow five)
+
+        [ ( one, _ ), ( two, _ ), ( three, _ ), ( four, _ ) ] ->
+            Scene3d.fiveLights playerLight (withShadow one) (withShadow two) (withShadow three) (withoutShadow four)
+
+        [ ( one, _ ), ( two, _ ), ( three, _ ) ] ->
+            Scene3d.fourLights playerLight (withShadow one) (withShadow two) (withShadow three)
+
+        [ ( one, _ ), ( two, _ ) ] ->
+            Scene3d.threeLights playerLight (withShadow one) (withShadow two)
+
+        [ ( one, _ ) ] ->
+            Scene3d.twoLights playerLight (withShadow one)
+
+        _ ->
+            Scene3d.oneLight playerLight
 
 
 gamePlayCamera : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates } -> Camera3d Length.Meters WorldCoordinates
@@ -381,7 +397,7 @@ view3dScene : Scene3d.Lights WorldCoordinates -> { width : Int, height : Int } -
 view3dScene lights screenSize camera entities =
     Scene3d.custom
         { clipDepth = Length.meters 1
-        , background = Scene3d.backgroundColor Color.gray
+        , background = Scene3d.backgroundColor (Color.rgb 0.25 0.25 0.25) -- Color.gray
         , exposure = Scene3d.exposureValue 15
         , lights = lights
         , toneMapping = Scene3d.noToneMapping
@@ -406,14 +422,21 @@ viewPlayer facing frame =
             Frame3d.originPoint frame
     in
     Scene3d.group
-        [ Scene3d.sphereWithShadow
-            (Scene3d.Material.matte Color.gray)
+        [ Scene3d.sphere
+            (Scene3d.Material.emissive
+                (Scene3d.Light.color Color.gray)
+                (Luminance.nits 20000)
+            )
             (Sphere3d.atPoint Point3d.origin
                 (Length.meters 0.5)
                 |> Sphere3d.placeIn frame
             )
-        , Scene3d.coneWithShadow
-            (Scene3d.Material.matte Color.red)
+        , Scene3d.cone
+            (Scene3d.Material.emissive
+                -- Color.red
+                (Scene3d.Light.color Color.red)
+                (Luminance.nits 2500)
+            )
             (Cone3d.startingAt Point3d.origin
                 Direction3d.positiveX
                 { radius = Length.meters 0.5

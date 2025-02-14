@@ -254,7 +254,7 @@ view toSharedMsg sharedModel toMsg model =
 
         FreePlayBoardLoaded ->
             [ Board.view3dScene
-                Board.gameLights
+                (Board.gameLights model.board (Frame3d.originPoint model.playerFrame))
                 sharedModel.screenSize
                 (Board.gamePlayCamera model.playerFrame)
                 (List.concat

@@ -37,7 +37,6 @@ import Rectangle2d
 import Scene3d
 import Scene3d.Light
 import Scene3d.Material
-import Scene3d.Mesh
 import Serialize
 import Set exposing (Set)
 import Shared
@@ -1134,7 +1133,7 @@ view toSharedMsg sharedModel toMsg model =
                 lights =
                     case model.editorMode of
                         TestGame ->
-                            Board.gameLights
+                            Board.gameLights model.board (Frame3d.originPoint model.playerFrame)
 
                         EditBoard ->
                             let
