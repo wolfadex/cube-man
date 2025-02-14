@@ -1,4 +1,12 @@
+# Elm
 node_modules
 elm-stuff
 
+# Odin
+cube-man
+cube-man.dSYM/
+
+compiled_shaders/*
+
+# Mac
 .DS_Store
