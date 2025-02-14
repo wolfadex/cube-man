@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739498573137"
+    "1739498836280"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -27834,7 +27834,8 @@ var $author$project$Screen$Menu$view = F4(
 								$elm$html$Html$h1,
 								_List_fromArray(
 									[
-										A2($elm$html$Html$Attributes$style, 'text-align', 'center')
+										A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+										A2($elm$html$Html$Attributes$style, 'color', 'white')
 									]),
 								_List_fromArray(
 									[

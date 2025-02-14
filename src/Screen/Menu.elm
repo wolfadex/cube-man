@@ -47,6 +47,7 @@ view toSharedMsg sharedModel _ _ =
             ]
             [ Html.h1
                 [ Html.Attributes.style "text-align" "center"
+                , Html.Attributes.style "color" "white"
                 ]
                 [ Html.text "Cube-Man" ]
             , Html.div
