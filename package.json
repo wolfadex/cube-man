@@ -1,17 +1,21 @@
 {
     "name": "cube-man",
+    "author": {
+        "name": "Wolfgang Schuster",
+        "email": "wolfadex@gmail.com"
+    },
     "scripts": {
         "dev": "elm-watch hot",
         "review": "elm-review --watch --fix",
         "build": "elm-watch make --optimize"
-    },
-    "volta": {
-        "node": "22.13.1"
     },
     "devDependencies": {
         "elm": "^0.19.1-6",
         "elm-format": "^0.8.7",
         "elm-review": "^2.12.0",
         "elm-watch": "^2.0.0-beta.4"
+    },
+    "volta": {
+        "node": "22.13.1"
     }
 }
