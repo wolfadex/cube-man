@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739669626365"
+    "1739669903039"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -32299,21 +32299,6 @@ var $author$project$Screen$Editor$view = F4(
 									]));
 						}
 					}()
-					])),
-				A2($elm$html$Html$br, _List_Nil, _List_Nil),
-				A2(
-				$elm$html$Html$button,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$type_('button'),
-						$elm$html$Html$Events$onClick(
-						toMsg(
-							$author$project$Screen$Editor$Tick(
-								$ianmackenzie$elm_units$Duration$milliseconds(16))))
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Manual Tick')
 					]))
 			]);
 	});

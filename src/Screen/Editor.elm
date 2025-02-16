@@ -1542,12 +1542,6 @@ view toSharedMsg sharedModel toMsg model =
                         ]
                     ]
         ]
-    , Html.br [] []
-    , Html.button
-        [ Html.Attributes.type_ "button"
-        , Html.Events.onClick (toMsg (Tick (Duration.milliseconds 16)))
-        ]
-        [ Html.text "Manual Tick" ]
     ]
 
 
