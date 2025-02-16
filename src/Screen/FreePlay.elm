@@ -1,9 +1,9 @@
 module Screen.FreePlay exposing (BoardPreviewTile, FreePlayMode(..), Model, Msg(..), init, subscriptions, update, view)
 
-import Angle exposing (Angle)
 import Board exposing (Board)
 import Browser.Events
 import Dict
+import Duration exposing (Duration)
 import Frame3d exposing (Frame3d)
 import Html exposing (Html)
 import Html.Attributes
@@ -24,7 +24,7 @@ type alias Model =
     , playerFrame : Frame3d Length.Meters Board.WorldCoordinates { defines : Board.WorldCoordinates }
     , playerFacing : Board.Facing
     , playerWantFacing : Board.Facing
-    , playerMovingAcrossEdge : Maybe Angle
+    , playerTarget : Board.Target
     , boardLoadError : Maybe Board.BoardLoadError
     , boardPlayError : Maybe Board.BoardPlayError
 
@@ -46,7 +46,7 @@ init =
       , playerFrame = Frame3d.atOrigin
       , playerFacing = Board.Forward
       , playerWantFacing = Board.Forward
-      , playerMovingAcrossEdge = Nothing
+      , playerTarget = Board.initTarget Board.empty Board.Forward Frame3d.atOrigin
       , boardLoadError = Nothing
       , boardPlayError = Nothing
       , freePlayMode = FreePlayBoardSelection
@@ -68,7 +68,7 @@ subscriptions model =
 
             else
                 Sub.batch
-                    [ Browser.Events.onAnimationFrameDelta Tick
+                    [ Browser.Events.onAnimationFrameDelta (Duration.milliseconds >> Tick)
                     , Browser.Events.onKeyPress decodeKeyPressed
                     ]
 
@@ -80,7 +80,7 @@ decodeKeyPressed =
 
 
 type Msg
-    = Tick Float
+    = Tick Duration
     | KeyPressed String
     | LoadFreePlayBoard String
     | ExitFreePlayBoard
@@ -136,7 +136,7 @@ update sharedModel msg model =
                                 , board = board
                                 , playerFrame = spawnFrame
                                 , score = 0
-                                , playerMovingAcrossEdge = Nothing
+                                , playerTarget = Board.initTarget board Board.Forward spawnFrame
                                 , playerFacing = Board.Forward
                                 , playerWantFacing = Board.Forward
                                 , boardPlayError = Nothing
@@ -163,7 +163,7 @@ update sharedModel msg model =
                     handleGameKeyPressed sharedModel key model
 
 
-tickPlayer : Float -> Model -> Model
+tickPlayer : Duration -> Model -> Model
 tickPlayer deltaMs model =
     case model.freePlayMode of
         FreePlayBoardSelection ->
@@ -171,8 +171,7 @@ tickPlayer deltaMs model =
 
         FreePlayBoardLoaded ->
             model
-                |> Board.setPlayerFacing
-                |> Board.movePlayer deltaMs
+                |> Board.tickPlayer deltaMs
 
 
 handleGameKeyPressed : Shared.LoadedModel -> String -> Model -> ( Model, Cmd Msg )

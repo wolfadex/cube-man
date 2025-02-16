@@ -9,6 +9,7 @@ module Board exposing
     , Facing(..)
     , Point
     , ScreenCoordinates(..)
+    , Target
     , WorldCoordinates(..)
     , axisToDirection3d
     , axisToLabel
@@ -20,10 +21,10 @@ module Board exposing
     , gameLights
     , gamePlayCamera
     , indexToPoint
-    , movePlayer
+    , initTarget
     , point3dToPoint
     , pointToPoint3d
-    , setPlayerFacing
+    , tickPlayer
     , view3dScene
     , viewBlock
     , viewPlayer
@@ -31,14 +32,16 @@ module Board exposing
     )
 
 import Angle exposing (Angle)
+import AngularSpeed
 import Axis3d
 import Block3d
 import Camera3d exposing (Camera3d)
 import Color exposing (Color)
 import Cone3d
+import Cylinder3d
 import Dict exposing (Dict)
 import Direction3d exposing (Direction3d)
-import Duration
+import Duration exposing (Duration)
 import Frame3d exposing (Frame3d)
 import Html exposing (Html)
 import Length
@@ -46,7 +49,7 @@ import Luminance
 import LuminousFlux
 import Pixels
 import Point3d exposing (Point3d)
-import Quantity
+import Quantity exposing (Quantity(..))
 import Scene3d
 import Scene3d.Light
 import Scene3d.Material
@@ -64,6 +67,12 @@ type WorldCoordinates
 
 type ScreenCoordinates
     = ScreenCoordinates Never
+
+
+type Target
+    = NoTarget
+    | MoveForward { from : Point, to : Point, duration : Duration }
+    | TraverseEdge { from : Point, to : Point, duration : Duration }
 
 
 type alias Point =
@@ -93,6 +102,7 @@ type Block
     | Edge
     | PointPickup Bool
     | PlayerSpawn { forward : Axis, left : Axis }
+    | EnemySpawner
 
 
 pointCodec : Serialize.Codec e Point
@@ -153,7 +163,7 @@ axisCodec =
 blockCodec : Serialize.Codec e Block
 blockCodec =
     Serialize.customType
-        (\emptyEncoder wallEncoder edgeEncoder pointPickupEncoder playerSpawnEncoder value ->
+        (\emptyEncoder wallEncoder edgeEncoder pointPickupEncoder playerSpawnEncoder enemySpawnerEncoder value ->
             case value of
                 Empty ->
                     emptyEncoder
@@ -169,12 +179,16 @@ blockCodec =
 
                 PlayerSpawn details ->
                     playerSpawnEncoder details
+
+                EnemySpawner ->
+                    enemySpawnerEncoder
         )
         |> Serialize.variant0 Empty
         |> Serialize.variant0 Wall
         |> Serialize.variant0 Edge
         |> Serialize.variant1 PointPickup Serialize.bool
         |> Serialize.variant1 PlayerSpawn playerSpawnDetailsCodec
+        |> Serialize.variant0 EnemySpawner
         |> Serialize.finishCustomType
 
 
@@ -417,10 +431,6 @@ type alias TexturedMesh =
 
 viewPlayer : Facing -> Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates } -> Scene3d.Entity WorldCoordinates
 viewPlayer facing frame =
-    let
-        point =
-            Frame3d.originPoint frame
-    in
     Scene3d.group
         [ Scene3d.sphere
             (Scene3d.Material.emissive
@@ -513,7 +523,7 @@ viewBlock ( point, block ) =
                 Scene3d.nothing
 
             else
-                Scene3d.sphereWithShadow
+                Scene3d.sphere
                     (Scene3d.Material.emissive
                         (Scene3d.Light.color Color.yellow)
                         (Luminance.nits 30000)
@@ -536,35 +546,262 @@ viewBlock ( point, block ) =
         Edge ->
             Scene3d.nothing
 
+        EnemySpawner ->
+            let
+                center =
+                    Point3d.meters
+                        (toFloat x)
+                        (toFloat y)
+                        (toFloat z)
+
+                length =
+                    Length.meters 1
+            in
+            Scene3d.group
+                [ Scene3d.cylinderWithShadow
+                    (Scene3d.Material.color Color.red)
+                    (Cylinder3d.centeredOn Point3d.origin
+                        Direction3d.positiveX
+                        { radius = Length.meters 0.05
+                        , length = length
+                        }
+                        |> Cylinder3d.placeIn
+                            (center
+                                |> Frame3d.atPoint
+                                |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                    (Length.meters 0.4)
+                                |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                    (Length.meters -0.4)
+                            )
+                    )
+                , Scene3d.cylinderWithShadow
+                    (Scene3d.Material.color Color.red)
+                    (Cylinder3d.centeredOn Point3d.origin
+                        Direction3d.positiveX
+                        { radius = Length.meters 0.05
+                        , length = length
+                        }
+                        |> Cylinder3d.placeIn
+                            (center
+                                |> Frame3d.atPoint
+                                |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                    (Length.meters 0.4)
+                                |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                    (Length.meters 0.4)
+                            )
+                    )
+                , Scene3d.cylinderWithShadow
+                    (Scene3d.Material.color Color.red)
+                    (Cylinder3d.centeredOn Point3d.origin
+                        Direction3d.positiveX
+                        { radius = Length.meters 0.05
+                        , length = length
+                        }
+                        |> Cylinder3d.placeIn
+                            (center
+                                |> Frame3d.atPoint
+                                |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                    (Length.meters -0.4)
+                                |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                    (Length.meters 0.4)
+                            )
+                    )
+                , Scene3d.cylinderWithShadow
+                    (Scene3d.Material.color Color.red)
+                    (Cylinder3d.centeredOn Point3d.origin
+                        Direction3d.positiveX
+                        { radius = Length.meters 0.05
+                        , length = length
+                        }
+                        |> Cylinder3d.placeIn
+                            (center
+                                |> Frame3d.atPoint
+                                |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                    (Length.meters -0.4)
+                                |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                    (Length.meters -0.4)
+                            )
+                    )
+
+                --
+                , Scene3d.cylinderWithShadow
+                    (Scene3d.Material.color Color.red)
+                    (Cylinder3d.centeredOn Point3d.origin
+                        Direction3d.positiveY
+                        { radius = Length.meters 0.05
+                        , length = length
+                        }
+                        |> Cylinder3d.placeIn
+                            (center
+                                |> Frame3d.atPoint
+                                |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                    (Length.meters -0.4)
+                                |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                    (Length.meters -0.4)
+                            )
+                    )
+                , Scene3d.cylinderWithShadow
+                    (Scene3d.Material.color Color.red)
+                    (Cylinder3d.centeredOn Point3d.origin
+                        Direction3d.positiveY
+                        { radius = Length.meters 0.05
+                        , length = length
+                        }
+                        |> Cylinder3d.placeIn
+                            (center
+                                |> Frame3d.atPoint
+                                |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                    (Length.meters 0.4)
+                                |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                    (Length.meters -0.4)
+                            )
+                    )
+                , Scene3d.cylinderWithShadow
+                    (Scene3d.Material.color Color.red)
+                    (Cylinder3d.centeredOn Point3d.origin
+                        Direction3d.positiveY
+                        { radius = Length.meters 0.05
+                        , length = length
+                        }
+                        |> Cylinder3d.placeIn
+                            (center
+                                |> Frame3d.atPoint
+                                |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                    (Length.meters -0.4)
+                                |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                    (Length.meters 0.4)
+                            )
+                    )
+                , Scene3d.cylinderWithShadow
+                    (Scene3d.Material.color Color.red)
+                    (Cylinder3d.centeredOn Point3d.origin
+                        Direction3d.positiveY
+                        { radius = Length.meters 0.05
+                        , length = length
+                        }
+                        |> Cylinder3d.placeIn
+                            (center
+                                |> Frame3d.atPoint
+                                |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                    (Length.meters 0.4)
+                                |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                    (Length.meters 0.4)
+                            )
+                    )
+
+                --
+                , Scene3d.cylinderWithShadow
+                    (Scene3d.Material.color Color.red)
+                    (Cylinder3d.centeredOn Point3d.origin
+                        Direction3d.positiveZ
+                        { radius = Length.meters 0.05
+                        , length = length
+                        }
+                        |> Cylinder3d.placeIn
+                            (center
+                                |> Frame3d.atPoint
+                                |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                    (Length.meters 0.4)
+                                |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                    (Length.meters 0.4)
+                            )
+                    )
+                , Scene3d.cylinderWithShadow
+                    (Scene3d.Material.color Color.red)
+                    (Cylinder3d.centeredOn Point3d.origin
+                        Direction3d.positiveZ
+                        { radius = Length.meters 0.05
+                        , length = length
+                        }
+                        |> Cylinder3d.placeIn
+                            (center
+                                |> Frame3d.atPoint
+                                |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                    (Length.meters -0.4)
+                                |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                    (Length.meters 0.4)
+                            )
+                    )
+                , Scene3d.cylinderWithShadow
+                    (Scene3d.Material.color Color.red)
+                    (Cylinder3d.centeredOn Point3d.origin
+                        Direction3d.positiveZ
+                        { radius = Length.meters 0.05
+                        , length = length
+                        }
+                        |> Cylinder3d.placeIn
+                            (center
+                                |> Frame3d.atPoint
+                                |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                    (Length.meters 0.4)
+                                |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                    (Length.meters -0.4)
+                            )
+                    )
+                , Scene3d.cylinderWithShadow
+                    (Scene3d.Material.color Color.red)
+                    (Cylinder3d.centeredOn Point3d.origin
+                        Direction3d.positiveZ
+                        { radius = Length.meters 0.05
+                        , length = length
+                        }
+                        |> Cylinder3d.placeIn
+                            (center
+                                |> Frame3d.atPoint
+                                |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                    (Length.meters -0.4)
+                                |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                    (Length.meters -0.4)
+                            )
+                    )
+                ]
+
 
 setPlayerFacing :
     { m
         | playerFacing : Facing
         , playerWantFacing : Facing
-        , playerMovingAcrossEdge : Maybe Angle
+        , playerTarget : Target
         , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
         , board : Board
+        , score : Int
     }
     ->
         { m
             | playerFacing : Facing
             , playerWantFacing : Facing
-            , playerMovingAcrossEdge : Maybe Angle
+            , playerTarget : Target
             , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
             , board : Board
+            , score : Int
         }
 setPlayerFacing model =
     if model.playerFacing == model.playerWantFacing then
         model
 
     else
-        case model.playerMovingAcrossEdge of
-            Just _ ->
+        case model.playerTarget of
+            NoTarget ->
+                { model
+                    | playerFacing = model.playerWantFacing
+                    , playerTarget =
+                        findNextTarget model.board model.playerWantFacing (model.playerFrame |> Frame3d.originPoint |> point3dToPoint) model.playerFrame
+                }
+
+            TraverseEdge _ ->
                 model
 
-            Nothing ->
+            MoveForward moveDetails ->
                 if oppositeFacings model.playerFacing model.playerWantFacing then
-                    { model | playerFacing = model.playerWantFacing }
+                    { model
+                        | playerFacing = model.playerWantFacing
+                        , playerTarget =
+                            MoveForward
+                                { from = moveDetails.to
+                                , to = moveDetails.from
+                                , duration = durationForForwardMovement |> Quantity.minus moveDetails.duration
+                                }
+                    }
 
                 else
                     let
@@ -572,16 +809,22 @@ setPlayerFacing model =
                             model.playerFrame
                                 |> Frame3d.originPoint
                                 |> point3dToPoint
+
+                        playerBoardPoint3d =
+                            playerBoardPoint
+                                |> pointToPoint3d
                     in
                     if
                         Quantity.equalWithin (Length.meters 0.1)
-                            (Point3d.distanceFrom (pointToPoint3d playerBoardPoint) (Frame3d.originPoint model.playerFrame))
+                            (Point3d.distanceFrom
+                                playerBoardPoint3d
+                                (Frame3d.originPoint model.playerFrame)
+                            )
                             (Length.meters 0)
                     then
                         let
                             targetBoardPoint =
-                                playerBoardPoint
-                                    |> pointToPoint3d
+                                playerBoardPoint3d
                                     |> Point3d.translateIn
                                         (case model.playerWantFacing of
                                             Forward ->
@@ -605,7 +848,7 @@ setPlayerFacing model =
                                 { model
                                     | playerFrame =
                                         Frame3d.unsafe
-                                            { originPoint = pointToPoint3d playerBoardPoint
+                                            { originPoint = playerBoardPoint3d
                                             , xDirection =
                                                 model.playerFrame
                                                     |> Frame3d.xDirection
@@ -631,7 +874,14 @@ setPlayerFacing model =
                                                     |> Maybe.withDefault Direction3d.positiveX
                                                     |> correctSizeDirection
                                             }
+                                            |> correctPlayerFrame
                                     , playerFacing = model.playerWantFacing
+                                    , playerTarget =
+                                        MoveForward
+                                            { from = playerBoardPoint
+                                            , to = targetBoardPoint
+                                            , duration = durationForForwardMovement
+                                            }
                                 }
                         in
                         case Dict.get targetBoardPoint model.board.blocks of
@@ -652,16 +902,29 @@ setPlayerFacing model =
                                     PlayerSpawn _ ->
                                         treatAsEmpty ()
 
+                                    EnemySpawner ->
+                                        model
+
                                     Edge ->
                                         { model
                                             | playerFrame =
                                                 Frame3d.unsafe
-                                                    { originPoint = pointToPoint3d playerBoardPoint
+                                                    { originPoint = playerBoardPoint3d
                                                     , xDirection = Frame3d.xDirection model.playerFrame
                                                     , yDirection = Frame3d.yDirection model.playerFrame
                                                     , zDirection = Frame3d.zDirection model.playerFrame
                                                     }
                                             , playerFacing = model.playerWantFacing
+                                            , playerTarget =
+                                                TraverseEdge
+                                                    { from = playerBoardPoint
+                                                    , to =
+                                                        targetBoardPoint
+                                                            |> pointToPoint3d
+                                                            |> Point3d.translateIn (Frame3d.zDirection model.playerFrame) (Length.meters -1)
+                                                            |> point3dToPoint
+                                                    , duration = durationForEdgeMovement
+                                                    }
                                         }
 
                     else
@@ -683,283 +946,369 @@ correctSizeDirection dir =
         }
 
 
-movePlayer :
-    Float
-    ->
-        { m
-            | playerFacing : Facing
-            , playerMovingAcrossEdge : Maybe Angle
-            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
-            , board : Board
-            , score : Int
-        }
-    ->
-        { m
-            | playerFacing : Facing
-            , playerMovingAcrossEdge : Maybe Angle
-            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
-            , board : Board
-            , score : Int
-        }
-movePlayer deltaMs model =
+initTarget : Board -> Facing -> Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates } -> Target
+initTarget board facing playerFrame =
+    findNextTarget board facing (playerFrame |> Frame3d.originPoint |> point3dToPoint) playerFrame
+
+
+findNextTarget : Board -> Facing -> Point -> Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates } -> Target
+findNextTarget board playerFacing fromPoint playerFrame =
     let
-        doEdgeMovement () =
-            let
-                edgeMovement =
-                    Angle.degrees 90
-                        |> Quantity.per (Duration.seconds 1)
-                        |> Quantity.for (Duration.milliseconds deltaMs)
-            in
-            ( model.playerFrame
-                |> Frame3d.rotateAround
-                    (Axis3d.through
-                        (model.playerFrame
-                            |> Frame3d.originPoint
-                            |> point3dToPoint
-                            |> pointToPoint3d
-                            |> Point3d.translateIn
-                                (Frame3d.zDirection model.playerFrame)
-                                (Length.meters -1)
-                        )
-                        (case model.playerFacing of
-                            Forward ->
-                                Frame3d.yDirection model.playerFrame
+        toPoint =
+            playerFrame
+                |> Frame3d.translateIn
+                    (case playerFacing of
+                        Forward ->
+                            Frame3d.xDirection playerFrame
 
-                            Backward ->
-                                Frame3d.yDirection model.playerFrame
-                                    |> Direction3d.reverse
+                        Backward ->
+                            Frame3d.xDirection playerFrame
+                                |> Direction3d.reverse
 
-                            Left ->
-                                Frame3d.xDirection model.playerFrame
-                                    |> Direction3d.reverse
+                        Right ->
+                            Frame3d.yDirection playerFrame
+                                |> Direction3d.reverse
 
-                            Right ->
-                                Frame3d.xDirection model.playerFrame
-                        )
+                        Left ->
+                            Frame3d.yDirection playerFrame
                     )
-                    edgeMovement
-            , edgeMovement
-            )
-
-        treatAsEmpty () =
-            { model
-                | playerFrame =
-                    model.playerFrame
-                        |> Frame3d.translateIn
-                            (case model.playerFacing of
-                                Forward ->
-                                    Frame3d.xDirection model.playerFrame
-
-                                Backward ->
-                                    Frame3d.xDirection model.playerFrame
-                                        |> Direction3d.reverse
-
-                                Right ->
-                                    Frame3d.yDirection model.playerFrame
-                                        |> Direction3d.reverse
-
-                                Left ->
-                                    Frame3d.yDirection model.playerFrame
-                            )
-                            (Length.meters 4
-                                |> Quantity.per (Duration.seconds 1)
-                                |> Quantity.for (Duration.milliseconds deltaMs)
-                            )
-            }
+                    (Length.meters 1)
+                |> Frame3d.originPoint
+                |> point3dToPoint
     in
-    case model.playerMovingAcrossEdge of
+    case Dict.get toPoint board.blocks of
         Nothing ->
+            NoTarget
+
+        Just Wall ->
+            NoTarget
+
+        Just EnemySpawner ->
+            NoTarget
+
+        Just Empty ->
+            MoveForward { from = fromPoint, to = toPoint, duration = durationForForwardMovement }
+
+        Just (PlayerSpawn _) ->
+            MoveForward { from = fromPoint, to = toPoint, duration = durationForForwardMovement }
+
+        Just (PointPickup _) ->
+            MoveForward { from = fromPoint, to = toPoint, duration = durationForForwardMovement }
+
+        Just Edge ->
+            TraverseEdge
+                { from = fromPoint
+                , to =
+                    toPoint
+                        |> pointToPoint3d
+                        |> Point3d.translateIn (Frame3d.zDirection playerFrame) (Length.meters -1)
+                        |> point3dToPoint
+                , duration = durationForEdgeMovement
+                }
+
+
+durationForForwardMovement : Duration
+durationForForwardMovement =
+    Duration.seconds 0.25
+
+
+durationForEdgeMovement : Duration
+durationForEdgeMovement =
+    Duration.seconds 0.75
+
+
+tickPlayer :
+    Duration
+    ->
+        { m
+            | playerFacing : Facing
+            , playerTarget : Target
+            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
+            , board : Board
+            , playerWantFacing : Facing
+            , score : Int
+        }
+    ->
+        { m
+            | playerFacing : Facing
+            , playerTarget : Target
+            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
+            , board : Board
+            , playerWantFacing : Facing
+            , score : Int
+        }
+tickPlayer deltaDuration model =
+    model
+        |> setPlayerFacing
+        |> movePlayer deltaDuration
+
+
+movePlayer :
+    Duration
+    ->
+        { m
+            | playerFacing : Facing
+            , playerTarget : Target
+            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
+            , board : Board
+            , playerWantFacing : Facing
+            , score : Int
+        }
+    ->
+        { m
+            | playerFacing : Facing
+            , playerTarget : Target
+            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
+            , board : Board
+            , playerWantFacing : Facing
+            , score : Int
+        }
+movePlayer deltaDuration model =
+    case model.playerTarget of
+        NoTarget ->
+            model
+
+        MoveForward moveDetails ->
             let
-                nearBlock =
-                    Dict.get
-                        (model.playerFrame
-                            |> Frame3d.translateIn
-                                (case model.playerFacing of
-                                    Forward ->
-                                        Frame3d.xDirection model.playerFrame
+                toPoint =
+                    pointToPoint3d moveDetails.to
 
-                                    Backward ->
-                                        Frame3d.xDirection model.playerFrame
-                                            |> Direction3d.reverse
+                remainingDuration =
+                    moveDetails.duration
+                        |> Quantity.minus deltaDuration
+            in
+            if Quantity.compare remainingDuration (Quantity 0) == EQ then
+                let
+                    playerFrame =
+                        model.playerFrame
+                            |> Frame3d.moveTo toPoint
+                in
+                { model
+                    | playerFrame = playerFrame
+                    , playerTarget = findNextTarget model.board model.playerFacing moveDetails.to playerFrame
+                }
 
-                                    Right ->
-                                        Frame3d.yDirection model.playerFrame
-                                            |> Direction3d.reverse
+            else if remainingDuration |> Quantity.lessThan (Quantity 0) then
+                let
+                    playerFrame =
+                        model.playerFrame
+                            |> Frame3d.moveTo toPoint
+                in
+                tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
+                    { model
+                        | playerFrame = playerFrame
+                        , playerTarget = findNextTarget model.board model.playerFacing moveDetails.to playerFrame
+                    }
 
-                                    Left ->
-                                        Frame3d.yDirection model.playerFrame
+            else
+                let
+                    fromPoint =
+                        pointToPoint3d moveDetails.from
+                in
+                { model
+                    | playerFrame =
+                        model.playerFrame
+                            |> Frame3d.moveTo
+                                (Point3d.translateBy
+                                    (Vector3d.from fromPoint toPoint
+                                        |> Vector3d.scaleBy
+                                            (let
+                                                (Quantity durFordMove) =
+                                                    durationForForwardMovement
+
+                                                (Quantity remDur) =
+                                                    remainingDuration
+                                             in
+                                             (durFordMove - remDur) / durFordMove
+                                            )
+                                    )
+                                    fromPoint
                                 )
-                                (Length.meters 0.6)
-                            |> Frame3d.originPoint
-                            |> point3dToPoint
-                        )
-                        model.board.blocks
+                    , playerTarget = MoveForward { moveDetails | duration = remainingDuration }
+                }
 
-                scorePoints m =
-                    let
-                        playerPoint =
-                            m.playerFrame
-                                |> Frame3d.originPoint
-
-                        blockPoint =
-                            playerPoint
-                                |> point3dToPoint
-
-                        currentBlock =
-                            Dict.get
-                                blockPoint
-                                m.board.blocks
-                    in
-                    case currentBlock of
-                        Nothing ->
-                            m
-
-                        Just Empty ->
-                            m
-
-                        Just Wall ->
-                            m
-
-                        Just Edge ->
-                            m
-
-                        Just (PlayerSpawn _) ->
-                            m
-
-                        Just (PointPickup collected) ->
-                            if collected then
-                                m
-
-                            else if Point3d.distanceFrom playerPoint (pointToPoint3d blockPoint) |> Quantity.lessThan (Length.meters 0.25) then
-                                let
-                                    board =
-                                        m.board
-                                in
-                                { m
-                                    | score = m.score + 50
-                                    , board =
-                                        { board
-                                            | blocks =
-                                                Dict.insert blockPoint
-                                                    (PointPickup True)
-                                                    m.board.blocks
-                                        }
-                                }
-
-                            else
-                                m
-            in
-            scorePoints <|
-                case nearBlock of
-                    Nothing ->
-                        model
-
-                    Just Wall ->
-                        model
-
-                    Just Edge ->
-                        let
-                            ( playerFrame, distMoved ) =
-                                doEdgeMovement ()
-                        in
-                        { model
-                            | playerFrame = playerFrame
-                            , playerMovingAcrossEdge = Just distMoved
-                        }
-
-                    Just (PointPickup collected) ->
-                        if collected then
-                            treatAsEmpty ()
-
-                        else
-                            { model
-                                | playerFrame =
-                                    model.playerFrame
-                                        |> Frame3d.translateIn
-                                            (case model.playerFacing of
-                                                Forward ->
-                                                    Frame3d.xDirection model.playerFrame
-
-                                                Backward ->
-                                                    Frame3d.xDirection model.playerFrame
-                                                        |> Direction3d.reverse
-
-                                                Right ->
-                                                    Frame3d.yDirection model.playerFrame
-                                                        |> Direction3d.reverse
-
-                                                Left ->
-                                                    Frame3d.yDirection model.playerFrame
-                                            )
-                                            (Length.meters 4
-                                                |> Quantity.per (Duration.seconds 1)
-                                                |> Quantity.for (Duration.milliseconds deltaMs)
-                                            )
-                            }
-
-                    Just Empty ->
-                        treatAsEmpty ()
-
-                    Just (PlayerSpawn _) ->
-                        treatAsEmpty ()
-
-        Just edgeDistTraveled ->
+        TraverseEdge edgeDetails ->
             let
-                ( playerFrame, distMoved ) =
-                    doEdgeMovement ()
+                remainingDuration : Duration
+                remainingDuration =
+                    edgeDetails.duration
+                        |> Quantity.minus deltaDuration
 
-                totalMovement =
-                    Quantity.plus edgeDistTraveled distMoved
+                targetAngle : Angle
+                targetAngle =
+                    Angle.degrees 90
 
-                edgeTravelComplete =
-                    Quantity.equalWithin (Angle.degrees 1)
-                        totalMovement
-                        (Angle.degrees 90)
+                targetSpeed : Quantity Float (Quantity.Rate Angle.Radians Duration.Seconds)
+                targetSpeed =
+                    targetAngle
+                        |> Quantity.per durationForEdgeMovement
             in
-            { model
-                | playerFrame =
-                    if edgeTravelComplete then
-                        Frame3d.unsafe
-                            { originPoint =
-                                playerFrame
-                                    |> Frame3d.originPoint
-                                    |> point3dToPoint
-                                    |> pointToPoint3d
-                            , xDirection =
-                                playerFrame
-                                    |> Frame3d.xDirection
-                                    |> Direction3d.toVector
-                                    |> Vector3d.normalize
-                                    |> Vector3d.direction
-                                    |> Maybe.withDefault Direction3d.positiveX
-                                    |> correctSizeDirection
-                            , yDirection =
-                                playerFrame
-                                    |> Frame3d.yDirection
-                                    |> Direction3d.toVector
-                                    |> Vector3d.normalize
-                                    |> Vector3d.direction
-                                    |> Maybe.withDefault Direction3d.positiveX
-                                    |> correctSizeDirection
-                            , zDirection =
-                                playerFrame
-                                    |> Frame3d.zDirection
-                                    |> Direction3d.toVector
-                                    |> Vector3d.normalize
-                                    |> Vector3d.direction
-                                    |> Maybe.withDefault Direction3d.positiveX
-                                    |> correctSizeDirection
-                            }
+            if remainingDuration |> Quantity.lessThan (Quantity 0) then
+                tickPlayer (Quantity 0 |> Quantity.minus remainingDuration) <|
+                    let
+                        traverseDurationDuration : Duration
+                        traverseDurationDuration =
+                            deltaDuration
+                                |> Quantity.plus remainingDuration
 
-                    else
-                        playerFrame
-                , playerMovingAcrossEdge =
-                    if edgeTravelComplete then
-                        Nothing
+                        edgeMovement : Angle
+                        edgeMovement =
+                            targetSpeed
+                                |> Quantity.for traverseDurationDuration
 
-                    else
-                        Just totalMovement
-            }
+                        playerFrame =
+                            model.playerFrame
+                                |> Frame3d.rotateAround
+                                    (Axis3d.through
+                                        (model.playerFrame
+                                            |> Frame3d.originPoint
+                                            |> point3dToPoint
+                                            |> pointToPoint3d
+                                            |> Point3d.translateIn
+                                                (Frame3d.zDirection model.playerFrame)
+                                                (Length.meters -1)
+                                        )
+                                        (case model.playerFacing of
+                                            Forward ->
+                                                Frame3d.yDirection model.playerFrame
+
+                                            Backward ->
+                                                Frame3d.yDirection model.playerFrame
+                                                    |> Direction3d.reverse
+
+                                            Left ->
+                                                Frame3d.xDirection model.playerFrame
+                                                    |> Direction3d.reverse
+
+                                            Right ->
+                                                Frame3d.xDirection model.playerFrame
+                                        )
+                                    )
+                                    edgeMovement
+
+                        correctedPlayerFrame =
+                            correctPlayerFrame playerFrame
+                    in
+                    { model
+                        | playerFrame = correctedPlayerFrame
+                        , playerTarget = findNextTarget model.board model.playerFacing edgeDetails.to correctedPlayerFrame
+                    }
+
+            else
+                let
+                    edgeMovement : Angle
+                    edgeMovement =
+                        targetSpeed
+                            |> Quantity.for deltaDuration
+                in
+                if Quantity.compare remainingDuration (Quantity 0) == EQ then
+                    let
+                        playerFrame =
+                            model.playerFrame
+                                |> Frame3d.rotateAround
+                                    (Axis3d.through
+                                        (model.playerFrame
+                                            |> Frame3d.originPoint
+                                            |> point3dToPoint
+                                            |> pointToPoint3d
+                                            |> Point3d.translateIn
+                                                (Frame3d.zDirection model.playerFrame)
+                                                (Length.meters -1)
+                                        )
+                                        (case model.playerFacing of
+                                            Forward ->
+                                                Frame3d.yDirection model.playerFrame
+
+                                            Backward ->
+                                                Frame3d.yDirection model.playerFrame
+                                                    |> Direction3d.reverse
+
+                                            Left ->
+                                                Frame3d.xDirection model.playerFrame
+                                                    |> Direction3d.reverse
+
+                                            Right ->
+                                                Frame3d.xDirection model.playerFrame
+                                        )
+                                    )
+                                    edgeMovement
+
+                        correctedPlayerFrame =
+                            correctPlayerFrame playerFrame
+                    in
+                    { model
+                        | playerFrame = correctedPlayerFrame
+                        , playerTarget = findNextTarget model.board model.playerFacing edgeDetails.to correctedPlayerFrame
+                    }
+
+                else
+                    { model
+                        | playerFrame =
+                            model.playerFrame
+                                |> Frame3d.rotateAround
+                                    (Axis3d.through
+                                        (model.playerFrame
+                                            |> Frame3d.originPoint
+                                            |> point3dToPoint
+                                            |> pointToPoint3d
+                                            |> Point3d.translateIn
+                                                (Frame3d.zDirection model.playerFrame)
+                                                (Length.meters -1)
+                                        )
+                                        (case model.playerFacing of
+                                            Forward ->
+                                                Frame3d.yDirection model.playerFrame
+
+                                            Backward ->
+                                                Frame3d.yDirection model.playerFrame
+                                                    |> Direction3d.reverse
+
+                                            Left ->
+                                                Frame3d.xDirection model.playerFrame
+                                                    |> Direction3d.reverse
+
+                                            Right ->
+                                                Frame3d.xDirection model.playerFrame
+                                        )
+                                    )
+                                    edgeMovement
+                        , playerTarget = TraverseEdge { edgeDetails | duration = remainingDuration }
+                    }
+
+
+correctPlayerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates } -> Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
+correctPlayerFrame playerFrame =
+    Frame3d.unsafe
+        { originPoint =
+            playerFrame
+                |> Frame3d.originPoint
+                |> point3dToPoint
+                |> pointToPoint3d
+        , xDirection =
+            playerFrame
+                |> Frame3d.xDirection
+                |> Direction3d.toVector
+                |> Vector3d.normalize
+                |> Vector3d.direction
+                |> Maybe.withDefault Direction3d.positiveX
+                |> correctSizeDirection
+        , yDirection =
+            playerFrame
+                |> Frame3d.yDirection
+                |> Direction3d.toVector
+                |> Vector3d.normalize
+                |> Vector3d.direction
+                |> Maybe.withDefault Direction3d.positiveX
+                |> correctSizeDirection
+        , zDirection =
+            playerFrame
+                |> Frame3d.zDirection
+                |> Direction3d.toVector
+                |> Vector3d.normalize
+                |> Vector3d.direction
+                |> Maybe.withDefault Direction3d.positiveX
+                |> correctSizeDirection
+        }
 
 
 findSpawn : Board -> Maybe (Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates })
@@ -1020,4 +1369,4 @@ basicMiniBoard =
 
 zigZagBoard : String
 zigZagBoard =
-    "[1,[9,9,9,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[1]],[[0,0,3],[1]],[[0,0,4],[1]],[[0,0,5],[1]],[[0,0,6],[1]],[[0,0,7],[1]],[[0,0,8],[1]],[[0,1,0],[2]],[[0,1,1],[0]],[[0,1,2],[3,false]],[[0,1,3],[1]],[[0,1,4],[1]],[[0,1,5],[1]],[[0,1,6],[3,false]],[[0,1,7],[0]],[[0,1,8],[2]],[[0,2,0],[1]],[[0,2,1],[1]],[[0,2,2],[3,false]],[[0,2,3],[1]],[[0,2,4],[1]],[[0,2,5],[1]],[[0,2,6],[3,false]],[[0,2,7],[1]],[[0,2,8],[1]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[3,false]],[[0,3,3],[1]],[[0,3,4],[1]],[[0,3,5],[1]],[[0,3,6],[3,false]],[[0,3,7],[1]],[[0,3,8],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[3,false]],[[0,4,3],[3,false]],[[0,4,4],[3,false]],[[0,4,5],[3,false]],[[0,4,6],[3,false]],[[0,4,7],[1]],[[0,4,8],[1]],[[0,5,0],[1]],[[0,5,1],[1]],[[0,5,2],[3,false]],[[0,5,3],[1]],[[0,5,4],[1]],[[0,5,5],[1]],[[0,5,6],[3,false]],[[0,5,7],[1]],[[0,5,8],[1]],[[0,6,0],[1]],[[0,6,1],[1]],[[0,6,2],[3,false]],[[0,6,3],[1]],[[0,6,4],[1]],[[0,6,5],[1]],[[0,6,6],[3,false]],[[0,6,7],[1]],[[0,6,8],[1]],[[0,7,0],[2]],[[0,7,1],[0]],[[0,7,2],[3,false]],[[0,7,3],[1]],[[0,7,4],[1]],[[0,7,5],[1]],[[0,7,6],[3,false]],[[0,7,7],[0]],[[0,7,8],[2]],[[0,8,0],[1]],[[0,8,1],[1]],[[0,8,2],[1]],[[0,8,3],[1]],[[0,8,4],[1]],[[0,8,5],[1]],[[0,8,6],[1]],[[0,8,7],[1]],[[0,8,8],[1]],[[1,0,0],[2]],[[1,0,1],[0]],[[1,0,2],[3,false]],[[1,0,3],[1]],[[1,0,4],[1]],[[1,0,5],[1]],[[1,0,6],[3,false]],[[1,0,7],[0]],[[1,0,8],[2]],[[1,1,0],[0]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,1,5],[1]],[[1,1,6],[1]],[[1,1,7],[1]],[[1,1,8],[0]],[[1,2,0],[3,false]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[1]],[[1,2,5],[1]],[[1,2,6],[1]],[[1,2,7],[1]],[[1,2,8],[1]],[[1,3,0],[3,false]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,3,5],[1]],[[1,3,6],[1]],[[1,3,7],[1]],[[1,3,8],[1]],[[1,4,0],[3,false]],[[1,4,1],[1]],[[1,4,2],[1]],[[1,4,3],[1]],[[1,4,4],[1]],[[1,4,5],[1]],[[1,4,6],[1]],[[1,4,7],[1]],[[1,4,8],[1]],[[1,5,0],[3,false]],[[1,5,1],[1]],[[1,5,2],[1]],[[1,5,3],[1]],[[1,5,4],[1]],[[1,5,5],[1]],[[1,5,6],[1]],[[1,5,7],[1]],[[1,5,8],[1]],[[1,6,0],[3,false]],[[1,6,1],[1]],[[1,6,2],[1]],[[1,6,3],[1]],[[1,6,4],[1]],[[1,6,5],[1]],[[1,6,6],[1]],[[1,6,7],[1]],[[1,6,8],[1]],[[1,7,0],[0]],[[1,7,1],[1]],[[1,7,2],[1]],[[1,7,3],[1]],[[1,7,4],[1]],[[1,7,5],[1]],[[1,7,6],[1]],[[1,7,7],[1]],[[1,7,8],[0]],[[1,8,0],[2]],[[1,8,1],[0]],[[1,8,2],[3,false]],[[1,8,3],[1]],[[1,8,4],[1]],[[1,8,5],[1]],[[1,8,6],[3,false]],[[1,8,7],[0]],[[1,8,8],[2]],[[2,0,0],[1]],[[2,0,1],[1]],[[2,0,2],[3,false]],[[2,0,3],[1]],[[2,0,4],[1]],[[2,0,5],[1]],[[2,0,6],[3,false]],[[2,0,7],[1]],[[2,0,8],[1]],[[2,1,0],[1]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[1]],[[2,1,5],[1]],[[2,1,6],[1]],[[2,1,7],[1]],[[2,1,8],[3,false]],[[2,2,0],[1]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[1]],[[2,2,5],[1]],[[2,2,6],[1]],[[2,2,7],[1]],[[2,2,8],[1]],[[2,3,0],[1]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[1]],[[2,3,5],[1]],[[2,3,6],[1]],[[2,3,7],[1]],[[2,3,8],[1]],[[2,4,0],[3,false]],[[2,4,1],[1]],[[2,4,2],[1]],[[2,4,3],[1]],[[2,4,4],[1]],[[2,4,5],[1]],[[2,4,6],[1]],[[2,4,7],[1]],[[2,4,8],[1]],[[2,5,0],[1]],[[2,5,1],[1]],[[2,5,2],[1]],[[2,5,3],[1]],[[2,5,4],[1]],[[2,5,5],[1]],[[2,5,6],[1]],[[2,5,7],[1]],[[2,5,8],[1]],[[2,6,0],[1]],[[2,6,1],[1]],[[2,6,2],[1]],[[2,6,3],[1]],[[2,6,4],[1]],[[2,6,5],[1]],[[2,6,6],[1]],[[2,6,7],[1]],[[2,6,8],[1]],[[2,7,0],[1]],[[2,7,1],[1]],[[2,7,2],[1]],[[2,7,3],[1]],[[2,7,4],[1]],[[2,7,5],[1]],[[2,7,6],[1]],[[2,7,7],[1]],[[2,7,8],[3,false]],[[2,8,0],[1]],[[2,8,1],[1]],[[2,8,2],[3,false]],[[2,8,3],[1]],[[2,8,4],[1]],[[2,8,5],[1]],[[2,8,6],[3,false]],[[2,8,7],[1]],[[2,8,8],[1]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[3,false]],[[3,0,3],[1]],[[3,0,4],[1]],[[3,0,5],[1]],[[3,0,6],[3,false]],[[3,0,7],[1]],[[3,0,8],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,1,5],[1]],[[3,1,6],[1]],[[3,1,7],[1]],[[3,1,8],[3,false]],[[3,2,0],[1]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[1]],[[3,2,5],[1]],[[3,2,6],[1]],[[3,2,7],[1]],[[3,2,8],[1]],[[3,3,0],[1]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,3,5],[1]],[[3,3,6],[1]],[[3,3,7],[1]],[[3,3,8],[1]],[[3,4,0],[3,false]],[[3,4,1],[1]],[[3,4,2],[1]],[[3,4,3],[1]],[[3,4,4],[1]],[[3,4,5],[1]],[[3,4,6],[1]],[[3,4,7],[1]],[[3,4,8],[1]],[[3,5,0],[1]],[[3,5,1],[1]],[[3,5,2],[1]],[[3,5,3],[1]],[[3,5,4],[1]],[[3,5,5],[1]],[[3,5,6],[1]],[[3,5,7],[1]],[[3,5,8],[1]],[[3,6,0],[1]],[[3,6,1],[1]],[[3,6,2],[1]],[[3,6,3],[1]],[[3,6,4],[1]],[[3,6,5],[1]],[[3,6,6],[1]],[[3,6,7],[1]],[[3,6,8],[1]],[[3,7,0],[1]],[[3,7,1],[1]],[[3,7,2],[1]],[[3,7,3],[1]],[[3,7,4],[1]],[[3,7,5],[1]],[[3,7,6],[1]],[[3,7,7],[1]],[[3,7,8],[3,false]],[[3,8,0],[1]],[[3,8,1],[1]],[[3,8,2],[3,false]],[[3,8,3],[1]],[[3,8,4],[1]],[[3,8,5],[1]],[[3,8,6],[3,false]],[[3,8,7],[1]],[[3,8,8],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[3,false]],[[4,0,3],[3,false]],[[4,0,4],[3,false]],[[4,0,5],[3,false]],[[4,0,6],[3,false]],[[4,0,7],[1]],[[4,0,8],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[1]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,1,5],[1]],[[4,1,6],[1]],[[4,1,7],[1]],[[4,1,8],[3,false]],[[4,2,0],[1]],[[4,2,1],[1]],[[4,2,2],[1]],[[4,2,3],[1]],[[4,2,4],[1]],[[4,2,5],[1]],[[4,2,6],[1]],[[4,2,7],[1]],[[4,2,8],[3,false]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[1]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,3,5],[1]],[[4,3,6],[1]],[[4,3,7],[1]],[[4,3,8],[3,false]],[[4,4,0],[3,false]],[[4,4,1],[1]],[[4,4,2],[1]],[[4,4,3],[1]],[[4,4,4],[1]],[[4,4,5],[1]],[[4,4,6],[1]],[[4,4,7],[1]],[[4,4,8],[3,false]],[[4,5,0],[1]],[[4,5,1],[1]],[[4,5,2],[1]],[[4,5,3],[1]],[[4,5,4],[1]],[[4,5,5],[1]],[[4,5,6],[1]],[[4,5,7],[1]],[[4,5,8],[3,false]],[[4,6,0],[1]],[[4,6,1],[1]],[[4,6,2],[1]],[[4,6,3],[1]],[[4,6,4],[1]],[[4,6,5],[1]],[[4,6,6],[1]],[[4,6,7],[1]],[[4,6,8],[3,false]],[[4,7,0],[1]],[[4,7,1],[1]],[[4,7,2],[1]],[[4,7,3],[1]],[[4,7,4],[1]],[[4,7,5],[1]],[[4,7,6],[1]],[[4,7,7],[1]],[[4,7,8],[3,false]],[[4,8,0],[1]],[[4,8,1],[1]],[[4,8,2],[3,false]],[[4,8,3],[0]],[[4,8,4],[0]],[[4,8,5],[4,[[5],[1]]]],[[4,8,6],[3,false]],[[4,8,7],[1]],[[4,8,8],[1]],[[5,0,0],[1]],[[5,0,1],[1]],[[5,0,2],[3,false]],[[5,0,3],[1]],[[5,0,4],[1]],[[5,0,5],[1]],[[5,0,6],[3,false]],[[5,0,7],[1]],[[5,0,8],[1]],[[5,1,0],[1]],[[5,1,1],[1]],[[5,1,2],[1]],[[5,1,3],[1]],[[5,1,4],[1]],[[5,1,5],[1]],[[5,1,6],[1]],[[5,1,7],[1]],[[5,1,8],[3,false]],[[5,2,0],[1]],[[5,2,1],[1]],[[5,2,2],[1]],[[5,2,3],[1]],[[5,2,4],[1]],[[5,2,5],[1]],[[5,2,6],[1]],[[5,2,7],[1]],[[5,2,8],[1]],[[5,3,0],[1]],[[5,3,1],[1]],[[5,3,2],[1]],[[5,3,3],[1]],[[5,3,4],[1]],[[5,3,5],[1]],[[5,3,6],[1]],[[5,3,7],[1]],[[5,3,8],[1]],[[5,4,0],[3,false]],[[5,4,1],[1]],[[5,4,2],[1]],[[5,4,3],[1]],[[5,4,4],[1]],[[5,4,5],[1]],[[5,4,6],[1]],[[5,4,7],[1]],[[5,4,8],[1]],[[5,5,0],[1]],[[5,5,1],[1]],[[5,5,2],[1]],[[5,5,3],[1]],[[5,5,4],[1]],[[5,5,5],[1]],[[5,5,6],[1]],[[5,5,7],[1]],[[5,5,8],[1]],[[5,6,0],[1]],[[5,6,1],[1]],[[5,6,2],[1]],[[5,6,3],[1]],[[5,6,4],[1]],[[5,6,5],[1]],[[5,6,6],[1]],[[5,6,7],[1]],[[5,6,8],[1]],[[5,7,0],[1]],[[5,7,1],[1]],[[5,7,2],[1]],[[5,7,3],[1]],[[5,7,4],[1]],[[5,7,5],[1]],[[5,7,6],[1]],[[5,7,7],[1]],[[5,7,8],[3,false]],[[5,8,0],[1]],[[5,8,1],[1]],[[5,8,2],[3,false]],[[5,8,3],[1]],[[5,8,4],[1]],[[5,8,5],[1]],[[5,8,6],[3,false]],[[5,8,7],[1]],[[5,8,8],[1]],[[6,0,0],[1]],[[6,0,1],[1]],[[6,0,2],[3,false]],[[6,0,3],[1]],[[6,0,4],[1]],[[6,0,5],[1]],[[6,0,6],[3,false]],[[6,0,7],[1]],[[6,0,8],[1]],[[6,1,0],[1]],[[6,1,1],[1]],[[6,1,2],[1]],[[6,1,3],[1]],[[6,1,4],[1]],[[6,1,5],[1]],[[6,1,6],[1]],[[6,1,7],[1]],[[6,1,8],[3,false]],[[6,2,0],[1]],[[6,2,1],[1]],[[6,2,2],[1]],[[6,2,3],[1]],[[6,2,4],[1]],[[6,2,5],[1]],[[6,2,6],[1]],[[6,2,7],[1]],[[6,2,8],[1]],[[6,3,0],[1]],[[6,3,1],[1]],[[6,3,2],[1]],[[6,3,3],[1]],[[6,3,4],[1]],[[6,3,5],[1]],[[6,3,6],[1]],[[6,3,7],[1]],[[6,3,8],[1]],[[6,4,0],[3,false]],[[6,4,1],[1]],[[6,4,2],[1]],[[6,4,3],[1]],[[6,4,4],[1]],[[6,4,5],[1]],[[6,4,6],[1]],[[6,4,7],[1]],[[6,4,8],[1]],[[6,5,0],[1]],[[6,5,1],[1]],[[6,5,2],[1]],[[6,5,3],[1]],[[6,5,4],[1]],[[6,5,5],[1]],[[6,5,6],[1]],[[6,5,7],[1]],[[6,5,8],[1]],[[6,6,0],[1]],[[6,6,1],[1]],[[6,6,2],[1]],[[6,6,3],[1]],[[6,6,4],[1]],[[6,6,5],[1]],[[6,6,6],[1]],[[6,6,7],[1]],[[6,6,8],[1]],[[6,7,0],[1]],[[6,7,1],[1]],[[6,7,2],[1]],[[6,7,3],[1]],[[6,7,4],[1]],[[6,7,5],[1]],[[6,7,6],[1]],[[6,7,7],[1]],[[6,7,8],[3,false]],[[6,8,0],[1]],[[6,8,1],[1]],[[6,8,2],[3,false]],[[6,8,3],[1]],[[6,8,4],[1]],[[6,8,5],[1]],[[6,8,6],[3,false]],[[6,8,7],[1]],[[6,8,8],[1]],[[7,0,0],[2]],[[7,0,1],[0]],[[7,0,2],[3,false]],[[7,0,3],[1]],[[7,0,4],[1]],[[7,0,5],[1]],[[7,0,6],[3,false]],[[7,0,7],[0]],[[7,0,8],[2]],[[7,1,0],[0]],[[7,1,1],[1]],[[7,1,2],[1]],[[7,1,3],[1]],[[7,1,4],[1]],[[7,1,5],[1]],[[7,1,6],[1]],[[7,1,7],[1]],[[7,1,8],[0]],[[7,2,0],[3,false]],[[7,2,1],[1]],[[7,2,2],[1]],[[7,2,3],[1]],[[7,2,4],[1]],[[7,2,5],[1]],[[7,2,6],[1]],[[7,2,7],[1]],[[7,2,8],[1]],[[7,3,0],[3,false]],[[7,3,1],[1]],[[7,3,2],[1]],[[7,3,3],[1]],[[7,3,4],[1]],[[7,3,5],[1]],[[7,3,6],[1]],[[7,3,7],[1]],[[7,3,8],[1]],[[7,4,0],[3,false]],[[7,4,1],[1]],[[7,4,2],[1]],[[7,4,3],[1]],[[7,4,4],[1]],[[7,4,5],[1]],[[7,4,6],[1]],[[7,4,7],[1]],[[7,4,8],[1]],[[7,5,0],[3,false]],[[7,5,1],[1]],[[7,5,2],[1]],[[7,5,3],[1]],[[7,5,4],[1]],[[7,5,5],[1]],[[7,5,6],[1]],[[7,5,7],[1]],[[7,5,8],[1]],[[7,6,0],[3,false]],[[7,6,1],[1]],[[7,6,2],[1]],[[7,6,3],[1]],[[7,6,4],[1]],[[7,6,5],[1]],[[7,6,6],[1]],[[7,6,7],[1]],[[7,6,8],[1]],[[7,7,0],[0]],[[7,7,1],[1]],[[7,7,2],[1]],[[7,7,3],[1]],[[7,7,4],[1]],[[7,7,5],[1]],[[7,7,6],[1]],[[7,7,7],[1]],[[7,7,8],[0]],[[7,8,0],[2]],[[7,8,1],[0]],[[7,8,2],[3,false]],[[7,8,3],[1]],[[7,8,4],[1]],[[7,8,5],[1]],[[7,8,6],[3,false]],[[7,8,7],[0]],[[7,8,8],[2]],[[8,0,0],[1]],[[8,0,1],[1]],[[8,0,2],[1]],[[8,0,3],[1]],[[8,0,4],[1]],[[8,0,5],[1]],[[8,0,6],[1]],[[8,0,7],[1]],[[8,0,8],[1]],[[8,1,0],[2]],[[8,1,1],[0]],[[8,1,2],[3,false]],[[8,1,3],[1]],[[8,1,4],[1]],[[8,1,5],[1]],[[8,1,6],[3,false]],[[8,1,7],[0]],[[8,1,8],[2]],[[8,2,0],[1]],[[8,2,1],[1]],[[8,2,2],[3,false]],[[8,2,3],[1]],[[8,2,4],[1]],[[8,2,5],[1]],[[8,2,6],[3,false]],[[8,2,7],[1]],[[8,2,8],[1]],[[8,3,0],[1]],[[8,3,1],[1]],[[8,3,2],[3,false]],[[8,3,3],[1]],[[8,3,4],[1]],[[8,3,5],[1]],[[8,3,6],[3,false]],[[8,3,7],[1]],[[8,3,8],[1]],[[8,4,0],[1]],[[8,4,1],[1]],[[8,4,2],[3,false]],[[8,4,3],[3,false]],[[8,4,4],[3,false]],[[8,4,5],[3,false]],[[8,4,6],[3,false]],[[8,4,7],[1]],[[8,4,8],[1]],[[8,5,0],[1]],[[8,5,1],[1]],[[8,5,2],[3,false]],[[8,5,3],[1]],[[8,5,4],[1]],[[8,5,5],[1]],[[8,5,6],[3,false]],[[8,5,7],[1]],[[8,5,8],[1]],[[8,6,0],[1]],[[8,6,1],[1]],[[8,6,2],[3,false]],[[8,6,3],[1]],[[8,6,4],[1]],[[8,6,5],[1]],[[8,6,6],[3,false]],[[8,6,7],[1]],[[8,6,8],[1]],[[8,7,0],[2]],[[8,7,1],[0]],[[8,7,2],[3,false]],[[8,7,3],[1]],[[8,7,4],[1]],[[8,7,5],[1]],[[8,7,6],[3,false]],[[8,7,7],[0]],[[8,7,8],[2]],[[8,8,0],[1]],[[8,8,1],[1]],[[8,8,2],[1]],[[8,8,3],[1]],[[8,8,4],[1]],[[8,8,5],[1]],[[8,8,6],[1]],[[8,8,7],[1]],[[8,8,8],[1]]]]]"
+    "[1,[9,9,9,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[1]],[[0,0,3],[1]],[[0,0,4],[1]],[[0,0,5],[1]],[[0,0,6],[1]],[[0,0,7],[1]],[[0,0,8],[1]],[[0,1,0],[2]],[[0,1,1],[0]],[[0,1,2],[3,false]],[[0,1,3],[1]],[[0,1,4],[1]],[[0,1,5],[1]],[[0,1,6],[3,false]],[[0,1,7],[0]],[[0,1,8],[2]],[[0,2,0],[1]],[[0,2,1],[1]],[[0,2,2],[3,false]],[[0,2,3],[1]],[[0,2,4],[1]],[[0,2,5],[1]],[[0,2,6],[3,false]],[[0,2,7],[1]],[[0,2,8],[1]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[3,false]],[[0,3,3],[1]],[[0,3,4],[1]],[[0,3,5],[1]],[[0,3,6],[3,false]],[[0,3,7],[1]],[[0,3,8],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[3,false]],[[0,4,3],[3,false]],[[0,4,4],[3,false]],[[0,4,5],[3,false]],[[0,4,6],[3,false]],[[0,4,7],[1]],[[0,4,8],[1]],[[0,5,0],[1]],[[0,5,1],[1]],[[0,5,2],[3,false]],[[0,5,3],[1]],[[0,5,4],[1]],[[0,5,5],[1]],[[0,5,6],[3,false]],[[0,5,7],[1]],[[0,5,8],[1]],[[0,6,0],[1]],[[0,6,1],[1]],[[0,6,2],[3,false]],[[0,6,3],[1]],[[0,6,4],[1]],[[0,6,5],[1]],[[0,6,6],[3,false]],[[0,6,7],[1]],[[0,6,8],[1]],[[0,7,0],[2]],[[0,7,1],[0]],[[0,7,2],[3,false]],[[0,7,3],[1]],[[0,7,4],[1]],[[0,7,5],[1]],[[0,7,6],[3,false]],[[0,7,7],[0]],[[0,7,8],[2]],[[0,8,0],[1]],[[0,8,1],[1]],[[0,8,2],[1]],[[0,8,3],[1]],[[0,8,4],[1]],[[0,8,5],[1]],[[0,8,6],[1]],[[0,8,7],[1]],[[0,8,8],[1]],[[1,0,0],[2]],[[1,0,1],[0]],[[1,0,2],[3,false]],[[1,0,3],[1]],[[1,0,4],[1]],[[1,0,5],[1]],[[1,0,6],[3,false]],[[1,0,7],[0]],[[1,0,8],[2]],[[1,1,0],[0]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,1,5],[1]],[[1,1,6],[1]],[[1,1,7],[1]],[[1,1,8],[0]],[[1,2,0],[3,false]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[1]],[[1,2,5],[1]],[[1,2,6],[1]],[[1,2,7],[1]],[[1,2,8],[1]],[[1,3,0],[3,false]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,3,5],[1]],[[1,3,6],[1]],[[1,3,7],[1]],[[1,3,8],[1]],[[1,4,0],[3,false]],[[1,4,1],[1]],[[1,4,2],[1]],[[1,4,3],[1]],[[1,4,4],[1]],[[1,4,5],[1]],[[1,4,6],[1]],[[1,4,7],[1]],[[1,4,8],[1]],[[1,5,0],[3,false]],[[1,5,1],[1]],[[1,5,2],[1]],[[1,5,3],[1]],[[1,5,4],[1]],[[1,5,5],[1]],[[1,5,6],[1]],[[1,5,7],[1]],[[1,5,8],[1]],[[1,6,0],[3,false]],[[1,6,1],[1]],[[1,6,2],[1]],[[1,6,3],[1]],[[1,6,4],[1]],[[1,6,5],[1]],[[1,6,6],[1]],[[1,6,7],[1]],[[1,6,8],[1]],[[1,7,0],[0]],[[1,7,1],[1]],[[1,7,2],[1]],[[1,7,3],[1]],[[1,7,4],[1]],[[1,7,5],[1]],[[1,7,6],[1]],[[1,7,7],[1]],[[1,7,8],[0]],[[1,8,0],[2]],[[1,8,1],[0]],[[1,8,2],[3,false]],[[1,8,3],[1]],[[1,8,4],[1]],[[1,8,5],[1]],[[1,8,6],[3,false]],[[1,8,7],[0]],[[1,8,8],[2]],[[2,0,0],[1]],[[2,0,1],[1]],[[2,0,2],[3,false]],[[2,0,3],[1]],[[2,0,4],[1]],[[2,0,5],[1]],[[2,0,6],[3,false]],[[2,0,7],[1]],[[2,0,8],[1]],[[2,1,0],[1]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[1]],[[2,1,5],[1]],[[2,1,6],[1]],[[2,1,7],[1]],[[2,1,8],[3,false]],[[2,2,0],[1]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[1]],[[2,2,5],[1]],[[2,2,6],[1]],[[2,2,7],[1]],[[2,2,8],[1]],[[2,3,0],[1]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[1]],[[2,3,5],[1]],[[2,3,6],[1]],[[2,3,7],[1]],[[2,3,8],[1]],[[2,4,0],[3,false]],[[2,4,1],[1]],[[2,4,2],[1]],[[2,4,3],[1]],[[2,4,4],[1]],[[2,4,5],[1]],[[2,4,6],[1]],[[2,4,7],[1]],[[2,4,8],[1]],[[2,5,0],[1]],[[2,5,1],[1]],[[2,5,2],[1]],[[2,5,3],[1]],[[2,5,4],[1]],[[2,5,5],[1]],[[2,5,6],[1]],[[2,5,7],[1]],[[2,5,8],[1]],[[2,6,0],[1]],[[2,6,1],[1]],[[2,6,2],[1]],[[2,6,3],[1]],[[2,6,4],[1]],[[2,6,5],[1]],[[2,6,6],[1]],[[2,6,7],[1]],[[2,6,8],[1]],[[2,7,0],[1]],[[2,7,1],[1]],[[2,7,2],[1]],[[2,7,3],[1]],[[2,7,4],[1]],[[2,7,5],[1]],[[2,7,6],[1]],[[2,7,7],[1]],[[2,7,8],[3,false]],[[2,8,0],[1]],[[2,8,1],[1]],[[2,8,2],[3,false]],[[2,8,3],[1]],[[2,8,4],[1]],[[2,8,5],[1]],[[2,8,6],[3,false]],[[2,8,7],[1]],[[2,8,8],[1]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[3,false]],[[3,0,3],[1]],[[3,0,4],[1]],[[3,0,5],[1]],[[3,0,6],[3,false]],[[3,0,7],[1]],[[3,0,8],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,1,5],[1]],[[3,1,6],[1]],[[3,1,7],[1]],[[3,1,8],[3,false]],[[3,2,0],[1]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[1]],[[3,2,5],[1]],[[3,2,6],[1]],[[3,2,7],[1]],[[3,2,8],[1]],[[3,3,0],[1]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,3,5],[1]],[[3,3,6],[1]],[[3,3,7],[1]],[[3,3,8],[1]],[[3,4,0],[3,false]],[[3,4,1],[1]],[[3,4,2],[1]],[[3,4,3],[1]],[[3,4,4],[1]],[[3,4,5],[1]],[[3,4,6],[1]],[[3,4,7],[1]],[[3,4,8],[1]],[[3,5,0],[1]],[[3,5,1],[1]],[[3,5,2],[1]],[[3,5,3],[1]],[[3,5,4],[1]],[[3,5,5],[1]],[[3,5,6],[1]],[[3,5,7],[1]],[[3,5,8],[1]],[[3,6,0],[1]],[[3,6,1],[1]],[[3,6,2],[1]],[[3,6,3],[1]],[[3,6,4],[1]],[[3,6,5],[1]],[[3,6,6],[1]],[[3,6,7],[1]],[[3,6,8],[1]],[[3,7,0],[1]],[[3,7,1],[1]],[[3,7,2],[1]],[[3,7,3],[1]],[[3,7,4],[1]],[[3,7,5],[1]],[[3,7,6],[1]],[[3,7,7],[1]],[[3,7,8],[3,false]],[[3,8,0],[1]],[[3,8,1],[1]],[[3,8,2],[3,false]],[[3,8,3],[1]],[[3,8,4],[1]],[[3,8,5],[1]],[[3,8,6],[3,false]],[[3,8,7],[1]],[[3,8,8],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[3,false]],[[4,0,3],[3,false]],[[4,0,4],[3,false]],[[4,0,5],[3,false]],[[4,0,6],[3,false]],[[4,0,7],[1]],[[4,0,8],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[1]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,1,5],[1]],[[4,1,6],[1]],[[4,1,7],[1]],[[4,1,8],[3,false]],[[4,2,0],[1]],[[4,2,1],[1]],[[4,2,2],[1]],[[4,2,3],[1]],[[4,2,4],[1]],[[4,2,5],[1]],[[4,2,6],[1]],[[4,2,7],[1]],[[4,2,8],[3,false]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[1]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,3,5],[1]],[[4,3,6],[1]],[[4,3,7],[1]],[[4,3,8],[3,false]],[[4,4,0],[3,false]],[[4,4,1],[1]],[[4,4,2],[1]],[[4,4,3],[1]],[[4,4,4],[1]],[[4,4,5],[1]],[[4,4,6],[1]],[[4,4,7],[1]],[[4,4,8],[3,false]],[[4,5,0],[1]],[[4,5,1],[1]],[[4,5,2],[1]],[[4,5,3],[1]],[[4,5,4],[1]],[[4,5,5],[1]],[[4,5,6],[1]],[[4,5,7],[1]],[[4,5,8],[3,false]],[[4,6,0],[1]],[[4,6,1],[1]],[[4,6,2],[1]],[[4,6,3],[1]],[[4,6,4],[1]],[[4,6,5],[1]],[[4,6,6],[1]],[[4,6,7],[1]],[[4,6,8],[3,false]],[[4,7,0],[1]],[[4,7,1],[1]],[[4,7,2],[1]],[[4,7,3],[1]],[[4,7,4],[1]],[[4,7,5],[1]],[[4,7,6],[1]],[[4,7,7],[1]],[[4,7,8],[3,false]],[[4,8,0],[1]],[[4,8,1],[1]],[[4,8,2],[3,false]],[[4,8,3],[0]],[[4,8,4],[0]],[[4,8,5],[4,[[5],[1]]]],[[4,8,6],[3,false]],[[4,8,7],[1]],[[4,8,8],[1]],[[5,0,0],[1]],[[5,0,1],[1]],[[5,0,2],[3,false]],[[5,0,3],[1]],[[5,0,4],[5]],[[5,0,5],[1]],[[5,0,6],[3,false]],[[5,0,7],[1]],[[5,0,8],[1]],[[5,1,0],[1]],[[5,1,1],[1]],[[5,1,2],[1]],[[5,1,3],[1]],[[5,1,4],[1]],[[5,1,5],[1]],[[5,1,6],[1]],[[5,1,7],[1]],[[5,1,8],[3,false]],[[5,2,0],[1]],[[5,2,1],[1]],[[5,2,2],[1]],[[5,2,3],[1]],[[5,2,4],[1]],[[5,2,5],[1]],[[5,2,6],[1]],[[5,2,7],[1]],[[5,2,8],[1]],[[5,3,0],[1]],[[5,3,1],[1]],[[5,3,2],[1]],[[5,3,3],[1]],[[5,3,4],[1]],[[5,3,5],[1]],[[5,3,6],[1]],[[5,3,7],[1]],[[5,3,8],[1]],[[5,4,0],[3,false]],[[5,4,1],[1]],[[5,4,2],[1]],[[5,4,3],[1]],[[5,4,4],[1]],[[5,4,5],[1]],[[5,4,6],[1]],[[5,4,7],[1]],[[5,4,8],[1]],[[5,5,0],[1]],[[5,5,1],[1]],[[5,5,2],[1]],[[5,5,3],[1]],[[5,5,4],[1]],[[5,5,5],[1]],[[5,5,6],[1]],[[5,5,7],[1]],[[5,5,8],[1]],[[5,6,0],[1]],[[5,6,1],[1]],[[5,6,2],[1]],[[5,6,3],[1]],[[5,6,4],[1]],[[5,6,5],[1]],[[5,6,6],[1]],[[5,6,7],[1]],[[5,6,8],[1]],[[5,7,0],[1]],[[5,7,1],[1]],[[5,7,2],[1]],[[5,7,3],[1]],[[5,7,4],[1]],[[5,7,5],[1]],[[5,7,6],[1]],[[5,7,7],[1]],[[5,7,8],[3,false]],[[5,8,0],[1]],[[5,8,1],[1]],[[5,8,2],[3,false]],[[5,8,3],[1]],[[5,8,4],[1]],[[5,8,5],[1]],[[5,8,6],[3,false]],[[5,8,7],[1]],[[5,8,8],[1]],[[6,0,0],[1]],[[6,0,1],[1]],[[6,0,2],[3,false]],[[6,0,3],[1]],[[6,0,4],[1]],[[6,0,5],[1]],[[6,0,6],[3,false]],[[6,0,7],[1]],[[6,0,8],[1]],[[6,1,0],[1]],[[6,1,1],[1]],[[6,1,2],[1]],[[6,1,3],[1]],[[6,1,4],[1]],[[6,1,5],[1]],[[6,1,6],[1]],[[6,1,7],[1]],[[6,1,8],[3,false]],[[6,2,0],[1]],[[6,2,1],[1]],[[6,2,2],[1]],[[6,2,3],[1]],[[6,2,4],[1]],[[6,2,5],[1]],[[6,2,6],[1]],[[6,2,7],[1]],[[6,2,8],[1]],[[6,3,0],[1]],[[6,3,1],[1]],[[6,3,2],[1]],[[6,3,3],[1]],[[6,3,4],[1]],[[6,3,5],[1]],[[6,3,6],[1]],[[6,3,7],[1]],[[6,3,8],[1]],[[6,4,0],[3,false]],[[6,4,1],[1]],[[6,4,2],[1]],[[6,4,3],[1]],[[6,4,4],[1]],[[6,4,5],[1]],[[6,4,6],[1]],[[6,4,7],[1]],[[6,4,8],[1]],[[6,5,0],[1]],[[6,5,1],[1]],[[6,5,2],[1]],[[6,5,3],[1]],[[6,5,4],[1]],[[6,5,5],[1]],[[6,5,6],[1]],[[6,5,7],[1]],[[6,5,8],[1]],[[6,6,0],[1]],[[6,6,1],[1]],[[6,6,2],[1]],[[6,6,3],[1]],[[6,6,4],[1]],[[6,6,5],[1]],[[6,6,6],[1]],[[6,6,7],[1]],[[6,6,8],[1]],[[6,7,0],[1]],[[6,7,1],[1]],[[6,7,2],[1]],[[6,7,3],[1]],[[6,7,4],[1]],[[6,7,5],[1]],[[6,7,6],[1]],[[6,7,7],[1]],[[6,7,8],[3,false]],[[6,8,0],[1]],[[6,8,1],[1]],[[6,8,2],[3,false]],[[6,8,3],[1]],[[6,8,4],[1]],[[6,8,5],[1]],[[6,8,6],[3,false]],[[6,8,7],[1]],[[6,8,8],[1]],[[7,0,0],[2]],[[7,0,1],[0]],[[7,0,2],[3,false]],[[7,0,3],[1]],[[7,0,4],[1]],[[7,0,5],[1]],[[7,0,6],[3,false]],[[7,0,7],[0]],[[7,0,8],[2]],[[7,1,0],[0]],[[7,1,1],[1]],[[7,1,2],[1]],[[7,1,3],[1]],[[7,1,4],[1]],[[7,1,5],[1]],[[7,1,6],[1]],[[7,1,7],[1]],[[7,1,8],[0]],[[7,2,0],[3,false]],[[7,2,1],[1]],[[7,2,2],[1]],[[7,2,3],[1]],[[7,2,4],[1]],[[7,2,5],[1]],[[7,2,6],[1]],[[7,2,7],[1]],[[7,2,8],[1]],[[7,3,0],[3,false]],[[7,3,1],[1]],[[7,3,2],[1]],[[7,3,3],[1]],[[7,3,4],[1]],[[7,3,5],[1]],[[7,3,6],[1]],[[7,3,7],[1]],[[7,3,8],[1]],[[7,4,0],[3,false]],[[7,4,1],[1]],[[7,4,2],[1]],[[7,4,3],[1]],[[7,4,4],[1]],[[7,4,5],[1]],[[7,4,6],[1]],[[7,4,7],[1]],[[7,4,8],[1]],[[7,5,0],[3,false]],[[7,5,1],[1]],[[7,5,2],[1]],[[7,5,3],[1]],[[7,5,4],[1]],[[7,5,5],[1]],[[7,5,6],[1]],[[7,5,7],[1]],[[7,5,8],[1]],[[7,6,0],[3,false]],[[7,6,1],[1]],[[7,6,2],[1]],[[7,6,3],[1]],[[7,6,4],[1]],[[7,6,5],[1]],[[7,6,6],[1]],[[7,6,7],[1]],[[7,6,8],[1]],[[7,7,0],[0]],[[7,7,1],[1]],[[7,7,2],[1]],[[7,7,3],[1]],[[7,7,4],[1]],[[7,7,5],[1]],[[7,7,6],[1]],[[7,7,7],[1]],[[7,7,8],[0]],[[7,8,0],[2]],[[7,8,1],[0]],[[7,8,2],[3,false]],[[7,8,3],[1]],[[7,8,4],[1]],[[7,8,5],[1]],[[7,8,6],[3,false]],[[7,8,7],[0]],[[7,8,8],[2]],[[8,0,0],[1]],[[8,0,1],[1]],[[8,0,2],[1]],[[8,0,3],[1]],[[8,0,4],[1]],[[8,0,5],[1]],[[8,0,6],[1]],[[8,0,7],[1]],[[8,0,8],[1]],[[8,1,0],[2]],[[8,1,1],[0]],[[8,1,2],[3,false]],[[8,1,3],[1]],[[8,1,4],[1]],[[8,1,5],[1]],[[8,1,6],[3,false]],[[8,1,7],[0]],[[8,1,8],[2]],[[8,2,0],[1]],[[8,2,1],[1]],[[8,2,2],[3,false]],[[8,2,3],[1]],[[8,2,4],[1]],[[8,2,5],[1]],[[8,2,6],[3,false]],[[8,2,7],[1]],[[8,2,8],[1]],[[8,3,0],[1]],[[8,3,1],[1]],[[8,3,2],[3,false]],[[8,3,3],[1]],[[8,3,4],[1]],[[8,3,5],[1]],[[8,3,6],[3,false]],[[8,3,7],[1]],[[8,3,8],[1]],[[8,4,0],[1]],[[8,4,1],[1]],[[8,4,2],[3,false]],[[8,4,3],[3,false]],[[8,4,4],[3,false]],[[8,4,5],[3,false]],[[8,4,6],[3,false]],[[8,4,7],[1]],[[8,4,8],[1]],[[8,5,0],[1]],[[8,5,1],[1]],[[8,5,2],[3,false]],[[8,5,3],[1]],[[8,5,4],[1]],[[8,5,5],[1]],[[8,5,6],[3,false]],[[8,5,7],[1]],[[8,5,8],[1]],[[8,6,0],[1]],[[8,6,1],[1]],[[8,6,2],[3,false]],[[8,6,3],[1]],[[8,6,4],[1]],[[8,6,5],[1]],[[8,6,6],[3,false]],[[8,6,7],[1]],[[8,6,8],[1]],[[8,7,0],[2]],[[8,7,1],[0]],[[8,7,2],[3,false]],[[8,7,3],[1]],[[8,7,4],[1]],[[8,7,5],[1]],[[8,7,6],[3,false]],[[8,7,7],[0]],[[8,7,8],[2]],[[8,8,0],[1]],[[8,8,1],[1]],[[8,8,2],[1]],[[8,8,3],[1]],[[8,8,4],[1]],[[8,8,5],[1]],[[8,8,6],[1]],[[8,8,7],[1]],[[8,8,8],[1]]]]]"

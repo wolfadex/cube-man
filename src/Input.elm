@@ -26,6 +26,7 @@ type alias Mapping =
     , blockTypeEdge : ( String, String )
     , blockTypePointPickup : ( String, String )
     , blockTypePlayerSpawn : ( String, String )
+    , blockTypeEnemySpawner : ( String, String )
 
     --
     , undo : ( String, String )
@@ -105,7 +106,8 @@ defaultMapping =
     , blockTypeWall = ( "a", "" )
     , blockTypeEdge = ( "s", "" )
     , blockTypePointPickup = ( "d", "" )
-    , blockTypePlayerSpawn = ( "f", "" )
+    , blockTypeEnemySpawner = ( "f", "" )
+    , blockTypePlayerSpawn = ( "g", "" )
 
     --
     , undo = ( "z", "" )

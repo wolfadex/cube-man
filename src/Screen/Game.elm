@@ -1,6 +1,5 @@
 module Screen.Game exposing (Model, Msg(..), init, subscriptions, update, view)
 
-import Angle exposing (Angle)
 import Board exposing (Board)
 import Frame3d exposing (Frame3d)
 import Html exposing (Html)
@@ -16,7 +15,7 @@ type alias Model =
     , playerFrame : Frame3d Length.Meters Board.WorldCoordinates { defines : Board.WorldCoordinates }
     , playerFacing : Board.Facing
     , playerWantFacing : Board.Facing
-    , playerMovingAcrossEdge : Maybe Angle
+    , playerTarget : Board.Target
     }
 
 
@@ -27,7 +26,7 @@ init =
       , playerFrame = Frame3d.atOrigin
       , playerFacing = Board.Forward
       , playerWantFacing = Board.Forward
-      , playerMovingAcrossEdge = Nothing
+      , playerTarget = Board.initTarget Board.empty Board.Forward Frame3d.atOrigin
       }
     , Cmd.none
     )

@@ -11,8 +11,10 @@ import Browser.Events
 import Camera3d exposing (Camera3d)
 import Color exposing (Color)
 import Cone3d
+import Cylinder3d
 import Dict
 import Direction3d
+import Duration exposing (Duration)
 import Frame3d exposing (Frame3d)
 import Html exposing (Html)
 import Html.Attributes
@@ -53,7 +55,7 @@ type alias Model =
     , playerFrame : Frame3d Length.Meters Board.WorldCoordinates { defines : Board.WorldCoordinates }
     , playerFacing : Board.Facing
     , playerWantFacing : Board.Facing
-    , playerMovingAcrossEdge : Maybe Angle
+    , playerTarget : Board.Target
 
     --
     , editorBoard : Undo.Stack Board
@@ -141,6 +143,9 @@ init =
                         ( 0, Dict.empty )
                     |> Tuple.second
             }
+
+        playerFrame =
+            Frame3d.atPoint (Point3d.meters 1 4 7)
     in
     ( { xLowerVisible = 0
       , xUpperVisible = maxX - 1
@@ -188,10 +193,10 @@ init =
             board
                 |> Serialize.encodeToJson Board.boardCodec
                 |> Json.Encode.encode 0
-      , playerFrame = Frame3d.atPoint (Point3d.meters 1 4 7)
+      , playerFrame = playerFrame
       , playerFacing = Board.Forward
       , playerWantFacing = Board.Forward
-      , playerMovingAcrossEdge = Nothing
+      , playerTarget = Board.initTarget board Board.Forward playerFrame
       , editorMaxXRaw = String.fromInt maxX
       , editorMaxYRaw = String.fromInt maxY
       , editorMaxZRaw = String.fromInt maxZ
@@ -210,10 +215,10 @@ subscriptions model =
 
     else
         Sub.batch
-            [ Browser.Events.onAnimationFrameDelta Tick
-            , Browser.Events.onKeyPress decodeKeyPressed
+            [ Browser.Events.onKeyPress decodeKeyPressed
             , Browser.Events.onKeyDown decodeKeyDown
             , Browser.Events.onKeyUp decodeKeyUp
+            , Browser.Events.onAnimationFrameDelta (Duration.milliseconds >> Tick)
             ]
 
 
@@ -237,7 +242,7 @@ decodeKeyUp =
 
 type Msg
     = NoOp
-    | Tick Float
+    | Tick Duration
     | KeyPressed String
     | KeyDown String
     | KeyUp String
@@ -341,7 +346,7 @@ update toSharedMsg sharedModel toMsg msg model =
                                 , board = board
                                 , playerFrame = spawnFrame
                                 , score = 0
-                                , playerMovingAcrossEdge = Nothing
+                                , playerTarget = Board.initTarget board Board.Forward spawnFrame
                                 , playerFacing = Board.Forward
                                 , playerWantFacing = Board.Forward
                                 , boardPlayError = Nothing
@@ -927,7 +932,7 @@ moveCursorByMouse offset model =
             )
 
 
-tickPlayer : Float -> Model -> Model
+tickPlayer : Duration -> Model -> Model
 tickPlayer deltaMs model =
     case model.editorMode of
         EditBoard ->
@@ -935,8 +940,7 @@ tickPlayer deltaMs model =
 
         TestGame ->
             model
-                |> Board.setPlayerFacing
-                |> Board.movePlayer deltaMs
+                |> Board.tickPlayer deltaMs
 
 
 handleEditorKeyPressed : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> String -> Model -> ( Model, Cmd msg )
@@ -970,6 +974,9 @@ handleEditorKeyPressed toSharedMsg sharedModel _ key model =
 
     else if Input.isInputKey sharedModel.inputMapping.blockTypePointPickup key then
         ( { model | selectedBlockType = Board.PointPickup False }, Cmd.none )
+
+    else if Input.isInputKey sharedModel.inputMapping.blockTypeEnemySpawner key then
+        ( { model | selectedBlockType = Board.EnemySpawner }, Cmd.none )
 
     else if Input.isInputKey sharedModel.inputMapping.blockTypePlayerSpawn key then
         ( { model | selectedBlockType = Board.PlayerSpawn { forward = Board.PositiveX, left = Board.PositiveY } }, Cmd.none )
@@ -1278,6 +1285,9 @@ view toSharedMsg sharedModel toMsg model =
                                 Board.PointPickup _ ->
                                     Html.span [] [ Html.text "Point Pickup" ]
 
+                                Board.EnemySpawner ->
+                                    Html.span [] [ Html.text "Enemy Spawner" ]
+
                                 Board.PlayerSpawn details ->
                                     Html.form
                                         []
@@ -1532,6 +1542,12 @@ view toSharedMsg sharedModel toMsg model =
                         ]
                     ]
         ]
+    , Html.br [] []
+    , Html.button
+        [ Html.Attributes.type_ "button"
+        , Html.Events.onClick (toMsg (Tick (Duration.milliseconds 16)))
+        ]
+        [ Html.text "Manual Tick" ]
     ]
 
 
@@ -1645,7 +1661,7 @@ viewBlock sharedModel board model ( point, block ) =
                     Scene3d.nothing
 
                 else
-                    Scene3d.sphereWithShadow
+                    Scene3d.sphere
                         (Scene3d.Material.emissive
                             (Scene3d.Light.color Color.yellow)
                             (Luminance.nits 30000)
@@ -1658,6 +1674,216 @@ viewBlock sharedModel board model ( point, block ) =
                             )
                             (Length.meters 0.125)
                         )
+
+            Board.EnemySpawner ->
+                let
+                    center =
+                        Point3d.meters
+                            (toFloat x)
+                            (toFloat y)
+                            (toFloat z)
+
+                    length =
+                        Length.meters 1
+                in
+                Scene3d.group
+                    [ Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveX
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters 0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters -0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveX
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters 0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters 0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveX
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters -0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters 0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveX
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters -0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters -0.4)
+                                )
+                        )
+
+                    --
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveY
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters -0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters -0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveY
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters 0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters -0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveY
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters -0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters 0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveY
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters 0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters 0.4)
+                                )
+                        )
+
+                    --
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveZ
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters 0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters 0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveZ
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters -0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters 0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveZ
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters 0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters -0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveZ
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters -0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters -0.4)
+                                )
+                        )
+                    ]
 
             Board.PlayerSpawn { forward, left } ->
                 case model.editorMode of
@@ -1672,7 +1898,7 @@ viewBlock sharedModel board model ( point, block ) =
                                     (toFloat y)
                                     (toFloat z)
 
-                            carl =
+                            frame =
                                 SketchPlane3d.unsafe
                                     { originPoint = Board.pointToPoint3d point
                                     , xDirection = Board.axisToDirection3d forward
@@ -1695,7 +1921,7 @@ viewBlock sharedModel board model ( point, block ) =
                                     (Luminance.nits 10000)
                                 )
                                 (Cone3d.startingAt center
-                                    (Frame3d.xDirection carl)
+                                    (Frame3d.xDirection frame)
                                     { radius = Length.meters 0.125
                                     , length = Length.meters 0.75
                                     }
@@ -1705,7 +1931,7 @@ viewBlock sharedModel board model ( point, block ) =
                                     (Luminance.nits 10000)
                                 )
                                 (Cone3d.startingAt center
-                                    (Frame3d.yDirection carl)
+                                    (Frame3d.yDirection frame)
                                     { radius = Length.meters 0.125
                                     , length = Length.meters 0.75
                                     }
@@ -1715,7 +1941,7 @@ viewBlock sharedModel board model ( point, block ) =
                                     (Luminance.nits 10000)
                                 )
                                 (Cone3d.startingAt center
-                                    (Frame3d.zDirection carl)
+                                    (Frame3d.zDirection frame)
                                     { radius = Length.meters 0.125
                                     , length = Length.meters 0.75
                                     }
@@ -2061,17 +2287,23 @@ viewHeader toSharedMsg sharedModel toMsg model =
                     ]
                     [ Html.text "Play Level"
                     ]
-                , Html.span
-                    [ Html.Attributes.style "width" "12rem"
-                    , Html.Attributes.style "color" "red"
-                    ]
-                    [ case model.boardPlayError of
-                        Nothing ->
-                            Html.text ""
+                , case model.boardPlayError of
+                    Nothing ->
+                        Html.span
+                            [ Html.Attributes.style "width" "12rem"
+                            ]
+                            [ Html.text ""
+                            ]
 
-                        Just Board.MissingPlayerSpawn ->
-                            Html.text "Missing Player Spawn"
-                    ]
+                    Just Board.MissingPlayerSpawn ->
+                        Html.span
+                            [ Html.Attributes.style "width" "12rem"
+                            , Html.Attributes.style "color" "red"
+                            , Html.Attributes.style "background" "white"
+                            , Html.Attributes.style "padding" "0.25rem 0.5rem"
+                            ]
+                            [ Html.text "Missing Player Spawn"
+                            ]
                 , Html.div
                     [ Html.Attributes.attribute "role" "group" ]
                     [ Html.button
@@ -2198,6 +2430,15 @@ viewHeader toSharedMsg sharedModel toMsg model =
                         , Html.Attributes.title ("Point Pickup - " ++ Input.viewInputKeyHoverText sharedModel.inputMapping.blockTypePointPickup)
                         ]
                         [ Html.text "Point Pickup"
+                        ]
+                    , Html.button
+                        [ Html.Attributes.Extra.aria "current" <|
+                            Html.Attributes.Extra.bool (model.selectedBlockType == Board.EnemySpawner)
+                        , Html.Attributes.type_ "button"
+                        , Html.Events.onClick (toMsg (BlockTypeSelected Board.EnemySpawner))
+                        , Html.Attributes.title ("Enemy Spawner - " ++ Input.viewInputKeyHoverText sharedModel.inputMapping.blockTypeEnemySpawner)
+                        ]
+                        [ Html.text "Enemy Spawner"
                         ]
                     , Html.button
                         [ Html.Attributes.Extra.aria "current" <|
