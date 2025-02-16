@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739669903039"
+    "1739671384897"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -21363,6 +21363,62 @@ var $author$project$Screen$Editor$moveCursorByMouse = F2(
 				$elm$core$Platform$Cmd$none);
 		}
 	});
+var $author$project$Board$neighborBlocks = F2(
+	function (_v0, blocks) {
+		var x = _v0.a;
+		var y = _v0.b;
+		var z = _v0.c;
+		return A2(
+			$elm$core$List$filterMap,
+			$elm$core$Basics$identity,
+			_List_fromArray(
+				[
+					A2(
+					$elm$core$Dict$get,
+					_Utils_Tuple3(x + 1, y, z),
+					blocks),
+					A2(
+					$elm$core$Dict$get,
+					_Utils_Tuple3(x - 1, y, z),
+					blocks),
+					A2(
+					$elm$core$Dict$get,
+					_Utils_Tuple3(x, y + 1, z),
+					blocks),
+					A2(
+					$elm$core$Dict$get,
+					_Utils_Tuple3(x, y - 1, z),
+					blocks),
+					A2(
+					$elm$core$Dict$get,
+					_Utils_Tuple3(x, y, z + 1),
+					blocks),
+					A2(
+					$elm$core$Dict$get,
+					_Utils_Tuple3(x, y, z - 1),
+					blocks)
+				]));
+	});
+var $author$project$Board$optimize = function (board) {
+	return _Utils_update(
+		board,
+		{
+			blocks: A3(
+				$elm$core$Dict$foldl,
+				F3(
+					function (point, block, blocks) {
+						var neighbors = A2($author$project$Board$neighborBlocks, point, board.blocks);
+						return (($elm$core$List$length(neighbors) === 6) && A2(
+							$elm$core$List$all,
+							function (b) {
+								return _Utils_eq(b, $author$project$Board$Wall);
+							},
+							neighbors)) ? blocks : A3($elm$core$Dict$insert, point, block, blocks);
+					}),
+				$elm$core$Dict$empty,
+				board.blocks)
+		});
+};
 var $elm$core$Set$remove = F2(
 	function (key, _v0) {
 		var dict = _v0.a;
@@ -21960,7 +22016,7 @@ var $author$project$Screen$Editor$update = F5(
 							_Utils_update(
 								model,
 								{
-									board: board,
+									board: $author$project$Board$optimize(board),
 									boardPlayError: $elm$core$Maybe$Nothing,
 									editorMode: $author$project$Screen$Editor$TestGame,
 									playerFacing: $author$project$Board$Forward,
@@ -22512,7 +22568,7 @@ var $author$project$Screen$FreePlay$update = F3(
 							_Utils_update(
 								model,
 								{
-									board: board,
+									board: $author$project$Board$optimize(board),
 									boardPlayError: $elm$core$Maybe$Nothing,
 									freePlayMode: $author$project$Screen$FreePlay$FreePlayBoardLoaded,
 									playerFacing: $author$project$Board$Forward,

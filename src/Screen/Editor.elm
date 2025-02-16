@@ -343,7 +343,7 @@ update toSharedMsg sharedModel toMsg msg model =
                         Just spawnFrame ->
                             ( { model
                                 | editorMode = TestGame
-                                , board = board
+                                , board = Board.optimize board
                                 , playerFrame = spawnFrame
                                 , score = 0
                                 , playerTarget = Board.initTarget board Board.Forward spawnFrame

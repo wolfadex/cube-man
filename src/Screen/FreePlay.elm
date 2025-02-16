@@ -133,7 +133,7 @@ update sharedModel msg model =
                         Just spawnFrame ->
                             ( { model
                                 | freePlayMode = FreePlayBoardLoaded
-                                , board = board
+                                , board = Board.optimize board
                                 , playerFrame = spawnFrame
                                 , score = 0
                                 , playerTarget = Board.initTarget board Board.Forward spawnFrame

@@ -22,6 +22,7 @@ module Board exposing
     , gamePlayCamera
     , indexToPoint
     , initTarget
+    , optimize
     , point3dToPoint
     , pointToPoint3d
     , tickPlayer
@@ -1345,6 +1346,39 @@ type BoardLoadError
     = DataCorrupted
     | SerializerOutOfDate
     | OtherError
+
+
+optimize : Board -> Board
+optimize board =
+    { board
+        | blocks =
+            Dict.foldl
+                (\point block blocks ->
+                    let
+                        neighbors =
+                            neighborBlocks point board.blocks
+                    in
+                    if List.length neighbors == 6 && List.all (\b -> b == Wall) neighbors then
+                        blocks
+
+                    else
+                        Dict.insert point block blocks
+                )
+                Dict.empty
+                board.blocks
+    }
+
+
+neighborBlocks : Point -> Dict Point Block -> List Block
+neighborBlocks ( x, y, z ) blocks =
+    List.filterMap identity
+        [ Dict.get ( x + 1, y, z ) blocks
+        , Dict.get ( x - 1, y, z ) blocks
+        , Dict.get ( x, y + 1, z ) blocks
+        , Dict.get ( x, y - 1, z ) blocks
+        , Dict.get ( x, y, z + 1 ) blocks
+        , Dict.get ( x, y, z - 1 ) blocks
+        ]
 
 
 
