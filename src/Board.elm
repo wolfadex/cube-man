@@ -3,6 +3,7 @@ module Board exposing
     , Block(..)
     , BlockPalette(..)
     , Board
+    , BoardLike
     , BoardLoadError(..)
     , BoardPlayError(..)
     , ExampleBoards(..)
@@ -758,24 +759,7 @@ viewBlock ( point, block ) =
                 ]
 
 
-setPlayerFacing :
-    { m
-        | playerFacing : Facing
-        , playerWantFacing : Facing
-        , playerTarget : Target
-        , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
-        , board : Board
-        , score : Int
-    }
-    ->
-        { m
-            | playerFacing : Facing
-            , playerWantFacing : Facing
-            , playerTarget : Target
-            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
-            , board : Board
-            , score : Int
-        }
+setPlayerFacing : BoardLike a -> BoardLike a
 setPlayerFacing model =
     if model.playerFacing == model.playerWantFacing then
         model
@@ -806,9 +790,12 @@ setPlayerFacing model =
 
                 else
                     let
-                        playerBoardPoint =
+                        playerPoint =
                             model.playerFrame
                                 |> Frame3d.originPoint
+
+                        playerBoardPoint =
+                            playerPoint
                                 |> point3dToPoint
 
                         playerBoardPoint3d =
@@ -817,10 +804,7 @@ setPlayerFacing model =
                     in
                     if
                         Quantity.equalWithin (Length.meters 0.1)
-                            (Point3d.distanceFrom
-                                playerBoardPoint3d
-                                (Frame3d.originPoint model.playerFrame)
-                            )
+                            (Point3d.distanceFrom playerBoardPoint3d playerPoint)
                             (Length.meters 0)
                     then
                         let
@@ -1018,52 +1002,25 @@ durationForEdgeMovement =
     Duration.seconds 0.75
 
 
-tickPlayer :
-    Duration
-    ->
-        { m
-            | playerFacing : Facing
-            , playerTarget : Target
-            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
-            , board : Board
-            , playerWantFacing : Facing
-            , score : Int
-        }
-    ->
-        { m
-            | playerFacing : Facing
-            , playerTarget : Target
-            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
-            , board : Board
-            , playerWantFacing : Facing
-            , score : Int
-        }
+tickPlayer : Duration -> BoardLike a -> BoardLike a
 tickPlayer deltaDuration model =
     model
         |> setPlayerFacing
         |> movePlayer deltaDuration
 
 
-movePlayer :
-    Duration
-    ->
-        { m
-            | playerFacing : Facing
-            , playerTarget : Target
-            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
-            , board : Board
-            , playerWantFacing : Facing
-            , score : Int
-        }
-    ->
-        { m
-            | playerFacing : Facing
-            , playerTarget : Target
-            , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
-            , board : Board
-            , playerWantFacing : Facing
-            , score : Int
-        }
+type alias BoardLike a =
+    { a
+        | playerFacing : Facing
+        , playerTarget : Target
+        , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
+        , board : Board
+        , playerWantFacing : Facing
+        , score : Int
+    }
+
+
+movePlayer : Duration -> BoardLike a -> BoardLike a
 movePlayer deltaDuration model =
     case model.playerTarget of
         NoTarget ->
@@ -1088,6 +1045,7 @@ movePlayer deltaDuration model =
                     | playerFrame = playerFrame
                     , playerTarget = findNextTarget model.board model.playerFacing moveDetails.to playerFrame
                 }
+                    |> scorePoints
 
             else if remainingDuration |> Quantity.lessThan (Quantity 0) then
                 let
@@ -1095,11 +1053,12 @@ movePlayer deltaDuration model =
                         model.playerFrame
                             |> Frame3d.moveTo toPoint
                 in
-                tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
-                    { model
-                        | playerFrame = playerFrame
-                        , playerTarget = findNextTarget model.board model.playerFacing moveDetails.to playerFrame
-                    }
+                { model
+                    | playerFrame = playerFrame
+                    , playerTarget = findNextTarget model.board model.playerFacing moveDetails.to playerFrame
+                }
+                    |> scorePoints
+                    |> tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
 
             else
                 let
@@ -1127,6 +1086,7 @@ movePlayer deltaDuration model =
                                 )
                     , playerTarget = MoveForward { moveDetails | duration = remainingDuration }
                 }
+                    |> scorePoints
 
         TraverseEdge edgeDetails ->
             let
@@ -1145,55 +1105,56 @@ movePlayer deltaDuration model =
                         |> Quantity.per durationForEdgeMovement
             in
             if remainingDuration |> Quantity.lessThan (Quantity 0) then
-                tickPlayer (Quantity 0 |> Quantity.minus remainingDuration) <|
-                    let
-                        traverseDurationDuration : Duration
-                        traverseDurationDuration =
-                            deltaDuration
-                                |> Quantity.plus remainingDuration
+                let
+                    traverseDurationDuration : Duration
+                    traverseDurationDuration =
+                        deltaDuration
+                            |> Quantity.plus remainingDuration
 
-                        edgeMovement : Angle
-                        edgeMovement =
-                            targetSpeed
-                                |> Quantity.for traverseDurationDuration
+                    edgeMovement : Angle
+                    edgeMovement =
+                        targetSpeed
+                            |> Quantity.for traverseDurationDuration
 
-                        playerFrame =
-                            model.playerFrame
-                                |> Frame3d.rotateAround
-                                    (Axis3d.through
-                                        (model.playerFrame
-                                            |> Frame3d.originPoint
-                                            |> point3dToPoint
-                                            |> pointToPoint3d
-                                            |> Point3d.translateIn
-                                                (Frame3d.zDirection model.playerFrame)
-                                                (Length.meters -1)
-                                        )
-                                        (case model.playerFacing of
-                                            Forward ->
-                                                Frame3d.yDirection model.playerFrame
-
-                                            Backward ->
-                                                Frame3d.yDirection model.playerFrame
-                                                    |> Direction3d.reverse
-
-                                            Left ->
-                                                Frame3d.xDirection model.playerFrame
-                                                    |> Direction3d.reverse
-
-                                            Right ->
-                                                Frame3d.xDirection model.playerFrame
-                                        )
+                    playerFrame =
+                        model.playerFrame
+                            |> Frame3d.rotateAround
+                                (Axis3d.through
+                                    (model.playerFrame
+                                        |> Frame3d.originPoint
+                                        |> point3dToPoint
+                                        |> pointToPoint3d
+                                        |> Point3d.translateIn
+                                            (Frame3d.zDirection model.playerFrame)
+                                            (Length.meters -1)
                                     )
-                                    edgeMovement
+                                    (case model.playerFacing of
+                                        Forward ->
+                                            Frame3d.yDirection model.playerFrame
 
-                        correctedPlayerFrame =
-                            correctPlayerFrame playerFrame
-                    in
-                    { model
-                        | playerFrame = correctedPlayerFrame
-                        , playerTarget = findNextTarget model.board model.playerFacing edgeDetails.to correctedPlayerFrame
-                    }
+                                        Backward ->
+                                            Frame3d.yDirection model.playerFrame
+                                                |> Direction3d.reverse
+
+                                        Left ->
+                                            Frame3d.xDirection model.playerFrame
+                                                |> Direction3d.reverse
+
+                                        Right ->
+                                            Frame3d.xDirection model.playerFrame
+                                    )
+                                )
+                                edgeMovement
+
+                    correctedPlayerFrame =
+                        correctPlayerFrame playerFrame
+                in
+                { model
+                    | playerFrame = correctedPlayerFrame
+                    , playerTarget = findNextTarget model.board model.playerFacing edgeDetails.to correctedPlayerFrame
+                }
+                    |> scorePoints
+                    |> tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
 
             else
                 let
@@ -1241,6 +1202,7 @@ movePlayer deltaDuration model =
                         | playerFrame = correctedPlayerFrame
                         , playerTarget = findNextTarget model.board model.playerFacing edgeDetails.to correctedPlayerFrame
                     }
+                        |> scorePoints
 
                 else
                     { model
@@ -1275,6 +1237,50 @@ movePlayer deltaDuration model =
                                     edgeMovement
                         , playerTarget = TraverseEdge { edgeDetails | duration = remainingDuration }
                     }
+                        |> scorePoints
+
+
+scorePoints : BoardLike a -> BoardLike a
+scorePoints boardLike =
+    let
+        playerActualPoint =
+            Frame3d.originPoint boardLike.playerFrame
+
+        playerBoardPoint =
+            point3dToPoint playerActualPoint
+
+        blockAtPoint =
+            Dict.get playerBoardPoint boardLike.board.blocks
+    in
+    if blockAtPoint == Just (PointPickup False) then
+        let
+            boardPoint3d =
+                pointToPoint3d playerBoardPoint
+
+            distFromBoardPointCenter =
+                Point3d.distanceFrom playerActualPoint boardPoint3d
+        in
+        if Quantity.equalWithin (Length.meters 0.25) distFromBoardPointCenter (Length.meters 0) then
+            let
+                board =
+                    boardLike.board
+            in
+            { boardLike
+                | board =
+                    { board
+                        | blocks =
+                            Dict.insert playerBoardPoint
+                                (PointPickup True)
+                                board.blocks
+                    }
+                , score = boardLike.score + 50
+            }
+
+        else
+            boardLike
+
+    else
+        boardLike
 
 
 correctPlayerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates } -> Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
