@@ -1,5 +1,14 @@
-module Input exposing (Mapping, decodeMappingChange, defaultMapping, isInputKey, viewInputKeyHoverText)
+module Input exposing
+    ( Mapping
+    , defaultMapping
+    , isInputKey
+    , viewInputKeyHoverText
+    , viewMapping
+    )
 
+import Html exposing (Html)
+import Html.Attributes
+import Html.Events
 import Json.Decode
 
 
@@ -46,38 +55,6 @@ viewInputKeyHoverText ( primary, secondary ) =
         primary ++ " | " ++ secondary
 
 
-decodeMappingChange :
-    ((Mapping -> Mapping) -> msg)
-    -> (String -> Mapping -> Mapping)
-    ->
-        Json.Decode.Decoder
-            { message : msg
-            , preventDefault : Bool
-            , stopPropagation : Bool
-            }
-decodeMappingChange toMsg fn =
-    Json.Decode.field "data" Json.Decode.string
-        |> Json.Decode.andThen
-            (\data ->
-                let
-                    trimmed =
-                        data
-                            |> String.trim
-                            |> String.right 1
-                            |> String.trim
-                in
-                if String.isEmpty trimmed then
-                    Json.Decode.fail "Not a valid input mapping"
-
-                else
-                    Json.Decode.succeed
-                        { message = toMsg (fn trimmed)
-                        , preventDefault = True
-                        , stopPropagation = True
-                        }
-            )
-
-
 isInputKey : ( String, String ) -> String -> Bool
 isInputKey ( primary, secondary ) key =
     key == primary || key == secondary
@@ -85,10 +62,10 @@ isInputKey ( primary, secondary ) key =
 
 defaultMapping : Mapping
 defaultMapping =
-    { moveUp = ( "w", "" )
-    , moveDown = ( "s", "" )
-    , moveLeft = ( "a", "" )
-    , moveRight = ( "d", "" )
+    { moveUp = ( "w", "ArrowUp" )
+    , moveDown = ( "s", "ArrowDown" )
+    , moveLeft = ( "a", "ArrowLeft" )
+    , moveRight = ( "d", "ArrowRight" )
 
     --
     --
@@ -116,3 +93,93 @@ defaultMapping =
     --
     , toggleSettings = ( ",", "" )
     }
+
+
+viewMapping :
+    ((Mapping -> Mapping) -> msg)
+    ->
+        { keys : ( String, String )
+        , label : String
+        , setPrimary : String -> Mapping -> Mapping
+        , setSecondary : String -> Mapping -> Mapping
+        }
+    -> Html msg
+viewMapping toMsg mapping =
+    let
+        ( primary, secondary ) =
+            mapping.keys
+    in
+    Html.tr []
+        [ Html.th [ Html.Attributes.attribute "align" "left" ] [ Html.text mapping.label ]
+        , Html.td [ Html.Attributes.attribute "align" "center" ]
+            [ Html.input
+                [ Html.Attributes.value primary
+                , Html.Events.custom "keydown" (decodeMappingChange toMsg mapping.setPrimary)
+                , Html.Attributes.style "text-align" "center"
+                , Html.Attributes.style "width" "100%"
+                , Html.Attributes.placeholder "must be set"
+                ]
+                []
+            ]
+        , Html.td [ Html.Attributes.attribute "align" "center" ]
+            [ Html.input
+                [ Html.Attributes.value secondary
+                , Html.Events.custom "keydown" (decodeMappingChange toMsg mapping.setSecondary)
+                , Html.Attributes.style "text-align" "center"
+                , Html.Attributes.style "width" "100%"
+                , Html.Attributes.placeholder "not set"
+                ]
+                []
+            ]
+        ]
+
+
+decodeMappingChange :
+    ((Mapping -> Mapping) -> msg)
+    -> (String -> Mapping -> Mapping)
+    ->
+        Json.Decode.Decoder
+            { message : msg
+            , preventDefault : Bool
+            , stopPropagation : Bool
+            }
+decodeMappingChange toMsg fn =
+    Json.Decode.field "key" Json.Decode.string
+        |> Json.Decode.andThen
+            (\key ->
+                case key of
+                    "Tab" ->
+                        Json.Decode.fail "Don't capture"
+
+                    "Shift" ->
+                        Json.Decode.fail "Don't capture"
+
+                    "Meta" ->
+                        Json.Decode.fail "Don't capture"
+
+                    "Alt" ->
+                        Json.Decode.fail "Don't capture"
+
+                    "Control" ->
+                        Json.Decode.fail "Don't capture"
+
+                    "Escape" ->
+                        Json.Decode.fail "Don't capture"
+
+                    "Enter" ->
+                        Json.Decode.fail "Don't capture"
+
+                    "Backspace" ->
+                        Json.Decode.succeed
+                            { message = toMsg (fn "")
+                            , preventDefault = True
+                            , stopPropagation = True
+                            }
+
+                    _ ->
+                        Json.Decode.succeed
+                            { message = toMsg (fn key)
+                            , preventDefault = True
+                            , stopPropagation = True
+                            }
+            )

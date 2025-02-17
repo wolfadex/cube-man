@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739767823153"
+    "1739771072966"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -12701,10 +12701,10 @@ var $author$project$Input$defaultMapping = {
 	cameraPan: _Utils_Tuple2('2', ''),
 	cameraReset: _Utils_Tuple2('4', ''),
 	cameraZoom: _Utils_Tuple2('3', ''),
-	moveDown: _Utils_Tuple2('s', ''),
-	moveLeft: _Utils_Tuple2('a', ''),
-	moveRight: _Utils_Tuple2('d', ''),
-	moveUp: _Utils_Tuple2('w', ''),
+	moveDown: _Utils_Tuple2('s', 'ArrowDown'),
+	moveLeft: _Utils_Tuple2('a', 'ArrowLeft'),
+	moveRight: _Utils_Tuple2('d', 'ArrowRight'),
+	moveUp: _Utils_Tuple2('w', 'ArrowUp'),
 	redo: _Utils_Tuple2('x', ''),
 	toggleSettings: _Utils_Tuple2(',', ''),
 	undo: _Utils_Tuple2('z', '')
@@ -15030,13 +15030,6 @@ var $author$project$Screen$Editor$decodeKeyDown = A2(
 	$elm$json$Json$Decode$map,
 	$author$project$Screen$Editor$KeyDown,
 	A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
-var $author$project$Screen$Editor$KeyPressed = function (a) {
-	return {$: 'KeyPressed', a: a};
-};
-var $author$project$Screen$Editor$decodeKeyPressed = A2(
-	$elm$json$Json$Decode$map,
-	$author$project$Screen$Editor$KeyPressed,
-	A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
 var $author$project$Screen$Editor$KeyUp = function (a) {
 	return {$: 'KeyUp', a: a};
 };
@@ -15433,13 +15426,11 @@ var $elm$browser$Browser$Events$on = F3(
 			A3($elm$browser$Browser$Events$MySub, node, name, decoder));
 	});
 var $elm$browser$Browser$Events$onKeyDown = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keydown');
-var $elm$browser$Browser$Events$onKeyPress = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keypress');
 var $elm$browser$Browser$Events$onKeyUp = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keyup');
 var $author$project$Screen$Editor$subscriptions = function (model) {
 	return model.showSettings ? $elm$core$Platform$Sub$none : $elm$core$Platform$Sub$batch(
 		_List_fromArray(
 			[
-				$elm$browser$Browser$Events$onKeyPress($author$project$Screen$Editor$decodeKeyPressed),
 				$elm$browser$Browser$Events$onKeyDown($author$project$Screen$Editor$decodeKeyDown),
 				$elm$browser$Browser$Events$onKeyUp($author$project$Screen$Editor$decodeKeyUp),
 				$elm$browser$Browser$Events$onAnimationFrameDelta(
@@ -15456,6 +15447,7 @@ var $author$project$Screen$FreePlay$decodeKeyPressed = A2(
 	$elm$json$Json$Decode$map,
 	$author$project$Screen$FreePlay$KeyPressed,
 	A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
+var $elm$browser$Browser$Events$onKeyPress = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keypress');
 var $author$project$Screen$FreePlay$subscriptions = function (model) {
 	var _v0 = model.freePlayMode;
 	if (_v0.$ === 'FreePlayBoardSelection') {
@@ -17569,13 +17561,30 @@ var $author$project$Screen$Editor$update = F5(
 					$elm$core$Platform$Cmd$none);
 			case 'KeyDown':
 				var key = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							editorKeysDown: A2($elm$core$Set$insert, key, model.editorKeysDown)
-						}),
-					$elm$core$Platform$Cmd$none);
+				var _v5 = model.editorMode;
+				if (_v5.$ === 'EditBoard') {
+					return A5(
+						$author$project$Screen$Editor$handleEditorKeyPressed,
+						toSharedMsg,
+						sharedModel,
+						toMsg,
+						key,
+						_Utils_update(
+							model,
+							{
+								editorKeysDown: A2($elm$core$Set$insert, key, model.editorKeysDown)
+							}));
+				} else {
+					return A3(
+						$author$project$Screen$Editor$handleGameKeyPressed,
+						sharedModel,
+						key,
+						_Utils_update(
+							model,
+							{
+								editorKeysDown: A2($elm$core$Set$insert, key, model.editorKeysDown)
+							}));
+				}
 			case 'KeyUp':
 				var key = msg.a;
 				return _Utils_Tuple2(
@@ -17593,8 +17602,8 @@ var $author$project$Screen$Editor$update = F5(
 							{mouseDragging: $author$project$Screen$Editor$NoInteraction}),
 						$elm$core$Platform$Cmd$none);
 				} else {
-					var _v5 = model.blockEditMode;
-					switch (_v5.$) {
+					var _v6 = model.blockEditMode;
+					switch (_v6.$) {
 						case 'Remove':
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
@@ -17630,8 +17639,8 @@ var $author$project$Screen$Editor$update = F5(
 										board,
 										{
 											blocks: function () {
-												var _v9 = model.selectedBlockType;
-												switch (_v9.$) {
+												var _v10 = model.selectedBlockType;
+												switch (_v10.$) {
 													case 'PlayerSpawn':
 														return A3(
 															$elm$core$Dict$insert,
@@ -17640,7 +17649,7 @@ var $author$project$Screen$Editor$update = F5(
 															A2(
 																$elm$core$Dict$map,
 																F2(
-																	function (_v10, block) {
+																	function (_v11, block) {
 																		if (block.$ === 'PlayerSpawn') {
 																			return $author$project$Board$Empty;
 																		} else {
@@ -17656,7 +17665,7 @@ var $author$project$Screen$Editor$update = F5(
 															A2(
 																$elm$core$Dict$map,
 																F2(
-																	function (_v12, block) {
+																	function (_v13, block) {
 																		if (block.$ === 'EnemySpawner') {
 																			return $author$project$Board$Wall;
 																		} else {
@@ -17683,14 +17692,14 @@ var $author$project$Screen$Editor$update = F5(
 												$author$project$Board$boardCodec,
 												$author$project$Undo$value(editorBoard))),
 										boardPlayError: function () {
-											var _v6 = model.boardPlayError;
-											if (_v6.$ === 'Nothing') {
+											var _v7 = model.boardPlayError;
+											if (_v7.$ === 'Nothing') {
 												return model.boardPlayError;
 											} else {
-												var _v7 = _v6.a;
-												var _v8 = $author$project$Board$findSpawn(
+												var _v8 = _v7.a;
+												var _v9 = $author$project$Board$findSpawn(
 													$author$project$Undo$value(editorBoard));
-												if (_v8.$ === 'Nothing') {
+												if (_v9.$ === 'Nothing') {
 													return model.boardPlayError;
 												} else {
 													return $elm$core$Maybe$Nothing;
@@ -17826,13 +17835,13 @@ var $author$project$Screen$Editor$update = F5(
 				var maxXStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v14 = $elm$core$String$toInt(maxXStr);
-						if (_v14.$ === 'Nothing') {
+						var _v15 = $elm$core$String$toInt(maxXStr);
+						if (_v15.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxXRaw: maxXStr});
 						} else {
-							var maxX = _v14.a;
+							var maxX = _v15.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -17881,13 +17890,13 @@ var $author$project$Screen$Editor$update = F5(
 				var maxYStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v15 = $elm$core$String$toInt(maxYStr);
-						if (_v15.$ === 'Nothing') {
+						var _v16 = $elm$core$String$toInt(maxYStr);
+						if (_v16.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxYRaw: maxYStr});
 						} else {
-							var maxY = _v15.a;
+							var maxY = _v16.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -17936,13 +17945,13 @@ var $author$project$Screen$Editor$update = F5(
 				var maxZStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v16 = $elm$core$String$toInt(maxZStr);
-						if (_v16.$ === 'Nothing') {
+						var _v17 = $elm$core$String$toInt(maxZStr);
+						if (_v17.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxZRaw: maxZStr});
 						} else {
-							var maxZ = _v16.a;
+							var maxZ = _v17.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -17994,17 +18003,9 @@ var $author$project$Screen$Editor$update = F5(
 						model,
 						{showBoardBounds: show}),
 					$elm$core$Platform$Cmd$none);
-			case 'ShowSettings':
+			default:
 				var show = msg.a;
 				return A2($author$project$Screen$Editor$showSettings, show, model);
-			default:
-				var key = msg.a;
-				var _v17 = model.editorMode;
-				if (_v17.$ === 'EditBoard') {
-					return A5($author$project$Screen$Editor$handleEditorKeyPressed, toSharedMsg, sharedModel, toMsg, key, model);
-				} else {
-					return A3($author$project$Screen$Editor$handleGameKeyPressed, sharedModel, key, model);
-				}
 		}
 	});
 var $author$project$Screen$FreePlay$FreePlayBoardLoaded = {$: 'FreePlayBoardLoaded'};
@@ -25235,45 +25236,6 @@ var $phosphor_icons$phosphor_elm$Phosphor$cursor = function (weight) {
 	}();
 	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
-var $elm$virtual_dom$VirtualDom$Custom = function (a) {
-	return {$: 'Custom', a: a};
-};
-var $elm$html$Html$Events$custom = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Custom(decoder));
-	});
-var $elm$core$String$right = F2(
-	function (n, string) {
-		return (n < 1) ? '' : A3(
-			$elm$core$String$slice,
-			-n,
-			$elm$core$String$length(string),
-			string);
-	});
-var $elm$core$String$trim = _String_trim;
-var $author$project$Input$decodeMappingChange = F2(
-	function (toMsg, fn) {
-		return A2(
-			$elm$json$Json$Decode$andThen,
-			function (data) {
-				var trimmed = $elm$core$String$trim(
-					A2(
-						$elm$core$String$right,
-						1,
-						$elm$core$String$trim(data)));
-				return $elm$core$String$isEmpty(trimmed) ? $elm$json$Json$Decode$fail('Not a valid input mapping') : $elm$json$Json$Decode$succeed(
-					{
-						message: toMsg(
-							fn(trimmed)),
-						preventDefault: true,
-						stopPropagation: true
-					});
-			},
-			A2($elm$json$Json$Decode$field, 'data', $elm$json$Json$Decode$string));
-	});
 var $phosphor_icons$phosphor_elm$Phosphor$gear = function (weight) {
 	var elements = function () {
 		switch (weight.$) {
@@ -25463,7 +25425,6 @@ var $author$project$Html$Extra$modal = F3(
 				attributes),
 			children);
 	});
-var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
 var $phosphor_icons$phosphor_elm$Phosphor$plus = function (weight) {
 	var elements = function () {
 		switch (weight.$) {
@@ -25547,7 +25508,6 @@ var $phosphor_icons$phosphor_elm$Phosphor$plus = function (weight) {
 };
 var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$html$Html$tbody = _VirtualDom_node('tbody');
-var $elm$html$Html$td = _VirtualDom_node('td');
 var $elm$html$Html$th = _VirtualDom_node('th');
 var $elm$html$Html$thead = _VirtualDom_node('thead');
 var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
@@ -25614,6 +25574,126 @@ var $author$project$Input$viewInputKeyHoverText = function (_v0) {
 	var secondary = _v0.b;
 	return (secondary === '') ? primary : (primary + (' | ' + secondary));
 };
+var $elm$virtual_dom$VirtualDom$Custom = function (a) {
+	return {$: 'Custom', a: a};
+};
+var $elm$html$Html$Events$custom = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Custom(decoder));
+	});
+var $author$project$Input$decodeMappingChange = F2(
+	function (toMsg, fn) {
+		return A2(
+			$elm$json$Json$Decode$andThen,
+			function (key) {
+				switch (key) {
+					case 'Tab':
+						return $elm$json$Json$Decode$fail('Don\'t capture');
+					case 'Shift':
+						return $elm$json$Json$Decode$fail('Don\'t capture');
+					case 'Meta':
+						return $elm$json$Json$Decode$fail('Don\'t capture');
+					case 'Alt':
+						return $elm$json$Json$Decode$fail('Don\'t capture');
+					case 'Control':
+						return $elm$json$Json$Decode$fail('Don\'t capture');
+					case 'Escape':
+						return $elm$json$Json$Decode$fail('Don\'t capture');
+					case 'Enter':
+						return $elm$json$Json$Decode$fail('Don\'t capture');
+					case 'Backspace':
+						return $elm$json$Json$Decode$succeed(
+							{
+								message: toMsg(
+									fn('')),
+								preventDefault: true,
+								stopPropagation: true
+							});
+					default:
+						return $elm$json$Json$Decode$succeed(
+							{
+								message: toMsg(
+									fn(key)),
+								preventDefault: true,
+								stopPropagation: true
+							});
+				}
+			},
+			A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
+	});
+var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$html$Html$td = _VirtualDom_node('td');
+var $author$project$Input$viewMapping = F2(
+	function (toMsg, mapping) {
+		var _v0 = mapping.keys;
+		var primary = _v0.a;
+		var secondary = _v0.b;
+		return A2(
+			$elm$html$Html$tr,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$th,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$attribute, 'align', 'left')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(mapping.label)
+						])),
+					A2(
+					$elm$html$Html$td,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$attribute, 'align', 'center')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$input,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$value(primary),
+									A2(
+									$elm$html$Html$Events$custom,
+									'keydown',
+									A2($author$project$Input$decodeMappingChange, toMsg, mapping.setPrimary)),
+									A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+									A2($elm$html$Html$Attributes$style, 'width', '100%'),
+									$elm$html$Html$Attributes$placeholder('must be set')
+								]),
+							_List_Nil)
+						])),
+					A2(
+					$elm$html$Html$td,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$attribute, 'align', 'center')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$input,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$value(secondary),
+									A2(
+									$elm$html$Html$Events$custom,
+									'keydown',
+									A2($author$project$Input$decodeMappingChange, toMsg, mapping.setSecondary)),
+									A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+									A2($elm$html$Html$Attributes$style, 'width', '100%'),
+									$elm$html$Html$Attributes$placeholder('not set')
+								]),
+							_List_Nil)
+						]))
+				]));
+	});
 var $phosphor_icons$phosphor_elm$Phosphor$x = function (weight) {
 	var elements = function () {
 		switch (weight.$) {
@@ -26303,77 +26383,8 @@ var $author$project$Screen$Editor$viewHeader = F4(
 								A2($elm$html$Html$br, _List_Nil, _List_Nil),
 								A2($elm$html$Html$br, _List_Nil, _List_Nil),
 								function () {
-								var viewMapping = function (mapping) {
-									var _v39 = mapping.keys;
-									var primary = _v39.a;
-									var secondary = _v39.b;
-									return A2(
-										$elm$html$Html$tr,
-										_List_Nil,
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$th,
-												_List_fromArray(
-													[
-														A2($elm$html$Html$Attributes$attribute, 'align', 'left')
-													]),
-												_List_fromArray(
-													[
-														$elm$html$Html$text(mapping.label)
-													])),
-												A2(
-												$elm$html$Html$td,
-												_List_fromArray(
-													[
-														A2($elm$html$Html$Attributes$attribute, 'align', 'center')
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$input,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$value(primary),
-																$elm$html$Html$Attributes$placeholder('Must be set'),
-																A2(
-																$elm$html$Html$Events$custom,
-																'input',
-																A2(
-																	$author$project$Input$decodeMappingChange,
-																	A2($elm$core$Basics$composeR, $author$project$Shared$SetMapping, toSharedMsg),
-																	mapping.setPrimary)),
-																A2($elm$html$Html$Attributes$style, 'text-align', 'center')
-															]),
-														_List_Nil)
-													])),
-												A2(
-												$elm$html$Html$td,
-												_List_fromArray(
-													[
-														A2($elm$html$Html$Attributes$attribute, 'align', 'center')
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$input,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$value(secondary),
-																$elm$html$Html$Attributes$placeholder('Not set'),
-																A2(
-																$elm$html$Html$Events$custom,
-																'input',
-																A2(
-																	$author$project$Input$decodeMappingChange,
-																	A2($elm$core$Basics$composeR, $author$project$Shared$SetMapping, toSharedMsg),
-																	mapping.setSecondary)),
-																A2($elm$html$Html$Attributes$style, 'text-align', 'center')
-															]),
-														_List_Nil)
-													]))
-											]));
-								};
+								var viewMapping = $author$project$Input$viewMapping(
+									A2($elm$core$Basics$composeR, $author$project$Shared$SetMapping, toSharedMsg));
 								return A2(
 									$elm$html$Html$table,
 									_List_Nil,
@@ -28546,77 +28557,8 @@ var $author$project$Screen$FreePlay$view = F4(
 							A2($elm$html$Html$br, _List_Nil, _List_Nil),
 							A2($elm$html$Html$br, _List_Nil, _List_Nil),
 							function () {
-							var viewMapping = function (mapping) {
-								var _v9 = mapping.keys;
-								var primary = _v9.a;
-								var secondary = _v9.b;
-								return A2(
-									$elm$html$Html$tr,
-									_List_Nil,
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$th,
-											_List_fromArray(
-												[
-													A2($elm$html$Html$Attributes$attribute, 'align', 'left')
-												]),
-											_List_fromArray(
-												[
-													$elm$html$Html$text(mapping.label)
-												])),
-											A2(
-											$elm$html$Html$td,
-											_List_fromArray(
-												[
-													A2($elm$html$Html$Attributes$attribute, 'align', 'center')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$input,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$value(primary),
-															$elm$html$Html$Attributes$placeholder('Must be set'),
-															A2(
-															$elm$html$Html$Events$custom,
-															'input',
-															A2(
-																$author$project$Input$decodeMappingChange,
-																A2($elm$core$Basics$composeR, $author$project$Shared$SetMapping, toSharedMsg),
-																mapping.setPrimary)),
-															A2($elm$html$Html$Attributes$style, 'text-align', 'center')
-														]),
-													_List_Nil)
-												])),
-											A2(
-											$elm$html$Html$td,
-											_List_fromArray(
-												[
-													A2($elm$html$Html$Attributes$attribute, 'align', 'center')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$input,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$value(secondary),
-															$elm$html$Html$Attributes$placeholder('Not set'),
-															A2(
-															$elm$html$Html$Events$custom,
-															'input',
-															A2(
-																$author$project$Input$decodeMappingChange,
-																A2($elm$core$Basics$composeR, $author$project$Shared$SetMapping, toSharedMsg),
-																mapping.setSecondary)),
-															A2($elm$html$Html$Attributes$style, 'text-align', 'center')
-														]),
-													_List_Nil)
-												]))
-										]));
-							};
+							var viewMapping = $author$project$Input$viewMapping(
+								A2($elm$core$Basics$composeR, $author$project$Shared$SetMapping, toSharedMsg));
 							return A2(
 								$elm$html$Html$table,
 								_List_Nil,

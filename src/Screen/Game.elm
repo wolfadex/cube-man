@@ -1,4 +1,11 @@
-module Screen.Game exposing (Model, Msg(..), init, subscriptions, update, view)
+module Screen.Game exposing
+    ( Model
+    , Msg
+    , init
+    , subscriptions
+    , update
+    , view
+    )
 
 import Board exposing (Board)
 import Frame3d exposing (Frame3d)

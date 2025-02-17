@@ -1,4 +1,15 @@
-module Screen.Editor exposing (BlockEditMode(..), CameraMode(..), EditorMode(..), EditorMouseInteraction(..), Model, Msg(..), init, subscriptions, update, view)
+module Screen.Editor exposing
+    ( BlockEditMode
+    , CameraMode
+    , EditorMode
+    , EditorMouseInteraction
+    , Model
+    , Msg
+    , init
+    , subscriptions
+    , update
+    , view
+    )
 
 import Angle exposing (Angle)
 import Animation exposing (Animation)
@@ -202,17 +213,10 @@ subscriptions model =
 
     else
         Sub.batch
-            [ Browser.Events.onKeyPress decodeKeyPressed
-            , Browser.Events.onKeyDown decodeKeyDown
+            [ Browser.Events.onKeyDown decodeKeyDown
             , Browser.Events.onKeyUp decodeKeyUp
             , Browser.Events.onAnimationFrameDelta (Duration.milliseconds >> Tick)
             ]
-
-
-decodeKeyPressed : Json.Decode.Decoder Msg
-decodeKeyPressed =
-    Json.Decode.map KeyPressed
-        (Json.Decode.field "key" Json.Decode.string)
 
 
 decodeKeyDown : Json.Decode.Decoder Msg
@@ -230,7 +234,6 @@ decodeKeyUp =
 type Msg
     = NoOp
     | Tick Duration
-    | KeyPressed String
     | KeyDown String
     | KeyUp String
     | MouseDown Json.Decode.Value
@@ -361,7 +364,12 @@ update toSharedMsg sharedModel toMsg msg model =
             ( { model | mouseDragging = InteractionStart pointerId }, Cmd.none )
 
         KeyDown key ->
-            ( { model | editorKeysDown = Set.insert key model.editorKeysDown }, Cmd.none )
+            case model.editorMode of
+                EditBoard ->
+                    handleEditorKeyPressed toSharedMsg sharedModel toMsg key { model | editorKeysDown = Set.insert key model.editorKeysDown }
+
+                TestGame ->
+                    handleGameKeyPressed sharedModel key { model | editorKeysDown = Set.insert key model.editorKeysDown }
 
         KeyUp key ->
             ( { model | editorKeysDown = Set.remove key model.editorKeysDown }, Cmd.none )
@@ -731,14 +739,6 @@ update toSharedMsg sharedModel toMsg msg model =
 
         ShowSettings show ->
             showSettings show model
-
-        KeyPressed key ->
-            case model.editorMode of
-                EditBoard ->
-                    handleEditorKeyPressed toSharedMsg sharedModel toMsg key model
-
-                TestGame ->
-                    handleGameKeyPressed sharedModel key model
 
 
 moveCameraByMouse : Json.Encode.Value -> Point2d Pixels Board.ScreenCoordinates -> Model -> ( Model, Cmd msg )
@@ -2491,32 +2491,8 @@ viewHeader toSharedMsg sharedModel toMsg model =
                     , Html.br [] []
                     , Html.br [] []
                     , let
-                        viewMapping mapping =
-                            let
-                                ( primary, secondary ) =
-                                    mapping.keys
-                            in
-                            Html.tr []
-                                [ Html.th [ Html.Attributes.attribute "align" "left" ] [ Html.text mapping.label ]
-                                , Html.td [ Html.Attributes.attribute "align" "center" ]
-                                    [ Html.input
-                                        [ Html.Attributes.value primary
-                                        , Html.Attributes.placeholder "Must be set"
-                                        , Html.Events.custom "input" (Input.decodeMappingChange (Shared.SetMapping >> toSharedMsg) mapping.setPrimary)
-                                        , Html.Attributes.style "text-align" "center"
-                                        ]
-                                        []
-                                    ]
-                                , Html.td [ Html.Attributes.attribute "align" "center" ]
-                                    [ Html.input
-                                        [ Html.Attributes.value secondary
-                                        , Html.Attributes.placeholder "Not set"
-                                        , Html.Events.custom "input" (Input.decodeMappingChange (Shared.SetMapping >> toSharedMsg) mapping.setSecondary)
-                                        , Html.Attributes.style "text-align" "center"
-                                        ]
-                                        []
-                                    ]
-                                ]
+                        viewMapping =
+                            Input.viewMapping (Shared.SetMapping >> toSharedMsg)
                       in
                       Html.table
                         []

@@ -1,4 +1,13 @@
-module Screen.FreePlay exposing (BoardPreviewTile, FreePlayMode(..), Model, Msg(..), init, subscriptions, update, view)
+module Screen.FreePlay exposing
+    ( BoardPreviewTile
+    , FreePlayMode
+    , Model
+    , Msg
+    , init
+    , subscriptions
+    , update
+    , view
+    )
 
 import Board exposing (Board)
 import Browser.Events
@@ -316,32 +325,8 @@ view toSharedMsg sharedModel toMsg model =
                 , Html.br [] []
                 , Html.br [] []
                 , let
-                    viewMapping mapping =
-                        let
-                            ( primary, secondary ) =
-                                mapping.keys
-                        in
-                        Html.tr []
-                            [ Html.th [ Html.Attributes.attribute "align" "left" ] [ Html.text mapping.label ]
-                            , Html.td [ Html.Attributes.attribute "align" "center" ]
-                                [ Html.input
-                                    [ Html.Attributes.value primary
-                                    , Html.Attributes.placeholder "Must be set"
-                                    , Html.Events.custom "input" (Input.decodeMappingChange (Shared.SetMapping >> toSharedMsg) mapping.setPrimary)
-                                    , Html.Attributes.style "text-align" "center"
-                                    ]
-                                    []
-                                ]
-                            , Html.td [ Html.Attributes.attribute "align" "center" ]
-                                [ Html.input
-                                    [ Html.Attributes.value secondary
-                                    , Html.Attributes.placeholder "Not set"
-                                    , Html.Events.custom "input" (Input.decodeMappingChange (Shared.SetMapping >> toSharedMsg) mapping.setSecondary)
-                                    , Html.Attributes.style "text-align" "center"
-                                    ]
-                                    []
-                                ]
-                            ]
+                    viewMapping =
+                        Input.viewMapping (Shared.SetMapping >> toSharedMsg)
                   in
                   Html.table
                     []
