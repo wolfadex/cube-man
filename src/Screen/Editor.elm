@@ -270,7 +270,7 @@ update toSharedMsg sharedModel toMsg msg model =
 
         Tick deltaMs ->
             ( model
-                |> tickPlayer deltaMs
+                |> tick deltaMs
             , Cmd.none
             )
 
@@ -429,12 +429,12 @@ update toSharedMsg sharedModel toMsg msg model =
                                                             |> Dict.insert model.editorCursor
                                                                 model.selectedBlockType
 
-                                                    Board.EnemySpawner ->
+                                                    Board.EnemySpawner _ ->
                                                         board.blocks
                                                             |> Dict.map
                                                                 (\_ block ->
                                                                     case block of
-                                                                        Board.EnemySpawner ->
+                                                                        Board.EnemySpawner _ ->
                                                                             Board.Wall
 
                                                                         _ ->
@@ -927,8 +927,8 @@ moveCursorByMouse offset model =
             )
 
 
-tickPlayer : Duration -> Model -> Model
-tickPlayer deltaMs model =
+tick : Duration -> Model -> Model
+tick deltaMs model =
     case model.editorMode of
         EditBoard ->
             model
@@ -936,7 +936,9 @@ tickPlayer deltaMs model =
         TestGame ->
             { model
                 | level =
-                    Board.tickPlayer deltaMs model.level
+                    model.level
+                        |> Board.tickPlayer deltaMs
+                        |> Board.tickEnemies deltaMs
             }
 
 
@@ -973,7 +975,7 @@ handleEditorKeyPressed toSharedMsg sharedModel _ key model =
         ( { model | selectedBlockType = Board.PointPickup False }, Cmd.none )
 
     else if Input.isInputKey sharedModel.inputMapping.blockTypeEnemySpawner key then
-        ( { model | selectedBlockType = Board.EnemySpawner }, Cmd.none )
+        ( { model | selectedBlockType = Board.EnemySpawner Board.defaultEnemySpawnerDetails }, Cmd.none )
 
     else if Input.isInputKey sharedModel.inputMapping.blockTypePlayerSpawn key then
         ( { model | selectedBlockType = Board.PlayerSpawn { forward = Board.PositiveX, left = Board.PositiveY } }, Cmd.none )
@@ -1234,7 +1236,14 @@ view toSharedMsg sharedModel toMsg model =
                         List.concat
                             [ model.level.board.blocks
                                 |> Dict.toList
-                                |> List.map (viewBlock sharedModel model.level.board model)
+                                |> List.map
+                                    (case model.editorMode of
+                                        TestGame ->
+                                            Board.viewBlock
+
+                                        EditBoard ->
+                                            viewBlock sharedModel model.level.board model
+                                    )
                             , [ Board.viewPlayer model.level.playerFacing model.level.playerFrame ]
                             ]
                 )
@@ -1286,8 +1295,26 @@ view toSharedMsg sharedModel toMsg model =
                                 Board.PointPickup _ ->
                                     Html.span [] [ Html.text "Point Pickup" ]
 
-                                Board.EnemySpawner ->
-                                    Html.span [] [ Html.text "Enemy Spawner" ]
+                                Board.EnemySpawner details ->
+                                    Html.form
+                                        []
+                                        [ Html.span [] [ Html.text "Enemy Spawner" ]
+                                        , Html.br [] []
+                                        , Html.label []
+                                            [ Html.span [] [ Html.text "Seconds betwwen spawns " ]
+                                            , Html.input
+                                                [ Html.Attributes.type_ "number"
+                                                , Html.Attributes.min "0.5"
+                                                , Html.Attributes.max "10"
+                                                , Html.Attributes.step "0.5"
+                                                , details.timeBetweenSpawns
+                                                    |> Duration.inSeconds
+                                                    |> String.fromFloat
+                                                    |> Html.Attributes.value
+                                                ]
+                                                []
+                                            ]
+                                        ]
 
                                 Board.PlayerSpawn details ->
                                     Html.form
@@ -1670,7 +1697,7 @@ viewBlock sharedModel board model ( point, block ) =
                             (Length.meters 0.125)
                         )
 
-            Board.EnemySpawner ->
+            Board.EnemySpawner _ ->
                 let
                     center =
                         Point3d.meters
@@ -1881,93 +1908,83 @@ viewBlock sharedModel board model ( point, block ) =
                     ]
 
             Board.PlayerSpawn { forward, left } ->
-                case model.editorMode of
-                    TestGame ->
-                        Scene3d.nothing
+                let
+                    center =
+                        Point3d.meters
+                            (toFloat x)
+                            (toFloat y)
+                            (toFloat z)
 
-                    EditBoard ->
-                        let
-                            center =
-                                Point3d.meters
-                                    (toFloat x)
-                                    (toFloat y)
-                                    (toFloat z)
-
-                            frame =
-                                SketchPlane3d.unsafe
-                                    { originPoint = Board.pointToPoint3d point
-                                    , xDirection = Board.axisToDirection3d forward
-                                    , yDirection = Board.axisToDirection3d left
-                                    }
-                                    |> SketchPlane3d.toFrame
-                        in
-                        Scene3d.group
-                            [ Scene3d.sphereWithShadow
-                                (Scene3d.Material.emissive
-                                    (Scene3d.Light.color Color.white)
-                                    (Luminance.nits 100000)
-                                )
-                                (Sphere3d.atPoint
-                                    center
-                                    (Length.meters 0.25)
-                                )
-                            , Scene3d.coneWithShadow
-                                (Scene3d.Material.emissive (Scene3d.Light.color Color.red)
-                                    (Luminance.nits 10000)
-                                )
-                                (Cone3d.startingAt center
-                                    (Frame3d.xDirection frame)
-                                    { radius = Length.meters 0.125
-                                    , length = Length.meters 0.75
-                                    }
-                                )
-                            , Scene3d.coneWithShadow
-                                (Scene3d.Material.emissive (Scene3d.Light.color Color.green)
-                                    (Luminance.nits 10000)
-                                )
-                                (Cone3d.startingAt center
-                                    (Frame3d.yDirection frame)
-                                    { radius = Length.meters 0.125
-                                    , length = Length.meters 0.75
-                                    }
-                                )
-                            , Scene3d.coneWithShadow
-                                (Scene3d.Material.emissive (Scene3d.Light.color Color.blue)
-                                    (Luminance.nits 10000)
-                                )
-                                (Cone3d.startingAt center
-                                    (Frame3d.zDirection frame)
-                                    { radius = Length.meters 0.125
-                                    , length = Length.meters 0.75
-                                    }
-                                )
-                            ]
+                    frame =
+                        SketchPlane3d.unsafe
+                            { originPoint = Board.pointToPoint3d point
+                            , xDirection = Board.axisToDirection3d forward
+                            , yDirection = Board.axisToDirection3d left
+                            }
+                            |> SketchPlane3d.toFrame
+                in
+                Scene3d.group
+                    [ Scene3d.sphereWithShadow
+                        (Scene3d.Material.emissive
+                            (Scene3d.Light.color Color.white)
+                            (Luminance.nits 100000)
+                        )
+                        (Sphere3d.atPoint
+                            center
+                            (Length.meters 0.25)
+                        )
+                    , Scene3d.coneWithShadow
+                        (Scene3d.Material.emissive (Scene3d.Light.color Color.red)
+                            (Luminance.nits 10000)
+                        )
+                        (Cone3d.startingAt center
+                            (Frame3d.xDirection frame)
+                            { radius = Length.meters 0.125
+                            , length = Length.meters 0.75
+                            }
+                        )
+                    , Scene3d.coneWithShadow
+                        (Scene3d.Material.emissive (Scene3d.Light.color Color.green)
+                            (Luminance.nits 10000)
+                        )
+                        (Cone3d.startingAt center
+                            (Frame3d.yDirection frame)
+                            { radius = Length.meters 0.125
+                            , length = Length.meters 0.75
+                            }
+                        )
+                    , Scene3d.coneWithShadow
+                        (Scene3d.Material.emissive (Scene3d.Light.color Color.blue)
+                            (Luminance.nits 10000)
+                        )
+                        (Cone3d.startingAt center
+                            (Frame3d.zDirection frame)
+                            { radius = Length.meters 0.125
+                            , length = Length.meters 0.75
+                            }
+                        )
+                    ]
 
             Board.Empty ->
                 Scene3d.nothing
 
             Board.Edge ->
-                case model.editorMode of
-                    TestGame ->
-                        Scene3d.nothing
-
-                    EditBoard ->
-                        Scene3d.blockWithShadow
-                            (Scene3d.Material.metal
-                                { baseColor = Color.orange
-                                , roughness = 1
-                                }
+                Scene3d.blockWithShadow
+                    (Scene3d.Material.metal
+                        { baseColor = Color.orange
+                        , roughness = 1
+                        }
+                    )
+                    (Block3d.centeredOn
+                        (Frame3d.atPoint
+                            (Point3d.meters
+                                (toFloat x)
+                                (toFloat y)
+                                (toFloat z)
                             )
-                            (Block3d.centeredOn
-                                (Frame3d.atPoint
-                                    (Point3d.meters
-                                        (toFloat x)
-                                        (toFloat y)
-                                        (toFloat z)
-                                    )
-                                )
-                                ( Length.meters 0.5, Length.meters 0.5, Length.meters 0.5 )
-                            )
+                        )
+                        ( Length.meters 0.5, Length.meters 0.5, Length.meters 0.5 )
+                    )
 
 
 viewCursor : Color -> Animation Float -> Board.Point -> Scene3d.Entity Board.WorldCoordinates
@@ -2428,9 +2445,9 @@ viewHeader toSharedMsg sharedModel toMsg model =
                         ]
                     , Html.button
                         [ Html.Attributes.Extra.aria "current" <|
-                            Html.Attributes.Extra.bool (model.selectedBlockType == Board.EnemySpawner)
+                            Html.Attributes.Extra.bool (model.selectedBlockType == Board.EnemySpawner Board.defaultEnemySpawnerDetails)
                         , Html.Attributes.type_ "button"
-                        , Html.Events.onClick (toMsg (BlockTypeSelected Board.EnemySpawner))
+                        , Html.Events.onClick (toMsg (BlockTypeSelected (Board.EnemySpawner Board.defaultEnemySpawnerDetails)))
                         , Html.Attributes.title ("Enemy Spawner - " ++ Input.viewInputKeyHoverText sharedModel.inputMapping.blockTypeEnemySpawner)
                         ]
                         [ Html.text "Enemy Spawner"

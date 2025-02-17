@@ -5,6 +5,7 @@ module Board exposing
     , Board
     , BoardLoadError(..)
     , BoardPlayError(..)
+    , EnemySpawnerDetails
     , ExampleBoards(..)
     , Facing(..)
     , Level
@@ -17,6 +18,7 @@ module Board exposing
     , basicMiniBoard
     , boardCodec
     , defaultBoard
+    , defaultEnemySpawnerDetails
     , empty
     , emptyLevel
     , findSpawn
@@ -25,9 +27,9 @@ module Board exposing
     , indexToPoint
     , init
     , initTarget
-    , optimize
     , point3dToPoint
     , pointToPoint3d
+    , tickEnemies
     , tickPlayer
     , view3dScene
     , viewBlock
@@ -46,6 +48,7 @@ import Cylinder3d
 import Dict exposing (Dict)
 import Direction3d exposing (Direction3d)
 import Duration exposing (Duration)
+import Ease
 import Frame3d exposing (Frame3d)
 import Html exposing (Html)
 import Length
@@ -61,6 +64,7 @@ import Scene3d.Mesh
 import Serialize
 import SketchPlane3d
 import Sphere3d
+import Units.Serialize
 import Vector3d
 import Viewpoint3d
 
@@ -106,7 +110,20 @@ type Block
     | Edge
     | PointPickup Bool
     | PlayerSpawn { forward : Axis, left : Axis }
-    | EnemySpawner
+    | EnemySpawner EnemySpawnerDetails
+
+
+type alias EnemySpawnerDetails =
+    { timeTillSpawn : Duration
+    , timeBetweenSpawns : Duration
+    }
+
+
+defaultEnemySpawnerDetails : EnemySpawnerDetails
+defaultEnemySpawnerDetails =
+    { timeTillSpawn = Duration.seconds 3
+    , timeBetweenSpawns = Duration.seconds 3
+    }
 
 
 pointCodec : Serialize.Codec e Point
@@ -129,6 +146,18 @@ playerSpawnDetailsCodec =
     Serialize.record (\forward left -> { forward = forward, left = left })
         |> Serialize.field .forward axisCodec
         |> Serialize.field .left axisCodec
+        |> Serialize.finishRecord
+
+
+enemySpawnerDetailsCodec : Serialize.Codec e EnemySpawnerDetails
+enemySpawnerDetailsCodec =
+    Serialize.record
+        (\timeBetweenSpawns ->
+            { timeTillSpawn = timeBetweenSpawns
+            , timeBetweenSpawns = timeBetweenSpawns
+            }
+        )
+        |> Serialize.field .timeBetweenSpawns Units.Serialize.durationCodec
         |> Serialize.finishRecord
 
 
@@ -184,15 +213,15 @@ blockCodec =
                 PlayerSpawn details ->
                     playerSpawnEncoder details
 
-                EnemySpawner ->
-                    enemySpawnerEncoder
+                EnemySpawner details ->
+                    enemySpawnerEncoder details
         )
         |> Serialize.variant0 Empty
         |> Serialize.variant0 Wall
         |> Serialize.variant0 Edge
         |> Serialize.variant1 PointPickup Serialize.bool
         |> Serialize.variant1 PlayerSpawn playerSpawnDetailsCodec
-        |> Serialize.variant0 EnemySpawner
+        |> Serialize.variant1 EnemySpawner enemySpawnerDetailsCodec
         |> Serialize.finishCustomType
 
 
@@ -550,7 +579,7 @@ viewBlock ( point, block ) =
         Edge ->
             Scene3d.nothing
 
-        EnemySpawner ->
+        EnemySpawner details ->
             let
                 center =
                     Point3d.meters
@@ -560,9 +589,30 @@ viewBlock ( point, block ) =
 
                 length =
                     Length.meters 1
+
+                q =
+                    Quantity.ratio
+                        details.timeTillSpawn
+                        defaultEnemySpawnerDetails.timeBetweenSpawns
+                        |> Ease.reverse Ease.inOutElastic
+                        |> max 0
+                        |> (\f -> f / 4)
             in
             Scene3d.group
-                [ Scene3d.cylinderWithShadow
+                [ Scene3d.sphere
+                    (Scene3d.Material.emissive
+                        (Scene3d.Light.color Color.red)
+                        (Luminance.nits 30000)
+                    )
+                    (Sphere3d.atPoint
+                        (Point3d.meters
+                            (toFloat x)
+                            (toFloat y)
+                            (toFloat z)
+                        )
+                        (Length.meters q)
+                    )
+                , Scene3d.cylinderWithShadow
                     (Scene3d.Material.color Color.red)
                     (Cylinder3d.centeredOn Point3d.origin
                         Direction3d.positiveX
@@ -889,7 +939,7 @@ setPlayerFacing model =
                                     PlayerSpawn _ ->
                                         treatAsEmpty ()
 
-                                    EnemySpawner ->
+                                    EnemySpawner _ ->
                                         model
 
                                     Edge ->
@@ -970,7 +1020,7 @@ findNextTarget board playerFacing fromPoint playerFrame =
         Just Wall ->
             NoTarget
 
-        Just EnemySpawner ->
+        Just (EnemySpawner _) ->
             NoTarget
 
         Just Empty ->
@@ -1002,6 +1052,54 @@ durationForForwardMovement =
 durationForEdgeMovement : Duration
 durationForEdgeMovement =
     Duration.seconds 0.75
+
+
+tickEnemies : Duration -> Level -> Level
+tickEnemies deltaDuration level =
+    level
+        -- |> moveEnemies deltaDuration
+        |> tickEnemySpawners deltaDuration
+
+
+tickEnemySpawners : Duration -> Level -> Level
+tickEnemySpawners deltaDuration level =
+    let
+        board =
+            level.board
+    in
+    { level
+        | board =
+            { board
+                | blocks =
+                    Dict.foldl
+                        (\point block blocks ->
+                            case block of
+                                EnemySpawner details ->
+                                    let
+                                        timeTillSpawn =
+                                            details.timeTillSpawn
+                                                |> Quantity.minus deltaDuration
+                                    in
+                                    Dict.insert point
+                                        (EnemySpawner
+                                            { details
+                                                | timeTillSpawn =
+                                                    if timeTillSpawn |> Quantity.lessThan (Quantity 0) then
+                                                        timeTillSpawn |> Quantity.plus details.timeBetweenSpawns
+
+                                                    else
+                                                        timeTillSpawn
+                                            }
+                                        )
+                                        blocks
+
+                                _ ->
+                                    Dict.insert point block blocks
+                        )
+                        Dict.empty
+                        board.blocks
+            }
+    }
 
 
 tickPlayer : Duration -> Level -> Level
@@ -1433,7 +1531,7 @@ defaultBoard =
 
 basicMiniBoard : String
 basicMiniBoard =
-    "[1,[5,5,5,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[2]],[[0,0,3],[1]],[[0,0,4],[1]],[[0,1,0],[1]],[[0,1,1],[1]],[[0,1,2],[3,false]],[[0,1,3],[1]],[[0,1,4],[1]],[[0,2,0],[2]],[[0,2,1],[3,false]],[[0,2,2],[3,false]],[[0,2,3],[3,false]],[[0,2,4],[2]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[3,false]],[[0,3,3],[1]],[[0,3,4],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[2]],[[0,4,3],[1]],[[0,4,4],[1]],[[1,0,0],[1]],[[1,0,1],[1]],[[1,0,2],[3,false]],[[1,0,3],[1]],[[1,0,4],[1]],[[1,1,0],[1]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,2,0],[3,false]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[3,false]],[[1,3,0],[1]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,4,0],[1]],[[1,4,1],[1]],[[1,4,2],[3,false]],[[1,4,3],[1]],[[1,4,4],[1]],[[2,0,0],[2]],[[2,0,1],[3,false]],[[2,0,2],[3,false]],[[2,0,3],[3,false]],[[2,0,4],[2]],[[2,1,0],[3,false]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[3,false]],[[2,2,0],[3,false]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[4,[[0],[2]]]],[[2,3,0],[3,false]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[3,false]],[[2,4,0],[2]],[[2,4,1],[3,false]],[[2,4,2],[3,false]],[[2,4,3],[3,false]],[[2,4,4],[2]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[3,false]],[[3,0,3],[1]],[[3,0,4],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,2,0],[3,false]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[3,false]],[[3,3,0],[1]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,4,0],[1]],[[3,4,1],[1]],[[3,4,2],[3,false]],[[3,4,3],[1]],[[3,4,4],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[2]],[[4,0,3],[1]],[[4,0,4],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[3,false]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,2,0],[2]],[[4,2,1],[3,false]],[[4,2,2],[3,false]],[[4,2,3],[3,false]],[[4,2,4],[2]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[3,false]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,4,0],[1]],[[4,4,1],[1]],[[4,4,2],[2]],[[4,4,3],[1]],[[4,4,4],[1]]]]]"
+    "[1,[5,5,5,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[2]],[[0,0,3],[1]],[[0,0,4],[1]],[[0,1,0],[1]],[[0,1,1],[1]],[[0,1,2],[3,false]],[[0,1,3],[1]],[[0,1,4],[1]],[[0,2,0],[2]],[[0,2,1],[3,false]],[[0,2,2],[3,false]],[[0,2,3],[3,false]],[[0,2,4],[2]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[3,false]],[[0,3,3],[1]],[[0,3,4],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[2]],[[0,4,3],[1]],[[0,4,4],[1]],[[1,0,0],[1]],[[1,0,1],[1]],[[1,0,2],[3,false]],[[1,0,3],[1]],[[1,0,4],[1]],[[1,1,0],[1]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,2,0],[3,false]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[3,false]],[[1,3,0],[1]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,4,0],[1]],[[1,4,1],[1]],[[1,4,2],[3,false]],[[1,4,3],[1]],[[1,4,4],[1]],[[2,0,0],[2]],[[2,0,1],[3,false]],[[2,0,2],[3,false]],[[2,0,3],[3,false]],[[2,0,4],[2]],[[2,1,0],[3,false]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[3,false]],[[2,2,0],[5,[[0,3]]]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[4,[[0],[2]]]],[[2,3,0],[3,false]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[3,false]],[[2,4,0],[2]],[[2,4,1],[3,false]],[[2,4,2],[3,false]],[[2,4,3],[3,false]],[[2,4,4],[2]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[3,false]],[[3,0,3],[1]],[[3,0,4],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,2,0],[3,false]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[3,false]],[[3,3,0],[1]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,4,0],[1]],[[3,4,1],[1]],[[3,4,2],[3,false]],[[3,4,3],[1]],[[3,4,4],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[2]],[[4,0,3],[1]],[[4,0,4],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[3,false]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,2,0],[2]],[[4,2,1],[3,false]],[[4,2,2],[3,false]],[[4,2,3],[3,false]],[[4,2,4],[2]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[3,false]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,4,0],[1]],[[4,4,1],[1]],[[4,4,2],[2]],[[4,4,3],[1]],[[4,4,4],[1]]]]]"
 
 
 zigZagBoard : String

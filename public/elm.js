@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739771072966"
+    "1739775065431"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -11165,7 +11165,9 @@ var $author$project$Board$Board = F4(
 	});
 var $author$project$Board$Edge = {$: 'Edge'};
 var $author$project$Board$Empty = {$: 'Empty'};
-var $author$project$Board$EnemySpawner = {$: 'EnemySpawner'};
+var $author$project$Board$EnemySpawner = function (a) {
+	return {$: 'EnemySpawner', a: a};
+};
 var $author$project$Board$PlayerSpawn = function (a) {
 	return {$: 'PlayerSpawn', a: a};
 };
@@ -11446,12 +11448,64 @@ var $MartinSStewart$elm_serialize$Serialize$finishCustomType = function (_v0) {
 			},
 			A2($elm$json$Json$Decode$index, 0, $elm$json$Json$Decode$int)));
 };
-var $author$project$Board$NegativeX = {$: 'NegativeX'};
-var $author$project$Board$NegativeY = {$: 'NegativeY'};
-var $author$project$Board$NegativeZ = {$: 'NegativeZ'};
-var $author$project$Board$PositiveX = {$: 'PositiveX'};
-var $author$project$Board$PositiveY = {$: 'PositiveY'};
-var $author$project$Board$PositiveZ = {$: 'PositiveZ'};
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $elm$json$Json$Encode$float = _Json_wrap;
+var $elm$bytes$Bytes$Decode$float64 = function (endianness) {
+	return $elm$bytes$Bytes$Decode$Decoder(
+		_Bytes_read_f64(
+			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
+};
+var $elm$bytes$Bytes$Encode$F64 = F2(
+	function (a, b) {
+		return {$: 'F64', a: a, b: b};
+	});
+var $elm$bytes$Bytes$Encode$float64 = $elm$bytes$Bytes$Encode$F64;
+var $MartinSStewart$elm_serialize$Serialize$float = A4(
+	$MartinSStewart$elm_serialize$Serialize$build,
+	$elm$bytes$Bytes$Encode$float64($MartinSStewart$elm_serialize$Serialize$endian),
+	A2(
+		$elm$bytes$Bytes$Decode$map,
+		$elm$core$Result$Ok,
+		$elm$bytes$Bytes$Decode$float64($MartinSStewart$elm_serialize$Serialize$endian)),
+	$elm$json$Json$Encode$float,
+	A2($elm$json$Json$Decode$map, $elm$core$Result$Ok, $elm$json$Json$Decode$float));
+var $ianmackenzie$elm_units$Duration$inSeconds = function (_v0) {
+	var numSeconds = _v0.a;
+	return numSeconds;
+};
+var $ianmackenzie$elm_units$Quantity$Quantity = function (a) {
+	return {$: 'Quantity', a: a};
+};
+var $ianmackenzie$elm_units$Duration$seconds = function (numSeconds) {
+	return $ianmackenzie$elm_units$Quantity$Quantity(numSeconds);
+};
+var $MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper = function (_v0) {
+	var m = _v0.a;
+	return m.decoder;
+};
+var $MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper = function (_v0) {
+	var m = _v0.a;
+	return m.encoder;
+};
+var $MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper = function (_v0) {
+	var m = _v0.a;
+	return m.jsonDecoder;
+};
+var $MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper = function (_v0) {
+	var m = _v0.a;
+	return m.jsonEncoder;
+};
+var $MartinSStewart$elm_serialize$Serialize$result1 = F2(
+	function (ctor, value) {
+		if (value.$ === 'Ok') {
+			var ok = value.a;
+			return $elm$core$Result$Ok(
+				ctor(ok));
+		} else {
+			var err = value.a;
+			return $elm$core$Result$Err(err);
+		}
+	});
 var $MartinSStewart$elm_serialize$Serialize$VariantEncoder = function (a) {
 	return {$: 'VariantEncoder', a: a};
 };
@@ -11542,75 +11596,51 @@ var $MartinSStewart$elm_serialize$Serialize$variant = F5(
 					matchPiece(enc))
 			});
 	});
-var $MartinSStewart$elm_serialize$Serialize$variant0 = function (ctor) {
-	return A4(
-		$MartinSStewart$elm_serialize$Serialize$variant,
-		function (c) {
-			return c(_List_Nil);
-		},
-		function (c) {
-			return c(_List_Nil);
-		},
-		$elm$bytes$Bytes$Decode$succeed(
-			$elm$core$Result$Ok(ctor)),
-		$elm$json$Json$Decode$succeed(
-			$elm$core$Result$Ok(ctor)));
-};
-var $author$project$Board$axisCodec = $MartinSStewart$elm_serialize$Serialize$finishCustomType(
-	A2(
-		$MartinSStewart$elm_serialize$Serialize$variant0,
-		$author$project$Board$NegativeZ,
-		A2(
-			$MartinSStewart$elm_serialize$Serialize$variant0,
-			$author$project$Board$PositiveZ,
+var $MartinSStewart$elm_serialize$Serialize$variant1 = F2(
+	function (ctor, m1) {
+		return A4(
+			$MartinSStewart$elm_serialize$Serialize$variant,
+			F2(
+				function (c, v) {
+					return c(
+						_List_fromArray(
+							[
+								A2($MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper, m1, v)
+							]));
+				}),
+			F2(
+				function (c, v) {
+					return c(
+						_List_fromArray(
+							[
+								A2($MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper, m1, v)
+							]));
+				}),
 			A2(
-				$MartinSStewart$elm_serialize$Serialize$variant0,
-				$author$project$Board$NegativeY,
+				$elm$bytes$Bytes$Decode$map,
+				$MartinSStewart$elm_serialize$Serialize$result1(ctor),
+				$MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper(m1)),
+			A2(
+				$elm$json$Json$Decode$map,
+				$MartinSStewart$elm_serialize$Serialize$result1(ctor),
 				A2(
-					$MartinSStewart$elm_serialize$Serialize$variant0,
-					$author$project$Board$PositiveY,
-					A2(
-						$MartinSStewart$elm_serialize$Serialize$variant0,
-						$author$project$Board$NegativeX,
-						A2(
-							$MartinSStewart$elm_serialize$Serialize$variant0,
-							$author$project$Board$PositiveX,
-							$MartinSStewart$elm_serialize$Serialize$customType(
-								F7(
-									function (positiveXEncoder, negativeXEncoder, positiveYEncoder, negativeYEncoder, positiveZEncoder, negativeZEncoder, value) {
-										switch (value.$) {
-											case 'PositiveX':
-												return positiveXEncoder;
-											case 'NegativeX':
-												return negativeXEncoder;
-											case 'PositiveY':
-												return positiveYEncoder;
-											case 'NegativeY':
-												return negativeYEncoder;
-											case 'PositiveZ':
-												return positiveZEncoder;
-											default:
-												return negativeZEncoder;
-										}
-									})))))))));
+					$elm$json$Json$Decode$index,
+					1,
+					$MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper(m1))));
+	});
+var $author$project$Units$Serialize$durationCodec = $MartinSStewart$elm_serialize$Serialize$finishCustomType(
+	A3(
+		$MartinSStewart$elm_serialize$Serialize$variant1,
+		$ianmackenzie$elm_units$Duration$seconds,
+		$MartinSStewart$elm_serialize$Serialize$float,
+		$MartinSStewart$elm_serialize$Serialize$customType(
+			F2(
+				function (encoder, value) {
+					return encoder(
+						$ianmackenzie$elm_units$Duration$inSeconds(value));
+				}))));
 var $MartinSStewart$elm_serialize$Serialize$RecordCodec = function (a) {
 	return {$: 'RecordCodec', a: a};
-};
-var $MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper = function (_v0) {
-	var m = _v0.a;
-	return m.decoder;
-};
-var $MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper = function (_v0) {
-	var m = _v0.a;
-	return m.encoder;
-};
-var $MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper = function (_v0) {
-	var m = _v0.a;
-	return m.jsonDecoder;
-};
-var $MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper = function (_v0) {
-	var m = _v0.a;
-	return m.jsonEncoder;
 };
 var $elm$bytes$Bytes$Decode$map2 = F3(
 	function (func, _v0, _v1) {
@@ -11738,6 +11768,74 @@ var $MartinSStewart$elm_serialize$Serialize$record = function (ctor) {
 			}
 		});
 };
+var $author$project$Board$enemySpawnerDetailsCodec = $MartinSStewart$elm_serialize$Serialize$finishRecord(
+	A3(
+		$MartinSStewart$elm_serialize$Serialize$field,
+		function ($) {
+			return $.timeBetweenSpawns;
+		},
+		$author$project$Units$Serialize$durationCodec,
+		$MartinSStewart$elm_serialize$Serialize$record(
+			function (timeBetweenSpawns) {
+				return {timeBetweenSpawns: timeBetweenSpawns, timeTillSpawn: timeBetweenSpawns};
+			})));
+var $author$project$Board$NegativeX = {$: 'NegativeX'};
+var $author$project$Board$NegativeY = {$: 'NegativeY'};
+var $author$project$Board$NegativeZ = {$: 'NegativeZ'};
+var $author$project$Board$PositiveX = {$: 'PositiveX'};
+var $author$project$Board$PositiveY = {$: 'PositiveY'};
+var $author$project$Board$PositiveZ = {$: 'PositiveZ'};
+var $MartinSStewart$elm_serialize$Serialize$variant0 = function (ctor) {
+	return A4(
+		$MartinSStewart$elm_serialize$Serialize$variant,
+		function (c) {
+			return c(_List_Nil);
+		},
+		function (c) {
+			return c(_List_Nil);
+		},
+		$elm$bytes$Bytes$Decode$succeed(
+			$elm$core$Result$Ok(ctor)),
+		$elm$json$Json$Decode$succeed(
+			$elm$core$Result$Ok(ctor)));
+};
+var $author$project$Board$axisCodec = $MartinSStewart$elm_serialize$Serialize$finishCustomType(
+	A2(
+		$MartinSStewart$elm_serialize$Serialize$variant0,
+		$author$project$Board$NegativeZ,
+		A2(
+			$MartinSStewart$elm_serialize$Serialize$variant0,
+			$author$project$Board$PositiveZ,
+			A2(
+				$MartinSStewart$elm_serialize$Serialize$variant0,
+				$author$project$Board$NegativeY,
+				A2(
+					$MartinSStewart$elm_serialize$Serialize$variant0,
+					$author$project$Board$PositiveY,
+					A2(
+						$MartinSStewart$elm_serialize$Serialize$variant0,
+						$author$project$Board$NegativeX,
+						A2(
+							$MartinSStewart$elm_serialize$Serialize$variant0,
+							$author$project$Board$PositiveX,
+							$MartinSStewart$elm_serialize$Serialize$customType(
+								F7(
+									function (positiveXEncoder, negativeXEncoder, positiveYEncoder, negativeYEncoder, positiveZEncoder, negativeZEncoder, value) {
+										switch (value.$) {
+											case 'PositiveX':
+												return positiveXEncoder;
+											case 'NegativeX':
+												return negativeXEncoder;
+											case 'PositiveY':
+												return positiveYEncoder;
+											case 'NegativeY':
+												return negativeYEncoder;
+											case 'PositiveZ':
+												return positiveZEncoder;
+											default:
+												return negativeZEncoder;
+										}
+									})))))))));
 var $author$project$Board$playerSpawnDetailsCodec = $MartinSStewart$elm_serialize$Serialize$finishRecord(
 	A3(
 		$MartinSStewart$elm_serialize$Serialize$field,
@@ -11756,53 +11854,11 @@ var $author$project$Board$playerSpawnDetailsCodec = $MartinSStewart$elm_serializ
 					function (forward, left) {
 						return {forward: forward, left: left};
 					})))));
-var $MartinSStewart$elm_serialize$Serialize$result1 = F2(
-	function (ctor, value) {
-		if (value.$ === 'Ok') {
-			var ok = value.a;
-			return $elm$core$Result$Ok(
-				ctor(ok));
-		} else {
-			var err = value.a;
-			return $elm$core$Result$Err(err);
-		}
-	});
-var $MartinSStewart$elm_serialize$Serialize$variant1 = F2(
-	function (ctor, m1) {
-		return A4(
-			$MartinSStewart$elm_serialize$Serialize$variant,
-			F2(
-				function (c, v) {
-					return c(
-						_List_fromArray(
-							[
-								A2($MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper, m1, v)
-							]));
-				}),
-			F2(
-				function (c, v) {
-					return c(
-						_List_fromArray(
-							[
-								A2($MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper, m1, v)
-							]));
-				}),
-			A2(
-				$elm$bytes$Bytes$Decode$map,
-				$MartinSStewart$elm_serialize$Serialize$result1(ctor),
-				$MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper(m1)),
-			A2(
-				$elm$json$Json$Decode$map,
-				$MartinSStewart$elm_serialize$Serialize$result1(ctor),
-				A2(
-					$elm$json$Json$Decode$index,
-					1,
-					$MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper(m1))));
-	});
 var $author$project$Board$blockCodec = $MartinSStewart$elm_serialize$Serialize$finishCustomType(
-	A2(
-		$MartinSStewart$elm_serialize$Serialize$variant0,
+	A3(
+		$MartinSStewart$elm_serialize$Serialize$variant1,
 		$author$project$Board$EnemySpawner,
+		$author$project$Board$enemySpawnerDetailsCodec,
 		A3(
 			$MartinSStewart$elm_serialize$Serialize$variant1,
 			$author$project$Board$PlayerSpawn,
@@ -11837,7 +11893,8 @@ var $author$project$Board$blockCodec = $MartinSStewart$elm_serialize$Serialize$f
 												var details = value.a;
 												return playerSpawnEncoder(details);
 											default:
-												return enemySpawnerEncoder;
+												var details = value.a;
+												return enemySpawnerEncoder(details);
 										}
 									})))))))));
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
@@ -12154,16 +12211,6 @@ var $MartinSStewart$elm_serialize$Serialize$dict = F2(
 			$MartinSStewart$elm_serialize$Serialize$list(
 				A2($MartinSStewart$elm_serialize$Serialize$tuple, keyCodec, valueCodec)));
 	});
-var $elm$bytes$Bytes$Decode$float64 = function (endianness) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		_Bytes_read_f64(
-			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
-};
-var $elm$bytes$Bytes$Encode$F64 = F2(
-	function (a, b) {
-		return {$: 'F64', a: a, b: b};
-	});
-var $elm$bytes$Bytes$Encode$float64 = $elm$bytes$Bytes$Encode$F64;
 var $elm$core$Basics$round = _Basics_round;
 var $MartinSStewart$elm_serialize$Serialize$int = A4(
 	$MartinSStewart$elm_serialize$Serialize$build,
@@ -12235,9 +12282,6 @@ var $author$project$Board$boardCodec = $MartinSStewart$elm_serialize$Serialize$f
 					$MartinSStewart$elm_serialize$Serialize$int,
 					$MartinSStewart$elm_serialize$Serialize$record($author$project$Board$Board))))));
 var $elm$core$Basics$pi = _Basics_pi;
-var $ianmackenzie$elm_units$Quantity$Quantity = function (a) {
-	return {$: 'Quantity', a: a};
-};
 var $ianmackenzie$elm_units$Angle$radians = function (numRadians) {
 	return $ianmackenzie$elm_units$Quantity$Quantity(numRadians);
 };
@@ -12455,14 +12499,14 @@ var $author$project$Screen$Editor$init = function () {
 		$elm$core$Platform$Cmd$none);
 }();
 var $author$project$Screen$FreePlay$FreePlayBoardSelection = {$: 'FreePlayBoardSelection'};
+var $author$project$Screen$FreePlay$init = _Utils_Tuple2(
+	{boardLoadError: $elm$core$Maybe$Nothing, boardPlayError: $elm$core$Maybe$Nothing, freePlayMode: $author$project$Screen$FreePlay$FreePlayBoardSelection, level: $author$project$Board$emptyLevel, showFreePlayMenu: false},
+	$elm$core$Platform$Cmd$none);
 var $author$project$Board$MoveForward = function (a) {
 	return {$: 'MoveForward', a: a};
 };
 var $author$project$Board$TraverseEdge = function (a) {
 	return {$: 'TraverseEdge', a: a};
-};
-var $ianmackenzie$elm_units$Duration$seconds = function (numSeconds) {
-	return $ianmackenzie$elm_units$Quantity$Quantity(numSeconds);
 };
 var $author$project$Board$durationForEdgeMovement = $ianmackenzie$elm_units$Duration$seconds(0.75);
 var $author$project$Board$durationForForwardMovement = $ianmackenzie$elm_units$Duration$seconds(0.25);
@@ -12617,10 +12661,9 @@ var $author$project$Board$findNextTarget = F4(
 					var _v1 = _v0.a;
 					return $author$project$Board$NoTarget;
 				case 'EnemySpawner':
-					var _v2 = _v0.a;
 					return $author$project$Board$NoTarget;
 				case 'Empty':
-					var _v3 = _v0.a;
+					var _v2 = _v0.a;
 					return $author$project$Board$MoveForward(
 						{duration: $author$project$Board$durationForForwardMovement, from: fromPoint, to: toPoint});
 				case 'PlayerSpawn':
@@ -12630,7 +12673,7 @@ var $author$project$Board$findNextTarget = F4(
 					return $author$project$Board$MoveForward(
 						{duration: $author$project$Board$durationForForwardMovement, from: fromPoint, to: toPoint});
 				default:
-					var _v4 = _v0.a;
+					var _v3 = _v0.a;
 					return $author$project$Board$TraverseEdge(
 						{
 							duration: $author$project$Board$durationForEdgeMovement,
@@ -12655,21 +12698,6 @@ var $author$project$Board$initTarget = F3(
 				$ianmackenzie$elm_geometry$Frame3d$originPoint(playerFrame)),
 			playerFrame);
 	});
-var $author$project$Screen$FreePlay$init = _Utils_Tuple2(
-	{
-		board: $author$project$Board$empty,
-		boardLoadError: $elm$core$Maybe$Nothing,
-		boardPlayError: $elm$core$Maybe$Nothing,
-		freePlayMode: $author$project$Screen$FreePlay$FreePlayBoardSelection,
-		level: $author$project$Board$emptyLevel,
-		playerFacing: $author$project$Board$Forward,
-		playerFrame: $ianmackenzie$elm_geometry$Frame3d$atOrigin,
-		playerTarget: A3($author$project$Board$initTarget, $author$project$Board$empty, $author$project$Board$Forward, $ianmackenzie$elm_geometry$Frame3d$atOrigin),
-		playerWantFacing: $author$project$Board$Forward,
-		score: 0,
-		showFreePlayMenu: false
-	},
-	$elm$core$Platform$Cmd$none);
 var $author$project$Screen$Game$init = _Utils_Tuple2(
 	{
 		board: $author$project$Board$empty,
@@ -15440,14 +15468,13 @@ var $author$project$Screen$Editor$subscriptions = function (model) {
 var $author$project$Screen$FreePlay$Tick = function (a) {
 	return {$: 'Tick', a: a};
 };
-var $author$project$Screen$FreePlay$KeyPressed = function (a) {
-	return {$: 'KeyPressed', a: a};
+var $author$project$Screen$FreePlay$KeyDown = function (a) {
+	return {$: 'KeyDown', a: a};
 };
-var $author$project$Screen$FreePlay$decodeKeyPressed = A2(
+var $author$project$Screen$FreePlay$decodeKeyDown = A2(
 	$elm$json$Json$Decode$map,
-	$author$project$Screen$FreePlay$KeyPressed,
+	$author$project$Screen$FreePlay$KeyDown,
 	A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
-var $elm$browser$Browser$Events$onKeyPress = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keypress');
 var $author$project$Screen$FreePlay$subscriptions = function (model) {
 	var _v0 = model.freePlayMode;
 	if (_v0.$ === 'FreePlayBoardSelection') {
@@ -15458,7 +15485,7 @@ var $author$project$Screen$FreePlay$subscriptions = function (model) {
 				[
 					$elm$browser$Browser$Events$onAnimationFrameDelta(
 					A2($elm$core$Basics$composeR, $ianmackenzie$elm_units$Duration$milliseconds, $author$project$Screen$FreePlay$Tick)),
-					$elm$browser$Browser$Events$onKeyPress($author$project$Screen$FreePlay$decodeKeyPressed)
+					$elm$browser$Browser$Events$onKeyDown($author$project$Screen$FreePlay$decodeKeyDown)
 				]));
 	}
 };
@@ -15655,6 +15682,10 @@ var $author$project$Shared$SetBlockPalette = function (a) {
 	return {$: 'SetBlockPalette', a: a};
 };
 var $author$project$Screen$Editor$Zoom = {$: 'Zoom'};
+var $author$project$Board$defaultEnemySpawnerDetails = {
+	timeBetweenSpawns: $ianmackenzie$elm_units$Duration$seconds(3),
+	timeTillSpawn: $ianmackenzie$elm_units$Duration$seconds(3)
+};
 var $author$project$Input$isInputKey = F2(
 	function (_v0, key) {
 		var primary = _v0.a;
@@ -15784,7 +15815,9 @@ var $author$project$Screen$Editor$handleEditorKeyPressed = F5(
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Input$isInputKey, sharedModel.inputMapping.blockTypeEnemySpawner, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{selectedBlockType: $author$project$Board$EnemySpawner}),
+				{
+					selectedBlockType: $author$project$Board$EnemySpawner($author$project$Board$defaultEnemySpawnerDetails)
+				}),
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Input$isInputKey, sharedModel.inputMapping.blockTypePlayerSpawn, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
@@ -16887,6 +16920,48 @@ var $elm$core$Set$remove = F2(
 		return $elm$core$Set$Set_elm_builtin(
 			A2($elm$core$Dict$remove, key, dict));
 	});
+var $author$project$Board$tickEnemySpawners = F2(
+	function (deltaDuration, level) {
+		var board = level.board;
+		return _Utils_update(
+			level,
+			{
+				board: _Utils_update(
+					board,
+					{
+						blocks: A3(
+							$elm$core$Dict$foldl,
+							F3(
+								function (point, block, blocks) {
+									if (block.$ === 'EnemySpawner') {
+										var details = block.a;
+										var timeTillSpawn = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, details.timeTillSpawn);
+										return A3(
+											$elm$core$Dict$insert,
+											point,
+											$author$project$Board$EnemySpawner(
+												_Utils_update(
+													details,
+													{
+														timeTillSpawn: A2(
+															$ianmackenzie$elm_units$Quantity$lessThan,
+															$ianmackenzie$elm_units$Quantity$Quantity(0),
+															timeTillSpawn) ? A2($ianmackenzie$elm_units$Quantity$plus, details.timeBetweenSpawns, timeTillSpawn) : timeTillSpawn
+													})),
+											blocks);
+									} else {
+										return A3($elm$core$Dict$insert, point, block, blocks);
+									}
+								}),
+							$elm$core$Dict$empty,
+							board.blocks)
+					})
+			});
+	});
+var $author$project$Board$tickEnemies = F2(
+	function (deltaDuration, level) {
+		return A2($author$project$Board$tickEnemySpawners, deltaDuration, level);
+	});
 var $ianmackenzie$elm_units$Quantity$compare = F2(
 	function (_v0, _v1) {
 		var x = _v0.a;
@@ -17415,7 +17490,7 @@ var $author$project$Board$tickPlayer = F2(
 			deltaDuration,
 			$author$project$Board$setPlayerFacing(model));
 	});
-var $author$project$Screen$Editor$tickPlayer = F2(
+var $author$project$Screen$Editor$tick = F2(
 	function (deltaMs, model) {
 		var _v0 = model.editorMode;
 		if (_v0.$ === 'EditBoard') {
@@ -17424,7 +17499,10 @@ var $author$project$Screen$Editor$tickPlayer = F2(
 			return _Utils_update(
 				model,
 				{
-					level: A2($author$project$Board$tickPlayer, deltaMs, model.level)
+					level: A2(
+						$author$project$Board$tickEnemies,
+						deltaMs,
+						A2($author$project$Board$tickPlayer, deltaMs, model.level))
 				});
 		}
 	});
@@ -17446,7 +17524,7 @@ var $author$project$Screen$Editor$update = F5(
 			case 'Tick':
 				var deltaMs = msg.a;
 				return _Utils_Tuple2(
-					A2($author$project$Screen$Editor$tickPlayer, deltaMs, model),
+					A2($author$project$Screen$Editor$tick, deltaMs, model),
 					$elm$core$Platform$Cmd$none);
 			case 'EncodingChanged':
 				var boardEncoding = msg.a;
@@ -18011,25 +18089,42 @@ var $author$project$Screen$Editor$update = F5(
 var $author$project$Screen$FreePlay$FreePlayBoardLoaded = {$: 'FreePlayBoardLoaded'};
 var $author$project$Screen$FreePlay$handleGameKeyPressed = F3(
 	function (sharedModel, key, model) {
+		var level = model.level;
 		return A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveUp, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{playerWantFacing: $author$project$Board$Forward}),
+				{
+					level: _Utils_update(
+						level,
+						{playerWantFacing: $author$project$Board$Forward})
+				}),
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveDown, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{playerWantFacing: $author$project$Board$Backward}),
+				{
+					level: _Utils_update(
+						level,
+						{playerWantFacing: $author$project$Board$Backward})
+				}),
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveLeft, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{playerWantFacing: $author$project$Board$Left}),
+				{
+					level: _Utils_update(
+						level,
+						{playerWantFacing: $author$project$Board$Left})
+				}),
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveRight, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{playerWantFacing: $author$project$Board$Right}),
+				{
+					level: _Utils_update(
+						level,
+						{playerWantFacing: $author$project$Board$Right})
+				}),
 			$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none))));
 	});
-var $author$project$Screen$FreePlay$tickPlayer = F2(
+var $author$project$Screen$FreePlay$tick = F2(
 	function (deltaMs, model) {
 		var _v0 = model.freePlayMode;
 		if (_v0.$ === 'FreePlayBoardSelection') {
@@ -18038,7 +18133,10 @@ var $author$project$Screen$FreePlay$tickPlayer = F2(
 			return _Utils_update(
 				model,
 				{
-					level: A2($author$project$Board$tickPlayer, deltaMs, model.level)
+					level: A2(
+						$author$project$Board$tickEnemies,
+						deltaMs,
+						A2($author$project$Board$tickPlayer, deltaMs, model.level))
 				});
 		}
 	});
@@ -18048,7 +18146,7 @@ var $author$project$Screen$FreePlay$update = F3(
 			case 'Tick':
 				var deltaMs = msg.a;
 				return _Utils_Tuple2(
-					A2($author$project$Screen$FreePlay$tickPlayer, deltaMs, model),
+					A2($author$project$Screen$FreePlay$tick, deltaMs, model),
 					$elm$core$Platform$Cmd$none);
 			case 'ExitFreePlayBoard':
 				return _Utils_Tuple2(
@@ -18079,7 +18177,7 @@ var $author$project$Screen$FreePlay$update = F3(
 							A2($elm$json$Json$Decode$decodeString, $elm$json$Json$Decode$value, encoding))));
 				if (loadedBoard.$ === 'Ok') {
 					var board = loadedBoard.a;
-					var _v2 = $author$project$Board$findSpawn(board);
+					var _v2 = $author$project$Board$init(board);
 					if (_v2.$ === 'Nothing') {
 						return _Utils_Tuple2(
 							_Utils_update(
@@ -18089,20 +18187,11 @@ var $author$project$Screen$FreePlay$update = F3(
 								}),
 							$elm$core$Platform$Cmd$none);
 					} else {
-						var spawnFrame = _v2.a;
+						var level = _v2.a;
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
-								{
-									board: $author$project$Board$optimize(board),
-									boardPlayError: $elm$core$Maybe$Nothing,
-									freePlayMode: $author$project$Screen$FreePlay$FreePlayBoardLoaded,
-									playerFacing: $author$project$Board$Forward,
-									playerFrame: spawnFrame,
-									playerTarget: A3($author$project$Board$initTarget, board, $author$project$Board$Forward, spawnFrame),
-									playerWantFacing: $author$project$Board$Forward,
-									score: 0
-								}),
+								{boardPlayError: $elm$core$Maybe$Nothing, freePlayMode: $author$project$Screen$FreePlay$FreePlayBoardLoaded, level: level}),
 							$elm$core$Platform$Cmd$none);
 					}
 				} else {
@@ -18412,7 +18501,7 @@ var $author$project$Board$axisToLabel = function (axis) {
 			return 'Negative Z';
 	}
 };
-var $author$project$Board$basicMiniBoard = '[1,[5,5,5,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[2]],[[0,0,3],[1]],[[0,0,4],[1]],[[0,1,0],[1]],[[0,1,1],[1]],[[0,1,2],[3,false]],[[0,1,3],[1]],[[0,1,4],[1]],[[0,2,0],[2]],[[0,2,1],[3,false]],[[0,2,2],[3,false]],[[0,2,3],[3,false]],[[0,2,4],[2]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[3,false]],[[0,3,3],[1]],[[0,3,4],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[2]],[[0,4,3],[1]],[[0,4,4],[1]],[[1,0,0],[1]],[[1,0,1],[1]],[[1,0,2],[3,false]],[[1,0,3],[1]],[[1,0,4],[1]],[[1,1,0],[1]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,2,0],[3,false]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[3,false]],[[1,3,0],[1]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,4,0],[1]],[[1,4,1],[1]],[[1,4,2],[3,false]],[[1,4,3],[1]],[[1,4,4],[1]],[[2,0,0],[2]],[[2,0,1],[3,false]],[[2,0,2],[3,false]],[[2,0,3],[3,false]],[[2,0,4],[2]],[[2,1,0],[3,false]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[3,false]],[[2,2,0],[3,false]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[4,[[0],[2]]]],[[2,3,0],[3,false]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[3,false]],[[2,4,0],[2]],[[2,4,1],[3,false]],[[2,4,2],[3,false]],[[2,4,3],[3,false]],[[2,4,4],[2]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[3,false]],[[3,0,3],[1]],[[3,0,4],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,2,0],[3,false]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[3,false]],[[3,3,0],[1]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,4,0],[1]],[[3,4,1],[1]],[[3,4,2],[3,false]],[[3,4,3],[1]],[[3,4,4],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[2]],[[4,0,3],[1]],[[4,0,4],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[3,false]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,2,0],[2]],[[4,2,1],[3,false]],[[4,2,2],[3,false]],[[4,2,3],[3,false]],[[4,2,4],[2]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[3,false]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,4,0],[1]],[[4,4,1],[1]],[[4,4,2],[2]],[[4,4,3],[1]],[[4,4,4],[1]]]]]';
+var $author$project$Board$basicMiniBoard = '[1,[5,5,5,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[2]],[[0,0,3],[1]],[[0,0,4],[1]],[[0,1,0],[1]],[[0,1,1],[1]],[[0,1,2],[3,false]],[[0,1,3],[1]],[[0,1,4],[1]],[[0,2,0],[2]],[[0,2,1],[3,false]],[[0,2,2],[3,false]],[[0,2,3],[3,false]],[[0,2,4],[2]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[3,false]],[[0,3,3],[1]],[[0,3,4],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[2]],[[0,4,3],[1]],[[0,4,4],[1]],[[1,0,0],[1]],[[1,0,1],[1]],[[1,0,2],[3,false]],[[1,0,3],[1]],[[1,0,4],[1]],[[1,1,0],[1]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,2,0],[3,false]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[3,false]],[[1,3,0],[1]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,4,0],[1]],[[1,4,1],[1]],[[1,4,2],[3,false]],[[1,4,3],[1]],[[1,4,4],[1]],[[2,0,0],[2]],[[2,0,1],[3,false]],[[2,0,2],[3,false]],[[2,0,3],[3,false]],[[2,0,4],[2]],[[2,1,0],[3,false]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[3,false]],[[2,2,0],[5,[[0,3]]]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[4,[[0],[2]]]],[[2,3,0],[3,false]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[3,false]],[[2,4,0],[2]],[[2,4,1],[3,false]],[[2,4,2],[3,false]],[[2,4,3],[3,false]],[[2,4,4],[2]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[3,false]],[[3,0,3],[1]],[[3,0,4],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,2,0],[3,false]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[3,false]],[[3,3,0],[1]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,4,0],[1]],[[3,4,1],[1]],[[3,4,2],[3,false]],[[3,4,3],[1]],[[3,4,4],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[2]],[[4,0,3],[1]],[[4,0,4],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[3,false]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,2,0],[2]],[[4,2,1],[3,false]],[[4,2,2],[3,false]],[[4,2,3],[3,false]],[[4,2,4],[2]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[3,false]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,4,0],[1]],[[4,4,1],[1]],[[4,4,2],[2]],[[4,4,3],[1]],[[4,4,4],[1]]]]]';
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $ianmackenzie$elm_3d_scene$Scene3d$Light$CastsShadows = function (a) {
@@ -18458,7 +18547,6 @@ var $author$project$Screen$Editor$MouseMove = F3(
 	function (a, b, c) {
 		return {$: 'MouseMove', a: a, b: b, c: c};
 	});
-var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $elm$json$Json$Decode$map4 = _Json_map4;
 var $author$project$Screen$Editor$decodePointerMove = F2(
 	function (toMsg, pointer) {
@@ -22786,7 +22874,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$blockWithShadow = F2(
 	function (givenMaterial, givenBlock) {
 		return A4($ianmackenzie$elm_3d_scene$Scene3d$Entity$block, true, true, givenMaterial, givenBlock);
 	});
-var $avh4$elm_color$Color$blue = A4($avh4$elm_color$Color$RgbaSpace, 52 / 255, 101 / 255, 164 / 255, 1.0);
 var $ianmackenzie$elm_geometry$Geometry$Types$Block3d = function (a) {
 	return {$: 'Block3d', a: a};
 };
@@ -22884,13 +22971,21 @@ var $ianmackenzie$elm_3d_scene$Scene3d$Material$color = function (givenColor) {
 		$ianmackenzie$elm_3d_scene$Scene3d$Types$Constant(
 			$ianmackenzie$elm_3d_scene$Scene3d$Material$toVec3(givenColor)));
 };
-var $ianmackenzie$elm_geometry$Cone3d$axis = function (_v0) {
-	var cone = _v0.a;
-	return cone.axis;
+var $ianmackenzie$elm_geometry$Cylinder3d$axis = function (_v0) {
+	var cylinder = _v0.a;
+	return cylinder.axis;
 };
 var $ianmackenzie$elm_units$Angle$cos = function (_v0) {
 	var angle = _v0.a;
 	return $elm$core$Basics$cos(angle);
+};
+var $ianmackenzie$elm_geometry$Direction2d$fromAngle = function (_v0) {
+	var angle = _v0.a;
+	return $ianmackenzie$elm_geometry$Geometry$Types$Direction2d(
+		{
+			x: $elm$core$Basics$cos(angle),
+			y: $elm$core$Basics$sin(angle)
+		});
 };
 var $ianmackenzie$elm_3d_scene$Scene3d$Mesh$collectSmooth = F2(
 	function (_v0, accumulated) {
@@ -22924,162 +23019,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$Mesh$indexedFaces = function (givenMesh) 
 	}
 };
 var $elm$core$Basics$modBy = _Basics_modBy;
-var $ianmackenzie$elm_units$Angle$sin = function (_v0) {
-	var angle = _v0.a;
-	return $elm$core$Basics$sin(angle);
-};
-var $ianmackenzie$elm_units$Angle$turns = function (numTurns) {
-	return $ianmackenzie$elm_units$Angle$radians((2 * $elm$core$Basics$pi) * numTurns);
-};
-var $ianmackenzie$elm_geometry$Direction3d$xyZ = F2(
-	function (_v0, _v1) {
-		var theta = _v0.a;
-		var phi = _v1.a;
-		var cosPhi = $elm$core$Basics$cos(phi);
-		return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-			{
-				x: cosPhi * $elm$core$Basics$cos(theta),
-				y: cosPhi * $elm$core$Basics$sin(theta),
-				z: $elm$core$Basics$sin(phi)
-			});
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$Primitives$cone = function () {
-	var topZ = $ianmackenzie$elm_units$Length$meters(1);
-	var tipPoint = A3($ianmackenzie$elm_geometry$Point3d$xyz, $ianmackenzie$elm_units$Quantity$zero, $ianmackenzie$elm_units$Quantity$zero, topZ);
-	var subdivisions = 72;
-	var wedgeAngle = A2(
-		$ianmackenzie$elm_units$Quantity$divideBy,
-		subdivisions,
-		$ianmackenzie$elm_units$Angle$turns(1));
-	var radius = $ianmackenzie$elm_units$Length$meters(1);
-	var negativeZVector = $ianmackenzie$elm_geometry$Direction3d$toVector($ianmackenzie$elm_geometry$Direction3d$negativeZ);
-	var elevationAngle = $ianmackenzie$elm_units$Angle$degrees(45);
-	var bottomZ = $ianmackenzie$elm_units$Quantity$zero;
-	var basePoint = A3($ianmackenzie$elm_geometry$Point3d$xyz, $ianmackenzie$elm_units$Quantity$zero, $ianmackenzie$elm_units$Quantity$zero, bottomZ);
-	var wedge = function (startIndex) {
-		var tipNormal = $ianmackenzie$elm_geometry$Vector3d$zero;
-		var startAngle = A2($ianmackenzie$elm_units$Quantity$multiplyBy, startIndex, wedgeAngle);
-		var startNormal = $ianmackenzie$elm_geometry$Direction3d$toVector(
-			A2($ianmackenzie$elm_geometry$Direction3d$xyZ, startAngle, elevationAngle));
-		var startX = A2(
-			$ianmackenzie$elm_units$Quantity$multiplyBy,
-			$ianmackenzie$elm_units$Angle$cos(startAngle),
-			radius);
-		var startY = A2(
-			$ianmackenzie$elm_units$Quantity$multiplyBy,
-			$ianmackenzie$elm_units$Angle$sin(startAngle),
-			radius);
-		var p0 = A3($ianmackenzie$elm_geometry$Point3d$xyz, startX, startY, bottomZ);
-		var endIndex = A2($elm$core$Basics$modBy, subdivisions, startIndex + 1);
-		var endAngle = A2($ianmackenzie$elm_units$Quantity$multiplyBy, endIndex, wedgeAngle);
-		var endNormal = $ianmackenzie$elm_geometry$Direction3d$toVector(
-			A2($ianmackenzie$elm_geometry$Direction3d$xyZ, endAngle, elevationAngle));
-		var endX = A2(
-			$ianmackenzie$elm_units$Quantity$multiplyBy,
-			$ianmackenzie$elm_units$Angle$cos(endAngle),
-			radius);
-		var endY = A2(
-			$ianmackenzie$elm_units$Quantity$multiplyBy,
-			$ianmackenzie$elm_units$Angle$sin(endAngle),
-			radius);
-		var p1 = A3($ianmackenzie$elm_geometry$Point3d$xyz, endX, endY, bottomZ);
-		return _List_fromArray(
-			[
-				_Utils_Tuple3(
-				{normal: negativeZVector, position: basePoint},
-				{normal: negativeZVector, position: p1},
-				{normal: negativeZVector, position: p0}),
-				_Utils_Tuple3(
-				{normal: startNormal, position: p0},
-				{normal: endNormal, position: p1},
-				{normal: tipNormal, position: tipPoint})
-			]);
-	};
-	var wedges = A2(
-		$elm$core$List$map,
-		wedge,
-		A2($elm$core$List$range, 0, subdivisions - 1));
-	var triangularMesh = $ianmackenzie$elm_triangular_mesh$TriangularMesh$triangles(
-		$elm$core$List$concat(wedges));
-	return $ianmackenzie$elm_3d_scene$Scene3d$Mesh$cullBackFaces(
-		$ianmackenzie$elm_3d_scene$Scene3d$Mesh$indexedFaces(triangularMesh));
-}();
-var $ianmackenzie$elm_3d_scene$Scene3d$Primitives$coneShadow = $ianmackenzie$elm_3d_scene$Scene3d$Mesh$shadow($ianmackenzie$elm_3d_scene$Scene3d$Primitives$cone);
-var $ianmackenzie$elm_geometry$Frame3d$fromZAxis = function (givenZAxis) {
-	var givenZDirection = $ianmackenzie$elm_geometry$Axis3d$direction(givenZAxis);
-	var _v0 = $ianmackenzie$elm_geometry$Direction3d$perpendicularBasis(givenZDirection);
-	var computedXDirection = _v0.a;
-	var computedYDirection = _v0.b;
-	return $ianmackenzie$elm_geometry$Frame3d$unsafe(
-		{
-			originPoint: $ianmackenzie$elm_geometry$Axis3d$originPoint(givenZAxis),
-			xDirection: computedXDirection,
-			yDirection: computedYDirection,
-			zDirection: givenZDirection
-		});
-};
-var $ianmackenzie$elm_geometry$Cone3d$length = function (_v0) {
-	var cone = _v0.a;
-	return cone.length;
-};
-var $ianmackenzie$elm_geometry$Cone3d$radius = function (_v0) {
-	var cone = _v0.a;
-	return cone.radius;
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Entity$cone = F4(
-	function (renderObject, renderShadow, givenMaterial, givenCone) {
-		var baseFrame = $ianmackenzie$elm_geometry$Frame3d$fromZAxis(
-			$ianmackenzie$elm_geometry$Cone3d$axis(givenCone));
-		var baseEntity = A2($ianmackenzie$elm_3d_scene$Scene3d$Entity$mesh, givenMaterial, $ianmackenzie$elm_3d_scene$Scene3d$Primitives$cone);
-		var untransformedEntity = function () {
-			var _v2 = _Utils_Tuple2(renderObject, renderShadow);
-			if (_v2.a) {
-				if (_v2.b) {
-					return $ianmackenzie$elm_3d_scene$Scene3d$Entity$group(
-						_List_fromArray(
-							[
-								baseEntity,
-								$ianmackenzie$elm_3d_scene$Scene3d$Entity$shadow($ianmackenzie$elm_3d_scene$Scene3d$Primitives$coneShadow)
-							]));
-				} else {
-					return baseEntity;
-				}
-			} else {
-				if (_v2.b) {
-					return $ianmackenzie$elm_3d_scene$Scene3d$Entity$shadow($ianmackenzie$elm_3d_scene$Scene3d$Primitives$coneShadow);
-				} else {
-					return $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
-				}
-			}
-		}();
-		var _v0 = $ianmackenzie$elm_geometry$Cone3d$radius(givenCone);
-		var radius = _v0.a;
-		var _v1 = $ianmackenzie$elm_geometry$Cone3d$length(givenCone);
-		var length = _v1.a;
-		return A2(
-			$ianmackenzie$elm_3d_scene$Scene3d$Entity$placeIn,
-			baseFrame,
-			A2(
-				$ianmackenzie$elm_3d_scene$Scene3d$Entity$preScale,
-				_Utils_Tuple3(radius, radius, length),
-				untransformedEntity));
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow = F2(
-	function (givenMaterial, givenCone) {
-		return A4($ianmackenzie$elm_3d_scene$Scene3d$Entity$cone, true, true, givenMaterial, givenCone);
-	});
-var $ianmackenzie$elm_geometry$Cylinder3d$axis = function (_v0) {
-	var cylinder = _v0.a;
-	return cylinder.axis;
-};
-var $ianmackenzie$elm_geometry$Direction2d$fromAngle = function (_v0) {
-	var angle = _v0.a;
-	return $ianmackenzie$elm_geometry$Geometry$Types$Direction2d(
-		{
-			x: $elm$core$Basics$cos(angle),
-			y: $elm$core$Basics$sin(angle)
-		});
-};
 var $ianmackenzie$elm_geometry$Direction3d$on = F2(
 	function (_v0, _v1) {
 		var sketchPlane = _v0.a;
@@ -23091,6 +23030,13 @@ var $ianmackenzie$elm_geometry$Direction3d$on = F2(
 		return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
 			{x: (d.x * i.x) + (d.y * j.x), y: (d.x * i.y) + (d.y * j.y), z: (d.x * i.z) + (d.y * j.z)});
 	});
+var $ianmackenzie$elm_units$Angle$sin = function (_v0) {
+	var angle = _v0.a;
+	return $elm$core$Basics$sin(angle);
+};
+var $ianmackenzie$elm_units$Angle$turns = function (numTurns) {
+	return $ianmackenzie$elm_units$Angle$radians((2 * $elm$core$Basics$pi) * numTurns);
+};
 var $ianmackenzie$elm_3d_scene$Scene3d$Primitives$cylinder = function () {
 	var subdivisions = 72;
 	var wedgeAngle = A2(
@@ -23169,6 +23115,19 @@ var $ianmackenzie$elm_3d_scene$Scene3d$Primitives$cylinder = function () {
 		$ianmackenzie$elm_3d_scene$Scene3d$Mesh$indexedFaces(triangularMesh));
 }();
 var $ianmackenzie$elm_3d_scene$Scene3d$Primitives$cylinderShadow = $ianmackenzie$elm_3d_scene$Scene3d$Mesh$shadow($ianmackenzie$elm_3d_scene$Scene3d$Primitives$cylinder);
+var $ianmackenzie$elm_geometry$Frame3d$fromZAxis = function (givenZAxis) {
+	var givenZDirection = $ianmackenzie$elm_geometry$Axis3d$direction(givenZAxis);
+	var _v0 = $ianmackenzie$elm_geometry$Direction3d$perpendicularBasis(givenZDirection);
+	var computedXDirection = _v0.a;
+	var computedYDirection = _v0.b;
+	return $ianmackenzie$elm_geometry$Frame3d$unsafe(
+		{
+			originPoint: $ianmackenzie$elm_geometry$Axis3d$originPoint(givenZAxis),
+			xDirection: computedXDirection,
+			yDirection: computedYDirection,
+			zDirection: givenZDirection
+		});
+};
 var $ianmackenzie$elm_geometry$Cylinder3d$length = function (_v0) {
 	var cylinder = _v0.a;
 	return cylinder.length;
@@ -23239,6 +23198,26 @@ var $avh4$elm_color$Color$gray = A4($avh4$elm_color$Color$RgbaSpace, 211 / 255, 
 var $ianmackenzie$elm_3d_scene$Scene3d$group = function (entities) {
 	return $ianmackenzie$elm_3d_scene$Scene3d$Entity$group(entities);
 };
+var $elm_community$easing_functions$Ease$inElastic = function (time) {
+	if (time === 0.0) {
+		return 0.0;
+	} else {
+		var t = time - 1;
+		var s = 0.075;
+		var p = 0.3;
+		return -(A2($elm$core$Basics$pow, 2, 10 * t) * $elm$core$Basics$sin(((t - s) * (2 * $elm$core$Basics$pi)) / p));
+	}
+};
+var $elm_community$easing_functions$Ease$inOut = F3(
+	function (e1, e2, time) {
+		return (time < 0.5) ? (e1(time * 2) / 2) : (0.5 + (e2((time - 0.5) * 2) / 2));
+	});
+var $elm_community$easing_functions$Ease$flip = F2(
+	function (easing, time) {
+		return 1 - easing(1 - time);
+	});
+var $elm_community$easing_functions$Ease$outElastic = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inElastic);
+var $elm_community$easing_functions$Ease$inOutElastic = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inElastic, $elm_community$easing_functions$Ease$outElastic);
 var $ianmackenzie$elm_3d_scene$Scene3d$Types$LambertianMaterial = F3(
 	function (a, b, c) {
 		return {$: 'LambertianMaterial', a: a, b: b, c: c};
@@ -23252,32 +23231,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$Material$matte = function (materialColor)
 			$ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$colorToLinearRgb(materialColor)),
 		$ianmackenzie$elm_3d_scene$Scene3d$Types$Constant($ianmackenzie$elm_3d_scene$Scene3d$Types$VerticalNormal));
 };
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$PbrMaterial = F5(
-	function (a, b, c, d, e) {
-		return {$: 'PbrMaterial', a: a, b: b, c: c, d: d, e: e};
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$Material$pbr = function (_v0) {
-	var baseColor = _v0.baseColor;
-	var roughness = _v0.roughness;
-	var metallic = _v0.metallic;
-	return A5(
-		$ianmackenzie$elm_3d_scene$Scene3d$Types$PbrMaterial,
-		$ianmackenzie$elm_3d_scene$Scene3d$Types$UseMeshUvs,
-		$ianmackenzie$elm_3d_scene$Scene3d$Types$Constant(
-			$ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$colorToLinearRgb(baseColor)),
-		$ianmackenzie$elm_3d_scene$Scene3d$Types$Constant(
-			A3($elm$core$Basics$clamp, 0, 1, roughness)),
-		$ianmackenzie$elm_3d_scene$Scene3d$Types$Constant(
-			A3($elm$core$Basics$clamp, 0, 1, metallic)),
-		$ianmackenzie$elm_3d_scene$Scene3d$Types$Constant($ianmackenzie$elm_3d_scene$Scene3d$Types$VerticalNormal));
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Material$metal = function (_v0) {
-	var baseColor = _v0.baseColor;
-	var roughness = _v0.roughness;
-	return $ianmackenzie$elm_3d_scene$Scene3d$Material$pbr(
-		{baseColor: baseColor, metallic: 1, roughness: roughness});
-};
-var $avh4$elm_color$Color$orange = A4($avh4$elm_color$Color$RgbaSpace, 245 / 255, 121 / 255, 0 / 255, 1.0);
 var $ianmackenzie$elm_geometry$Axis3d$placeIn = F2(
 	function (frame, _v0) {
 		var axis = _v0.a;
@@ -23296,6 +23249,16 @@ var $ianmackenzie$elm_geometry$Cylinder3d$placeIn = F2(
 				radius: cylinder.radius
 			});
 	});
+var $ianmackenzie$elm_units$Quantity$ratio = F2(
+	function (_v0, _v1) {
+		var x = _v0.a;
+		var y = _v1.a;
+		return x / y;
+	});
+var $elm_community$easing_functions$Ease$reverse = F2(
+	function (easing, time) {
+		return easing(1 - time);
+	});
 var $ianmackenzie$elm_geometry$Sphere3d$centerPoint = function (_v0) {
 	var properties = _v0.a;
 	return properties.centerPoint;
@@ -23309,12 +23272,6 @@ var $ianmackenzie$elm_units$Quantity$interpolateFrom = F3(
 		var start = _v0.a;
 		var end = _v1.a;
 		return (parameter <= 0.5) ? $ianmackenzie$elm_units$Quantity$Quantity(start + (parameter * (end - start))) : $ianmackenzie$elm_units$Quantity$Quantity(end + ((1 - parameter) * (start - end)));
-	});
-var $ianmackenzie$elm_units$Quantity$ratio = F2(
-	function (_v0, _v1) {
-		var x = _v0.a;
-		var y = _v1.a;
-		return x / y;
 	});
 var $ianmackenzie$elm_1d_parameter$Parameter1d$range = F5(
 	function (startIndex, index, divisor, _function, accumulated) {
@@ -23342,6 +23299,18 @@ var $ianmackenzie$elm_1d_parameter$Parameter1d$range = F5(
 var $ianmackenzie$elm_1d_parameter$Parameter1d$steps = F2(
 	function (n, _function) {
 		return (n < 1) ? _List_Nil : A5($ianmackenzie$elm_1d_parameter$Parameter1d$range, 0, n, n, _function, _List_Nil);
+	});
+var $ianmackenzie$elm_geometry$Direction3d$xyZ = F2(
+	function (_v0, _v1) {
+		var theta = _v0.a;
+		var phi = _v1.a;
+		var cosPhi = $elm$core$Basics$cos(phi);
+		return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+			{
+				x: cosPhi * $elm$core$Basics$cos(theta),
+				y: cosPhi * $elm$core$Basics$sin(theta),
+				z: $elm$core$Basics$sin(phi)
+			});
 	});
 var $ianmackenzie$elm_3d_scene$Scene3d$Primitives$sphere = function () {
 	var radius = $ianmackenzie$elm_units$Length$meters(1);
@@ -23587,6 +23556,482 @@ var $ianmackenzie$elm_3d_scene$Scene3d$sphere = F2(
 	function (givenMaterial, givenSphere) {
 		return A4($ianmackenzie$elm_3d_scene$Scene3d$Entity$sphere, true, false, givenMaterial, givenSphere);
 	});
+var $avh4$elm_color$Color$yellow = A4($avh4$elm_color$Color$RgbaSpace, 237 / 255, 212 / 255, 0 / 255, 1.0);
+var $author$project$Board$viewBlock = function (_v0) {
+	var point = _v0.a;
+	var block = _v0.b;
+	var _v1 = point;
+	var x = _v1.a;
+	var y = _v1.b;
+	var z = _v1.c;
+	switch (block.$) {
+		case 'Wall':
+			return A2(
+				$ianmackenzie$elm_3d_scene$Scene3d$blockWithShadow,
+				$ianmackenzie$elm_3d_scene$Scene3d$Material$matte($avh4$elm_color$Color$gray),
+				A2(
+					$ianmackenzie$elm_geometry$Block3d$centeredOn,
+					$ianmackenzie$elm_geometry$Frame3d$atPoint(
+						A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z)),
+					_Utils_Tuple3(
+						$ianmackenzie$elm_units$Length$meters(1),
+						$ianmackenzie$elm_units$Length$meters(1),
+						$ianmackenzie$elm_units$Length$meters(1))));
+		case 'PointPickup':
+			var collected = block.a;
+			return collected ? $ianmackenzie$elm_3d_scene$Scene3d$nothing : A2(
+				$ianmackenzie$elm_3d_scene$Scene3d$sphere,
+				A2(
+					$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
+					$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$yellow),
+					$ianmackenzie$elm_units$Luminance$nits(30000)),
+				A2(
+					$ianmackenzie$elm_geometry$Sphere3d$atPoint,
+					A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z),
+					$ianmackenzie$elm_units$Length$meters(0.125)));
+		case 'PlayerSpawn':
+			return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
+		case 'Empty':
+			return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
+		case 'Edge':
+			return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
+		default:
+			var details = block.a;
+			var q = function (f) {
+				return f / 4;
+			}(
+				A2(
+					$elm$core$Basics$max,
+					0,
+					A2(
+						$elm_community$easing_functions$Ease$reverse,
+						$elm_community$easing_functions$Ease$inOutElastic,
+						A2($ianmackenzie$elm_units$Quantity$ratio, details.timeTillSpawn, $author$project$Board$defaultEnemySpawnerDetails.timeBetweenSpawns))));
+			var length = $ianmackenzie$elm_units$Length$meters(1);
+			var center = A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z);
+			return $ianmackenzie$elm_3d_scene$Scene3d$group(
+				_List_fromArray(
+					[
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$sphere,
+						A2(
+							$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
+							$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$red),
+							$ianmackenzie$elm_units$Luminance$nits(30000)),
+						A2(
+							$ianmackenzie$elm_geometry$Sphere3d$atPoint,
+							A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z),
+							$ianmackenzie$elm_units$Length$meters(q))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
+						A2(
+							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
+							A3(
+								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+								$ianmackenzie$elm_geometry$Frame3d$zAxis,
+								$ianmackenzie$elm_units$Length$meters(-0.4),
+								A3(
+									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+									$ianmackenzie$elm_geometry$Frame3d$yAxis,
+									$ianmackenzie$elm_units$Length$meters(0.4),
+									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
+							A3(
+								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
+								$ianmackenzie$elm_geometry$Point3d$origin,
+								$ianmackenzie$elm_geometry$Direction3d$positiveX,
+								{
+									length: length,
+									radius: $ianmackenzie$elm_units$Length$meters(0.05)
+								}))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
+						A2(
+							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
+							A3(
+								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+								$ianmackenzie$elm_geometry$Frame3d$zAxis,
+								$ianmackenzie$elm_units$Length$meters(0.4),
+								A3(
+									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+									$ianmackenzie$elm_geometry$Frame3d$yAxis,
+									$ianmackenzie$elm_units$Length$meters(0.4),
+									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
+							A3(
+								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
+								$ianmackenzie$elm_geometry$Point3d$origin,
+								$ianmackenzie$elm_geometry$Direction3d$positiveX,
+								{
+									length: length,
+									radius: $ianmackenzie$elm_units$Length$meters(0.05)
+								}))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
+						A2(
+							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
+							A3(
+								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+								$ianmackenzie$elm_geometry$Frame3d$zAxis,
+								$ianmackenzie$elm_units$Length$meters(0.4),
+								A3(
+									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+									$ianmackenzie$elm_geometry$Frame3d$yAxis,
+									$ianmackenzie$elm_units$Length$meters(-0.4),
+									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
+							A3(
+								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
+								$ianmackenzie$elm_geometry$Point3d$origin,
+								$ianmackenzie$elm_geometry$Direction3d$positiveX,
+								{
+									length: length,
+									radius: $ianmackenzie$elm_units$Length$meters(0.05)
+								}))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
+						A2(
+							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
+							A3(
+								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+								$ianmackenzie$elm_geometry$Frame3d$zAxis,
+								$ianmackenzie$elm_units$Length$meters(-0.4),
+								A3(
+									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+									$ianmackenzie$elm_geometry$Frame3d$yAxis,
+									$ianmackenzie$elm_units$Length$meters(-0.4),
+									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
+							A3(
+								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
+								$ianmackenzie$elm_geometry$Point3d$origin,
+								$ianmackenzie$elm_geometry$Direction3d$positiveX,
+								{
+									length: length,
+									radius: $ianmackenzie$elm_units$Length$meters(0.05)
+								}))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
+						A2(
+							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
+							A3(
+								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+								$ianmackenzie$elm_geometry$Frame3d$zAxis,
+								$ianmackenzie$elm_units$Length$meters(-0.4),
+								A3(
+									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+									$ianmackenzie$elm_geometry$Frame3d$xAxis,
+									$ianmackenzie$elm_units$Length$meters(-0.4),
+									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
+							A3(
+								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
+								$ianmackenzie$elm_geometry$Point3d$origin,
+								$ianmackenzie$elm_geometry$Direction3d$positiveY,
+								{
+									length: length,
+									radius: $ianmackenzie$elm_units$Length$meters(0.05)
+								}))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
+						A2(
+							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
+							A3(
+								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+								$ianmackenzie$elm_geometry$Frame3d$zAxis,
+								$ianmackenzie$elm_units$Length$meters(-0.4),
+								A3(
+									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+									$ianmackenzie$elm_geometry$Frame3d$xAxis,
+									$ianmackenzie$elm_units$Length$meters(0.4),
+									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
+							A3(
+								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
+								$ianmackenzie$elm_geometry$Point3d$origin,
+								$ianmackenzie$elm_geometry$Direction3d$positiveY,
+								{
+									length: length,
+									radius: $ianmackenzie$elm_units$Length$meters(0.05)
+								}))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
+						A2(
+							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
+							A3(
+								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+								$ianmackenzie$elm_geometry$Frame3d$zAxis,
+								$ianmackenzie$elm_units$Length$meters(0.4),
+								A3(
+									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+									$ianmackenzie$elm_geometry$Frame3d$xAxis,
+									$ianmackenzie$elm_units$Length$meters(-0.4),
+									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
+							A3(
+								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
+								$ianmackenzie$elm_geometry$Point3d$origin,
+								$ianmackenzie$elm_geometry$Direction3d$positiveY,
+								{
+									length: length,
+									radius: $ianmackenzie$elm_units$Length$meters(0.05)
+								}))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
+						A2(
+							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
+							A3(
+								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+								$ianmackenzie$elm_geometry$Frame3d$zAxis,
+								$ianmackenzie$elm_units$Length$meters(0.4),
+								A3(
+									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+									$ianmackenzie$elm_geometry$Frame3d$xAxis,
+									$ianmackenzie$elm_units$Length$meters(0.4),
+									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
+							A3(
+								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
+								$ianmackenzie$elm_geometry$Point3d$origin,
+								$ianmackenzie$elm_geometry$Direction3d$positiveY,
+								{
+									length: length,
+									radius: $ianmackenzie$elm_units$Length$meters(0.05)
+								}))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
+						A2(
+							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
+							A3(
+								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+								$ianmackenzie$elm_geometry$Frame3d$yAxis,
+								$ianmackenzie$elm_units$Length$meters(0.4),
+								A3(
+									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+									$ianmackenzie$elm_geometry$Frame3d$xAxis,
+									$ianmackenzie$elm_units$Length$meters(0.4),
+									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
+							A3(
+								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
+								$ianmackenzie$elm_geometry$Point3d$origin,
+								$ianmackenzie$elm_geometry$Direction3d$positiveZ,
+								{
+									length: length,
+									radius: $ianmackenzie$elm_units$Length$meters(0.05)
+								}))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
+						A2(
+							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
+							A3(
+								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+								$ianmackenzie$elm_geometry$Frame3d$yAxis,
+								$ianmackenzie$elm_units$Length$meters(0.4),
+								A3(
+									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+									$ianmackenzie$elm_geometry$Frame3d$xAxis,
+									$ianmackenzie$elm_units$Length$meters(-0.4),
+									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
+							A3(
+								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
+								$ianmackenzie$elm_geometry$Point3d$origin,
+								$ianmackenzie$elm_geometry$Direction3d$positiveZ,
+								{
+									length: length,
+									radius: $ianmackenzie$elm_units$Length$meters(0.05)
+								}))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
+						A2(
+							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
+							A3(
+								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+								$ianmackenzie$elm_geometry$Frame3d$yAxis,
+								$ianmackenzie$elm_units$Length$meters(-0.4),
+								A3(
+									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+									$ianmackenzie$elm_geometry$Frame3d$xAxis,
+									$ianmackenzie$elm_units$Length$meters(0.4),
+									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
+							A3(
+								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
+								$ianmackenzie$elm_geometry$Point3d$origin,
+								$ianmackenzie$elm_geometry$Direction3d$positiveZ,
+								{
+									length: length,
+									radius: $ianmackenzie$elm_units$Length$meters(0.05)
+								}))),
+						A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
+						A2(
+							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
+							A3(
+								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+								$ianmackenzie$elm_geometry$Frame3d$yAxis,
+								$ianmackenzie$elm_units$Length$meters(-0.4),
+								A3(
+									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
+									$ianmackenzie$elm_geometry$Frame3d$xAxis,
+									$ianmackenzie$elm_units$Length$meters(-0.4),
+									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
+							A3(
+								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
+								$ianmackenzie$elm_geometry$Point3d$origin,
+								$ianmackenzie$elm_geometry$Direction3d$positiveZ,
+								{
+									length: length,
+									radius: $ianmackenzie$elm_units$Length$meters(0.05)
+								})))
+					]));
+	}
+};
+var $avh4$elm_color$Color$blue = A4($avh4$elm_color$Color$RgbaSpace, 52 / 255, 101 / 255, 164 / 255, 1.0);
+var $ianmackenzie$elm_geometry$Cone3d$axis = function (_v0) {
+	var cone = _v0.a;
+	return cone.axis;
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Primitives$cone = function () {
+	var topZ = $ianmackenzie$elm_units$Length$meters(1);
+	var tipPoint = A3($ianmackenzie$elm_geometry$Point3d$xyz, $ianmackenzie$elm_units$Quantity$zero, $ianmackenzie$elm_units$Quantity$zero, topZ);
+	var subdivisions = 72;
+	var wedgeAngle = A2(
+		$ianmackenzie$elm_units$Quantity$divideBy,
+		subdivisions,
+		$ianmackenzie$elm_units$Angle$turns(1));
+	var radius = $ianmackenzie$elm_units$Length$meters(1);
+	var negativeZVector = $ianmackenzie$elm_geometry$Direction3d$toVector($ianmackenzie$elm_geometry$Direction3d$negativeZ);
+	var elevationAngle = $ianmackenzie$elm_units$Angle$degrees(45);
+	var bottomZ = $ianmackenzie$elm_units$Quantity$zero;
+	var basePoint = A3($ianmackenzie$elm_geometry$Point3d$xyz, $ianmackenzie$elm_units$Quantity$zero, $ianmackenzie$elm_units$Quantity$zero, bottomZ);
+	var wedge = function (startIndex) {
+		var tipNormal = $ianmackenzie$elm_geometry$Vector3d$zero;
+		var startAngle = A2($ianmackenzie$elm_units$Quantity$multiplyBy, startIndex, wedgeAngle);
+		var startNormal = $ianmackenzie$elm_geometry$Direction3d$toVector(
+			A2($ianmackenzie$elm_geometry$Direction3d$xyZ, startAngle, elevationAngle));
+		var startX = A2(
+			$ianmackenzie$elm_units$Quantity$multiplyBy,
+			$ianmackenzie$elm_units$Angle$cos(startAngle),
+			radius);
+		var startY = A2(
+			$ianmackenzie$elm_units$Quantity$multiplyBy,
+			$ianmackenzie$elm_units$Angle$sin(startAngle),
+			radius);
+		var p0 = A3($ianmackenzie$elm_geometry$Point3d$xyz, startX, startY, bottomZ);
+		var endIndex = A2($elm$core$Basics$modBy, subdivisions, startIndex + 1);
+		var endAngle = A2($ianmackenzie$elm_units$Quantity$multiplyBy, endIndex, wedgeAngle);
+		var endNormal = $ianmackenzie$elm_geometry$Direction3d$toVector(
+			A2($ianmackenzie$elm_geometry$Direction3d$xyZ, endAngle, elevationAngle));
+		var endX = A2(
+			$ianmackenzie$elm_units$Quantity$multiplyBy,
+			$ianmackenzie$elm_units$Angle$cos(endAngle),
+			radius);
+		var endY = A2(
+			$ianmackenzie$elm_units$Quantity$multiplyBy,
+			$ianmackenzie$elm_units$Angle$sin(endAngle),
+			radius);
+		var p1 = A3($ianmackenzie$elm_geometry$Point3d$xyz, endX, endY, bottomZ);
+		return _List_fromArray(
+			[
+				_Utils_Tuple3(
+				{normal: negativeZVector, position: basePoint},
+				{normal: negativeZVector, position: p1},
+				{normal: negativeZVector, position: p0}),
+				_Utils_Tuple3(
+				{normal: startNormal, position: p0},
+				{normal: endNormal, position: p1},
+				{normal: tipNormal, position: tipPoint})
+			]);
+	};
+	var wedges = A2(
+		$elm$core$List$map,
+		wedge,
+		A2($elm$core$List$range, 0, subdivisions - 1));
+	var triangularMesh = $ianmackenzie$elm_triangular_mesh$TriangularMesh$triangles(
+		$elm$core$List$concat(wedges));
+	return $ianmackenzie$elm_3d_scene$Scene3d$Mesh$cullBackFaces(
+		$ianmackenzie$elm_3d_scene$Scene3d$Mesh$indexedFaces(triangularMesh));
+}();
+var $ianmackenzie$elm_3d_scene$Scene3d$Primitives$coneShadow = $ianmackenzie$elm_3d_scene$Scene3d$Mesh$shadow($ianmackenzie$elm_3d_scene$Scene3d$Primitives$cone);
+var $ianmackenzie$elm_geometry$Cone3d$length = function (_v0) {
+	var cone = _v0.a;
+	return cone.length;
+};
+var $ianmackenzie$elm_geometry$Cone3d$radius = function (_v0) {
+	var cone = _v0.a;
+	return cone.radius;
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Entity$cone = F4(
+	function (renderObject, renderShadow, givenMaterial, givenCone) {
+		var baseFrame = $ianmackenzie$elm_geometry$Frame3d$fromZAxis(
+			$ianmackenzie$elm_geometry$Cone3d$axis(givenCone));
+		var baseEntity = A2($ianmackenzie$elm_3d_scene$Scene3d$Entity$mesh, givenMaterial, $ianmackenzie$elm_3d_scene$Scene3d$Primitives$cone);
+		var untransformedEntity = function () {
+			var _v2 = _Utils_Tuple2(renderObject, renderShadow);
+			if (_v2.a) {
+				if (_v2.b) {
+					return $ianmackenzie$elm_3d_scene$Scene3d$Entity$group(
+						_List_fromArray(
+							[
+								baseEntity,
+								$ianmackenzie$elm_3d_scene$Scene3d$Entity$shadow($ianmackenzie$elm_3d_scene$Scene3d$Primitives$coneShadow)
+							]));
+				} else {
+					return baseEntity;
+				}
+			} else {
+				if (_v2.b) {
+					return $ianmackenzie$elm_3d_scene$Scene3d$Entity$shadow($ianmackenzie$elm_3d_scene$Scene3d$Primitives$coneShadow);
+				} else {
+					return $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
+				}
+			}
+		}();
+		var _v0 = $ianmackenzie$elm_geometry$Cone3d$radius(givenCone);
+		var radius = _v0.a;
+		var _v1 = $ianmackenzie$elm_geometry$Cone3d$length(givenCone);
+		var length = _v1.a;
+		return A2(
+			$ianmackenzie$elm_3d_scene$Scene3d$Entity$placeIn,
+			baseFrame,
+			A2(
+				$ianmackenzie$elm_3d_scene$Scene3d$Entity$preScale,
+				_Utils_Tuple3(radius, radius, length),
+				untransformedEntity));
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow = F2(
+	function (givenMaterial, givenCone) {
+		return A4($ianmackenzie$elm_3d_scene$Scene3d$Entity$cone, true, true, givenMaterial, givenCone);
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$PbrMaterial = F5(
+	function (a, b, c, d, e) {
+		return {$: 'PbrMaterial', a: a, b: b, c: c, d: d, e: e};
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$Material$pbr = function (_v0) {
+	var baseColor = _v0.baseColor;
+	var roughness = _v0.roughness;
+	var metallic = _v0.metallic;
+	return A5(
+		$ianmackenzie$elm_3d_scene$Scene3d$Types$PbrMaterial,
+		$ianmackenzie$elm_3d_scene$Scene3d$Types$UseMeshUvs,
+		$ianmackenzie$elm_3d_scene$Scene3d$Types$Constant(
+			$ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$colorToLinearRgb(baseColor)),
+		$ianmackenzie$elm_3d_scene$Scene3d$Types$Constant(
+			A3($elm$core$Basics$clamp, 0, 1, roughness)),
+		$ianmackenzie$elm_3d_scene$Scene3d$Types$Constant(
+			A3($elm$core$Basics$clamp, 0, 1, metallic)),
+		$ianmackenzie$elm_3d_scene$Scene3d$Types$Constant($ianmackenzie$elm_3d_scene$Scene3d$Types$VerticalNormal));
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Material$metal = function (_v0) {
+	var baseColor = _v0.baseColor;
+	var roughness = _v0.roughness;
+	return $ianmackenzie$elm_3d_scene$Scene3d$Material$pbr(
+		{baseColor: baseColor, metallic: 1, roughness: roughness});
+};
+var $avh4$elm_color$Color$orange = A4($avh4$elm_color$Color$RgbaSpace, 245 / 255, 121 / 255, 0 / 255, 1.0);
 var $ianmackenzie$elm_3d_scene$Scene3d$sphereWithShadow = F2(
 	function (givenMaterial, givenSphere) {
 		return A4($ianmackenzie$elm_3d_scene$Scene3d$Entity$sphere, true, true, givenMaterial, givenSphere);
@@ -23604,7 +24049,6 @@ var $ianmackenzie$elm_geometry$Cone3d$startingAt = F3(
 			});
 	});
 var $avh4$elm_color$Color$white = A4($avh4$elm_color$Color$RgbaSpace, 255 / 255, 255 / 255, 255 / 255, 1.0);
-var $avh4$elm_color$Color$yellow = A4($avh4$elm_color$Color$RgbaSpace, 237 / 255, 212 / 255, 0 / 255, 1.0);
 var $author$project$Screen$Editor$viewBlock = F4(
 	function (sharedModel, board, model, _v0) {
 		var point = _v0.a;
@@ -23923,95 +24367,85 @@ var $author$project$Screen$Editor$viewBlock = F4(
 				case 'PlayerSpawn':
 					var forward = block.a.forward;
 					var left = block.a.left;
-					var _v4 = model.editorMode;
-					if (_v4.$ === 'TestGame') {
-						return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
-					} else {
-						var frame = $ianmackenzie$elm_geometry$SketchPlane3d$toFrame(
-							$ianmackenzie$elm_geometry$SketchPlane3d$unsafe(
-								{
-									originPoint: $author$project$Board$pointToPoint3d(point),
-									xDirection: $author$project$Board$axisToDirection3d(forward),
-									yDirection: $author$project$Board$axisToDirection3d(left)
-								}));
-						var center = A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z);
-						return $ianmackenzie$elm_3d_scene$Scene3d$group(
-							_List_fromArray(
-								[
-									A2(
-									$ianmackenzie$elm_3d_scene$Scene3d$sphereWithShadow,
-									A2(
-										$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
-										$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$white),
-										$ianmackenzie$elm_units$Luminance$nits(100000)),
-									A2(
-										$ianmackenzie$elm_geometry$Sphere3d$atPoint,
-										center,
-										$ianmackenzie$elm_units$Length$meters(0.25))),
-									A2(
-									$ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow,
-									A2(
-										$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
-										$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$red),
-										$ianmackenzie$elm_units$Luminance$nits(10000)),
-									A3(
-										$ianmackenzie$elm_geometry$Cone3d$startingAt,
-										center,
-										$ianmackenzie$elm_geometry$Frame3d$xDirection(frame),
-										{
-											length: $ianmackenzie$elm_units$Length$meters(0.75),
-											radius: $ianmackenzie$elm_units$Length$meters(0.125)
-										})),
-									A2(
-									$ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow,
-									A2(
-										$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
-										$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$green),
-										$ianmackenzie$elm_units$Luminance$nits(10000)),
-									A3(
-										$ianmackenzie$elm_geometry$Cone3d$startingAt,
-										center,
-										$ianmackenzie$elm_geometry$Frame3d$yDirection(frame),
-										{
-											length: $ianmackenzie$elm_units$Length$meters(0.75),
-											radius: $ianmackenzie$elm_units$Length$meters(0.125)
-										})),
-									A2(
-									$ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow,
-									A2(
-										$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
-										$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$blue),
-										$ianmackenzie$elm_units$Luminance$nits(10000)),
-									A3(
-										$ianmackenzie$elm_geometry$Cone3d$startingAt,
-										center,
-										$ianmackenzie$elm_geometry$Frame3d$zDirection(frame),
-										{
-											length: $ianmackenzie$elm_units$Length$meters(0.75),
-											radius: $ianmackenzie$elm_units$Length$meters(0.125)
-										}))
-								]));
-					}
+					var frame = $ianmackenzie$elm_geometry$SketchPlane3d$toFrame(
+						$ianmackenzie$elm_geometry$SketchPlane3d$unsafe(
+							{
+								originPoint: $author$project$Board$pointToPoint3d(point),
+								xDirection: $author$project$Board$axisToDirection3d(forward),
+								yDirection: $author$project$Board$axisToDirection3d(left)
+							}));
+					var center = A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z);
+					return $ianmackenzie$elm_3d_scene$Scene3d$group(
+						_List_fromArray(
+							[
+								A2(
+								$ianmackenzie$elm_3d_scene$Scene3d$sphereWithShadow,
+								A2(
+									$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
+									$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$white),
+									$ianmackenzie$elm_units$Luminance$nits(100000)),
+								A2(
+									$ianmackenzie$elm_geometry$Sphere3d$atPoint,
+									center,
+									$ianmackenzie$elm_units$Length$meters(0.25))),
+								A2(
+								$ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow,
+								A2(
+									$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
+									$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$red),
+									$ianmackenzie$elm_units$Luminance$nits(10000)),
+								A3(
+									$ianmackenzie$elm_geometry$Cone3d$startingAt,
+									center,
+									$ianmackenzie$elm_geometry$Frame3d$xDirection(frame),
+									{
+										length: $ianmackenzie$elm_units$Length$meters(0.75),
+										radius: $ianmackenzie$elm_units$Length$meters(0.125)
+									})),
+								A2(
+								$ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow,
+								A2(
+									$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
+									$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$green),
+									$ianmackenzie$elm_units$Luminance$nits(10000)),
+								A3(
+									$ianmackenzie$elm_geometry$Cone3d$startingAt,
+									center,
+									$ianmackenzie$elm_geometry$Frame3d$yDirection(frame),
+									{
+										length: $ianmackenzie$elm_units$Length$meters(0.75),
+										radius: $ianmackenzie$elm_units$Length$meters(0.125)
+									})),
+								A2(
+								$ianmackenzie$elm_3d_scene$Scene3d$coneWithShadow,
+								A2(
+									$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
+									$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$blue),
+									$ianmackenzie$elm_units$Luminance$nits(10000)),
+								A3(
+									$ianmackenzie$elm_geometry$Cone3d$startingAt,
+									center,
+									$ianmackenzie$elm_geometry$Frame3d$zDirection(frame),
+									{
+										length: $ianmackenzie$elm_units$Length$meters(0.75),
+										radius: $ianmackenzie$elm_units$Length$meters(0.125)
+									}))
+							]));
 				case 'Empty':
 					return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 				default:
-					var _v5 = model.editorMode;
-					if (_v5.$ === 'TestGame') {
-						return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
-					} else {
-						return A2(
-							$ianmackenzie$elm_3d_scene$Scene3d$blockWithShadow,
-							$ianmackenzie$elm_3d_scene$Scene3d$Material$metal(
-								{baseColor: $avh4$elm_color$Color$orange, roughness: 1}),
-							A2(
-								$ianmackenzie$elm_geometry$Block3d$centeredOn,
-								$ianmackenzie$elm_geometry$Frame3d$atPoint(
-									A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z)),
-								_Utils_Tuple3(
-									$ianmackenzie$elm_units$Length$meters(0.5),
-									$ianmackenzie$elm_units$Length$meters(0.5),
-									$ianmackenzie$elm_units$Length$meters(0.5))));
-					}
+					return A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$blockWithShadow,
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$metal(
+							{baseColor: $avh4$elm_color$Color$orange, roughness: 1}),
+						A2(
+							$ianmackenzie$elm_geometry$Block3d$centeredOn,
+							$ianmackenzie$elm_geometry$Frame3d$atPoint(
+								A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z)),
+							_Utils_Tuple3(
+								$ianmackenzie$elm_units$Length$meters(0.5),
+								$ianmackenzie$elm_units$Length$meters(0.5),
+								$ianmackenzie$elm_units$Length$meters(0.5))));
 			}
 		}
 	});
@@ -26242,11 +26676,14 @@ var $author$project$Screen$Editor$viewHeader = F4(
 										$author$project$Html$Attributes$Extra$aria,
 										'current',
 										$author$project$Html$Attributes$Extra$bool(
-											_Utils_eq(model.selectedBlockType, $author$project$Board$EnemySpawner))),
+											_Utils_eq(
+												model.selectedBlockType,
+												$author$project$Board$EnemySpawner($author$project$Board$defaultEnemySpawnerDetails)))),
 										$elm$html$Html$Attributes$type_('button'),
 										$elm$html$Html$Events$onClick(
 										toMsg(
-											$author$project$Screen$Editor$BlockTypeSelected($author$project$Board$EnemySpawner))),
+											$author$project$Screen$Editor$BlockTypeSelected(
+												$author$project$Board$EnemySpawner($author$project$Board$defaultEnemySpawnerDetails)))),
 										$elm$html$Html$Attributes$title(
 										'Enemy Spawner - ' + $author$project$Input$viewInputKeyHoverText(sharedModel.inputMapping.blockTypeEnemySpawner))
 									]),
@@ -27324,8 +27761,8 @@ var $author$project$Screen$Editor$view = F4(
 							[
 								function () {
 								var lights = function () {
-									var _v10 = model.editorMode;
-									if (_v10.$ === 'TestGame') {
+									var _v11 = model.editorMode;
+									if (_v11.$ === 'TestGame') {
 										return A2(
 											$author$project$Board$gameLights,
 											model.level.board,
@@ -27431,7 +27868,14 @@ var $author$project$Screen$Editor$view = F4(
 													[
 														A2(
 														$elm$core$List$map,
-														A3($author$project$Screen$Editor$viewBlock, sharedModel, model.level.board, model),
+														function () {
+															var _v10 = model.editorMode;
+															if (_v10.$ === 'TestGame') {
+																return $author$project$Board$viewBlock;
+															} else {
+																return A3($author$project$Screen$Editor$viewBlock, sharedModel, model.level.board, model);
+															}
+														}(),
 														$elm$core$Dict$toList(model.level.board.blocks)),
 														_List_fromArray(
 														[
@@ -27444,8 +27888,8 @@ var $author$project$Screen$Editor$view = F4(
 							])),
 						A4($author$project$Screen$Editor$viewHeader, toSharedMsg, sharedModel, toMsg, model),
 						function () {
-						var _v11 = model.editorMode;
-						if (_v11.$ === 'TestGame') {
+						var _v12 = model.editorMode;
+						if (_v12.$ === 'TestGame') {
 							return A2(
 								$elm$html$Html$div,
 								_List_fromArray(
@@ -27484,8 +27928,8 @@ var $author$project$Screen$Editor$view = F4(
 								_List_fromArray(
 									[
 										function () {
-										var _v12 = model.selectedBlock;
-										if (_v12.$ === 'Nothing') {
+										var _v13 = model.selectedBlock;
+										if (_v13.$ === 'Nothing') {
 											return A2(
 												$elm$html$Html$span,
 												_List_Nil,
@@ -27494,9 +27938,9 @@ var $author$project$Screen$Editor$view = F4(
 														$elm$html$Html$text('No block selected')
 													]));
 										} else {
-											var _v13 = _v12.a;
-											var point = _v13.a;
-											var block = _v13.b;
+											var _v14 = _v13.a;
+											var point = _v14.a;
+											var block = _v14.b;
 											switch (block.$) {
 												case 'Empty':
 													return A2(
@@ -27531,12 +27975,46 @@ var $author$project$Screen$Editor$view = F4(
 																$elm$html$Html$text('Point Pickup')
 															]));
 												case 'EnemySpawner':
+													var details = block.a;
 													return A2(
-														$elm$html$Html$span,
+														$elm$html$Html$form,
 														_List_Nil,
 														_List_fromArray(
 															[
-																$elm$html$Html$text('Enemy Spawner')
+																A2(
+																$elm$html$Html$span,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$text('Enemy Spawner')
+																	])),
+																A2($elm$html$Html$br, _List_Nil, _List_Nil),
+																A2(
+																$elm$html$Html$label,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		A2(
+																		$elm$html$Html$span,
+																		_List_Nil,
+																		_List_fromArray(
+																			[
+																				$elm$html$Html$text('Seconds betwwen spawns ')
+																			])),
+																		A2(
+																		$elm$html$Html$input,
+																		_List_fromArray(
+																			[
+																				$elm$html$Html$Attributes$type_('number'),
+																				$elm$html$Html$Attributes$min('0.5'),
+																				$elm$html$Html$Attributes$max('10'),
+																				$elm$html$Html$Attributes$step('0.5'),
+																				$elm$html$Html$Attributes$value(
+																				$elm$core$String$fromFloat(
+																					$ianmackenzie$elm_units$Duration$inSeconds(details.timeBetweenSpawns)))
+																			]),
+																		_List_Nil)
+																	]))
 															]));
 												default:
 													var details = block.a;
@@ -27911,11 +28389,11 @@ var $author$project$Screen$Editor$view = F4(
 														$elm$html$Html$text('Load')
 													])),
 												function () {
-												var _v17 = model.boardLoadError;
-												if (_v17.$ === 'Nothing') {
+												var _v18 = model.boardLoadError;
+												if (_v18.$ === 'Nothing') {
 													return $elm$html$Html$text('');
 												} else {
-													var error = _v17.a;
+													var error = _v18.a;
 													return A2(
 														$elm$html$Html$small,
 														_List_Nil,
@@ -27961,13 +28439,13 @@ var $author$project$Screen$Editor$view = F4(
 																} else {
 																	switch (value.a.$) {
 																		case 'DefaultBoard':
-																			var _v20 = value.a;
+																			var _v21 = value.a;
 																			return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$defaultBoard);
 																		case 'BasicMiniBoard':
-																			var _v21 = value.a;
+																			var _v22 = value.a;
 																			return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$basicMiniBoard);
 																		default:
-																			var _v22 = value.a;
+																			var _v23 = value.a;
 																			return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$zigZagBoard);
 																	}
 																}
@@ -28009,317 +28487,6 @@ var $author$project$Screen$FreePlay$ShowFreePlayMenu = function (a) {
 	return {$: 'ShowFreePlayMenu', a: a};
 };
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
-var $author$project$Board$viewBlock = function (_v0) {
-	var point = _v0.a;
-	var block = _v0.b;
-	var _v1 = point;
-	var x = _v1.a;
-	var y = _v1.b;
-	var z = _v1.c;
-	switch (block.$) {
-		case 'Wall':
-			return A2(
-				$ianmackenzie$elm_3d_scene$Scene3d$blockWithShadow,
-				$ianmackenzie$elm_3d_scene$Scene3d$Material$matte($avh4$elm_color$Color$gray),
-				A2(
-					$ianmackenzie$elm_geometry$Block3d$centeredOn,
-					$ianmackenzie$elm_geometry$Frame3d$atPoint(
-						A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z)),
-					_Utils_Tuple3(
-						$ianmackenzie$elm_units$Length$meters(1),
-						$ianmackenzie$elm_units$Length$meters(1),
-						$ianmackenzie$elm_units$Length$meters(1))));
-		case 'PointPickup':
-			var collected = block.a;
-			return collected ? $ianmackenzie$elm_3d_scene$Scene3d$nothing : A2(
-				$ianmackenzie$elm_3d_scene$Scene3d$sphere,
-				A2(
-					$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
-					$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$yellow),
-					$ianmackenzie$elm_units$Luminance$nits(30000)),
-				A2(
-					$ianmackenzie$elm_geometry$Sphere3d$atPoint,
-					A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z),
-					$ianmackenzie$elm_units$Length$meters(0.125)));
-		case 'PlayerSpawn':
-			return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
-		case 'Empty':
-			return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
-		case 'Edge':
-			return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
-		default:
-			var length = $ianmackenzie$elm_units$Length$meters(1);
-			var center = A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z);
-			return $ianmackenzie$elm_3d_scene$Scene3d$group(
-				_List_fromArray(
-					[
-						A2(
-						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
-						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
-						A2(
-							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
-							A3(
-								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-								$ianmackenzie$elm_geometry$Frame3d$zAxis,
-								$ianmackenzie$elm_units$Length$meters(-0.4),
-								A3(
-									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-									$ianmackenzie$elm_geometry$Frame3d$yAxis,
-									$ianmackenzie$elm_units$Length$meters(0.4),
-									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
-							A3(
-								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
-								$ianmackenzie$elm_geometry$Point3d$origin,
-								$ianmackenzie$elm_geometry$Direction3d$positiveX,
-								{
-									length: length,
-									radius: $ianmackenzie$elm_units$Length$meters(0.05)
-								}))),
-						A2(
-						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
-						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
-						A2(
-							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
-							A3(
-								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-								$ianmackenzie$elm_geometry$Frame3d$zAxis,
-								$ianmackenzie$elm_units$Length$meters(0.4),
-								A3(
-									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-									$ianmackenzie$elm_geometry$Frame3d$yAxis,
-									$ianmackenzie$elm_units$Length$meters(0.4),
-									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
-							A3(
-								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
-								$ianmackenzie$elm_geometry$Point3d$origin,
-								$ianmackenzie$elm_geometry$Direction3d$positiveX,
-								{
-									length: length,
-									radius: $ianmackenzie$elm_units$Length$meters(0.05)
-								}))),
-						A2(
-						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
-						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
-						A2(
-							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
-							A3(
-								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-								$ianmackenzie$elm_geometry$Frame3d$zAxis,
-								$ianmackenzie$elm_units$Length$meters(0.4),
-								A3(
-									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-									$ianmackenzie$elm_geometry$Frame3d$yAxis,
-									$ianmackenzie$elm_units$Length$meters(-0.4),
-									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
-							A3(
-								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
-								$ianmackenzie$elm_geometry$Point3d$origin,
-								$ianmackenzie$elm_geometry$Direction3d$positiveX,
-								{
-									length: length,
-									radius: $ianmackenzie$elm_units$Length$meters(0.05)
-								}))),
-						A2(
-						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
-						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
-						A2(
-							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
-							A3(
-								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-								$ianmackenzie$elm_geometry$Frame3d$zAxis,
-								$ianmackenzie$elm_units$Length$meters(-0.4),
-								A3(
-									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-									$ianmackenzie$elm_geometry$Frame3d$yAxis,
-									$ianmackenzie$elm_units$Length$meters(-0.4),
-									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
-							A3(
-								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
-								$ianmackenzie$elm_geometry$Point3d$origin,
-								$ianmackenzie$elm_geometry$Direction3d$positiveX,
-								{
-									length: length,
-									radius: $ianmackenzie$elm_units$Length$meters(0.05)
-								}))),
-						A2(
-						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
-						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
-						A2(
-							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
-							A3(
-								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-								$ianmackenzie$elm_geometry$Frame3d$zAxis,
-								$ianmackenzie$elm_units$Length$meters(-0.4),
-								A3(
-									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-									$ianmackenzie$elm_geometry$Frame3d$xAxis,
-									$ianmackenzie$elm_units$Length$meters(-0.4),
-									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
-							A3(
-								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
-								$ianmackenzie$elm_geometry$Point3d$origin,
-								$ianmackenzie$elm_geometry$Direction3d$positiveY,
-								{
-									length: length,
-									radius: $ianmackenzie$elm_units$Length$meters(0.05)
-								}))),
-						A2(
-						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
-						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
-						A2(
-							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
-							A3(
-								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-								$ianmackenzie$elm_geometry$Frame3d$zAxis,
-								$ianmackenzie$elm_units$Length$meters(-0.4),
-								A3(
-									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-									$ianmackenzie$elm_geometry$Frame3d$xAxis,
-									$ianmackenzie$elm_units$Length$meters(0.4),
-									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
-							A3(
-								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
-								$ianmackenzie$elm_geometry$Point3d$origin,
-								$ianmackenzie$elm_geometry$Direction3d$positiveY,
-								{
-									length: length,
-									radius: $ianmackenzie$elm_units$Length$meters(0.05)
-								}))),
-						A2(
-						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
-						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
-						A2(
-							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
-							A3(
-								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-								$ianmackenzie$elm_geometry$Frame3d$zAxis,
-								$ianmackenzie$elm_units$Length$meters(0.4),
-								A3(
-									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-									$ianmackenzie$elm_geometry$Frame3d$xAxis,
-									$ianmackenzie$elm_units$Length$meters(-0.4),
-									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
-							A3(
-								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
-								$ianmackenzie$elm_geometry$Point3d$origin,
-								$ianmackenzie$elm_geometry$Direction3d$positiveY,
-								{
-									length: length,
-									radius: $ianmackenzie$elm_units$Length$meters(0.05)
-								}))),
-						A2(
-						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
-						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
-						A2(
-							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
-							A3(
-								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-								$ianmackenzie$elm_geometry$Frame3d$zAxis,
-								$ianmackenzie$elm_units$Length$meters(0.4),
-								A3(
-									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-									$ianmackenzie$elm_geometry$Frame3d$xAxis,
-									$ianmackenzie$elm_units$Length$meters(0.4),
-									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
-							A3(
-								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
-								$ianmackenzie$elm_geometry$Point3d$origin,
-								$ianmackenzie$elm_geometry$Direction3d$positiveY,
-								{
-									length: length,
-									radius: $ianmackenzie$elm_units$Length$meters(0.05)
-								}))),
-						A2(
-						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
-						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
-						A2(
-							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
-							A3(
-								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-								$ianmackenzie$elm_geometry$Frame3d$yAxis,
-								$ianmackenzie$elm_units$Length$meters(0.4),
-								A3(
-									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-									$ianmackenzie$elm_geometry$Frame3d$xAxis,
-									$ianmackenzie$elm_units$Length$meters(0.4),
-									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
-							A3(
-								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
-								$ianmackenzie$elm_geometry$Point3d$origin,
-								$ianmackenzie$elm_geometry$Direction3d$positiveZ,
-								{
-									length: length,
-									radius: $ianmackenzie$elm_units$Length$meters(0.05)
-								}))),
-						A2(
-						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
-						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
-						A2(
-							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
-							A3(
-								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-								$ianmackenzie$elm_geometry$Frame3d$yAxis,
-								$ianmackenzie$elm_units$Length$meters(0.4),
-								A3(
-									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-									$ianmackenzie$elm_geometry$Frame3d$xAxis,
-									$ianmackenzie$elm_units$Length$meters(-0.4),
-									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
-							A3(
-								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
-								$ianmackenzie$elm_geometry$Point3d$origin,
-								$ianmackenzie$elm_geometry$Direction3d$positiveZ,
-								{
-									length: length,
-									radius: $ianmackenzie$elm_units$Length$meters(0.05)
-								}))),
-						A2(
-						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
-						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
-						A2(
-							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
-							A3(
-								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-								$ianmackenzie$elm_geometry$Frame3d$yAxis,
-								$ianmackenzie$elm_units$Length$meters(-0.4),
-								A3(
-									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-									$ianmackenzie$elm_geometry$Frame3d$xAxis,
-									$ianmackenzie$elm_units$Length$meters(0.4),
-									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
-							A3(
-								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
-								$ianmackenzie$elm_geometry$Point3d$origin,
-								$ianmackenzie$elm_geometry$Direction3d$positiveZ,
-								{
-									length: length,
-									radius: $ianmackenzie$elm_units$Length$meters(0.05)
-								}))),
-						A2(
-						$ianmackenzie$elm_3d_scene$Scene3d$cylinderWithShadow,
-						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
-						A2(
-							$ianmackenzie$elm_geometry$Cylinder3d$placeIn,
-							A3(
-								$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-								$ianmackenzie$elm_geometry$Frame3d$yAxis,
-								$ianmackenzie$elm_units$Length$meters(-0.4),
-								A3(
-									$ianmackenzie$elm_geometry$Frame3d$translateAlongOwn,
-									$ianmackenzie$elm_geometry$Frame3d$xAxis,
-									$ianmackenzie$elm_units$Length$meters(-0.4),
-									$ianmackenzie$elm_geometry$Frame3d$atPoint(center))),
-							A3(
-								$ianmackenzie$elm_geometry$Cylinder3d$centeredOn,
-								$ianmackenzie$elm_geometry$Point3d$origin,
-								$ianmackenzie$elm_geometry$Direction3d$positiveZ,
-								{
-									length: length,
-									radius: $ianmackenzie$elm_units$Length$meters(0.05)
-								})))
-					]));
-	}
-};
 var $author$project$Screen$FreePlay$LoadFreePlayBoard = function (a) {
 	return {$: 'LoadFreePlayBoard', a: a};
 };
@@ -28441,20 +28608,20 @@ var $author$project$Screen$FreePlay$view = F4(
 					$author$project$Board$view3dScene,
 					A2(
 						$author$project$Board$gameLights,
-						model.board,
-						$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame)),
+						model.level.board,
+						$ianmackenzie$elm_geometry$Frame3d$originPoint(model.level.playerFrame)),
 					sharedModel.screenSize,
-					$author$project$Board$gamePlayCamera(model.playerFrame),
+					$author$project$Board$gamePlayCamera(model.level.playerFrame),
 					$elm$core$List$concat(
 						_List_fromArray(
 							[
 								A2(
 								$elm$core$List$map,
 								$author$project$Board$viewBlock,
-								$elm$core$Dict$toList(model.board.blocks)),
+								$elm$core$Dict$toList(model.level.board.blocks)),
 								_List_fromArray(
 								[
-									A2($author$project$Board$viewPlayer, model.playerFacing, model.playerFrame)
+									A2($author$project$Board$viewPlayer, model.level.playerFacing, model.level.playerFrame)
 								])
 							]))),
 					A2(
@@ -28474,7 +28641,7 @@ var $author$project$Screen$FreePlay$view = F4(
 							_List_fromArray(
 								[
 									$elm$html$Html$text(
-									'Score: ' + $elm$core$String$fromInt(model.score))
+									'Score: ' + $elm$core$String$fromInt(model.level.score))
 								]))
 						])),
 					A2(

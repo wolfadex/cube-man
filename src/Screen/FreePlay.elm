@@ -9,11 +9,11 @@ module Screen.FreePlay exposing
     , view
     )
 
-import Board exposing (Board)
+import Board
 import Browser.Events
 import Dict
 import Duration exposing (Duration)
-import Frame3d exposing (Frame3d)
+import Frame3d
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events
@@ -21,7 +21,6 @@ import Html.Extra
 import Input
 import Json.Decode
 import Json.Encode
-import Length
 import Phosphor
 import Serialize
 import Shared
@@ -29,12 +28,6 @@ import Shared
 
 type alias Model =
     { level : Board.Level
-    , board : Board
-    , score : Int
-    , playerFrame : Frame3d Length.Meters Board.WorldCoordinates { defines : Board.WorldCoordinates }
-    , playerFacing : Board.Facing
-    , playerWantFacing : Board.Facing
-    , playerTarget : Board.Target
     , boardLoadError : Maybe Board.BoardLoadError
     , boardPlayError : Maybe Board.BoardPlayError
 
@@ -52,12 +45,6 @@ type FreePlayMode
 init : ( Model, Cmd Msg )
 init =
     ( { level = Board.emptyLevel
-      , board = Board.empty
-      , score = 0
-      , playerFrame = Frame3d.atOrigin
-      , playerFacing = Board.Forward
-      , playerWantFacing = Board.Forward
-      , playerTarget = Board.initTarget Board.empty Board.Forward Frame3d.atOrigin
       , boardLoadError = Nothing
       , boardPlayError = Nothing
       , freePlayMode = FreePlayBoardSelection
@@ -80,19 +67,19 @@ subscriptions model =
             else
                 Sub.batch
                     [ Browser.Events.onAnimationFrameDelta (Duration.milliseconds >> Tick)
-                    , Browser.Events.onKeyPress decodeKeyPressed
+                    , Browser.Events.onKeyDown decodeKeyDown
                     ]
 
 
-decodeKeyPressed : Json.Decode.Decoder Msg
-decodeKeyPressed =
-    Json.Decode.map KeyPressed
+decodeKeyDown : Json.Decode.Decoder Msg
+decodeKeyDown =
+    Json.Decode.map KeyDown
         (Json.Decode.field "key" Json.Decode.string)
 
 
 type Msg
     = Tick Duration
-    | KeyPressed String
+    | KeyDown String
     | LoadFreePlayBoard String
     | ExitFreePlayBoard
     | ShowFreePlayMenu Bool
@@ -103,7 +90,7 @@ update sharedModel msg model =
     case msg of
         Tick deltaMs ->
             ( model
-                |> tickPlayer deltaMs
+                |> tick deltaMs
             , Cmd.none
             )
 
@@ -137,19 +124,14 @@ update sharedModel msg model =
             in
             case loadedBoard of
                 Ok board ->
-                    case Board.findSpawn board of
+                    case Board.init board of
                         Nothing ->
                             ( { model | boardPlayError = Just Board.MissingPlayerSpawn }, Cmd.none )
 
-                        Just spawnFrame ->
+                        Just level ->
                             ( { model
                                 | freePlayMode = FreePlayBoardLoaded
-                                , board = Board.optimize board
-                                , playerFrame = spawnFrame
-                                , score = 0
-                                , playerTarget = Board.initTarget board Board.Forward spawnFrame
-                                , playerFacing = Board.Forward
-                                , playerWantFacing = Board.Forward
+                                , level = level
                                 , boardPlayError = Nothing
                               }
                             , Cmd.none
@@ -165,7 +147,7 @@ update sharedModel msg model =
         ShowFreePlayMenu show ->
             ( { model | showFreePlayMenu = show }, Cmd.none )
 
-        KeyPressed key ->
+        KeyDown key ->
             case model.freePlayMode of
                 FreePlayBoardSelection ->
                     ( model, Cmd.none )
@@ -174,29 +156,38 @@ update sharedModel msg model =
                     handleGameKeyPressed sharedModel key model
 
 
-tickPlayer : Duration -> Model -> Model
-tickPlayer deltaMs model =
+tick : Duration -> Model -> Model
+tick deltaMs model =
     case model.freePlayMode of
         FreePlayBoardSelection ->
             model
 
         FreePlayBoardLoaded ->
-            { model | level = Board.tickPlayer deltaMs model.level }
+            { model
+                | level =
+                    model.level
+                        |> Board.tickPlayer deltaMs
+                        |> Board.tickEnemies deltaMs
+            }
 
 
 handleGameKeyPressed : Shared.LoadedModel -> String -> Model -> ( Model, Cmd Msg )
 handleGameKeyPressed sharedModel key model =
+    let
+        level =
+            model.level
+    in
     if Input.isInputKey sharedModel.inputMapping.moveUp key then
-        ( { model | playerWantFacing = Board.Forward }, Cmd.none )
+        ( { model | level = { level | playerWantFacing = Board.Forward } }, Cmd.none )
 
     else if Input.isInputKey sharedModel.inputMapping.moveDown key then
-        ( { model | playerWantFacing = Board.Backward }, Cmd.none )
+        ( { model | level = { level | playerWantFacing = Board.Backward } }, Cmd.none )
 
     else if Input.isInputKey sharedModel.inputMapping.moveLeft key then
-        ( { model | playerWantFacing = Board.Left }, Cmd.none )
+        ( { model | level = { level | playerWantFacing = Board.Left } }, Cmd.none )
 
     else if Input.isInputKey sharedModel.inputMapping.moveRight key then
-        ( { model | playerWantFacing = Board.Right }, Cmd.none )
+        ( { model | level = { level | playerWantFacing = Board.Right } }, Cmd.none )
 
     else
         ( model, Cmd.none )
@@ -263,18 +254,18 @@ view toSharedMsg sharedModel toMsg model =
 
         FreePlayBoardLoaded ->
             [ Board.view3dScene
-                (Board.gameLights model.board (Frame3d.originPoint model.playerFrame))
+                (Board.gameLights model.level.board (Frame3d.originPoint model.level.playerFrame))
                 sharedModel.screenSize
-                (Board.gamePlayCamera model.playerFrame)
+                (Board.gamePlayCamera model.level.playerFrame)
                 (List.concat
-                    [ model.board.blocks
+                    [ model.level.board.blocks
                         |> Dict.toList
                         |> List.map
                             (Board.viewBlock
                              -- { wallMesh = sharedModel.wallMesh
                              -- }
                             )
-                    , [ Board.viewPlayer model.playerFacing model.playerFrame ]
+                    , [ Board.viewPlayer model.level.playerFacing model.level.playerFrame ]
                     ]
                 )
             , Html.div
@@ -283,7 +274,7 @@ view toSharedMsg sharedModel toMsg model =
                 , Html.Attributes.style "top" "0"
                 , Html.Attributes.style "left" "0"
                 ]
-                [ Html.h3 [] [ Html.text ("Score: " ++ String.fromInt model.score) ]
+                [ Html.h3 [] [ Html.text ("Score: " ++ String.fromInt model.level.score) ]
                 ]
             , Html.div
                 [ Html.Attributes.style "position" "absolute"
