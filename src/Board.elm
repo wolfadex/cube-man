@@ -1162,38 +1162,42 @@ tickEnemySpawners deltaDuration level =
                 (\point block ( blocks, possibleEnemy ) ->
                     case block of
                         EnemySpawner details ->
-                            let
-                                timeTillSpawn =
-                                    details.timeTillSpawn
-                                        |> Quantity.minus deltaDuration
-                            in
-                            if timeTillSpawn |> Quantity.lessThan (Quantity 0) then
-                                ( Dict.insert point
-                                    (EnemySpawner
-                                        { details
-                                            | timeTillSpawn = timeTillSpawn |> Quantity.plus details.timeBetweenSpawns
-                                        }
-                                    )
-                                    blocks
-                                , if List.length level.enemies < 3 then
-                                    Just
+                            if List.length level.enemies < 3 then
+                                let
+                                    timeTillSpawn =
+                                        details.timeTillSpawn
+                                            |> Quantity.minus deltaDuration
+                                in
+                                if timeTillSpawn |> Quantity.lessThan (Quantity 0) then
+                                    ( Dict.insert point
+                                        (EnemySpawner
+                                            { details
+                                                | timeTillSpawn = timeTillSpawn |> Quantity.plus details.timeBetweenSpawns
+                                            }
+                                        )
+                                        blocks
+                                    , Just
                                         { targetPoint = point
                                         , movingFrom = point
                                         , movingTo = point
                                         , durationBetweenMoves = durationEnemyMovement
                                         }
+                                    )
 
-                                  else
-                                    possibleEnemy
-                                )
+                                else
+                                    ( Dict.insert point
+                                        (EnemySpawner
+                                            { details
+                                                | timeTillSpawn = timeTillSpawn
+                                            }
+                                        )
+                                        blocks
+                                    , possibleEnemy
+                                    )
 
                             else
                                 ( Dict.insert point
-                                    (EnemySpawner
-                                        { details
-                                            | timeTillSpawn = timeTillSpawn
-                                        }
-                                    )
+                                    (EnemySpawner { details | timeTillSpawn = details.timeBetweenSpawns })
                                     blocks
                                 , possibleEnemy
                                 )

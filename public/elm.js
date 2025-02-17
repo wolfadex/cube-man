@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739776737364"
+    "1739777197644"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -16931,32 +16931,45 @@ var $author$project$Board$tickEnemySpawners = F2(
 					var possibleEnemy = _v1.b;
 					if (block.$ === 'EnemySpawner') {
 						var details = block.a;
-						var timeTillSpawn = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, details.timeTillSpawn);
-						return A2(
-							$ianmackenzie$elm_units$Quantity$lessThan,
-							$ianmackenzie$elm_units$Quantity$Quantity(0),
-							timeTillSpawn) ? _Utils_Tuple2(
-							A3(
-								$elm$core$Dict$insert,
-								point,
-								$author$project$Board$EnemySpawner(
-									_Utils_update(
-										details,
-										{
-											timeTillSpawn: A2($ianmackenzie$elm_units$Quantity$plus, details.timeBetweenSpawns, timeTillSpawn)
-										})),
-								blocks),
-							($elm$core$List$length(level.enemies) < 3) ? $elm$core$Maybe$Just(
-								{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: point, movingTo: point, targetPoint: point}) : possibleEnemy) : _Utils_Tuple2(
-							A3(
-								$elm$core$Dict$insert,
-								point,
-								$author$project$Board$EnemySpawner(
-									_Utils_update(
-										details,
-										{timeTillSpawn: timeTillSpawn})),
-								blocks),
-							possibleEnemy);
+						if ($elm$core$List$length(level.enemies) < 3) {
+							var timeTillSpawn = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, details.timeTillSpawn);
+							return A2(
+								$ianmackenzie$elm_units$Quantity$lessThan,
+								$ianmackenzie$elm_units$Quantity$Quantity(0),
+								timeTillSpawn) ? _Utils_Tuple2(
+								A3(
+									$elm$core$Dict$insert,
+									point,
+									$author$project$Board$EnemySpawner(
+										_Utils_update(
+											details,
+											{
+												timeTillSpawn: A2($ianmackenzie$elm_units$Quantity$plus, details.timeBetweenSpawns, timeTillSpawn)
+											})),
+									blocks),
+								$elm$core$Maybe$Just(
+									{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: point, movingTo: point, targetPoint: point})) : _Utils_Tuple2(
+								A3(
+									$elm$core$Dict$insert,
+									point,
+									$author$project$Board$EnemySpawner(
+										_Utils_update(
+											details,
+											{timeTillSpawn: timeTillSpawn})),
+									blocks),
+								possibleEnemy);
+						} else {
+							return _Utils_Tuple2(
+								A3(
+									$elm$core$Dict$insert,
+									point,
+									$author$project$Board$EnemySpawner(
+										_Utils_update(
+											details,
+											{timeTillSpawn: details.timeBetweenSpawns})),
+									blocks),
+								possibleEnemy);
+						}
 					} else {
 						return _Utils_Tuple2(
 							A3($elm$core$Dict$insert, point, block, blocks),
