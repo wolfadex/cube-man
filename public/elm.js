@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739820650183"
+    "1739821739247"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -16941,6 +16941,54 @@ var $ianmackenzie$elm_units$Quantity$compare = F2(
 		return A2($elm$core$Basics$compare, x, y);
 	});
 var $author$project$Board$durationEnemyMovement = $ianmackenzie$elm_units$Duration$seconds(1);
+var $author$project$Board$enemyRadius = $ianmackenzie$elm_units$Length$meters(0.1);
+var $ianmackenzie$elm_units$Quantity$greaterThan = F2(
+	function (_v0, _v1) {
+		var y = _v0.a;
+		var x = _v1.a;
+		return _Utils_cmp(x, y) > 0;
+	});
+var $author$project$Board$playerRadius = $ianmackenzie$elm_units$Length$meters(0.5);
+var $author$project$Board$enemyPlayerCollision = F2(
+	function (enemyPoint, level) {
+		return !A2(
+			$ianmackenzie$elm_units$Quantity$greaterThan,
+			A2($ianmackenzie$elm_units$Quantity$plus, $author$project$Board$enemyRadius, $author$project$Board$playerRadius),
+			A2(
+				$ianmackenzie$elm_geometry$Point3d$distanceFrom,
+				$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame),
+				enemyPoint));
+	});
+var $ianmackenzie$elm_geometry$Point3d$interpolateFrom = F3(
+	function (_v0, _v1, t) {
+		var p1 = _v0.a;
+		var p2 = _v1.a;
+		return (t <= 0.5) ? $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
+			{x: p1.x + (t * (p2.x - p1.x)), y: p1.y + (t * (p2.y - p1.y)), z: p1.z + (t * (p2.z - p1.z))}) : $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
+			{x: p2.x + ((1 - t) * (p1.x - p2.x)), y: p2.y + ((1 - t) * (p1.y - p2.y)), z: p2.z + ((1 - t) * (p1.z - p2.z))});
+	});
+var $ianmackenzie$elm_units$Quantity$ratio = F2(
+	function (_v0, _v1) {
+		var x = _v0.a;
+		var y = _v1.a;
+		return x / y;
+	});
+var $author$project$Board$enemyToVisualPoint = function (enemy) {
+	var _v0 = enemy.movingTo;
+	if (!_v0.b) {
+		return $author$project$Board$pointToPoint3d(enemy.movingFrom);
+	} else {
+		var movingTo = _v0.a;
+		return A3(
+			$ianmackenzie$elm_geometry$Point3d$interpolateFrom,
+			$author$project$Board$pointToPoint3d(enemy.movingFrom),
+			$author$project$Board$pointToPoint3d(movingTo),
+			function (f) {
+				return 1 - f;
+			}(
+				A2($ianmackenzie$elm_units$Quantity$ratio, enemy.durationBetweenMoves, $author$project$Board$durationEnemyMovement)));
+	}
+};
 var $author$project$Board$moveEnemy = F3(
 	function (deltaDuration, level, enemy) {
 		var _v0 = level.playerTarget;
@@ -16954,28 +17002,55 @@ var $author$project$Board$moveEnemy = F3(
 				var movingTo = _v1.a;
 				var movingToRest = _v1.b;
 				var remainingDuration = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, enemy.durationBetweenMoves);
-				return _Utils_eq(
+				if (_Utils_eq(
 					A2(
 						$ianmackenzie$elm_units$Quantity$compare,
 						remainingDuration,
 						$ianmackenzie$elm_units$Quantity$Quantity(0)),
-					$elm$core$Basics$EQ) ? _Utils_update(
-					enemy,
-					{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest}) : (A2(
-					$ianmackenzie$elm_units$Quantity$lessThan,
-					$ianmackenzie$elm_units$Quantity$Quantity(0),
-					remainingDuration) ? A3(
-					$author$project$Board$moveEnemy,
-					A2(
-						$ianmackenzie$elm_units$Quantity$minus,
-						remainingDuration,
-						$ianmackenzie$elm_units$Quantity$Quantity(0)),
-					level,
-					_Utils_update(
+					$elm$core$Basics$EQ)) {
+					var nextEnemy = _Utils_update(
 						enemy,
-						{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest})) : _Utils_update(
-					enemy,
-					{durationBetweenMoves: remainingDuration}));
+						{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest});
+					return A2(
+						$author$project$Board$enemyPlayerCollision,
+						$author$project$Board$enemyToVisualPoint(nextEnemy),
+						level) ? nextEnemy : nextEnemy;
+				} else {
+					if (A2(
+						$ianmackenzie$elm_units$Quantity$lessThan,
+						$ianmackenzie$elm_units$Quantity$Quantity(0),
+						remainingDuration)) {
+						var nextEnemy = _Utils_update(
+							enemy,
+							{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest});
+						return A2(
+							$author$project$Board$enemyPlayerCollision,
+							$author$project$Board$enemyToVisualPoint(nextEnemy),
+							level) ? A3(
+							$author$project$Board$moveEnemy,
+							A2(
+								$ianmackenzie$elm_units$Quantity$minus,
+								remainingDuration,
+								$ianmackenzie$elm_units$Quantity$Quantity(0)),
+							level,
+							nextEnemy) : A3(
+							$author$project$Board$moveEnemy,
+							A2(
+								$ianmackenzie$elm_units$Quantity$minus,
+								remainingDuration,
+								$ianmackenzie$elm_units$Quantity$Quantity(0)),
+							level,
+							nextEnemy);
+					} else {
+						var nextEnemy = _Utils_update(
+							enemy,
+							{durationBetweenMoves: remainingDuration});
+						return A2(
+							$author$project$Board$enemyPlayerCollision,
+							$author$project$Board$enemyToVisualPoint(nextEnemy),
+							level) ? nextEnemy : nextEnemy;
+					}
+				}
 			}
 		}
 	});
@@ -17688,11 +17763,11 @@ var $author$project$Board$setPlayerFacing = function (model) {
 	}
 };
 var $author$project$Board$movePlayer = F2(
-	function (deltaDuration, model) {
-		var _v0 = model.playerTarget;
+	function (deltaDuration, level) {
+		var _v0 = level.playerTarget;
 		switch (_v0.$) {
 			case 'NoTarget':
-				return model;
+				return level;
 			case 'MoveForward':
 				var moveDetails = _v0.a;
 				var toPoint = $author$project$Board$pointToPoint3d(moveDetails.to);
@@ -17703,38 +17778,40 @@ var $author$project$Board$movePlayer = F2(
 						remainingDuration,
 						$ianmackenzie$elm_units$Quantity$Quantity(0)),
 					$elm$core$Basics$EQ)) {
-					var playerFrame = A2($ianmackenzie$elm_geometry$Frame3d$moveTo, toPoint, model.playerFrame);
-					return $author$project$Board$scorePoints(
+					var playerFrame = A2($ianmackenzie$elm_geometry$Frame3d$moveTo, toPoint, level.playerFrame);
+					var nextLevel = $author$project$Board$scorePoints(
 						_Utils_update(
-							model,
+							level,
 							{
 								playerFrame: playerFrame,
-								playerTarget: A4($author$project$Board$findNextTarget, model.board, model.playerFacing, moveDetails.to, playerFrame)
+								playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, moveDetails.to, playerFrame)
 							}));
+					return nextLevel;
 				} else {
 					if (A2(
 						$ianmackenzie$elm_units$Quantity$lessThan,
 						$ianmackenzie$elm_units$Quantity$Quantity(0),
 						remainingDuration)) {
-						var playerFrame = A2($ianmackenzie$elm_geometry$Frame3d$moveTo, toPoint, model.playerFrame);
+						var playerFrame = A2($ianmackenzie$elm_geometry$Frame3d$moveTo, toPoint, level.playerFrame);
+						var nextLevel = $author$project$Board$scorePoints(
+							_Utils_update(
+								level,
+								{
+									playerFrame: playerFrame,
+									playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, moveDetails.to, playerFrame)
+								}));
 						return A2(
 							$author$project$Board$tickPlayer,
 							A2(
 								$ianmackenzie$elm_units$Quantity$minus,
 								remainingDuration,
 								$ianmackenzie$elm_units$Quantity$Quantity(0)),
-							$author$project$Board$scorePoints(
-								_Utils_update(
-									model,
-									{
-										playerFrame: playerFrame,
-										playerTarget: A4($author$project$Board$findNextTarget, model.board, model.playerFacing, moveDetails.to, playerFrame)
-									})));
+							nextLevel);
 					} else {
 						var fromPoint = $author$project$Board$pointToPoint3d(moveDetails.from);
-						return $author$project$Board$scorePoints(
+						var nextLevel = $author$project$Board$scorePoints(
 							_Utils_update(
-								model,
+								level,
 								{
 									playerFrame: A2(
 										$ianmackenzie$elm_geometry$Frame3d$moveTo,
@@ -17751,12 +17828,13 @@ var $author$project$Board$movePlayer = F2(
 												}(),
 												A2($ianmackenzie$elm_geometry$Vector3d$from, fromPoint, toPoint)),
 											fromPoint),
-										model.playerFrame),
+										level.playerFrame),
 									playerTarget: $author$project$Board$MoveForward(
 										_Utils_update(
 											moveDetails,
 											{duration: remainingDuration}))
 								}));
+						return nextLevel;
 					}
 				}
 			default:
@@ -17776,42 +17854,43 @@ var $author$project$Board$movePlayer = F2(
 							$ianmackenzie$elm_geometry$Axis3d$through,
 							A3(
 								$ianmackenzie$elm_geometry$Point3d$translateIn,
-								$ianmackenzie$elm_geometry$Frame3d$zDirection(model.playerFrame),
+								$ianmackenzie$elm_geometry$Frame3d$zDirection(level.playerFrame),
 								$ianmackenzie$elm_units$Length$meters(-1),
 								$author$project$Board$pointToPoint3d(
 									$author$project$Board$point3dToPoint(
-										$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame)))),
+										$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame)))),
 							function () {
-								var _v3 = model.playerFacing;
+								var _v3 = level.playerFacing;
 								switch (_v3.$) {
 									case 'Forward':
-										return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
+										return $ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame);
 									case 'Backward':
 										return $ianmackenzie$elm_geometry$Direction3d$reverse(
-											$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame));
+											$ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame));
 									case 'Left':
 										return $ianmackenzie$elm_geometry$Direction3d$reverse(
-											$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame));
+											$ianmackenzie$elm_geometry$Frame3d$xDirection(level.playerFrame));
 									default:
-										return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
+										return $ianmackenzie$elm_geometry$Frame3d$xDirection(level.playerFrame);
 								}
 							}()),
 						edgeMovement,
-						model.playerFrame);
+						level.playerFrame);
 					var correctedPlayerFrame = $author$project$Board$correctPlayerFrame(playerFrame);
+					var nextLevel = $author$project$Board$scorePoints(
+						_Utils_update(
+							level,
+							{
+								playerFrame: correctedPlayerFrame,
+								playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, edgeDetails.to, correctedPlayerFrame)
+							}));
 					return A2(
 						$author$project$Board$tickPlayer,
 						A2(
 							$ianmackenzie$elm_units$Quantity$minus,
 							remainingDuration,
 							$ianmackenzie$elm_units$Quantity$Quantity(0)),
-						$author$project$Board$scorePoints(
-							_Utils_update(
-								model,
-								{
-									playerFrame: correctedPlayerFrame,
-									playerTarget: A4($author$project$Board$findNextTarget, model.board, model.playerFacing, edgeDetails.to, correctedPlayerFrame)
-								})));
+						nextLevel);
 				} else {
 					var edgeMovement = A2($ianmackenzie$elm_units$Quantity$for, deltaDuration, targetSpeed);
 					if (_Utils_eq(
@@ -17826,40 +17905,41 @@ var $author$project$Board$movePlayer = F2(
 								$ianmackenzie$elm_geometry$Axis3d$through,
 								A3(
 									$ianmackenzie$elm_geometry$Point3d$translateIn,
-									$ianmackenzie$elm_geometry$Frame3d$zDirection(model.playerFrame),
+									$ianmackenzie$elm_geometry$Frame3d$zDirection(level.playerFrame),
 									$ianmackenzie$elm_units$Length$meters(-1),
 									$author$project$Board$pointToPoint3d(
 										$author$project$Board$point3dToPoint(
-											$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame)))),
+											$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame)))),
 								function () {
-									var _v4 = model.playerFacing;
+									var _v4 = level.playerFacing;
 									switch (_v4.$) {
 										case 'Forward':
-											return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
+											return $ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame);
 										case 'Backward':
 											return $ianmackenzie$elm_geometry$Direction3d$reverse(
-												$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame));
+												$ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame));
 										case 'Left':
 											return $ianmackenzie$elm_geometry$Direction3d$reverse(
-												$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame));
+												$ianmackenzie$elm_geometry$Frame3d$xDirection(level.playerFrame));
 										default:
-											return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
+											return $ianmackenzie$elm_geometry$Frame3d$xDirection(level.playerFrame);
 									}
 								}()),
 							edgeMovement,
-							model.playerFrame);
+							level.playerFrame);
 						var correctedPlayerFrame = $author$project$Board$correctPlayerFrame(playerFrame);
-						return $author$project$Board$scorePoints(
+						var nextLevel = $author$project$Board$scorePoints(
 							_Utils_update(
-								model,
+								level,
 								{
 									playerFrame: correctedPlayerFrame,
-									playerTarget: A4($author$project$Board$findNextTarget, model.board, model.playerFacing, edgeDetails.to, correctedPlayerFrame)
+									playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, edgeDetails.to, correctedPlayerFrame)
 								}));
+						return nextLevel;
 					} else {
-						return $author$project$Board$scorePoints(
+						var nextLevel = $author$project$Board$scorePoints(
 							_Utils_update(
-								model,
+								level,
 								{
 									playerFrame: A3(
 										$ianmackenzie$elm_geometry$Frame3d$rotateAround,
@@ -17867,33 +17947,34 @@ var $author$project$Board$movePlayer = F2(
 											$ianmackenzie$elm_geometry$Axis3d$through,
 											A3(
 												$ianmackenzie$elm_geometry$Point3d$translateIn,
-												$ianmackenzie$elm_geometry$Frame3d$zDirection(model.playerFrame),
+												$ianmackenzie$elm_geometry$Frame3d$zDirection(level.playerFrame),
 												$ianmackenzie$elm_units$Length$meters(-1),
 												$author$project$Board$pointToPoint3d(
 													$author$project$Board$point3dToPoint(
-														$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame)))),
+														$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame)))),
 											function () {
-												var _v5 = model.playerFacing;
+												var _v5 = level.playerFacing;
 												switch (_v5.$) {
 													case 'Forward':
-														return $ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame);
+														return $ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame);
 													case 'Backward':
 														return $ianmackenzie$elm_geometry$Direction3d$reverse(
-															$ianmackenzie$elm_geometry$Frame3d$yDirection(model.playerFrame));
+															$ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame));
 													case 'Left':
 														return $ianmackenzie$elm_geometry$Direction3d$reverse(
-															$ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame));
+															$ianmackenzie$elm_geometry$Frame3d$xDirection(level.playerFrame));
 													default:
-														return $ianmackenzie$elm_geometry$Frame3d$xDirection(model.playerFrame);
+														return $ianmackenzie$elm_geometry$Frame3d$xDirection(level.playerFrame);
 												}
 											}()),
 										edgeMovement,
-										model.playerFrame),
+										level.playerFrame),
 									playerTarget: $author$project$Board$TraverseEdge(
 										_Utils_update(
 											edgeDetails,
 											{duration: remainingDuration}))
 								}));
+						return nextLevel;
 					}
 				}
 		}
@@ -19697,12 +19778,6 @@ var $ianmackenzie$elm_geometry$Vector3d$dot = F2(
 		var v2 = _v0.a;
 		var v1 = _v1.a;
 		return $ianmackenzie$elm_units$Quantity$Quantity(((v1.x * v2.x) + (v1.y * v2.y)) + (v1.z * v2.z));
-	});
-var $ianmackenzie$elm_units$Quantity$greaterThan = F2(
-	function (_v0, _v1) {
-		var y = _v0.a;
-		var x = _v1.a;
-		return _Utils_cmp(x, y) > 0;
 	});
 var $ianmackenzie$elm_geometry$Vector3d$minus = F2(
 	function (_v0, _v1) {
@@ -23804,12 +23879,6 @@ var $ianmackenzie$elm_geometry$Cylinder3d$placeIn = F2(
 				radius: cylinder.radius
 			});
 	});
-var $ianmackenzie$elm_units$Quantity$ratio = F2(
-	function (_v0, _v1) {
-		var x = _v0.a;
-		var y = _v1.a;
-		return x / y;
-	});
 var $elm_community$easing_functions$Ease$reverse = F2(
 	function (easing, time) {
 		return easing(1 - time);
@@ -25603,31 +25672,8 @@ var $ianmackenzie$elm_3d_scene$Scene3d$cone = F2(
 	function (givenMaterial, givenCone) {
 		return A4($ianmackenzie$elm_3d_scene$Scene3d$Entity$cone, true, false, givenMaterial, givenCone);
 	});
-var $ianmackenzie$elm_geometry$Point3d$interpolateFrom = F3(
-	function (_v0, _v1, t) {
-		var p1 = _v0.a;
-		var p2 = _v1.a;
-		return (t <= 0.5) ? $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
-			{x: p1.x + (t * (p2.x - p1.x)), y: p1.y + (t * (p2.y - p1.y)), z: p1.z + (t * (p2.z - p1.z))}) : $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
-			{x: p2.x + ((1 - t) * (p1.x - p2.x)), y: p2.y + ((1 - t) * (p1.y - p2.y)), z: p2.z + ((1 - t) * (p1.z - p2.z))});
-	});
 var $author$project$Board$viewEnemy = function (enemy) {
-	var visualPoint = function () {
-		var _v0 = enemy.movingTo;
-		if (!_v0.b) {
-			return $author$project$Board$pointToPoint3d(enemy.movingFrom);
-		} else {
-			var movingTo = _v0.a;
-			return A3(
-				$ianmackenzie$elm_geometry$Point3d$interpolateFrom,
-				$author$project$Board$pointToPoint3d(enemy.movingFrom),
-				$author$project$Board$pointToPoint3d(movingTo),
-				function (f) {
-					return 1 - f;
-				}(
-					A2($ianmackenzie$elm_units$Quantity$ratio, enemy.durationBetweenMoves, $author$project$Board$durationEnemyMovement)));
-		}
-	}();
+	var visualPoint = $author$project$Board$enemyToVisualPoint(enemy);
 	var material = A2(
 		$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
 		$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$red),
@@ -27203,10 +27249,7 @@ var $author$project$Board$viewPlayer = F2(
 						A2(
 							$ianmackenzie$elm_geometry$Sphere3d$placeIn,
 							frame,
-							A2(
-								$ianmackenzie$elm_geometry$Sphere3d$atPoint,
-								$ianmackenzie$elm_geometry$Point3d$origin,
-								$ianmackenzie$elm_units$Length$meters(0.5)))),
+							A2($ianmackenzie$elm_geometry$Sphere3d$atPoint, $ianmackenzie$elm_geometry$Point3d$origin, $author$project$Board$playerRadius))),
 						A2(
 						$ianmackenzie$elm_3d_scene$Scene3d$cone,
 						A2(

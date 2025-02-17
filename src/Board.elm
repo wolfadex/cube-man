@@ -55,7 +55,7 @@ import Ease
 import Frame3d exposing (Frame3d)
 import Html exposing (Html)
 import Input
-import Length
+import Length exposing (Length)
 import Luminance
 import LuminousFlux
 import Pixels
@@ -461,6 +461,23 @@ view3dScene lights screenSize camera entities =
         }
 
 
+enemyToVisualPoint : Enemy -> Point3d Length.Meters WorldCoordinates
+enemyToVisualPoint enemy =
+    case enemy.movingTo of
+        [] ->
+            pointToPoint3d enemy.movingFrom
+
+        movingTo :: _ ->
+            Point3d.interpolateFrom
+                (pointToPoint3d enemy.movingFrom)
+                (pointToPoint3d movingTo)
+                (Quantity.ratio
+                    enemy.durationBetweenMoves
+                    durationEnemyMovement
+                    |> (\f -> 1 - f)
+                )
+
+
 viewEnemy : Enemy -> Scene3d.Entity WorldCoordinates
 viewEnemy enemy =
     let
@@ -475,19 +492,7 @@ viewEnemy enemy =
             }
 
         visualPoint =
-            case enemy.movingTo of
-                [] ->
-                    pointToPoint3d enemy.movingFrom
-
-                movingTo :: _ ->
-                    Point3d.interpolateFrom
-                        (pointToPoint3d enemy.movingFrom)
-                        (pointToPoint3d movingTo)
-                        (Quantity.ratio
-                            enemy.durationBetweenMoves
-                            durationEnemyMovement
-                            |> (\f -> 1 - f)
-                        )
+            enemyToVisualPoint enemy
     in
     Scene3d.group
         [ Scene3d.cone
@@ -553,6 +558,16 @@ type alias TexturedMesh =
     )
 
 
+playerRadius : Length
+playerRadius =
+    Length.meters 0.5
+
+
+enemyRadius : Length
+enemyRadius =
+    Length.meters 0.1
+
+
 viewPlayer : Facing -> Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates } -> Scene3d.Entity WorldCoordinates
 viewPlayer facing frame =
     Scene3d.group
@@ -562,7 +577,7 @@ viewPlayer facing frame =
                 (Luminance.nits 20000)
             )
             (Sphere3d.atPoint Point3d.origin
-                (Length.meters 0.5)
+                playerRadius
                 |> Sphere3d.placeIn frame
             )
         , Scene3d.cone
@@ -1190,24 +1205,52 @@ moveEnemy deltaDuration level enemy =
                                 |> Quantity.minus deltaDuration
                     in
                     if Quantity.compare remainingDuration (Quantity 0) == EQ then
-                        { enemy
-                            | movingTo = movingToRest
-                            , movingFrom = movingTo
-                            , durationBetweenMoves = durationEnemyMovement
-                        }
+                        let
+                            nextEnemy =
+                                { enemy
+                                    | movingTo = movingToRest
+                                    , movingFrom = movingTo
+                                    , durationBetweenMoves = durationEnemyMovement
+                                }
+                        in
+                        if enemyPlayerCollision (enemyToVisualPoint nextEnemy) level then
+                            -- TOOD: handle collision
+                            nextEnemy
+
+                        else
+                            nextEnemy
 
                     else if remainingDuration |> Quantity.lessThan (Quantity 0) then
-                        { enemy
-                            | movingTo = movingToRest
-                            , movingFrom = movingTo
-                            , durationBetweenMoves = durationEnemyMovement
-                        }
-                            |> moveEnemy (Quantity 0 |> Quantity.minus remainingDuration) level
+                        let
+                            nextEnemy =
+                                { enemy
+                                    | movingTo = movingToRest
+                                    , movingFrom = movingTo
+                                    , durationBetweenMoves = durationEnemyMovement
+                                }
+                        in
+                        if enemyPlayerCollision (enemyToVisualPoint nextEnemy) level then
+                            -- TOOD: handle collision
+                            nextEnemy
+                                |> moveEnemy (Quantity 0 |> Quantity.minus remainingDuration) level
+
+                        else
+                            nextEnemy
+                                |> moveEnemy (Quantity 0 |> Quantity.minus remainingDuration) level
 
                     else
-                        { enemy
-                            | durationBetweenMoves = remainingDuration
-                        }
+                        let
+                            nextEnemy =
+                                { enemy
+                                    | durationBetweenMoves = remainingDuration
+                                }
+                        in
+                        if enemyPlayerCollision (enemyToVisualPoint nextEnemy) level then
+                            -- TOOD: handle collision
+                            nextEnemy
+
+                        else
+                            nextEnemy
 
 
 findEnemyPath : Dict Point Block -> Point -> Point -> Maybe (List Point)
@@ -1382,11 +1425,20 @@ init board =
                 }
 
 
+enemyPlayerCollision : Point3d Length.Meters WorldCoordinates -> Level -> Bool
+enemyPlayerCollision enemyPoint level =
+    Point3d.distanceFrom
+        (Frame3d.originPoint level.playerFrame)
+        enemyPoint
+        |> Quantity.greaterThan (playerRadius |> Quantity.plus enemyRadius)
+        |> not
+
+
 movePlayer : Duration -> Level -> Level
-movePlayer deltaDuration model =
-    case model.playerTarget of
+movePlayer deltaDuration level =
+    case level.playerTarget of
         NoTarget ->
-            model
+            level
 
         MoveForward moveDetails ->
             let
@@ -1400,55 +1452,76 @@ movePlayer deltaDuration model =
             if Quantity.compare remainingDuration (Quantity 0) == EQ then
                 let
                     playerFrame =
-                        model.playerFrame
+                        level.playerFrame
                             |> Frame3d.moveTo toPoint
+
+                    nextLevel =
+                        { level
+                            | playerFrame = playerFrame
+                            , playerTarget = findNextTarget level.board level.playerFacing moveDetails.to playerFrame
+                        }
+                            |> scorePoints
                 in
-                { model
-                    | playerFrame = playerFrame
-                    , playerTarget = findNextTarget model.board model.playerFacing moveDetails.to playerFrame
-                }
-                    |> scorePoints
+                -- if enemyPlayerCollision (enemyToVisualPoint enemy) nextLevel then
+                --     -- TODO: handle collision
+                --     nextLevel
+                -- else
+                nextLevel
 
             else if remainingDuration |> Quantity.lessThan (Quantity 0) then
                 let
                     playerFrame =
-                        model.playerFrame
+                        level.playerFrame
                             |> Frame3d.moveTo toPoint
+
+                    nextLevel =
+                        { level
+                            | playerFrame = playerFrame
+                            , playerTarget = findNextTarget level.board level.playerFacing moveDetails.to playerFrame
+                        }
+                            |> scorePoints
                 in
-                { model
-                    | playerFrame = playerFrame
-                    , playerTarget = findNextTarget model.board model.playerFacing moveDetails.to playerFrame
-                }
-                    |> scorePoints
+                -- if enemyPlayerCollision (enemyToVisualPoint enemy) nextLevel then
+                --     -- TODO: handle collision
+                --     nextLevel
+                -- else
+                nextLevel
                     |> tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
 
             else
                 let
                     fromPoint =
                         pointToPoint3d moveDetails.from
-                in
-                { model
-                    | playerFrame =
-                        model.playerFrame
-                            |> Frame3d.moveTo
-                                (Point3d.translateBy
-                                    (Vector3d.from fromPoint toPoint
-                                        |> Vector3d.scaleBy
-                                            (let
-                                                (Quantity durFordMove) =
-                                                    durationForForwardMovement
 
-                                                (Quantity remDur) =
-                                                    remainingDuration
-                                             in
-                                             (durFordMove - remDur) / durFordMove
+                    nextLevel =
+                        { level
+                            | playerFrame =
+                                level.playerFrame
+                                    |> Frame3d.moveTo
+                                        (Point3d.translateBy
+                                            (Vector3d.from fromPoint toPoint
+                                                |> Vector3d.scaleBy
+                                                    (let
+                                                        (Quantity durFordMove) =
+                                                            durationForForwardMovement
+
+                                                        (Quantity remDur) =
+                                                            remainingDuration
+                                                     in
+                                                     (durFordMove - remDur) / durFordMove
+                                                    )
                                             )
-                                    )
-                                    fromPoint
-                                )
-                    , playerTarget = MoveForward { moveDetails | duration = remainingDuration }
-                }
-                    |> scorePoints
+                                            fromPoint
+                                        )
+                            , playerTarget = MoveForward { moveDetails | duration = remainingDuration }
+                        }
+                            |> scorePoints
+                in
+                -- if enemyPlayerCollision (enemyToVisualPoint enemy) nextLevel then
+                --     -- TODO: handle collision
+                --     nextLevel
+                -- else
+                nextLevel
 
         TraverseEdge edgeDetails ->
             let
@@ -1479,43 +1552,50 @@ movePlayer deltaDuration model =
                             |> Quantity.for traverseDurationDuration
 
                     playerFrame =
-                        model.playerFrame
+                        level.playerFrame
                             |> Frame3d.rotateAround
                                 (Axis3d.through
-                                    (model.playerFrame
+                                    (level.playerFrame
                                         |> Frame3d.originPoint
                                         |> point3dToPoint
                                         |> pointToPoint3d
                                         |> Point3d.translateIn
-                                            (Frame3d.zDirection model.playerFrame)
+                                            (Frame3d.zDirection level.playerFrame)
                                             (Length.meters -1)
                                     )
-                                    (case model.playerFacing of
+                                    (case level.playerFacing of
                                         Forward ->
-                                            Frame3d.yDirection model.playerFrame
+                                            Frame3d.yDirection level.playerFrame
 
                                         Backward ->
-                                            Frame3d.yDirection model.playerFrame
+                                            Frame3d.yDirection level.playerFrame
                                                 |> Direction3d.reverse
 
                                         Left ->
-                                            Frame3d.xDirection model.playerFrame
+                                            Frame3d.xDirection level.playerFrame
                                                 |> Direction3d.reverse
 
                                         Right ->
-                                            Frame3d.xDirection model.playerFrame
+                                            Frame3d.xDirection level.playerFrame
                                     )
                                 )
                                 edgeMovement
 
                     correctedPlayerFrame =
                         correctPlayerFrame playerFrame
+
+                    nextLevel =
+                        { level
+                            | playerFrame = correctedPlayerFrame
+                            , playerTarget = findNextTarget level.board level.playerFacing edgeDetails.to correctedPlayerFrame
+                        }
+                            |> scorePoints
                 in
-                { model
-                    | playerFrame = correctedPlayerFrame
-                    , playerTarget = findNextTarget model.board model.playerFacing edgeDetails.to correctedPlayerFrame
-                }
-                    |> scorePoints
+                -- if enemyPlayerCollision (enemyToVisualPoint enemy) nextLevel then
+                --     -- TODO: handle collision
+                --     nextLevel
+                -- else
+                nextLevel
                     |> tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
 
             else
@@ -1528,78 +1608,93 @@ movePlayer deltaDuration model =
                 if Quantity.compare remainingDuration (Quantity 0) == EQ then
                     let
                         playerFrame =
-                            model.playerFrame
+                            level.playerFrame
                                 |> Frame3d.rotateAround
                                     (Axis3d.through
-                                        (model.playerFrame
+                                        (level.playerFrame
                                             |> Frame3d.originPoint
                                             |> point3dToPoint
                                             |> pointToPoint3d
                                             |> Point3d.translateIn
-                                                (Frame3d.zDirection model.playerFrame)
+                                                (Frame3d.zDirection level.playerFrame)
                                                 (Length.meters -1)
                                         )
-                                        (case model.playerFacing of
+                                        (case level.playerFacing of
                                             Forward ->
-                                                Frame3d.yDirection model.playerFrame
+                                                Frame3d.yDirection level.playerFrame
 
                                             Backward ->
-                                                Frame3d.yDirection model.playerFrame
+                                                Frame3d.yDirection level.playerFrame
                                                     |> Direction3d.reverse
 
                                             Left ->
-                                                Frame3d.xDirection model.playerFrame
+                                                Frame3d.xDirection level.playerFrame
                                                     |> Direction3d.reverse
 
                                             Right ->
-                                                Frame3d.xDirection model.playerFrame
+                                                Frame3d.xDirection level.playerFrame
                                         )
                                     )
                                     edgeMovement
 
                         correctedPlayerFrame =
                             correctPlayerFrame playerFrame
+
+                        nextLevel =
+                            { level
+                                | playerFrame = correctedPlayerFrame
+                                , playerTarget = findNextTarget level.board level.playerFacing edgeDetails.to correctedPlayerFrame
+                            }
+                                |> scorePoints
                     in
-                    { model
-                        | playerFrame = correctedPlayerFrame
-                        , playerTarget = findNextTarget model.board model.playerFacing edgeDetails.to correctedPlayerFrame
-                    }
-                        |> scorePoints
+                    -- if enemyPlayerCollision (enemyToVisualPoint enemy) nextLevel then
+                    --     -- TODO: handle collision
+                    --     nextLevel
+                    -- else
+                    nextLevel
 
                 else
-                    { model
-                        | playerFrame =
-                            model.playerFrame
-                                |> Frame3d.rotateAround
-                                    (Axis3d.through
-                                        (model.playerFrame
-                                            |> Frame3d.originPoint
-                                            |> point3dToPoint
-                                            |> pointToPoint3d
-                                            |> Point3d.translateIn
-                                                (Frame3d.zDirection model.playerFrame)
-                                                (Length.meters -1)
-                                        )
-                                        (case model.playerFacing of
-                                            Forward ->
-                                                Frame3d.yDirection model.playerFrame
+                    let
+                        nextLevel =
+                            { level
+                                | playerFrame =
+                                    level.playerFrame
+                                        |> Frame3d.rotateAround
+                                            (Axis3d.through
+                                                (level.playerFrame
+                                                    |> Frame3d.originPoint
+                                                    |> point3dToPoint
+                                                    |> pointToPoint3d
+                                                    |> Point3d.translateIn
+                                                        (Frame3d.zDirection level.playerFrame)
+                                                        (Length.meters -1)
+                                                )
+                                                (case level.playerFacing of
+                                                    Forward ->
+                                                        Frame3d.yDirection level.playerFrame
 
-                                            Backward ->
-                                                Frame3d.yDirection model.playerFrame
-                                                    |> Direction3d.reverse
+                                                    Backward ->
+                                                        Frame3d.yDirection level.playerFrame
+                                                            |> Direction3d.reverse
 
-                                            Left ->
-                                                Frame3d.xDirection model.playerFrame
-                                                    |> Direction3d.reverse
+                                                    Left ->
+                                                        Frame3d.xDirection level.playerFrame
+                                                            |> Direction3d.reverse
 
-                                            Right ->
-                                                Frame3d.xDirection model.playerFrame
-                                        )
-                                    )
-                                    edgeMovement
-                        , playerTarget = TraverseEdge { edgeDetails | duration = remainingDuration }
-                    }
-                        |> scorePoints
+                                                    Right ->
+                                                        Frame3d.xDirection level.playerFrame
+                                                )
+                                            )
+                                            edgeMovement
+                                , playerTarget = TraverseEdge { edgeDetails | duration = remainingDuration }
+                            }
+                                |> scorePoints
+                    in
+                    -- if enemyPlayerCollision (enemyToVisualPoint enemy) nextLevel then
+                    --     -- TODO: handle collision
+                    --     nextLevel
+                    -- else
+                    nextLevel
 
 
 scorePoints : Level -> Level
