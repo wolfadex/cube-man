@@ -1177,9 +1177,6 @@ moveEnemy deltaDuration level enemy =
 
         movingTo :: movingToRest ->
             let
-                toPoint =
-                    pointToPoint3d movingTo
-
                 remainingDuration =
                     enemy.durationBetweenMoves
                         |> Quantity.minus deltaDuration

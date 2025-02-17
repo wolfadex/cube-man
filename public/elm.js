@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739781055456"
+    "1739781131029"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -16953,7 +16953,6 @@ var $author$project$Board$moveEnemy = F3(
 		} else {
 			var movingTo = _v0.a;
 			var movingToRest = _v0.b;
-			var toPoint = $author$project$Board$pointToPoint3d(movingTo);
 			var remainingDuration = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, enemy.durationBetweenMoves);
 			return _Utils_eq(
 				A2(
