@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739819712640"
+    "1739820188162"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -25617,7 +25617,10 @@ var $author$project$Board$viewEnemy = function (enemy) {
 				$ianmackenzie$elm_geometry$Point3d$interpolateFrom,
 				$author$project$Board$pointToPoint3d(enemy.movingFrom),
 				$author$project$Board$pointToPoint3d(movingTo),
-				A2($ianmackenzie$elm_units$Quantity$ratio, enemy.durationBetweenMoves, $author$project$Board$durationEnemyMovement));
+				function (f) {
+					return 1 - f;
+				}(
+					A2($ianmackenzie$elm_units$Quantity$ratio, enemy.durationBetweenMoves, $author$project$Board$durationEnemyMovement)));
 		}
 	}();
 	var material = A2(

@@ -486,6 +486,7 @@ viewEnemy enemy =
                         (Quantity.ratio
                             enemy.durationBetweenMoves
                             durationEnemyMovement
+                            |> (\f -> 1 - f)
                         )
     in
     Scene3d.group
