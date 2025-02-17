@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739777197644"
+    "1739781055456"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -15881,6 +15881,16 @@ var $author$project$Screen$Editor$handleGameKeyPressed = F3(
 				}),
 			$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none))));
 	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $author$project$Board$neighborBlocks = F2(
 	function (_v0, blocks) {
 		var x = _v0.a;
@@ -15891,30 +15901,48 @@ var $author$project$Board$neighborBlocks = F2(
 			$elm$core$Basics$identity,
 			_List_fromArray(
 				[
-					A2(
-					$elm$core$Dict$get,
-					_Utils_Tuple3(x + 1, y, z),
-					blocks),
-					A2(
-					$elm$core$Dict$get,
-					_Utils_Tuple3(x - 1, y, z),
-					blocks),
-					A2(
-					$elm$core$Dict$get,
-					_Utils_Tuple3(x, y + 1, z),
-					blocks),
-					A2(
-					$elm$core$Dict$get,
-					_Utils_Tuple3(x, y - 1, z),
-					blocks),
-					A2(
-					$elm$core$Dict$get,
-					_Utils_Tuple3(x, y, z + 1),
-					blocks),
-					A2(
-					$elm$core$Dict$get,
-					_Utils_Tuple3(x, y, z - 1),
-					blocks)
+					function () {
+					var p = _Utils_Tuple3(x + 1, y, z);
+					return A2(
+						$elm$core$Maybe$map,
+						$elm$core$Tuple$pair(p),
+						A2($elm$core$Dict$get, p, blocks));
+				}(),
+					function () {
+					var p = _Utils_Tuple3(x - 1, y, z);
+					return A2(
+						$elm$core$Maybe$map,
+						$elm$core$Tuple$pair(p),
+						A2($elm$core$Dict$get, p, blocks));
+				}(),
+					function () {
+					var p = _Utils_Tuple3(x, y + 1, z);
+					return A2(
+						$elm$core$Maybe$map,
+						$elm$core$Tuple$pair(p),
+						A2($elm$core$Dict$get, p, blocks));
+				}(),
+					function () {
+					var p = _Utils_Tuple3(x, y - 1, z);
+					return A2(
+						$elm$core$Maybe$map,
+						$elm$core$Tuple$pair(p),
+						A2($elm$core$Dict$get, p, blocks));
+				}(),
+					function () {
+					var p = _Utils_Tuple3(x, y, z + 1);
+					return A2(
+						$elm$core$Maybe$map,
+						$elm$core$Tuple$pair(p),
+						A2($elm$core$Dict$get, p, blocks));
+				}(),
+					function () {
+					var p = _Utils_Tuple3(x, y, z - 1);
+					return A2(
+						$elm$core$Maybe$map,
+						$elm$core$Tuple$pair(p),
+						A2($elm$core$Dict$get, p, blocks));
+				}()
 				]));
 	});
 var $author$project$Board$optimize = function (board) {
@@ -15928,7 +15956,8 @@ var $author$project$Board$optimize = function (board) {
 						var neighbors = A2($author$project$Board$neighborBlocks, point, board.blocks);
 						return (($elm$core$List$length(neighbors) === 6) && A2(
 							$elm$core$List$all,
-							function (b) {
+							function (_v0) {
+								var b = _v0.b;
 								return _Utils_eq(b, $author$project$Board$Wall);
 							},
 							neighbors)) ? blocks : A3($elm$core$Dict$insert, point, block, blocks);
@@ -15987,16 +16016,6 @@ var $elm$core$Dict$map = F2(
 				A2(func, key, value),
 				A2($elm$core$Dict$map, func, left),
 				A2($elm$core$Dict$map, func, right));
-		}
-	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
 		}
 	});
 var $elm$core$List$append = F2(
@@ -16919,7 +16938,357 @@ var $elm$core$Set$remove = F2(
 		return $elm$core$Set$Set_elm_builtin(
 			A2($elm$core$Dict$remove, key, dict));
 	});
+var $ianmackenzie$elm_units$Quantity$compare = F2(
+	function (_v0, _v1) {
+		var x = _v0.a;
+		var y = _v1.a;
+		return A2($elm$core$Basics$compare, x, y);
+	});
 var $author$project$Board$durationEnemyMovement = $ianmackenzie$elm_units$Duration$seconds(0.5);
+var $author$project$Board$moveEnemy = F3(
+	function (deltaDuration, level, enemy) {
+		var _v0 = enemy.movingTo;
+		if (!_v0.b) {
+			return enemy;
+		} else {
+			var movingTo = _v0.a;
+			var movingToRest = _v0.b;
+			var toPoint = $author$project$Board$pointToPoint3d(movingTo);
+			var remainingDuration = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, enemy.durationBetweenMoves);
+			return _Utils_eq(
+				A2(
+					$ianmackenzie$elm_units$Quantity$compare,
+					remainingDuration,
+					$ianmackenzie$elm_units$Quantity$Quantity(0)),
+				$elm$core$Basics$EQ) ? _Utils_update(
+				enemy,
+				{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest}) : (A2(
+				$ianmackenzie$elm_units$Quantity$lessThan,
+				$ianmackenzie$elm_units$Quantity$Quantity(0),
+				remainingDuration) ? A3(
+				$author$project$Board$moveEnemy,
+				A2(
+					$ianmackenzie$elm_units$Quantity$minus,
+					remainingDuration,
+					$ianmackenzie$elm_units$Quantity$Quantity(0)),
+				level,
+				_Utils_update(
+					enemy,
+					{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest})) : _Utils_update(
+				enemy,
+				{durationBetweenMoves: remainingDuration}));
+		}
+	});
+var $author$project$Board$moveEnemies = F2(
+	function (deltaDuration, level) {
+		return _Utils_update(
+			level,
+			{
+				enemies: A2(
+					$elm$core$List$map,
+					A2($author$project$Board$moveEnemy, deltaDuration, level),
+					level.enemies)
+			});
+	});
+var $author$project$Board$aStarCost = F2(
+	function (_v0, _v1) {
+		var x1 = _v0.a;
+		var y1 = _v0.b;
+		var z1 = _v0.c;
+		var x2 = _v1.a;
+		var y2 = _v1.b;
+		var z2 = _v1.c;
+		return ($elm$core$Basics$abs(x2 - x1) + $elm$core$Basics$abs(y2 - y1)) + $elm$core$Basics$abs(z2 - z1);
+	});
+var $elm$core$Set$fromList = function (list) {
+	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
+};
+var $author$project$Board$enemyMovementNeighbors = F2(
+	function (blocks, point) {
+		return $elm$core$Set$fromList(
+			A2(
+				$elm$core$List$filterMap,
+				function (_v0) {
+					var p = _v0.a;
+					var block = _v0.b;
+					switch (block.$) {
+						case 'Empty':
+							return $elm$core$Maybe$Just(p);
+						case 'Edge':
+							return $elm$core$Maybe$Just(p);
+						case 'PointPickup':
+							return $elm$core$Maybe$Just(p);
+						case 'PlayerSpawn':
+							return $elm$core$Maybe$Just(p);
+						case 'EnemySpawner':
+							return $elm$core$Maybe$Just(p);
+						default:
+							return $elm$core$Maybe$Nothing;
+					}
+				},
+				A2($author$project$Board$neighborBlocks, point, blocks)));
+	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$List$sortBy = _List_sortBy;
+var $krisajenkins$elm_astar$AStar$Generalised$cheapestOpen = F2(
+	function (costFn, model) {
+		return A2(
+			$elm$core$Maybe$map,
+			$elm$core$Tuple$first,
+			$elm$core$List$head(
+				A2(
+					$elm$core$List$sortBy,
+					$elm$core$Tuple$second,
+					A2(
+						$elm$core$List$filterMap,
+						function (position) {
+							var _v0 = A2($elm$core$Dict$get, position, model.costs);
+							if (_v0.$ === 'Nothing') {
+								return $elm$core$Maybe$Nothing;
+							} else {
+								var cost = _v0.a;
+								return $elm$core$Maybe$Just(
+									_Utils_Tuple2(
+										position,
+										cost + costFn(position)));
+							}
+						},
+						$elm$core$Set$toList(model.openSet)))));
+	});
+var $elm$core$Dict$diff = F2(
+	function (t1, t2) {
+		return A3(
+			$elm$core$Dict$foldl,
+			F3(
+				function (k, v, t) {
+					return A2($elm$core$Dict$remove, k, t);
+				}),
+			t1,
+			t2);
+	});
+var $elm$core$Set$diff = F2(
+	function (_v0, _v1) {
+		var dict1 = _v0.a;
+		var dict2 = _v1.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A2($elm$core$Dict$diff, dict1, dict2));
+	});
+var $elm$core$Set$foldl = F3(
+	function (func, initialState, _v0) {
+		var dict = _v0.a;
+		return A3(
+			$elm$core$Dict$foldl,
+			F3(
+				function (key, _v1, state) {
+					return A2(func, key, state);
+				}),
+			initialState,
+			dict);
+	});
+var $elm$core$Elm$JsArray$push = _JsArray_push;
+var $elm$core$Elm$JsArray$singleton = _JsArray_singleton;
+var $elm$core$Array$insertTailInTree = F4(
+	function (shift, index, tail, tree) {
+		var pos = $elm$core$Array$bitMask & (index >>> shift);
+		if (_Utils_cmp(
+			pos,
+			$elm$core$Elm$JsArray$length(tree)) > -1) {
+			if (shift === 5) {
+				return A2(
+					$elm$core$Elm$JsArray$push,
+					$elm$core$Array$Leaf(tail),
+					tree);
+			} else {
+				var newSub = $elm$core$Array$SubTree(
+					A4($elm$core$Array$insertTailInTree, shift - $elm$core$Array$shiftStep, index, tail, $elm$core$Elm$JsArray$empty));
+				return A2($elm$core$Elm$JsArray$push, newSub, tree);
+			}
+		} else {
+			var value = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (value.$ === 'SubTree') {
+				var subTree = value.a;
+				var newSub = $elm$core$Array$SubTree(
+					A4($elm$core$Array$insertTailInTree, shift - $elm$core$Array$shiftStep, index, tail, subTree));
+				return A3($elm$core$Elm$JsArray$unsafeSet, pos, newSub, tree);
+			} else {
+				var newSub = $elm$core$Array$SubTree(
+					A4(
+						$elm$core$Array$insertTailInTree,
+						shift - $elm$core$Array$shiftStep,
+						index,
+						tail,
+						$elm$core$Elm$JsArray$singleton(value)));
+				return A3($elm$core$Elm$JsArray$unsafeSet, pos, newSub, tree);
+			}
+		}
+	});
+var $elm$core$Array$unsafeReplaceTail = F2(
+	function (newTail, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var originalTailLen = $elm$core$Elm$JsArray$length(tail);
+		var newTailLen = $elm$core$Elm$JsArray$length(newTail);
+		var newArrayLen = len + (newTailLen - originalTailLen);
+		if (_Utils_eq(newTailLen, $elm$core$Array$branchFactor)) {
+			var overflow = _Utils_cmp(newArrayLen >>> $elm$core$Array$shiftStep, 1 << startShift) > 0;
+			if (overflow) {
+				var newShift = startShift + $elm$core$Array$shiftStep;
+				var newTree = A4(
+					$elm$core$Array$insertTailInTree,
+					newShift,
+					len,
+					newTail,
+					$elm$core$Elm$JsArray$singleton(
+						$elm$core$Array$SubTree(tree)));
+				return A4($elm$core$Array$Array_elm_builtin, newArrayLen, newShift, newTree, $elm$core$Elm$JsArray$empty);
+			} else {
+				return A4(
+					$elm$core$Array$Array_elm_builtin,
+					newArrayLen,
+					startShift,
+					A4($elm$core$Array$insertTailInTree, startShift, len, newTail, tree),
+					$elm$core$Elm$JsArray$empty);
+			}
+		} else {
+			return A4($elm$core$Array$Array_elm_builtin, newArrayLen, startShift, tree, newTail);
+		}
+	});
+var $elm$core$Array$push = F2(
+	function (a, array) {
+		var tail = array.d;
+		return A2(
+			$elm$core$Array$unsafeReplaceTail,
+			A2($elm$core$Elm$JsArray$push, a, tail),
+			array);
+	});
+var $krisajenkins$elm_astar$AStar$Generalised$reconstructPath = F2(
+	function (cameFrom, goal) {
+		var _v0 = A2($elm$core$Dict$get, goal, cameFrom);
+		if (_v0.$ === 'Nothing') {
+			return $elm$core$Array$empty;
+		} else {
+			var next = _v0.a;
+			return A2(
+				$elm$core$Array$push,
+				goal,
+				A2($krisajenkins$elm_astar$AStar$Generalised$reconstructPath, cameFrom, next));
+		}
+	});
+var $elm$core$Set$union = F2(
+	function (_v0, _v1) {
+		var dict1 = _v0.a;
+		var dict2 = _v1.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A2($elm$core$Dict$union, dict1, dict2));
+	});
+var $krisajenkins$elm_astar$AStar$Generalised$updateCost = F3(
+	function (current, neighbour, model) {
+		var newCameFrom = A3($elm$core$Dict$insert, neighbour, current, model.cameFrom);
+		var distanceTo = $elm$core$Array$length(
+			A2($krisajenkins$elm_astar$AStar$Generalised$reconstructPath, newCameFrom, neighbour));
+		var newCosts = A3($elm$core$Dict$insert, neighbour, distanceTo, model.costs);
+		var newModel = _Utils_update(
+			model,
+			{cameFrom: newCameFrom, costs: newCosts});
+		var _v0 = A2($elm$core$Dict$get, neighbour, model.costs);
+		if (_v0.$ === 'Nothing') {
+			return newModel;
+		} else {
+			var previousDistance = _v0.a;
+			return (_Utils_cmp(distanceTo, previousDistance) < 0) ? newModel : model;
+		}
+	});
+var $krisajenkins$elm_astar$AStar$Generalised$astar = F4(
+	function (costFn, moveFn, goal, model) {
+		astar:
+		while (true) {
+			var _v0 = A2(
+				$krisajenkins$elm_astar$AStar$Generalised$cheapestOpen,
+				costFn(goal),
+				model);
+			if (_v0.$ === 'Nothing') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var current = _v0.a;
+				if (_Utils_eq(current, goal)) {
+					return $elm$core$Maybe$Just(
+						A2($krisajenkins$elm_astar$AStar$Generalised$reconstructPath, model.cameFrom, goal));
+				} else {
+					var neighbours = moveFn(current);
+					var modelPopped = _Utils_update(
+						model,
+						{
+							evaluated: A2($elm$core$Set$insert, current, model.evaluated),
+							openSet: A2($elm$core$Set$remove, current, model.openSet)
+						});
+					var newNeighbours = A2($elm$core$Set$diff, neighbours, modelPopped.evaluated);
+					var modelWithNeighbours = _Utils_update(
+						modelPopped,
+						{
+							openSet: A2($elm$core$Set$union, modelPopped.openSet, newNeighbours)
+						});
+					var modelWithCosts = A3(
+						$elm$core$Set$foldl,
+						$krisajenkins$elm_astar$AStar$Generalised$updateCost(current),
+						modelWithNeighbours,
+						newNeighbours);
+					var $temp$costFn = costFn,
+						$temp$moveFn = moveFn,
+						$temp$goal = goal,
+						$temp$model = modelWithCosts;
+					costFn = $temp$costFn;
+					moveFn = $temp$moveFn;
+					goal = $temp$goal;
+					model = $temp$model;
+					continue astar;
+				}
+			}
+		}
+	});
+var $elm$core$Dict$singleton = F2(
+	function (key, value) {
+		return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+	});
+var $elm$core$Set$singleton = function (key) {
+	return $elm$core$Set$Set_elm_builtin(
+		A2($elm$core$Dict$singleton, key, _Utils_Tuple0));
+};
+var $krisajenkins$elm_astar$AStar$Generalised$initialModel = function (start) {
+	return {
+		cameFrom: $elm$core$Dict$empty,
+		costs: A2($elm$core$Dict$singleton, start, 0),
+		evaluated: $elm$core$Set$empty,
+		openSet: $elm$core$Set$singleton(start)
+	};
+};
+var $krisajenkins$elm_astar$AStar$Generalised$findPath = F4(
+	function (costFn, moveFn, start, end) {
+		return A2(
+			$elm$core$Maybe$map,
+			$elm$core$Array$toList,
+			A4(
+				$krisajenkins$elm_astar$AStar$Generalised$astar,
+				costFn,
+				moveFn,
+				end,
+				$krisajenkins$elm_astar$AStar$Generalised$initialModel(start)));
+	});
+var $author$project$Board$findEnemyPath = function (blocks) {
+	return A2(
+		$krisajenkins$elm_astar$AStar$Generalised$findPath,
+		$author$project$Board$aStarCost,
+		$author$project$Board$enemyMovementNeighbors(blocks));
+};
 var $author$project$Board$tickEnemySpawners = F2(
 	function (deltaDuration, level) {
 		var board = level.board;
@@ -16947,8 +17316,19 @@ var $author$project$Board$tickEnemySpawners = F2(
 												timeTillSpawn: A2($ianmackenzie$elm_units$Quantity$plus, details.timeBetweenSpawns, timeTillSpawn)
 											})),
 									blocks),
-								$elm$core$Maybe$Just(
-									{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: point, movingTo: point, targetPoint: point})) : _Utils_Tuple2(
+								function () {
+									var movingTo = A2(
+										$elm$core$Maybe$withDefault,
+										_List_Nil,
+										A3(
+											$author$project$Board$findEnemyPath,
+											board.blocks,
+											point,
+											$author$project$Board$point3dToPoint(
+												$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame))));
+									return $elm$core$Maybe$Just(
+										{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: point, movingTo: movingTo, targetPoint: point});
+								}()) : _Utils_Tuple2(
 								A3(
 									$elm$core$Dict$insert,
 									point,
@@ -16998,13 +17378,10 @@ var $author$project$Board$tickEnemySpawners = F2(
 	});
 var $author$project$Board$tickEnemies = F2(
 	function (deltaDuration, level) {
-		return A2($author$project$Board$tickEnemySpawners, deltaDuration, level);
-	});
-var $ianmackenzie$elm_units$Quantity$compare = F2(
-	function (_v0, _v1) {
-		var x = _v0.a;
-		var y = _v1.a;
-		return A2($elm$core$Basics$compare, x, y);
+		return A2(
+			$author$project$Board$tickEnemySpawners,
+			deltaDuration,
+			A2($author$project$Board$moveEnemies, deltaDuration, level));
 	});
 var $ianmackenzie$elm_geometry$Direction3d$unwrap = function (_v0) {
 	var coordinates = _v0.a;
@@ -18975,7 +19352,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$sixLights = F6(
 	function (first, second, third, fourth, fifth, sixth) {
 		return A8($ianmackenzie$elm_3d_scene$Scene3d$eightLights, first, second, third, fourth, fifth, sixth, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled, $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled);
 	});
-var $elm$core$List$sortBy = _List_sortBy;
 var $elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
 		takeReverse:
@@ -25087,7 +25463,28 @@ var $ianmackenzie$elm_3d_scene$Scene3d$cone = F2(
 	function (givenMaterial, givenCone) {
 		return A4($ianmackenzie$elm_3d_scene$Scene3d$Entity$cone, true, false, givenMaterial, givenCone);
 	});
+var $ianmackenzie$elm_geometry$Point3d$interpolateFrom = F3(
+	function (_v0, _v1, t) {
+		var p1 = _v0.a;
+		var p2 = _v1.a;
+		return (t <= 0.5) ? $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
+			{x: p1.x + (t * (p2.x - p1.x)), y: p1.y + (t * (p2.y - p1.y)), z: p1.z + (t * (p2.z - p1.z))}) : $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
+			{x: p2.x + ((1 - t) * (p1.x - p2.x)), y: p2.y + ((1 - t) * (p1.y - p2.y)), z: p2.z + ((1 - t) * (p1.z - p2.z))});
+	});
 var $author$project$Board$viewEnemy = function (enemy) {
+	var visualPoint = function () {
+		var _v0 = enemy.movingTo;
+		if (!_v0.b) {
+			return $author$project$Board$pointToPoint3d(enemy.movingFrom);
+		} else {
+			var movingTo = _v0.a;
+			return A3(
+				$ianmackenzie$elm_geometry$Point3d$interpolateFrom,
+				$author$project$Board$pointToPoint3d(enemy.movingFrom),
+				$author$project$Board$pointToPoint3d(movingTo),
+				A2($ianmackenzie$elm_units$Quantity$ratio, enemy.durationBetweenMoves, $author$project$Board$durationEnemyMovement));
+		}
+	}();
 	var material = A2(
 		$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
 		$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$red),
@@ -25108,7 +25505,7 @@ var $author$project$Board$viewEnemy = function (enemy) {
 						$ianmackenzie$elm_geometry$Point3d$translateIn,
 						$ianmackenzie$elm_geometry$Direction3d$negativeX,
 						$ianmackenzie$elm_units$Length$meters(0.15),
-						$author$project$Board$pointToPoint3d(enemy.movingFrom)),
+						visualPoint),
 					$ianmackenzie$elm_geometry$Direction3d$positiveX,
 					dimensions)),
 				A2(
@@ -25120,7 +25517,7 @@ var $author$project$Board$viewEnemy = function (enemy) {
 						$ianmackenzie$elm_geometry$Point3d$translateIn,
 						$ianmackenzie$elm_geometry$Direction3d$positiveX,
 						$ianmackenzie$elm_units$Length$meters(0.15),
-						$author$project$Board$pointToPoint3d(enemy.movingFrom)),
+						visualPoint),
 					$ianmackenzie$elm_geometry$Direction3d$negativeX,
 					dimensions)),
 				A2(
@@ -25132,7 +25529,7 @@ var $author$project$Board$viewEnemy = function (enemy) {
 						$ianmackenzie$elm_geometry$Point3d$translateIn,
 						$ianmackenzie$elm_geometry$Direction3d$negativeY,
 						$ianmackenzie$elm_units$Length$meters(0.15),
-						$author$project$Board$pointToPoint3d(enemy.movingFrom)),
+						visualPoint),
 					$ianmackenzie$elm_geometry$Direction3d$positiveY,
 					dimensions)),
 				A2(
@@ -25144,7 +25541,7 @@ var $author$project$Board$viewEnemy = function (enemy) {
 						$ianmackenzie$elm_geometry$Point3d$translateIn,
 						$ianmackenzie$elm_geometry$Direction3d$positiveY,
 						$ianmackenzie$elm_units$Length$meters(0.15),
-						$author$project$Board$pointToPoint3d(enemy.movingFrom)),
+						visualPoint),
 					$ianmackenzie$elm_geometry$Direction3d$negativeY,
 					dimensions)),
 				A2(
@@ -25156,7 +25553,7 @@ var $author$project$Board$viewEnemy = function (enemy) {
 						$ianmackenzie$elm_geometry$Point3d$translateIn,
 						$ianmackenzie$elm_geometry$Direction3d$negativeZ,
 						$ianmackenzie$elm_units$Length$meters(0.15),
-						$author$project$Board$pointToPoint3d(enemy.movingFrom)),
+						visualPoint),
 					$ianmackenzie$elm_geometry$Direction3d$positiveZ,
 					dimensions)),
 				A2(
@@ -25168,7 +25565,7 @@ var $author$project$Board$viewEnemy = function (enemy) {
 						$ianmackenzie$elm_geometry$Point3d$translateIn,
 						$ianmackenzie$elm_geometry$Direction3d$positiveZ,
 						$ianmackenzie$elm_units$Length$meters(0.15),
-						$author$project$Board$pointToPoint3d(enemy.movingFrom)),
+						visualPoint),
 					$ianmackenzie$elm_geometry$Direction3d$negativeZ,
 					dimensions))
 			]));

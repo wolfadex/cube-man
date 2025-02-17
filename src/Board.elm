@@ -38,6 +38,7 @@ module Board exposing
     , zigZagBoard
     )
 
+import AStar.Generalised
 import Angle exposing (Angle)
 import AngularSpeed
 import Axis3d
@@ -63,6 +64,7 @@ import Scene3d.Light
 import Scene3d.Material
 import Scene3d.Mesh
 import Serialize
+import Set exposing (Set)
 import SketchPlane3d
 import Sphere3d
 import Units.Serialize
@@ -469,13 +471,26 @@ viewEnemy enemy =
             { radius = Length.meters 0.1
             , length = Length.meters 0.45
             }
+
+        visualPoint =
+            case enemy.movingTo of
+                [] ->
+                    pointToPoint3d enemy.movingFrom
+
+                movingTo :: _ ->
+                    Point3d.interpolateFrom
+                        (pointToPoint3d enemy.movingFrom)
+                        (pointToPoint3d movingTo)
+                        (Quantity.ratio
+                            enemy.durationBetweenMoves
+                            durationEnemyMovement
+                        )
     in
     Scene3d.group
         [ Scene3d.cone
             material
             (Cone3d.startingAt
-                (enemy.movingFrom
-                    |> pointToPoint3d
+                (visualPoint
                     |> Point3d.translateIn Direction3d.negativeX (Length.meters 0.15)
                 )
                 Direction3d.positiveX
@@ -484,8 +499,7 @@ viewEnemy enemy =
         , Scene3d.cone
             material
             (Cone3d.startingAt
-                (enemy.movingFrom
-                    |> pointToPoint3d
+                (visualPoint
                     |> Point3d.translateIn Direction3d.positiveX (Length.meters 0.15)
                 )
                 Direction3d.negativeX
@@ -494,8 +508,7 @@ viewEnemy enemy =
         , Scene3d.cone
             material
             (Cone3d.startingAt
-                (enemy.movingFrom
-                    |> pointToPoint3d
+                (visualPoint
                     |> Point3d.translateIn Direction3d.negativeY (Length.meters 0.15)
                 )
                 Direction3d.positiveY
@@ -504,8 +517,7 @@ viewEnemy enemy =
         , Scene3d.cone
             material
             (Cone3d.startingAt
-                (enemy.movingFrom
-                    |> pointToPoint3d
+                (visualPoint
                     |> Point3d.translateIn Direction3d.positiveY (Length.meters 0.15)
                 )
                 Direction3d.negativeY
@@ -514,8 +526,7 @@ viewEnemy enemy =
         , Scene3d.cone
             material
             (Cone3d.startingAt
-                (enemy.movingFrom
-                    |> pointToPoint3d
+                (visualPoint
                     |> Point3d.translateIn Direction3d.negativeZ (Length.meters 0.15)
                 )
                 Direction3d.positiveZ
@@ -524,8 +535,7 @@ viewEnemy enemy =
         , Scene3d.cone
             material
             (Cone3d.startingAt
-                (enemy.movingFrom
-                    |> pointToPoint3d
+                (visualPoint
                     |> Point3d.translateIn Direction3d.positiveZ (Length.meters 0.15)
                 )
                 Direction3d.negativeZ
@@ -1147,8 +1157,91 @@ tick deltaDUration level =
 tickEnemies : Duration -> Level -> Level
 tickEnemies deltaDuration level =
     level
-        -- |> moveEnemies deltaDuration
+        |> moveEnemies deltaDuration
         |> tickEnemySpawners deltaDuration
+
+
+moveEnemies : Duration -> Level -> Level
+moveEnemies deltaDuration level =
+    { level
+        | enemies = List.map (moveEnemy deltaDuration level) level.enemies
+    }
+
+
+moveEnemy : Duration -> Level -> Enemy -> Enemy
+moveEnemy deltaDuration level enemy =
+    case enemy.movingTo of
+        [] ->
+            -- TODO: find path?
+            enemy
+
+        movingTo :: movingToRest ->
+            let
+                toPoint =
+                    pointToPoint3d movingTo
+
+                remainingDuration =
+                    enemy.durationBetweenMoves
+                        |> Quantity.minus deltaDuration
+            in
+            if Quantity.compare remainingDuration (Quantity 0) == EQ then
+                { enemy
+                    | movingTo = movingToRest
+                    , movingFrom = movingTo
+                    , durationBetweenMoves = durationEnemyMovement
+                }
+
+            else if remainingDuration |> Quantity.lessThan (Quantity 0) then
+                { enemy
+                    | movingTo = movingToRest
+                    , movingFrom = movingTo
+                    , durationBetweenMoves = durationEnemyMovement
+                }
+                    |> moveEnemy (Quantity 0 |> Quantity.minus remainingDuration) level
+
+            else
+                { enemy
+                    | durationBetweenMoves = remainingDuration
+                }
+
+
+findEnemyPath : Dict Point Block -> Point -> Point -> Maybe (List Point)
+findEnemyPath blocks =
+    AStar.Generalised.findPath
+        aStarCost
+        (enemyMovementNeighbors blocks)
+
+
+aStarCost : Point -> Point -> Float
+aStarCost ( x1, y1, z1 ) ( x2, y2, z2 ) =
+    toFloat (abs (x2 - x1) + abs (y2 - y1) + abs (z2 - z1))
+
+
+enemyMovementNeighbors : Dict Point Block -> Point -> Set Point
+enemyMovementNeighbors blocks point =
+    neighborBlocks point blocks
+        |> List.filterMap
+            (\( p, block ) ->
+                case block of
+                    Empty ->
+                        Just p
+
+                    Edge ->
+                        Just p
+
+                    PointPickup _ ->
+                        Just p
+
+                    PlayerSpawn _ ->
+                        Just p
+
+                    EnemySpawner _ ->
+                        Just p
+
+                    Wall ->
+                        Nothing
+            )
+        |> Set.fromList
 
 
 tickEnemySpawners : Duration -> Level -> Level
@@ -1176,10 +1269,18 @@ tickEnemySpawners deltaDuration level =
                                             }
                                         )
                                         blocks
-                                    , Just
+                                    , let
+                                        movingTo =
+                                            level.playerFrame
+                                                |> Frame3d.originPoint
+                                                |> point3dToPoint
+                                                |> findEnemyPath board.blocks point
+                                                |> Maybe.withDefault []
+                                      in
+                                      Just
                                         { targetPoint = point
                                         , movingFrom = point
-                                        , movingTo = point
+                                        , movingTo = movingTo
                                         , durationBetweenMoves = durationEnemyMovement
                                         }
                                     )
@@ -1244,7 +1345,7 @@ type alias Level =
 type alias Enemy =
     { targetPoint : Point
     , movingFrom : Point
-    , movingTo : Point
+    , movingTo : List Point
     , durationBetweenMoves : Duration
     }
 
@@ -1620,7 +1721,7 @@ optimize board =
                         neighbors =
                             neighborBlocks point board.blocks
                     in
-                    if List.length neighbors == 6 && List.all (\b -> b == Wall) neighbors then
+                    if List.length neighbors == 6 && List.all (\( _, b ) -> b == Wall) neighbors then
                         blocks
 
                     else
@@ -1631,15 +1732,39 @@ optimize board =
     }
 
 
-neighborBlocks : Point -> Dict Point Block -> List Block
+neighborBlocks : Point -> Dict Point Block -> List ( Point, Block )
 neighborBlocks ( x, y, z ) blocks =
     List.filterMap identity
-        [ Dict.get ( x + 1, y, z ) blocks
-        , Dict.get ( x - 1, y, z ) blocks
-        , Dict.get ( x, y + 1, z ) blocks
-        , Dict.get ( x, y - 1, z ) blocks
-        , Dict.get ( x, y, z + 1 ) blocks
-        , Dict.get ( x, y, z - 1 ) blocks
+        [ let
+            p =
+                ( x + 1, y, z )
+          in
+          Dict.get p blocks |> Maybe.map (Tuple.pair p)
+        , let
+            p =
+                ( x - 1, y, z )
+          in
+          Dict.get p blocks |> Maybe.map (Tuple.pair p)
+        , let
+            p =
+                ( x, y + 1, z )
+          in
+          Dict.get p blocks |> Maybe.map (Tuple.pair p)
+        , let
+            p =
+                ( x, y - 1, z )
+          in
+          Dict.get p blocks |> Maybe.map (Tuple.pair p)
+        , let
+            p =
+                ( x, y, z + 1 )
+          in
+          Dict.get p blocks |> Maybe.map (Tuple.pair p)
+        , let
+            p =
+                ( x, y, z - 1 )
+          in
+          Dict.get p blocks |> Maybe.map (Tuple.pair p)
         ]
 
 
