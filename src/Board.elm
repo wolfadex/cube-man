@@ -1147,7 +1147,7 @@ durationForEdgeMovement =
 
 durationEnemyMovement : Duration
 durationEnemyMovement =
-    Duration.seconds 0.5
+    Duration.seconds 1
 
 
 tick : Duration -> Level -> Level
@@ -1173,36 +1173,41 @@ moveEnemies deltaDuration level =
 
 moveEnemy : Duration -> Level -> Enemy -> Enemy
 moveEnemy deltaDuration level enemy =
-    case enemy.movingTo of
-        [] ->
-            -- TODO: find path?
+    case level.playerTarget of
+        TraverseEdge _ ->
             enemy
 
-        movingTo :: movingToRest ->
-            let
-                remainingDuration =
-                    enemy.durationBetweenMoves
-                        |> Quantity.minus deltaDuration
-            in
-            if Quantity.compare remainingDuration (Quantity 0) == EQ then
-                { enemy
-                    | movingTo = movingToRest
-                    , movingFrom = movingTo
-                    , durationBetweenMoves = durationEnemyMovement
-                }
+        _ ->
+            case enemy.movingTo of
+                [] ->
+                    -- TODO: find path?
+                    enemy
 
-            else if remainingDuration |> Quantity.lessThan (Quantity 0) then
-                { enemy
-                    | movingTo = movingToRest
-                    , movingFrom = movingTo
-                    , durationBetweenMoves = durationEnemyMovement
-                }
-                    |> moveEnemy (Quantity 0 |> Quantity.minus remainingDuration) level
+                movingTo :: movingToRest ->
+                    let
+                        remainingDuration =
+                            enemy.durationBetweenMoves
+                                |> Quantity.minus deltaDuration
+                    in
+                    if Quantity.compare remainingDuration (Quantity 0) == EQ then
+                        { enemy
+                            | movingTo = movingToRest
+                            , movingFrom = movingTo
+                            , durationBetweenMoves = durationEnemyMovement
+                        }
 
-            else
-                { enemy
-                    | durationBetweenMoves = remainingDuration
-                }
+                    else if remainingDuration |> Quantity.lessThan (Quantity 0) then
+                        { enemy
+                            | movingTo = movingToRest
+                            , movingFrom = movingTo
+                            , durationBetweenMoves = durationEnemyMovement
+                        }
+                            |> moveEnemy (Quantity 0 |> Quantity.minus remainingDuration) level
+
+                    else
+                        { enemy
+                            | durationBetweenMoves = remainingDuration
+                        }
 
 
 findEnemyPath : Dict Point Block -> Point -> Point -> Maybe (List Point)

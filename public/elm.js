@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739820188162"
+    "1739820650183"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -16940,38 +16940,43 @@ var $ianmackenzie$elm_units$Quantity$compare = F2(
 		var y = _v1.a;
 		return A2($elm$core$Basics$compare, x, y);
 	});
-var $author$project$Board$durationEnemyMovement = $ianmackenzie$elm_units$Duration$seconds(0.5);
+var $author$project$Board$durationEnemyMovement = $ianmackenzie$elm_units$Duration$seconds(1);
 var $author$project$Board$moveEnemy = F3(
 	function (deltaDuration, level, enemy) {
-		var _v0 = enemy.movingTo;
-		if (!_v0.b) {
+		var _v0 = level.playerTarget;
+		if (_v0.$ === 'TraverseEdge') {
 			return enemy;
 		} else {
-			var movingTo = _v0.a;
-			var movingToRest = _v0.b;
-			var remainingDuration = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, enemy.durationBetweenMoves);
-			return _Utils_eq(
-				A2(
-					$ianmackenzie$elm_units$Quantity$compare,
-					remainingDuration,
-					$ianmackenzie$elm_units$Quantity$Quantity(0)),
-				$elm$core$Basics$EQ) ? _Utils_update(
-				enemy,
-				{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest}) : (A2(
-				$ianmackenzie$elm_units$Quantity$lessThan,
-				$ianmackenzie$elm_units$Quantity$Quantity(0),
-				remainingDuration) ? A3(
-				$author$project$Board$moveEnemy,
-				A2(
-					$ianmackenzie$elm_units$Quantity$minus,
-					remainingDuration,
-					$ianmackenzie$elm_units$Quantity$Quantity(0)),
-				level,
-				_Utils_update(
+			var _v1 = enemy.movingTo;
+			if (!_v1.b) {
+				return enemy;
+			} else {
+				var movingTo = _v1.a;
+				var movingToRest = _v1.b;
+				var remainingDuration = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, enemy.durationBetweenMoves);
+				return _Utils_eq(
+					A2(
+						$ianmackenzie$elm_units$Quantity$compare,
+						remainingDuration,
+						$ianmackenzie$elm_units$Quantity$Quantity(0)),
+					$elm$core$Basics$EQ) ? _Utils_update(
 					enemy,
-					{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest})) : _Utils_update(
-				enemy,
-				{durationBetweenMoves: remainingDuration}));
+					{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest}) : (A2(
+					$ianmackenzie$elm_units$Quantity$lessThan,
+					$ianmackenzie$elm_units$Quantity$Quantity(0),
+					remainingDuration) ? A3(
+					$author$project$Board$moveEnemy,
+					A2(
+						$ianmackenzie$elm_units$Quantity$minus,
+						remainingDuration,
+						$ianmackenzie$elm_units$Quantity$Quantity(0)),
+					level,
+					_Utils_update(
+						enemy,
+						{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest})) : _Utils_update(
+					enemy,
+					{durationBetweenMoves: remainingDuration}));
+			}
 		}
 	});
 var $author$project$Board$moveEnemies = F2(
