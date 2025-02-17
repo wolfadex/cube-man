@@ -15,7 +15,7 @@ import Cylinder3d
 import Dict
 import Direction3d
 import Duration exposing (Duration)
-import Frame3d exposing (Frame3d)
+import Frame3d
 import Html exposing (Html)
 import Html.Attributes
 import Html.Attributes.Extra
@@ -50,12 +50,7 @@ import Viewpoint3d exposing (Viewpoint3d)
 
 
 type alias Model =
-    { board : Board
-    , score : Int
-    , playerFrame : Frame3d Length.Meters Board.WorldCoordinates { defines : Board.WorldCoordinates }
-    , playerFacing : Board.Facing
-    , playerWantFacing : Board.Facing
-    , playerTarget : Board.Target
+    { level : Board.Level
 
     --
     , editorBoard : Undo.Stack Board
@@ -143,9 +138,6 @@ init =
                         ( 0, Dict.empty )
                     |> Tuple.second
             }
-
-        playerFrame =
-            Frame3d.atPoint (Point3d.meters 1 4 7)
     in
     ( { xLowerVisible = 0
       , xUpperVisible = maxX - 1
@@ -154,8 +146,7 @@ init =
       , zLowerVisible = 0
       , zUpperVisible = maxZ - 1
       , selectedBlockType = Board.Wall
-      , board = board
-      , score = 0
+      , level = Board.emptyLevel
       , editorBoard = Undo.init board
       , boardLoadError = Nothing
       , boardPlayError = Nothing
@@ -193,10 +184,6 @@ init =
             board
                 |> Serialize.encodeToJson Board.boardCodec
                 |> Json.Encode.encode 0
-      , playerFrame = playerFrame
-      , playerFacing = Board.Forward
-      , playerWantFacing = Board.Forward
-      , playerTarget = Board.initTarget board Board.Forward playerFrame
       , editorMaxXRaw = String.fromInt maxX
       , editorMaxYRaw = String.fromInt maxY
       , editorMaxZRaw = String.fromInt maxZ
@@ -336,20 +323,14 @@ update toSharedMsg sharedModel toMsg msg model =
                         board =
                             Undo.value model.editorBoard
                     in
-                    case Board.findSpawn board of
+                    case Board.init board of
                         Nothing ->
                             ( { model | boardPlayError = Just Board.MissingPlayerSpawn }, Cmd.none )
 
-                        Just spawnFrame ->
+                        Just level ->
                             ( { model
                                 | editorMode = TestGame
-                                , board = Board.optimize board
-                                , playerFrame = spawnFrame
-                                , score = 0
-                                , playerTarget = Board.initTarget board Board.Forward spawnFrame
-                                , playerFacing = Board.Forward
-                                , playerWantFacing = Board.Forward
-                                , boardPlayError = Nothing
+                                , level = level
                               }
                             , Cmd.none
                             )
@@ -939,8 +920,10 @@ tickPlayer deltaMs model =
             model
 
         TestGame ->
-            model
-                |> Board.tickPlayer deltaMs
+            { model
+                | level =
+                    Board.tickPlayer deltaMs model.level
+            }
 
 
 handleEditorKeyPressed : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> String -> Model -> ( Model, Cmd msg )
@@ -1065,17 +1048,21 @@ redo model =
 
 handleGameKeyPressed : Shared.LoadedModel -> String -> Model -> ( Model, Cmd msg )
 handleGameKeyPressed sharedModel key model =
+    let
+        level =
+            model.level
+    in
     if Input.isInputKey sharedModel.inputMapping.moveUp key then
-        ( { model | playerWantFacing = Board.Forward }, Cmd.none )
+        ( { model | level = { level | playerWantFacing = Board.Forward } }, Cmd.none )
 
     else if Input.isInputKey sharedModel.inputMapping.moveDown key then
-        ( { model | playerWantFacing = Board.Backward }, Cmd.none )
+        ( { model | level = { level | playerWantFacing = Board.Backward } }, Cmd.none )
 
     else if Input.isInputKey sharedModel.inputMapping.moveLeft key then
-        ( { model | playerWantFacing = Board.Left }, Cmd.none )
+        ( { model | level = { level | playerWantFacing = Board.Left } }, Cmd.none )
 
     else if Input.isInputKey sharedModel.inputMapping.moveRight key then
-        ( { model | playerWantFacing = Board.Right }, Cmd.none )
+        ( { model | level = { level | playerWantFacing = Board.Right } }, Cmd.none )
 
     else
         ( model, Cmd.none )
@@ -1140,7 +1127,7 @@ view toSharedMsg sharedModel toMsg model =
                 lights =
                     case model.editorMode of
                         TestGame ->
-                            Board.gameLights model.board (Frame3d.originPoint model.playerFrame)
+                            Board.gameLights model.level.board (Frame3d.originPoint model.level.playerFrame)
 
                         EditBoard ->
                             let
@@ -1185,7 +1172,7 @@ view toSharedMsg sharedModel toMsg model =
                 model.screenSize
                 (case model.editorMode of
                     TestGame ->
-                        Board.gamePlayCamera model.playerFrame
+                        Board.gamePlayCamera model.level.playerFrame
 
                     EditBoard ->
                         editorCamera model
@@ -1231,10 +1218,10 @@ view toSharedMsg sharedModel toMsg model =
 
                     TestGame ->
                         List.concat
-                            [ model.board.blocks
+                            [ model.level.board.blocks
                                 |> Dict.toList
-                                |> List.map (viewBlock sharedModel model.board model)
-                            , [ Board.viewPlayer model.playerFacing model.playerFrame ]
+                                |> List.map (viewBlock sharedModel model.level.board model)
+                            , [ Board.viewPlayer model.level.playerFacing model.level.playerFrame ]
                             ]
                 )
             ]
@@ -2263,7 +2250,7 @@ viewHeader toSharedMsg sharedModel toMsg model =
                 , Html.Attributes.style "padding" "0.5rem"
                 , Html.Attributes.style "gap" "1rem"
                 ]
-                [ Html.h3 [] [ Html.text ("Score: " ++ String.fromInt model.score) ]
+                [ Html.h3 [] [ Html.text ("Score: " ++ String.fromInt model.level.score) ]
                 ]
 
         EditBoard ->

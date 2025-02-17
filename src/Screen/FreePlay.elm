@@ -19,7 +19,8 @@ import Shared
 
 
 type alias Model =
-    { board : Board
+    { level : Board.Level
+    , board : Board
     , score : Int
     , playerFrame : Frame3d Length.Meters Board.WorldCoordinates { defines : Board.WorldCoordinates }
     , playerFacing : Board.Facing
@@ -41,7 +42,8 @@ type FreePlayMode
 
 init : ( Model, Cmd Msg )
 init =
-    ( { board = Board.empty
+    ( { level = Board.emptyLevel
+      , board = Board.empty
       , score = 0
       , playerFrame = Frame3d.atOrigin
       , playerFacing = Board.Forward
@@ -170,8 +172,7 @@ tickPlayer deltaMs model =
             model
 
         FreePlayBoardLoaded ->
-            model
-                |> Board.tickPlayer deltaMs
+            { model | level = Board.tickPlayer deltaMs model.level }
 
 
 handleGameKeyPressed : Shared.LoadedModel -> String -> Model -> ( Model, Cmd Msg )

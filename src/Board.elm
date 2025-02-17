@@ -3,11 +3,11 @@ module Board exposing
     , Block(..)
     , BlockPalette(..)
     , Board
-    , BoardLike
     , BoardLoadError(..)
     , BoardPlayError(..)
     , ExampleBoards(..)
     , Facing(..)
+    , Level
     , Point
     , ScreenCoordinates(..)
     , Target
@@ -18,10 +18,12 @@ module Board exposing
     , boardCodec
     , defaultBoard
     , empty
+    , emptyLevel
     , findSpawn
     , gameLights
     , gamePlayCamera
     , indexToPoint
+    , init
     , initTarget
     , optimize
     , point3dToPoint
@@ -759,7 +761,7 @@ viewBlock ( point, block ) =
                 ]
 
 
-setPlayerFacing : BoardLike a -> BoardLike a
+setPlayerFacing : Level -> Level
 setPlayerFacing model =
     if model.playerFacing == model.playerWantFacing then
         model
@@ -1002,25 +1004,52 @@ durationForEdgeMovement =
     Duration.seconds 0.75
 
 
-tickPlayer : Duration -> BoardLike a -> BoardLike a
+tickPlayer : Duration -> Level -> Level
 tickPlayer deltaDuration model =
     model
         |> setPlayerFacing
         |> movePlayer deltaDuration
 
 
-type alias BoardLike a =
-    { a
-        | playerFacing : Facing
-        , playerTarget : Target
-        , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
-        , board : Board
-        , playerWantFacing : Facing
-        , score : Int
+type alias Level =
+    { playerFacing : Facing
+    , playerWantFacing : Facing
+    , playerTarget : Target
+    , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
+    , board : Board
+    , score : Int
     }
 
 
-movePlayer : Duration -> BoardLike a -> BoardLike a
+emptyLevel : Level
+emptyLevel =
+    { playerFacing = Forward
+    , playerWantFacing = Forward
+    , playerTarget = NoTarget
+    , playerFrame = Frame3d.atOrigin
+    , board = empty
+    , score = 0
+    }
+
+
+init : Board -> Maybe Level
+init board =
+    case findSpawn board of
+        Nothing ->
+            Nothing
+
+        Just spawnFrame ->
+            Just
+                { board = optimize board
+                , playerFrame = spawnFrame
+                , score = 0
+                , playerTarget = initTarget board Forward spawnFrame
+                , playerFacing = Forward
+                , playerWantFacing = Forward
+                }
+
+
+movePlayer : Duration -> Level -> Level
 movePlayer deltaDuration model =
     case model.playerTarget of
         NoTarget ->
@@ -1240,7 +1269,7 @@ movePlayer deltaDuration model =
                         |> scorePoints
 
 
-scorePoints : BoardLike a -> BoardLike a
+scorePoints : Level -> Level
 scorePoints boardLike =
     let
         playerActualPoint =

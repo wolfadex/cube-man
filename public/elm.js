@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739673022206"
+    "1739763805202"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -16524,36 +16524,10 @@ var $author$project$Main$SharedMsg = function (a) {
 	return {$: 'SharedMsg', a: a};
 };
 var $author$project$Screen$Editor$EditBoard = {$: 'EditBoard'};
-var $author$project$Board$Forward = {$: 'Forward'};
 var $author$project$Screen$Editor$NoInteraction = {$: 'NoInteraction'};
 var $author$project$Screen$Editor$Orbit = {$: 'Orbit'};
 var $author$project$Screen$Editor$Select = {$: 'Select'};
 var $author$project$Board$Wall = {$: 'Wall'};
-var $ianmackenzie$elm_geometry$Geometry$Types$Frame3d = function (a) {
-	return {$: 'Frame3d', a: a};
-};
-var $ianmackenzie$elm_geometry$Frame3d$unsafe = function (properties) {
-	return $ianmackenzie$elm_geometry$Geometry$Types$Frame3d(properties);
-};
-var $ianmackenzie$elm_geometry$Geometry$Types$Direction3d = function (a) {
-	return {$: 'Direction3d', a: a};
-};
-var $ianmackenzie$elm_geometry$Direction3d$unsafe = function (givenComponents) {
-	return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(givenComponents);
-};
-var $ianmackenzie$elm_geometry$Direction3d$positiveX = $ianmackenzie$elm_geometry$Direction3d$unsafe(
-	{x: 1, y: 0, z: 0});
-var $ianmackenzie$elm_geometry$Direction3d$x = $ianmackenzie$elm_geometry$Direction3d$positiveX;
-var $ianmackenzie$elm_geometry$Direction3d$positiveY = $ianmackenzie$elm_geometry$Direction3d$unsafe(
-	{x: 0, y: 1, z: 0});
-var $ianmackenzie$elm_geometry$Direction3d$y = $ianmackenzie$elm_geometry$Direction3d$positiveY;
-var $ianmackenzie$elm_geometry$Direction3d$positiveZ = $ianmackenzie$elm_geometry$Direction3d$unsafe(
-	{x: 0, y: 0, z: 1});
-var $ianmackenzie$elm_geometry$Direction3d$z = $ianmackenzie$elm_geometry$Direction3d$positiveZ;
-var $ianmackenzie$elm_geometry$Frame3d$atPoint = function (point) {
-	return $ianmackenzie$elm_geometry$Frame3d$unsafe(
-		{originPoint: point, xDirection: $ianmackenzie$elm_geometry$Direction3d$x, yDirection: $ianmackenzie$elm_geometry$Direction3d$y, zDirection: $ianmackenzie$elm_geometry$Direction3d$z});
-};
 var $author$project$Board$Board = F4(
 	function (maxX, maxY, maxZ, blocks) {
 		return {blocks: blocks, maxX: maxX, maxY: maxY, maxZ: maxZ};
@@ -17500,6 +17474,35 @@ var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
 };
 var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
+var $author$project$Board$Forward = {$: 'Forward'};
+var $author$project$Board$NoTarget = {$: 'NoTarget'};
+var $ianmackenzie$elm_geometry$Geometry$Types$Frame3d = function (a) {
+	return {$: 'Frame3d', a: a};
+};
+var $ianmackenzie$elm_geometry$Geometry$Types$Point3d = function (a) {
+	return {$: 'Point3d', a: a};
+};
+var $ianmackenzie$elm_geometry$Point3d$origin = $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
+	{x: 0, y: 0, z: 0});
+var $ianmackenzie$elm_geometry$Geometry$Types$Direction3d = function (a) {
+	return {$: 'Direction3d', a: a};
+};
+var $ianmackenzie$elm_geometry$Direction3d$unsafe = function (givenComponents) {
+	return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(givenComponents);
+};
+var $ianmackenzie$elm_geometry$Direction3d$positiveX = $ianmackenzie$elm_geometry$Direction3d$unsafe(
+	{x: 1, y: 0, z: 0});
+var $ianmackenzie$elm_geometry$Direction3d$x = $ianmackenzie$elm_geometry$Direction3d$positiveX;
+var $ianmackenzie$elm_geometry$Direction3d$positiveY = $ianmackenzie$elm_geometry$Direction3d$unsafe(
+	{x: 0, y: 1, z: 0});
+var $ianmackenzie$elm_geometry$Direction3d$y = $ianmackenzie$elm_geometry$Direction3d$positiveY;
+var $ianmackenzie$elm_geometry$Direction3d$positiveZ = $ianmackenzie$elm_geometry$Direction3d$unsafe(
+	{x: 0, y: 0, z: 1});
+var $ianmackenzie$elm_geometry$Direction3d$z = $ianmackenzie$elm_geometry$Direction3d$positiveZ;
+var $ianmackenzie$elm_geometry$Frame3d$atOrigin = $ianmackenzie$elm_geometry$Geometry$Types$Frame3d(
+	{originPoint: $ianmackenzie$elm_geometry$Point3d$origin, xDirection: $ianmackenzie$elm_geometry$Direction3d$x, yDirection: $ianmackenzie$elm_geometry$Direction3d$y, zDirection: $ianmackenzie$elm_geometry$Direction3d$z});
+var $author$project$Board$empty = {blocks: $elm$core$Dict$empty, maxX: 0, maxY: 0, maxZ: 0};
+var $author$project$Board$emptyLevel = {board: $author$project$Board$empty, playerFacing: $author$project$Board$Forward, playerFrame: $ianmackenzie$elm_geometry$Frame3d$atOrigin, playerTarget: $author$project$Board$NoTarget, playerWantFacing: $author$project$Board$Forward, score: 0};
 var $MartinSStewart$elm_serialize$Serialize$version = 1;
 var $MartinSStewart$elm_serialize$Serialize$encodeToJson = F2(
 	function (codec, value) {
@@ -17567,10 +17570,119 @@ var $author$project$Undo$init = function (v) {
 	return $author$project$Undo$Stack(
 		_Utils_Tuple3(_List_Nil, v, _List_Nil));
 };
+var $ianmackenzie$elm_units$Length$meters = function (numMeters) {
+	return $ianmackenzie$elm_units$Quantity$Quantity(numMeters);
+};
+var $ianmackenzie$elm_geometry$Point3d$meters = F3(
+	function (x, y, z) {
+		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
+			{x: x, y: y, z: z});
+	});
+var $elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2($elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var $elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
+	});
+var $author$project$Animation$withLoop = function (_v0) {
+	var anim = _v0.a;
+	return $author$project$Animation$Animation(
+		_Utils_update(
+			anim,
+			{loops: true}));
+};
+var $author$project$Screen$Editor$init = function () {
+	var maxZ = 9;
+	var maxY = 9;
+	var maxX = 9;
+	var sizeHelper = {maxX: maxX, maxY: maxY, maxZ: maxZ};
+	var board = {
+		blocks: A3(
+			$elm$core$List$foldl,
+			F2(
+				function (block, _v0) {
+					var index = _v0.a;
+					var blocks = _v0.b;
+					return _Utils_Tuple2(
+						index + 1,
+						A3(
+							$elm$core$Dict$insert,
+							A2($author$project$Board$indexToPoint, sizeHelper, index),
+							block,
+							blocks));
+				}),
+			_Utils_Tuple2(0, $elm$core$Dict$empty),
+			A2($elm$core$List$repeat, (maxX * maxY) * maxZ, $author$project$Board$Wall)).b,
+		maxX: maxX,
+		maxY: maxY,
+		maxZ: maxZ
+	};
+	return _Utils_Tuple2(
+		{
+			blockEditMode: $author$project$Screen$Editor$Select,
+			boardEncoding: A2(
+				$elm$json$Json$Encode$encode,
+				0,
+				A2($MartinSStewart$elm_serialize$Serialize$encodeToJson, $author$project$Board$boardCodec, board)),
+			boardLoadError: $elm$core$Maybe$Nothing,
+			boardPlayError: $elm$core$Maybe$Nothing,
+			cameraDistance: $ianmackenzie$elm_units$Length$meters(30),
+			cameraElevation: $ianmackenzie$elm_units$Angle$degrees(25),
+			cameraFocalPoint: A3($ianmackenzie$elm_geometry$Point3d$meters, (maxX - 1) / 2, (maxY - 1) / 2, (maxZ - 1) / 2),
+			cameraMode: $author$project$Screen$Editor$Orbit,
+			cameraRotation: $ianmackenzie$elm_units$Angle$degrees(225),
+			cursorBounce: $author$project$Animation$withLoop(
+				A2(
+					$author$project$Animation$init,
+					0,
+					_List_fromArray(
+						[
+							{offset: 0, value: 0},
+							{offset: 500, value: 1},
+							{offset: 500, value: 0}
+						]))),
+			editorBoard: $author$project$Undo$init(board),
+			editorCursor: _Utils_Tuple3(0, 0, 0),
+			editorKeysDown: $elm$core$Set$empty,
+			editorMaxXRaw: $elm$core$String$fromInt(maxX),
+			editorMaxYRaw: $elm$core$String$fromInt(maxY),
+			editorMaxZRaw: $elm$core$String$fromInt(maxZ),
+			editorMode: $author$project$Screen$Editor$EditBoard,
+			level: $author$project$Board$emptyLevel,
+			mouseDragging: $author$project$Screen$Editor$NoInteraction,
+			screenSize: {height: 600, width: 800},
+			selectedBlock: $elm$core$Maybe$Nothing,
+			selectedBlockType: $author$project$Board$Wall,
+			showBoardBounds: true,
+			showSettings: false,
+			xLowerVisible: 0,
+			xUpperVisible: maxX - 1,
+			yLowerVisible: 0,
+			yUpperVisible: maxY - 1,
+			zLowerVisible: 0,
+			zUpperVisible: maxZ - 1
+		},
+		$elm$core$Platform$Cmd$none);
+}();
+var $author$project$Screen$FreePlay$FreePlayBoardSelection = {$: 'FreePlayBoardSelection'};
 var $author$project$Board$MoveForward = function (a) {
 	return {$: 'MoveForward', a: a};
 };
-var $author$project$Board$NoTarget = {$: 'NoTarget'};
 var $author$project$Board$TraverseEdge = function (a) {
 	return {$: 'TraverseEdge', a: a};
 };
@@ -17579,9 +17691,6 @@ var $ianmackenzie$elm_units$Duration$seconds = function (numSeconds) {
 };
 var $author$project$Board$durationForEdgeMovement = $ianmackenzie$elm_units$Duration$seconds(0.75);
 var $author$project$Board$durationForForwardMovement = $ianmackenzie$elm_units$Duration$seconds(0.25);
-var $ianmackenzie$elm_units$Length$meters = function (numMeters) {
-	return $ianmackenzie$elm_units$Quantity$Quantity(numMeters);
-};
 var $ianmackenzie$elm_geometry$Frame3d$originPoint = function (_v0) {
 	var properties = _v0.a;
 	return properties.originPoint;
@@ -17597,14 +17706,6 @@ var $author$project$Board$point3dToPoint = function (point) {
 		$elm$core$Basics$round(parts.y),
 		$elm$core$Basics$round(parts.z));
 };
-var $ianmackenzie$elm_geometry$Geometry$Types$Point3d = function (a) {
-	return {$: 'Point3d', a: a};
-};
-var $ianmackenzie$elm_geometry$Point3d$meters = F3(
-	function (x, y, z) {
-		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
-			{x: x, y: y, z: z});
-	});
 var $author$project$Board$pointToPoint3d = function (_v0) {
 	var x = _v0.a;
 	var y = _v0.b;
@@ -17623,6 +17724,9 @@ var $ianmackenzie$elm_geometry$Point3d$translateBy = F2(
 		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
 			{x: p.x + v.x, y: p.y + v.y, z: p.z + v.z});
 	});
+var $ianmackenzie$elm_geometry$Frame3d$unsafe = function (properties) {
+	return $ianmackenzie$elm_geometry$Geometry$Types$Frame3d(properties);
+};
 var $ianmackenzie$elm_geometry$Frame3d$xDirection = function (_v0) {
 	var properties = _v0.a;
 	return properties.xDirection;
@@ -17742,126 +17846,13 @@ var $author$project$Board$initTarget = F3(
 				$ianmackenzie$elm_geometry$Frame3d$originPoint(playerFrame)),
 			playerFrame);
 	});
-var $elm$core$List$repeatHelp = F3(
-	function (result, n, value) {
-		repeatHelp:
-		while (true) {
-			if (n <= 0) {
-				return result;
-			} else {
-				var $temp$result = A2($elm$core$List$cons, value, result),
-					$temp$n = n - 1,
-					$temp$value = value;
-				result = $temp$result;
-				n = $temp$n;
-				value = $temp$value;
-				continue repeatHelp;
-			}
-		}
-	});
-var $elm$core$List$repeat = F2(
-	function (n, value) {
-		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
-	});
-var $author$project$Animation$withLoop = function (_v0) {
-	var anim = _v0.a;
-	return $author$project$Animation$Animation(
-		_Utils_update(
-			anim,
-			{loops: true}));
-};
-var $author$project$Screen$Editor$init = function () {
-	var playerFrame = $ianmackenzie$elm_geometry$Frame3d$atPoint(
-		A3($ianmackenzie$elm_geometry$Point3d$meters, 1, 4, 7));
-	var maxZ = 9;
-	var maxY = 9;
-	var maxX = 9;
-	var sizeHelper = {maxX: maxX, maxY: maxY, maxZ: maxZ};
-	var board = {
-		blocks: A3(
-			$elm$core$List$foldl,
-			F2(
-				function (block, _v0) {
-					var index = _v0.a;
-					var blocks = _v0.b;
-					return _Utils_Tuple2(
-						index + 1,
-						A3(
-							$elm$core$Dict$insert,
-							A2($author$project$Board$indexToPoint, sizeHelper, index),
-							block,
-							blocks));
-				}),
-			_Utils_Tuple2(0, $elm$core$Dict$empty),
-			A2($elm$core$List$repeat, (maxX * maxY) * maxZ, $author$project$Board$Wall)).b,
-		maxX: maxX,
-		maxY: maxY,
-		maxZ: maxZ
-	};
-	return _Utils_Tuple2(
-		{
-			blockEditMode: $author$project$Screen$Editor$Select,
-			board: board,
-			boardEncoding: A2(
-				$elm$json$Json$Encode$encode,
-				0,
-				A2($MartinSStewart$elm_serialize$Serialize$encodeToJson, $author$project$Board$boardCodec, board)),
-			boardLoadError: $elm$core$Maybe$Nothing,
-			boardPlayError: $elm$core$Maybe$Nothing,
-			cameraDistance: $ianmackenzie$elm_units$Length$meters(30),
-			cameraElevation: $ianmackenzie$elm_units$Angle$degrees(25),
-			cameraFocalPoint: A3($ianmackenzie$elm_geometry$Point3d$meters, (maxX - 1) / 2, (maxY - 1) / 2, (maxZ - 1) / 2),
-			cameraMode: $author$project$Screen$Editor$Orbit,
-			cameraRotation: $ianmackenzie$elm_units$Angle$degrees(225),
-			cursorBounce: $author$project$Animation$withLoop(
-				A2(
-					$author$project$Animation$init,
-					0,
-					_List_fromArray(
-						[
-							{offset: 0, value: 0},
-							{offset: 500, value: 1},
-							{offset: 500, value: 0}
-						]))),
-			editorBoard: $author$project$Undo$init(board),
-			editorCursor: _Utils_Tuple3(0, 0, 0),
-			editorKeysDown: $elm$core$Set$empty,
-			editorMaxXRaw: $elm$core$String$fromInt(maxX),
-			editorMaxYRaw: $elm$core$String$fromInt(maxY),
-			editorMaxZRaw: $elm$core$String$fromInt(maxZ),
-			editorMode: $author$project$Screen$Editor$EditBoard,
-			mouseDragging: $author$project$Screen$Editor$NoInteraction,
-			playerFacing: $author$project$Board$Forward,
-			playerFrame: playerFrame,
-			playerTarget: A3($author$project$Board$initTarget, board, $author$project$Board$Forward, playerFrame),
-			playerWantFacing: $author$project$Board$Forward,
-			score: 0,
-			screenSize: {height: 600, width: 800},
-			selectedBlock: $elm$core$Maybe$Nothing,
-			selectedBlockType: $author$project$Board$Wall,
-			showBoardBounds: true,
-			showSettings: false,
-			xLowerVisible: 0,
-			xUpperVisible: maxX - 1,
-			yLowerVisible: 0,
-			yUpperVisible: maxY - 1,
-			zLowerVisible: 0,
-			zUpperVisible: maxZ - 1
-		},
-		$elm$core$Platform$Cmd$none);
-}();
-var $author$project$Screen$FreePlay$FreePlayBoardSelection = {$: 'FreePlayBoardSelection'};
-var $ianmackenzie$elm_geometry$Point3d$origin = $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
-	{x: 0, y: 0, z: 0});
-var $ianmackenzie$elm_geometry$Frame3d$atOrigin = $ianmackenzie$elm_geometry$Geometry$Types$Frame3d(
-	{originPoint: $ianmackenzie$elm_geometry$Point3d$origin, xDirection: $ianmackenzie$elm_geometry$Direction3d$x, yDirection: $ianmackenzie$elm_geometry$Direction3d$y, zDirection: $ianmackenzie$elm_geometry$Direction3d$z});
-var $author$project$Board$empty = {blocks: $elm$core$Dict$empty, maxX: 0, maxY: 0, maxZ: 0};
 var $author$project$Screen$FreePlay$init = _Utils_Tuple2(
 	{
 		board: $author$project$Board$empty,
 		boardLoadError: $elm$core$Maybe$Nothing,
 		boardPlayError: $elm$core$Maybe$Nothing,
 		freePlayMode: $author$project$Screen$FreePlay$FreePlayBoardSelection,
+		level: $author$project$Board$emptyLevel,
 		playerFacing: $author$project$Board$Forward,
 		playerFrame: $ianmackenzie$elm_geometry$Frame3d$atOrigin,
 		playerTarget: A3($author$project$Board$initTarget, $author$project$Board$empty, $author$project$Board$Forward, $ianmackenzie$elm_geometry$Frame3d$atOrigin),
@@ -20420,24 +20411,114 @@ var $author$project$Board$Left = {$: 'Left'};
 var $author$project$Board$Right = {$: 'Right'};
 var $author$project$Screen$Editor$handleGameKeyPressed = F3(
 	function (sharedModel, key, model) {
+		var level = model.level;
 		return A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveUp, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{playerWantFacing: $author$project$Board$Forward}),
+				{
+					level: _Utils_update(
+						level,
+						{playerWantFacing: $author$project$Board$Forward})
+				}),
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveDown, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{playerWantFacing: $author$project$Board$Backward}),
+				{
+					level: _Utils_update(
+						level,
+						{playerWantFacing: $author$project$Board$Backward})
+				}),
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveLeft, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{playerWantFacing: $author$project$Board$Left}),
+				{
+					level: _Utils_update(
+						level,
+						{playerWantFacing: $author$project$Board$Left})
+				}),
 			$elm$core$Platform$Cmd$none) : (A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveRight, key) ? _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{playerWantFacing: $author$project$Board$Right}),
+				{
+					level: _Utils_update(
+						level,
+						{playerWantFacing: $author$project$Board$Right})
+				}),
 			$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none))));
 	});
+var $author$project$Board$neighborBlocks = F2(
+	function (_v0, blocks) {
+		var x = _v0.a;
+		var y = _v0.b;
+		var z = _v0.c;
+		return A2(
+			$elm$core$List$filterMap,
+			$elm$core$Basics$identity,
+			_List_fromArray(
+				[
+					A2(
+					$elm$core$Dict$get,
+					_Utils_Tuple3(x + 1, y, z),
+					blocks),
+					A2(
+					$elm$core$Dict$get,
+					_Utils_Tuple3(x - 1, y, z),
+					blocks),
+					A2(
+					$elm$core$Dict$get,
+					_Utils_Tuple3(x, y + 1, z),
+					blocks),
+					A2(
+					$elm$core$Dict$get,
+					_Utils_Tuple3(x, y - 1, z),
+					blocks),
+					A2(
+					$elm$core$Dict$get,
+					_Utils_Tuple3(x, y, z + 1),
+					blocks),
+					A2(
+					$elm$core$Dict$get,
+					_Utils_Tuple3(x, y, z - 1),
+					blocks)
+				]));
+	});
+var $author$project$Board$optimize = function (board) {
+	return _Utils_update(
+		board,
+		{
+			blocks: A3(
+				$elm$core$Dict$foldl,
+				F3(
+					function (point, block, blocks) {
+						var neighbors = A2($author$project$Board$neighborBlocks, point, board.blocks);
+						return (($elm$core$List$length(neighbors) === 6) && A2(
+							$elm$core$List$all,
+							function (b) {
+								return _Utils_eq(b, $author$project$Board$Wall);
+							},
+							neighbors)) ? blocks : A3($elm$core$Dict$insert, point, block, blocks);
+					}),
+				$elm$core$Dict$empty,
+				board.blocks)
+		});
+};
+var $author$project$Board$init = function (board) {
+	var _v0 = $author$project$Board$findSpawn(board);
+	if (_v0.$ === 'Nothing') {
+		return $elm$core$Maybe$Nothing;
+	} else {
+		var spawnFrame = _v0.a;
+		return $elm$core$Maybe$Just(
+			{
+				board: $author$project$Board$optimize(board),
+				playerFacing: $author$project$Board$Forward,
+				playerFrame: spawnFrame,
+				playerTarget: A3($author$project$Board$initTarget, board, $author$project$Board$Forward, spawnFrame),
+				playerWantFacing: $author$project$Board$Forward,
+				score: 0
+			});
+	}
+};
 var $elm$core$Set$insert = F2(
 	function (key, _v0) {
 		var dict = _v0.a;
@@ -21363,62 +21444,6 @@ var $author$project$Screen$Editor$moveCursorByMouse = F2(
 				$elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$Board$neighborBlocks = F2(
-	function (_v0, blocks) {
-		var x = _v0.a;
-		var y = _v0.b;
-		var z = _v0.c;
-		return A2(
-			$elm$core$List$filterMap,
-			$elm$core$Basics$identity,
-			_List_fromArray(
-				[
-					A2(
-					$elm$core$Dict$get,
-					_Utils_Tuple3(x + 1, y, z),
-					blocks),
-					A2(
-					$elm$core$Dict$get,
-					_Utils_Tuple3(x - 1, y, z),
-					blocks),
-					A2(
-					$elm$core$Dict$get,
-					_Utils_Tuple3(x, y + 1, z),
-					blocks),
-					A2(
-					$elm$core$Dict$get,
-					_Utils_Tuple3(x, y - 1, z),
-					blocks),
-					A2(
-					$elm$core$Dict$get,
-					_Utils_Tuple3(x, y, z + 1),
-					blocks),
-					A2(
-					$elm$core$Dict$get,
-					_Utils_Tuple3(x, y, z - 1),
-					blocks)
-				]));
-	});
-var $author$project$Board$optimize = function (board) {
-	return _Utils_update(
-		board,
-		{
-			blocks: A3(
-				$elm$core$Dict$foldl,
-				F3(
-					function (point, block, blocks) {
-						var neighbors = A2($author$project$Board$neighborBlocks, point, board.blocks);
-						return (($elm$core$List$length(neighbors) === 6) && A2(
-							$elm$core$List$all,
-							function (b) {
-								return _Utils_eq(b, $author$project$Board$Wall);
-							},
-							neighbors)) ? blocks : A3($elm$core$Dict$insert, point, block, blocks);
-					}),
-				$elm$core$Dict$empty,
-				board.blocks)
-		});
-};
 var $elm$core$Set$remove = F2(
 	function (key, _v0) {
 		var dict = _v0.a;
@@ -21959,7 +21984,11 @@ var $author$project$Screen$Editor$tickPlayer = F2(
 		if (_v0.$ === 'EditBoard') {
 			return model;
 		} else {
-			return A2($author$project$Board$tickPlayer, deltaMs, model);
+			return _Utils_update(
+				model,
+				{
+					level: A2($author$project$Board$tickPlayer, deltaMs, model.level)
+				});
 		}
 	});
 var $elm$core$Result$withDefault = F2(
@@ -22039,7 +22068,7 @@ var $author$project$Screen$Editor$update = F5(
 				var _v3 = model.editorMode;
 				if (_v3.$ === 'EditBoard') {
 					var board = $author$project$Undo$value(model.editorBoard);
-					var _v4 = $author$project$Board$findSpawn(board);
+					var _v4 = $author$project$Board$init(board);
 					if (_v4.$ === 'Nothing') {
 						return _Utils_Tuple2(
 							_Utils_update(
@@ -22049,20 +22078,11 @@ var $author$project$Screen$Editor$update = F5(
 								}),
 							$elm$core$Platform$Cmd$none);
 					} else {
-						var spawnFrame = _v4.a;
+						var level = _v4.a;
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
-								{
-									board: $author$project$Board$optimize(board),
-									boardPlayError: $elm$core$Maybe$Nothing,
-									editorMode: $author$project$Screen$Editor$TestGame,
-									playerFacing: $author$project$Board$Forward,
-									playerFrame: spawnFrame,
-									playerTarget: A3($author$project$Board$initTarget, board, $author$project$Board$Forward, spawnFrame),
-									playerWantFacing: $author$project$Board$Forward,
-									score: 0
-								}),
+								{editorMode: $author$project$Screen$Editor$TestGame, level: level}),
 							$elm$core$Platform$Cmd$none);
 					}
 				} else {
@@ -22551,7 +22571,11 @@ var $author$project$Screen$FreePlay$tickPlayer = F2(
 		if (_v0.$ === 'FreePlayBoardSelection') {
 			return model;
 		} else {
-			return A2($author$project$Board$tickPlayer, deltaMs, model);
+			return _Utils_update(
+				model,
+				{
+					level: A2($author$project$Board$tickPlayer, deltaMs, model.level)
+				});
 		}
 	});
 var $author$project$Screen$FreePlay$update = F3(
@@ -25208,6 +25232,10 @@ var $author$project$Board$view3dScene = F4(
 				whiteBalance: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight
 			});
 	});
+var $ianmackenzie$elm_geometry$Frame3d$atPoint = function (point) {
+	return $ianmackenzie$elm_geometry$Frame3d$unsafe(
+		{originPoint: point, xDirection: $ianmackenzie$elm_geometry$Direction3d$x, yDirection: $ianmackenzie$elm_geometry$Direction3d$y, zDirection: $ianmackenzie$elm_geometry$Direction3d$z});
+};
 var $ianmackenzie$elm_geometry$Geometry$Types$Sphere3d = function (a) {
 	return {$: 'Sphere3d', a: a};
 };
@@ -30201,7 +30229,7 @@ var $author$project$Screen$Editor$viewHeader = F4(
 						_List_fromArray(
 							[
 								$elm$html$Html$text(
-								'Score: ' + $elm$core$String$fromInt(model.score))
+								'Score: ' + $elm$core$String$fromInt(model.level.score))
 							]))
 					]));
 		} else {
@@ -31720,8 +31748,8 @@ var $author$project$Screen$Editor$view = F4(
 									if (_v10.$ === 'TestGame') {
 										return A2(
 											$author$project$Board$gameLights,
-											model.board,
-											$ianmackenzie$elm_geometry$Frame3d$originPoint(model.playerFrame));
+											model.level.board,
+											$ianmackenzie$elm_geometry$Frame3d$originPoint(model.level.playerFrame));
 									} else {
 										var upsideDownSky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
 											{
@@ -31770,7 +31798,7 @@ var $author$project$Screen$Editor$view = F4(
 									function () {
 										var _v5 = model.editorMode;
 										if (_v5.$ === 'TestGame') {
-											return $author$project$Board$gamePlayCamera(model.playerFrame);
+											return $author$project$Board$gamePlayCamera(model.level.playerFrame);
 										} else {
 											return $author$project$Screen$Editor$editorCamera(model);
 										}
@@ -31823,11 +31851,11 @@ var $author$project$Screen$Editor$view = F4(
 													[
 														A2(
 														$elm$core$List$map,
-														A3($author$project$Screen$Editor$viewBlock, sharedModel, model.board, model),
-														$elm$core$Dict$toList(model.board.blocks)),
+														A3($author$project$Screen$Editor$viewBlock, sharedModel, model.level.board, model),
+														$elm$core$Dict$toList(model.level.board.blocks)),
 														_List_fromArray(
 														[
-															A2($author$project$Board$viewPlayer, model.playerFacing, model.playerFrame)
+															A2($author$project$Board$viewPlayer, model.level.playerFacing, model.level.playerFrame)
 														])
 													]));
 										}
