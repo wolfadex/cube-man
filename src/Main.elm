@@ -161,7 +161,7 @@ update msg model =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Cube-Man"
+    { title = "Cube-Dude"
     , body =
         case model.sharedModel of
             Shared.Loading _ ->

@@ -71,8 +71,15 @@ view toSharedMsg _ _ _ =
             ]
             [ Html.h1
                 [ Html.Attributes.style "text-align" "center"
+                , Html.Attributes.style "color" "white"
+                , Html.Attributes.style "font-size" "3rem"
                 ]
-                [ Html.text "Cube-Man" ]
+                [ Html.text "⠉⠥⠃⠑⠤⠙⠥⠙⠑"
+                , Html.summary
+                    [ Html.Attributes.style "font-size" "2rem"
+                    ]
+                    [ Html.text "Cube-Dude" ]
+                ]
             , Html.h2
                 [ Html.Attributes.style "text-align" "center"
                 ]

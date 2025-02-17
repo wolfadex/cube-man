@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739827709747"
+    "1739833274391"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -29736,6 +29736,7 @@ var $author$project$Screen$FreePlay$view = F4(
 				]);
 		}
 	});
+var $elm$html$Html$summary = _VirtualDom_node('summary');
 var $author$project$Screen$Game$view = F4(
 	function (toSharedMsg, _v0, _v1, _v2) {
 		return _List_fromArray(
@@ -29768,11 +29769,23 @@ var $author$project$Screen$Game$view = F4(
 								$elm$html$Html$h1,
 								_List_fromArray(
 									[
-										A2($elm$html$Html$Attributes$style, 'text-align', 'center')
+										A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+										A2($elm$html$Html$Attributes$style, 'color', 'white'),
+										A2($elm$html$Html$Attributes$style, 'font-size', '3rem')
 									]),
 								_List_fromArray(
 									[
-										$elm$html$Html$text('Cube-Man')
+										$elm$html$Html$text('⠉⠥⠃⠑⠤⠙⠥⠙⠑'),
+										A2(
+										$elm$html$Html$summary,
+										_List_fromArray(
+											[
+												A2($elm$html$Html$Attributes$style, 'font-size', '2rem')
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Cube-Dude')
+											]))
 									])),
 								A2(
 								$elm$html$Html$h2,
@@ -29839,11 +29852,22 @@ var $author$project$Screen$Menu$view = F4(
 								_List_fromArray(
 									[
 										A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-										A2($elm$html$Html$Attributes$style, 'color', 'white')
+										A2($elm$html$Html$Attributes$style, 'color', 'white'),
+										A2($elm$html$Html$Attributes$style, 'font-size', '3rem')
 									]),
 								_List_fromArray(
 									[
-										$elm$html$Html$text('Cube-Man')
+										$elm$html$Html$text('⠉⠥⠃⠑⠤⠙⠥⠙⠑'),
+										A2(
+										$elm$html$Html$summary,
+										_List_fromArray(
+											[
+												A2($elm$html$Html$Attributes$style, 'font-size', '2rem')
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Cube-Dude')
+											]))
 									])),
 								A2(
 								$elm$html$Html$div,
@@ -29953,7 +29977,7 @@ var $author$project$Main$view = function (model) {
 					}
 			}
 		}(),
-		title: 'Cube-Man'
+		title: 'Cube-Dude'
 	};
 };
 var $author$project$Main$main = $elm$browser$Browser$document(
