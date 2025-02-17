@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739821739247"
+    "1739827709747"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -12320,7 +12320,17 @@ var $ianmackenzie$elm_geometry$Direction3d$z = $ianmackenzie$elm_geometry$Direct
 var $ianmackenzie$elm_geometry$Frame3d$atOrigin = $ianmackenzie$elm_geometry$Geometry$Types$Frame3d(
 	{originPoint: $ianmackenzie$elm_geometry$Point3d$origin, xDirection: $ianmackenzie$elm_geometry$Direction3d$x, yDirection: $ianmackenzie$elm_geometry$Direction3d$y, zDirection: $ianmackenzie$elm_geometry$Direction3d$z});
 var $author$project$Board$empty = {blocks: $elm$core$Dict$empty, maxX: 0, maxY: 0, maxZ: 0};
-var $author$project$Board$emptyLevel = {board: $author$project$Board$empty, enemies: _List_Nil, playerFacing: $author$project$Board$Forward, playerFrame: $ianmackenzie$elm_geometry$Frame3d$atOrigin, playerTarget: $author$project$Board$NoTarget, playerWantFacing: $author$project$Board$Forward, score: 0};
+var $author$project$Board$emptyLevel = {
+	board: $author$project$Board$empty,
+	enemies: _List_Nil,
+	hearts: 6,
+	invincibleFrames: $ianmackenzie$elm_units$Duration$seconds(0),
+	playerFacing: $author$project$Board$Forward,
+	playerFrame: $ianmackenzie$elm_geometry$Frame3d$atOrigin,
+	playerTarget: $author$project$Board$NoTarget,
+	playerWantFacing: $author$project$Board$Forward,
+	score: 0
+};
 var $MartinSStewart$elm_serialize$Serialize$version = 1;
 var $MartinSStewart$elm_serialize$Serialize$encodeToJson = F2(
 	function (codec, value) {
@@ -16934,13 +16944,6 @@ var $elm$core$Set$remove = F2(
 		return $elm$core$Set$Set_elm_builtin(
 			A2($elm$core$Dict$remove, key, dict));
 	});
-var $ianmackenzie$elm_units$Quantity$compare = F2(
-	function (_v0, _v1) {
-		var x = _v0.a;
-		var y = _v1.a;
-		return A2($elm$core$Basics$compare, x, y);
-	});
-var $author$project$Board$durationEnemyMovement = $ianmackenzie$elm_units$Duration$seconds(1);
 var $author$project$Board$enemyRadius = $ianmackenzie$elm_units$Length$meters(0.1);
 var $ianmackenzie$elm_units$Quantity$greaterThan = F2(
 	function (_v0, _v1) {
@@ -16959,6 +16962,7 @@ var $author$project$Board$enemyPlayerCollision = F2(
 				$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame),
 				enemyPoint));
 	});
+var $author$project$Board$durationEnemyMovement = $ianmackenzie$elm_units$Duration$seconds(1);
 var $ianmackenzie$elm_geometry$Point3d$interpolateFrom = F3(
 	function (_v0, _v1, t) {
 		var p1 = _v0.a;
@@ -16989,6 +16993,13 @@ var $author$project$Board$enemyToVisualPoint = function (enemy) {
 				A2($ianmackenzie$elm_units$Quantity$ratio, enemy.durationBetweenMoves, $author$project$Board$durationEnemyMovement)));
 	}
 };
+var $author$project$Board$initialInvincibleFrames = $ianmackenzie$elm_units$Duration$seconds(1.5);
+var $ianmackenzie$elm_units$Quantity$compare = F2(
+	function (_v0, _v1) {
+		var x = _v0.a;
+		var y = _v1.a;
+		return A2($elm$core$Basics$compare, x, y);
+	});
 var $author$project$Board$moveEnemy = F3(
 	function (deltaDuration, level, enemy) {
 		var _v0 = level.playerTarget;
@@ -17002,53 +17013,82 @@ var $author$project$Board$moveEnemy = F3(
 				var movingTo = _v1.a;
 				var movingToRest = _v1.b;
 				var remainingDuration = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, enemy.durationBetweenMoves);
-				if (_Utils_eq(
+				return _Utils_eq(
 					A2(
 						$ianmackenzie$elm_units$Quantity$compare,
 						remainingDuration,
 						$ianmackenzie$elm_units$Quantity$Quantity(0)),
-					$elm$core$Basics$EQ)) {
-					var nextEnemy = _Utils_update(
+					$elm$core$Basics$EQ) ? _Utils_update(
+					enemy,
+					{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest}) : (A2(
+					$ianmackenzie$elm_units$Quantity$lessThan,
+					$ianmackenzie$elm_units$Quantity$Quantity(0),
+					remainingDuration) ? A3(
+					$author$project$Board$moveEnemy,
+					A2(
+						$ianmackenzie$elm_units$Quantity$minus,
+						remainingDuration,
+						$ianmackenzie$elm_units$Quantity$Quantity(0)),
+					level,
+					_Utils_update(
 						enemy,
-						{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest});
-					return A2(
-						$author$project$Board$enemyPlayerCollision,
-						$author$project$Board$enemyToVisualPoint(nextEnemy),
-						level) ? nextEnemy : nextEnemy;
+						{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest})) : _Utils_update(
+					enemy,
+					{durationBetweenMoves: remainingDuration}));
+			}
+		}
+	});
+var $author$project$Board$moveEnemiesHelper = F4(
+	function (deltaDuration, movedEnemies, toMoveEnemies, level) {
+		moveEnemiesHelper:
+		while (true) {
+			if (!toMoveEnemies.b) {
+				return _Utils_update(
+					level,
+					{enemies: movedEnemies});
+			} else {
+				var nextEnemy = toMoveEnemies.a;
+				var restEnemies = toMoveEnemies.b;
+				var movedEnemy = A3($author$project$Board$moveEnemy, deltaDuration, level, nextEnemy);
+				if (A2(
+					$ianmackenzie$elm_units$Quantity$greaterThan,
+					$ianmackenzie$elm_units$Quantity$Quantity(0),
+					level.invincibleFrames)) {
+					var $temp$deltaDuration = deltaDuration,
+						$temp$movedEnemies = A2($elm$core$List$cons, movedEnemy, movedEnemies),
+						$temp$toMoveEnemies = restEnemies,
+						$temp$level = level;
+					deltaDuration = $temp$deltaDuration;
+					movedEnemies = $temp$movedEnemies;
+					toMoveEnemies = $temp$toMoveEnemies;
+					level = $temp$level;
+					continue moveEnemiesHelper;
 				} else {
 					if (A2(
-						$ianmackenzie$elm_units$Quantity$lessThan,
-						$ianmackenzie$elm_units$Quantity$Quantity(0),
-						remainingDuration)) {
-						var nextEnemy = _Utils_update(
-							enemy,
-							{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest});
-						return A2(
-							$author$project$Board$enemyPlayerCollision,
-							$author$project$Board$enemyToVisualPoint(nextEnemy),
-							level) ? A3(
-							$author$project$Board$moveEnemy,
-							A2(
-								$ianmackenzie$elm_units$Quantity$minus,
-								remainingDuration,
-								$ianmackenzie$elm_units$Quantity$Quantity(0)),
+						$author$project$Board$enemyPlayerCollision,
+						$author$project$Board$enemyToVisualPoint(movedEnemy),
+						level)) {
+						var $temp$deltaDuration = deltaDuration,
+							$temp$movedEnemies = movedEnemies,
+							$temp$toMoveEnemies = restEnemies,
+							$temp$level = _Utils_update(
 							level,
-							nextEnemy) : A3(
-							$author$project$Board$moveEnemy,
-							A2(
-								$ianmackenzie$elm_units$Quantity$minus,
-								remainingDuration,
-								$ianmackenzie$elm_units$Quantity$Quantity(0)),
-							level,
-							nextEnemy);
+							{hearts: level.hearts - 1, invincibleFrames: $author$project$Board$initialInvincibleFrames});
+						deltaDuration = $temp$deltaDuration;
+						movedEnemies = $temp$movedEnemies;
+						toMoveEnemies = $temp$toMoveEnemies;
+						level = $temp$level;
+						continue moveEnemiesHelper;
 					} else {
-						var nextEnemy = _Utils_update(
-							enemy,
-							{durationBetweenMoves: remainingDuration});
-						return A2(
-							$author$project$Board$enemyPlayerCollision,
-							$author$project$Board$enemyToVisualPoint(nextEnemy),
-							level) ? nextEnemy : nextEnemy;
+						var $temp$deltaDuration = deltaDuration,
+							$temp$movedEnemies = A2($elm$core$List$cons, movedEnemy, movedEnemies),
+							$temp$toMoveEnemies = restEnemies,
+							$temp$level = level;
+						deltaDuration = $temp$deltaDuration;
+						movedEnemies = $temp$movedEnemies;
+						toMoveEnemies = $temp$toMoveEnemies;
+						level = $temp$level;
+						continue moveEnemiesHelper;
 					}
 				}
 			}
@@ -17056,14 +17096,7 @@ var $author$project$Board$moveEnemy = F3(
 	});
 var $author$project$Board$moveEnemies = F2(
 	function (deltaDuration, level) {
-		return _Utils_update(
-			level,
-			{
-				enemies: A2(
-					$elm$core$List$map,
-					A2($author$project$Board$moveEnemy, deltaDuration, level),
-					level.enemies)
-			});
+		return A4($author$project$Board$moveEnemiesHelper, deltaDuration, _List_Nil, level.enemies, level);
 	});
 var $author$project$Board$aStarCost = F2(
 	function (_v0, _v1) {
@@ -17513,6 +17546,44 @@ var $ianmackenzie$elm_units$Quantity$for = F2(
 		var rateOfChange = _v1.a;
 		return $ianmackenzie$elm_units$Quantity$Quantity(rateOfChange * independentValue);
 	});
+var $author$project$Board$handlePlayerCollisionsHelper = F3(
+	function (checkedEnemies, toCheckEnemies, level) {
+		handlePlayerCollisionsHelper:
+		while (true) {
+			if (!toCheckEnemies.b) {
+				return level;
+			} else {
+				var nextEnemy = toCheckEnemies.a;
+				var restEnemies = toCheckEnemies.b;
+				if (A2(
+					$author$project$Board$enemyPlayerCollision,
+					$author$project$Board$enemyToVisualPoint(nextEnemy),
+					level)) {
+					return _Utils_update(
+						level,
+						{
+							enemies: _Utils_ap(checkedEnemies, restEnemies),
+							hearts: level.hearts - 1,
+							invincibleFrames: $author$project$Board$initialInvincibleFrames
+						});
+				} else {
+					var $temp$checkedEnemies = A2($elm$core$List$cons, nextEnemy, checkedEnemies),
+						$temp$toCheckEnemies = restEnemies,
+						$temp$level = level;
+					checkedEnemies = $temp$checkedEnemies;
+					toCheckEnemies = $temp$toCheckEnemies;
+					level = $temp$level;
+					continue handlePlayerCollisionsHelper;
+				}
+			}
+		}
+	});
+var $author$project$Board$handlePlayerCollisions = function (level) {
+	return A2(
+		$ianmackenzie$elm_units$Quantity$greaterThan,
+		$ianmackenzie$elm_units$Quantity$Quantity(0),
+		level.invincibleFrames) ? level : A3($author$project$Board$handlePlayerCollisionsHelper, _List_Nil, level.enemies, level);
+};
 var $ianmackenzie$elm_geometry$Frame3d$moveTo = F2(
 	function (newOrigin, frame) {
 		return $ianmackenzie$elm_geometry$Frame3d$unsafe(
@@ -17779,28 +17850,30 @@ var $author$project$Board$movePlayer = F2(
 						$ianmackenzie$elm_units$Quantity$Quantity(0)),
 					$elm$core$Basics$EQ)) {
 					var playerFrame = A2($ianmackenzie$elm_geometry$Frame3d$moveTo, toPoint, level.playerFrame);
-					var nextLevel = $author$project$Board$scorePoints(
-						_Utils_update(
-							level,
-							{
-								playerFrame: playerFrame,
-								playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, moveDetails.to, playerFrame)
-							}));
-					return nextLevel;
+					var nextLevel = $author$project$Board$handlePlayerCollisions(
+						$author$project$Board$scorePoints(
+							_Utils_update(
+								level,
+								{
+									playerFrame: playerFrame,
+									playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, moveDetails.to, playerFrame)
+								})));
+					return (nextLevel.hearts < 1) ? nextLevel : nextLevel;
 				} else {
 					if (A2(
 						$ianmackenzie$elm_units$Quantity$lessThan,
 						$ianmackenzie$elm_units$Quantity$Quantity(0),
 						remainingDuration)) {
 						var playerFrame = A2($ianmackenzie$elm_geometry$Frame3d$moveTo, toPoint, level.playerFrame);
-						var nextLevel = $author$project$Board$scorePoints(
-							_Utils_update(
-								level,
-								{
-									playerFrame: playerFrame,
-									playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, moveDetails.to, playerFrame)
-								}));
-						return A2(
+						var nextLevel = $author$project$Board$handlePlayerCollisions(
+							$author$project$Board$scorePoints(
+								_Utils_update(
+									level,
+									{
+										playerFrame: playerFrame,
+										playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, moveDetails.to, playerFrame)
+									})));
+						return (nextLevel.hearts < 1) ? nextLevel : A2(
 							$author$project$Board$tickPlayer,
 							A2(
 								$ianmackenzie$elm_units$Quantity$minus,
@@ -17809,32 +17882,33 @@ var $author$project$Board$movePlayer = F2(
 							nextLevel);
 					} else {
 						var fromPoint = $author$project$Board$pointToPoint3d(moveDetails.from);
-						var nextLevel = $author$project$Board$scorePoints(
-							_Utils_update(
-								level,
-								{
-									playerFrame: A2(
-										$ianmackenzie$elm_geometry$Frame3d$moveTo,
-										A2(
-											$ianmackenzie$elm_geometry$Point3d$translateBy,
+						var nextLevel = $author$project$Board$handlePlayerCollisions(
+							$author$project$Board$scorePoints(
+								_Utils_update(
+									level,
+									{
+										playerFrame: A2(
+											$ianmackenzie$elm_geometry$Frame3d$moveTo,
 											A2(
-												$ianmackenzie$elm_geometry$Vector3d$scaleBy,
-												function () {
-													var _v1 = remainingDuration;
-													var remDur = _v1.a;
-													var _v2 = $author$project$Board$durationForForwardMovement;
-													var durFordMove = _v2.a;
-													return (durFordMove - remDur) / durFordMove;
-												}(),
-												A2($ianmackenzie$elm_geometry$Vector3d$from, fromPoint, toPoint)),
-											fromPoint),
-										level.playerFrame),
-									playerTarget: $author$project$Board$MoveForward(
-										_Utils_update(
-											moveDetails,
-											{duration: remainingDuration}))
-								}));
-						return nextLevel;
+												$ianmackenzie$elm_geometry$Point3d$translateBy,
+												A2(
+													$ianmackenzie$elm_geometry$Vector3d$scaleBy,
+													function () {
+														var _v1 = remainingDuration;
+														var remDur = _v1.a;
+														var _v2 = $author$project$Board$durationForForwardMovement;
+														var durFordMove = _v2.a;
+														return (durFordMove - remDur) / durFordMove;
+													}(),
+													A2($ianmackenzie$elm_geometry$Vector3d$from, fromPoint, toPoint)),
+												fromPoint),
+											level.playerFrame),
+										playerTarget: $author$project$Board$MoveForward(
+											_Utils_update(
+												moveDetails,
+												{duration: remainingDuration}))
+									})));
+						return (nextLevel.hearts < 1) ? nextLevel : nextLevel;
 					}
 				}
 			default:
@@ -17877,14 +17951,15 @@ var $author$project$Board$movePlayer = F2(
 						edgeMovement,
 						level.playerFrame);
 					var correctedPlayerFrame = $author$project$Board$correctPlayerFrame(playerFrame);
-					var nextLevel = $author$project$Board$scorePoints(
-						_Utils_update(
-							level,
-							{
-								playerFrame: correctedPlayerFrame,
-								playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, edgeDetails.to, correctedPlayerFrame)
-							}));
-					return A2(
+					var nextLevel = $author$project$Board$handlePlayerCollisions(
+						$author$project$Board$scorePoints(
+							_Utils_update(
+								level,
+								{
+									playerFrame: correctedPlayerFrame,
+									playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, edgeDetails.to, correctedPlayerFrame)
+								})));
+					return (nextLevel.hearts < 1) ? nextLevel : A2(
 						$author$project$Board$tickPlayer,
 						A2(
 							$ianmackenzie$elm_units$Quantity$minus,
@@ -17928,53 +18003,55 @@ var $author$project$Board$movePlayer = F2(
 							edgeMovement,
 							level.playerFrame);
 						var correctedPlayerFrame = $author$project$Board$correctPlayerFrame(playerFrame);
-						var nextLevel = $author$project$Board$scorePoints(
-							_Utils_update(
-								level,
-								{
-									playerFrame: correctedPlayerFrame,
-									playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, edgeDetails.to, correctedPlayerFrame)
-								}));
-						return nextLevel;
+						var nextLevel = $author$project$Board$handlePlayerCollisions(
+							$author$project$Board$scorePoints(
+								_Utils_update(
+									level,
+									{
+										playerFrame: correctedPlayerFrame,
+										playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, edgeDetails.to, correctedPlayerFrame)
+									})));
+						return (nextLevel.hearts < 1) ? nextLevel : nextLevel;
 					} else {
-						var nextLevel = $author$project$Board$scorePoints(
-							_Utils_update(
-								level,
-								{
-									playerFrame: A3(
-										$ianmackenzie$elm_geometry$Frame3d$rotateAround,
-										A2(
-											$ianmackenzie$elm_geometry$Axis3d$through,
-											A3(
-												$ianmackenzie$elm_geometry$Point3d$translateIn,
-												$ianmackenzie$elm_geometry$Frame3d$zDirection(level.playerFrame),
-												$ianmackenzie$elm_units$Length$meters(-1),
-												$author$project$Board$pointToPoint3d(
-													$author$project$Board$point3dToPoint(
-														$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame)))),
-											function () {
-												var _v5 = level.playerFacing;
-												switch (_v5.$) {
-													case 'Forward':
-														return $ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame);
-													case 'Backward':
-														return $ianmackenzie$elm_geometry$Direction3d$reverse(
-															$ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame));
-													case 'Left':
-														return $ianmackenzie$elm_geometry$Direction3d$reverse(
-															$ianmackenzie$elm_geometry$Frame3d$xDirection(level.playerFrame));
-													default:
-														return $ianmackenzie$elm_geometry$Frame3d$xDirection(level.playerFrame);
-												}
-											}()),
-										edgeMovement,
-										level.playerFrame),
-									playerTarget: $author$project$Board$TraverseEdge(
-										_Utils_update(
-											edgeDetails,
-											{duration: remainingDuration}))
-								}));
-						return nextLevel;
+						var nextLevel = $author$project$Board$handlePlayerCollisions(
+							$author$project$Board$scorePoints(
+								_Utils_update(
+									level,
+									{
+										playerFrame: A3(
+											$ianmackenzie$elm_geometry$Frame3d$rotateAround,
+											A2(
+												$ianmackenzie$elm_geometry$Axis3d$through,
+												A3(
+													$ianmackenzie$elm_geometry$Point3d$translateIn,
+													$ianmackenzie$elm_geometry$Frame3d$zDirection(level.playerFrame),
+													$ianmackenzie$elm_units$Length$meters(-1),
+													$author$project$Board$pointToPoint3d(
+														$author$project$Board$point3dToPoint(
+															$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame)))),
+												function () {
+													var _v5 = level.playerFacing;
+													switch (_v5.$) {
+														case 'Forward':
+															return $ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame);
+														case 'Backward':
+															return $ianmackenzie$elm_geometry$Direction3d$reverse(
+																$ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame));
+														case 'Left':
+															return $ianmackenzie$elm_geometry$Direction3d$reverse(
+																$ianmackenzie$elm_geometry$Frame3d$xDirection(level.playerFrame));
+														default:
+															return $ianmackenzie$elm_geometry$Frame3d$xDirection(level.playerFrame);
+													}
+												}()),
+											edgeMovement,
+											level.playerFrame),
+										playerTarget: $author$project$Board$TraverseEdge(
+											_Utils_update(
+												edgeDetails,
+												{duration: remainingDuration}))
+									})));
+						return (nextLevel.hearts < 1) ? nextLevel : nextLevel;
 					}
 				}
 		}
@@ -26443,7 +26520,6 @@ var $phosphor_icons$phosphor_elm$Phosphor$gridNine = function (weight) {
 	}();
 	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
-var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $phosphor_icons$phosphor_elm$Phosphor$plus = function (weight) {
 	var elements = function () {
 		switch (weight.$) {
@@ -26530,6 +26606,229 @@ var $author$project$Input$viewInputKeyHoverText = function (_v0) {
 	var secondary = _v0.b;
 	return (secondary === '') ? primary : (primary + (' | ' + secondary));
 };
+var $phosphor_icons$phosphor_elm$Phosphor$Fill = {$: 'Fill'};
+var $elm$html$Html$h3 = _VirtualDom_node('h3');
+var $phosphor_icons$phosphor_elm$Phosphor$heart = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M178,36c-20.09,0-37.92,7.93-50,21.56C115.92,43.93,98.09,36,78,36a66.08,66.08,0,0,0-66,66c0,72.34,105.81,130.14,110.31,132.57a12,12,0,0,0,11.38,0C138.19,232.14,244,174.34,244,102A66.08,66.08,0,0,0,178,36Zm-5.49,142.36A328.69,328.69,0,0,1,128,210.16a328.69,328.69,0,0,1-44.51-31.8C61.82,159.77,36,131.42,36,102A42,42,0,0,1,78,60c17.8,0,32.7,9.4,38.89,24.54a12,12,0,0,0,22.22,0C145.3,69.4,160.2,60,178,60a42,42,0,0,1,42,42C220,131.42,194.18,159.77,172.51,178.36Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M232,102c0,66-104,122-104,122S24,168,24,102A54,54,0,0,1,78,48c22.59,0,41.94,12.31,50,32,8.06-19.69,27.41-32,50-32A54,54,0,0,1,232,102Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M178,40c-20.65,0-38.73,8.88-50,23.89C116.73,48.88,98.65,40,78,40a62.07,62.07,0,0,0-62,62c0,70,103.79,126.66,108.21,129a8,8,0,0,0,7.58,0C136.21,228.66,240,172,240,102A62.07,62.07,0,0,0,178,40ZM128,214.8C109.74,204.16,32,155.69,32,102A46.06,46.06,0,0,1,78,56c19.45,0,35.78,10.36,42.6,27a8,8,0,0,0,14.8,0c6.82-16.67,23.15-27,42.6-27a46.06,46.06,0,0,1,46,46C224,155.61,146.24,204.15,128,214.8Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M240,102c0,70-103.79,126.66-108.21,129a8,8,0,0,1-7.58,0C119.79,228.66,16,172,16,102A62.07,62.07,0,0,1,78,40c20.65,0,38.73,8.88,50,23.89C139.27,48.88,157.35,40,178,40A62.07,62.07,0,0,1,240,102Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M178,42c-21,0-39.26,9.47-50,25.34C117.26,51.47,99,42,78,42a60.07,60.07,0,0,0-60,60c0,29.2,18.2,59.59,54.1,90.31a334.68,334.68,0,0,0,53.06,37,6,6,0,0,0,5.68,0,334.68,334.68,0,0,0,53.06-37C219.8,161.59,238,131.2,238,102A60.07,60.07,0,0,0,178,42ZM128,217.11C111.59,207.64,30,157.72,30,102A48.05,48.05,0,0,1,78,54c20.28,0,37.31,10.83,44.45,28.27a6,6,0,0,0,11.1,0C140.69,64.83,157.72,54,178,54a48.05,48.05,0,0,1,48,48C226,157.72,144.41,207.64,128,217.11Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M178,40c-20.65,0-38.73,8.88-50,23.89C116.73,48.88,98.65,40,78,40a62.07,62.07,0,0,0-62,62c0,70,103.79,126.66,108.21,129a8,8,0,0,0,7.58,0C136.21,228.66,240,172,240,102A62.07,62.07,0,0,0,178,40ZM128,214.8C109.74,204.16,32,155.69,32,102A46.06,46.06,0,0,1,78,56c19.45,0,35.78,10.36,42.6,27a8,8,0,0,0,14.8,0c6.82-16.67,23.15-27,42.6-27a46.06,46.06,0,0,1,46,46C224,155.61,146.24,204.15,128,214.8Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M178,44c-21.44,0-39.92,10.19-50,27.07C117.92,54.19,99.44,44,78,44a58.07,58.07,0,0,0-58,58c0,28.59,18,58.47,53.4,88.79a333.81,333.81,0,0,0,52.7,36.73,4,4,0,0,0,3.8,0,333.81,333.81,0,0,0,52.7-36.73C218,160.47,236,130.59,236,102A58.07,58.07,0,0,0,178,44ZM128,219.42c-14-8-100-59.35-100-117.42A50.06,50.06,0,0,1,78,52c21.11,0,38.85,11.31,46.3,29.51a4,4,0,0,0,7.4,0C139.15,63.31,156.89,52,178,52a50.06,50.06,0,0,1,50,50C228,160,142,211.46,128,219.42Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
+};
+var $phosphor_icons$phosphor_elm$Phosphor$heartBreak = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M178,36a65.6,65.6,0,0,0-46.67,19.33L128,58.66l-3.33-3.33A66,66,0,0,0,12,102c0,72.34,105.81,130.14,110.31,132.57a12,12,0,0,0,11.38,0C138.19,232.14,244,174.34,244,102A66.08,66.08,0,0,0,178,36Zm-5.49,142.36A328.69,328.69,0,0,1,128,210.16a328.69,328.69,0,0,1-44.51-31.8C61.82,159.77,36,131.42,36,102a42,42,0,0,1,71.7-29.7L111,75.63l-7.52,7.52a12,12,0,0,0,0,17l21.7,21.7-13.7,13.69a12,12,0,1,0,17,17l22.18-22.19a12,12,0,0,0,0-17L129,91.63,148.3,72.3A42,42,0,0,1,220,102C220,131.42,194.18,159.77,172.51,178.36Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M232,102c0,66-104,122-104,122S24,168,24,102a54,54,0,0,1,92.18-38.18L128,75.63l11.82-11.81A54,54,0,0,1,232,102Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M178,40a61.6,61.6,0,0,0-43.84,18.16L128,64.32l-6.16-6.16A62,62,0,0,0,16,102c0,70,103.79,126.67,108.21,129a8,8,0,0,0,7.58,0C136.21,228.67,240,172,240,102A62.07,62.07,0,0,0,178,40ZM128,214.8C109.74,204.16,32,155.69,32,102a46,46,0,0,1,78.53-32.53l6.16,6.16L106.34,86a8,8,0,0,0,0,11.31l24.53,24.53-16.53,16.52a8,8,0,0,0,11.32,11.32l22.18-22.19a8,8,0,0,0,0-11.31L123.31,91.63l22.16-22.16A46,46,0,0,1,224,102C224,155.61,146.24,204.15,128,214.8Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M239.81,107.5c-5.19,67.42-103.7,121.23-108,123.54a8,8,0,0,1-7.58,0C119.8,228.67,16,172,16,102a62,62,0,0,1,96.47-51.55,4,4,0,0,1,.61,6.17L99.72,70a8,8,0,0,0,0,11.31l32.53,32.53L111,135a8,8,0,1,0,11.31,11.31l26.88-26.87a8,8,0,0,0,0-11.31L116.7,75.63l17.47-17.47h0A61.63,61.63,0,0,1,178.41,40C214.73,40.23,242.59,71.29,239.81,107.5Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M178,42a59.63,59.63,0,0,0-42.43,17.57L128,67.15l-7.57-7.58A60,60,0,0,0,18,102c0,29.2,18.2,59.59,54.1,90.31a334.68,334.68,0,0,0,53.06,37,6,6,0,0,0,5.68,0,334.68,334.68,0,0,0,53.06-37C219.8,161.59,238,131.2,238,102A60.07,60.07,0,0,0,178,42ZM128,217.11C111.59,207.64,30,157.72,30,102a48,48,0,0,1,81.94-33.94l7.57,7.57L107.76,87.39a6,6,0,0,0,0,8.49l25.94,25.94-17.94,17.94a6,6,0,0,0,8.48,8.48l22.19-22.18a6,6,0,0,0,0-8.49L120.49,91.63l23.57-23.57A48,48,0,0,1,226,102C226,157.72,144.41,207.64,128,217.11Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M178,40a61.6,61.6,0,0,0-43.84,18.16L128,64.32l-6.16-6.16A62,62,0,0,0,16,102c0,70,103.79,126.67,108.21,129a8,8,0,0,0,7.58,0C136.21,228.67,240,172,240,102A62.07,62.07,0,0,0,178,40ZM128,214.8C109.74,204.16,32,155.69,32,102a46,46,0,0,1,78.53-32.53l6.16,6.16L106.34,86a8,8,0,0,0,0,11.31l24.53,24.53-16.53,16.52a8,8,0,0,0,11.32,11.32l22.18-22.19a8,8,0,0,0,0-11.31L123.31,91.63l22.16-22.16A46,46,0,0,1,224,102C224,155.61,146.24,204.15,128,214.8Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M178,44a57.59,57.59,0,0,0-41,17l-9,9-9-9a58,58,0,0,0-99,41c0,28.59,18,58.47,53.4,88.79a333.81,333.81,0,0,0,52.7,36.73,4,4,0,0,0,3.8,0,333.81,333.81,0,0,0,52.7-36.73C218,160.47,236,130.59,236,102A58.07,58.07,0,0,0,178,44ZM128,219.42c-14-8-100-59.35-100-117.42a50,50,0,0,1,85.36-35.36l9,9L109.17,88.8a4,4,0,0,0,0,5.66l27.36,27.36-19.36,19.35a4,4,0,0,0,5.66,5.66L145,124.64a4,4,0,0,0,0-5.65L117.66,91.63l13.16-13.16h0l11.8-11.81A50,50,0,0,1,228,102C228,160,142,211.46,128,219.42Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
+};
+var $author$project$Board$viewStats = function (level) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+				A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
+				A2($elm$html$Html$Attributes$style, 'top', '0'),
+				A2($elm$html$Html$Attributes$style, 'left', '0'),
+				A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+				A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
+				A2($elm$html$Html$Attributes$style, 'color', 'white')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$h3,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'margin', '0')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						'Score: ' + $elm$core$String$fromInt(level.score))
+					])),
+				function () {
+				var fullHearts = (level.hearts / 2) | 0;
+				var brokenHearts = level.hearts % 2;
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'color', 'red'),
+							A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+							A2($elm$html$Html$Attributes$style, 'flex-direction', 'row-reverse'),
+							A2($elm$html$Html$Attributes$style, 'gap', '0.5rem')
+						]),
+					function (hearts) {
+						return (brokenHearts === 1) ? A2(
+							$elm$core$List$cons,
+							A2(
+								$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+								_List_Nil,
+								$phosphor_icons$phosphor_elm$Phosphor$heartBreak($phosphor_icons$phosphor_elm$Phosphor$Fill)),
+							hearts) : hearts;
+					}(
+						A2(
+							$elm$core$List$map,
+							function (_v0) {
+								return A2(
+									$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+									_List_Nil,
+									$phosphor_icons$phosphor_elm$Phosphor$heart($phosphor_icons$phosphor_elm$Phosphor$Fill));
+							},
+							A2($elm$core$List$range, 0, fullHearts - 1))));
+			}()
+			]));
+};
 var $phosphor_icons$phosphor_elm$Phosphor$x = function (weight) {
 	var elements = function () {
 		switch (weight.$) {
@@ -26615,27 +26914,7 @@ var $author$project$Screen$Editor$viewHeader = F4(
 	function (toSharedMsg, sharedModel, toMsg, model) {
 		var _v0 = model.editorMode;
 		if (_v0.$ === 'TestGame') {
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						A2($elm$html$Html$Attributes$style, 'grid-column', '1 /3'),
-						A2($elm$html$Html$Attributes$style, 'grid-row', '1'),
-						A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-						A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
-						A2($elm$html$Html$Attributes$style, 'gap', '1rem')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$h3,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								'Score: ' + $elm$core$String$fromInt(model.level.score))
-							]))
-					]));
+			return $author$project$Board$viewStats(model.level);
 		} else {
 			return A2(
 				$elm$html$Html$div,
@@ -29201,26 +29480,7 @@ var $author$project$Screen$FreePlay$view = F4(
 								]),
 								A2($elm$core$List$map, $author$project$Board$viewEnemy, model.level.enemies)
 							]))),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-							A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
-							A2($elm$html$Html$Attributes$style, 'top', '0'),
-							A2($elm$html$Html$Attributes$style, 'left', '0')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$h3,
-							_List_Nil,
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									'Score: ' + $elm$core$String$fromInt(model.level.score))
-								]))
-						])),
+					$author$project$Board$viewStats(model.level),
 					A2(
 					$elm$html$Html$div,
 					_List_fromArray(

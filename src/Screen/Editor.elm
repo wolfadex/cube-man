@@ -2646,15 +2646,16 @@ viewHeader : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model 
 viewHeader toSharedMsg sharedModel toMsg model =
     case model.editorMode of
         TestGame ->
-            Html.div
-                [ Html.Attributes.style "grid-column" "1 /3"
-                , Html.Attributes.style "grid-row" "1"
-                , Html.Attributes.style "display" "flex"
-                , Html.Attributes.style "padding" "0.5rem"
-                , Html.Attributes.style "gap" "1rem"
-                ]
-                [ Html.h3 [] [ Html.text ("Score: " ++ String.fromInt model.level.score) ]
-                ]
+            -- Html.div
+            --     [ Html.Attributes.style "grid-column" "1 /3"
+            --     , Html.Attributes.style "grid-row" "1"
+            --     , Html.Attributes.style "display" "flex"
+            --     , Html.Attributes.style "padding" "0.5rem"
+            --     , Html.Attributes.style "gap" "1rem"
+            --     ]
+            --     [ Html.h3 [] [ Html.text ("Score: " ++ String.fromInt model.level.score) ]
+            --     ]
+            Board.viewStats model.level
 
         EditBoard ->
             Html.div

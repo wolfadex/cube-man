@@ -36,6 +36,7 @@ module Board exposing
     , viewBlock
     , viewEnemy
     , viewPlayer
+    , viewStats
     , zigZagBoard
     )
 
@@ -54,10 +55,12 @@ import Duration exposing (Duration)
 import Ease
 import Frame3d exposing (Frame3d)
 import Html exposing (Html)
+import Html.Attributes
 import Input
 import Length exposing (Length)
 import Luminance
 import LuminousFlux
+import Phosphor
 import Pixels
 import Point3d exposing (Point3d)
 import Quantity exposing (Quantity(..))
@@ -1181,9 +1184,35 @@ tickEnemies deltaDuration level =
 
 moveEnemies : Duration -> Level -> Level
 moveEnemies deltaDuration level =
-    { level
-        | enemies = List.map (moveEnemy deltaDuration level) level.enemies
-    }
+    moveEnemiesHelper deltaDuration [] level.enemies level
+
+
+moveEnemiesHelper : Duration -> List Enemy -> List Enemy -> Level -> Level
+moveEnemiesHelper deltaDuration movedEnemies toMoveEnemies level =
+    case toMoveEnemies of
+        [] ->
+            { level | enemies = movedEnemies }
+
+        nextEnemy :: restEnemies ->
+            let
+                movedEnemy =
+                    moveEnemy deltaDuration level nextEnemy
+            in
+            if level.invincibleFrames |> Quantity.greaterThan (Quantity 0) then
+                moveEnemiesHelper deltaDuration (movedEnemy :: movedEnemies) restEnemies level
+
+            else if enemyPlayerCollision (enemyToVisualPoint movedEnemy) level then
+                moveEnemiesHelper deltaDuration
+                    movedEnemies
+                    restEnemies
+                    { level
+                      -- TODO: handle 0 hearts
+                        | hearts = level.hearts - 1
+                        , invincibleFrames = initialInvincibleFrames
+                    }
+
+            else
+                moveEnemiesHelper deltaDuration (movedEnemy :: movedEnemies) restEnemies level
 
 
 moveEnemy : Duration -> Level -> Enemy -> Enemy
@@ -1205,52 +1234,24 @@ moveEnemy deltaDuration level enemy =
                                 |> Quantity.minus deltaDuration
                     in
                     if Quantity.compare remainingDuration (Quantity 0) == EQ then
-                        let
-                            nextEnemy =
-                                { enemy
-                                    | movingTo = movingToRest
-                                    , movingFrom = movingTo
-                                    , durationBetweenMoves = durationEnemyMovement
-                                }
-                        in
-                        if enemyPlayerCollision (enemyToVisualPoint nextEnemy) level then
-                            -- TOOD: handle collision
-                            nextEnemy
-
-                        else
-                            nextEnemy
+                        { enemy
+                            | movingTo = movingToRest
+                            , movingFrom = movingTo
+                            , durationBetweenMoves = durationEnemyMovement
+                        }
 
                     else if remainingDuration |> Quantity.lessThan (Quantity 0) then
-                        let
-                            nextEnemy =
-                                { enemy
-                                    | movingTo = movingToRest
-                                    , movingFrom = movingTo
-                                    , durationBetweenMoves = durationEnemyMovement
-                                }
-                        in
-                        if enemyPlayerCollision (enemyToVisualPoint nextEnemy) level then
-                            -- TOOD: handle collision
-                            nextEnemy
-                                |> moveEnemy (Quantity 0 |> Quantity.minus remainingDuration) level
-
-                        else
-                            nextEnemy
-                                |> moveEnemy (Quantity 0 |> Quantity.minus remainingDuration) level
+                        { enemy
+                            | movingTo = movingToRest
+                            , movingFrom = movingTo
+                            , durationBetweenMoves = durationEnemyMovement
+                        }
+                            |> moveEnemy (Quantity 0 |> Quantity.minus remainingDuration) level
 
                     else
-                        let
-                            nextEnemy =
-                                { enemy
-                                    | durationBetweenMoves = remainingDuration
-                                }
-                        in
-                        if enemyPlayerCollision (enemyToVisualPoint nextEnemy) level then
-                            -- TOOD: handle collision
-                            nextEnemy
-
-                        else
-                            nextEnemy
+                        { enemy
+                            | durationBetweenMoves = remainingDuration
+                        }
 
 
 findEnemyPath : Dict Point Block -> Point -> Point -> Maybe (List Point)
@@ -1387,7 +1388,14 @@ type alias Level =
     , board : Board
     , score : Int
     , enemies : List Enemy
+    , hearts : Int
+    , invincibleFrames : Duration
     }
+
+
+initialInvincibleFrames : Duration
+initialInvincibleFrames =
+    Duration.seconds 1.5
 
 
 type alias Enemy =
@@ -1407,6 +1415,8 @@ emptyLevel =
     , board = empty
     , score = 0
     , enemies = []
+    , hearts = 6
+    , invincibleFrames = Duration.seconds 0
     }
 
 
@@ -1432,6 +1442,36 @@ enemyPlayerCollision enemyPoint level =
         enemyPoint
         |> Quantity.greaterThan (playerRadius |> Quantity.plus enemyRadius)
         |> not
+
+
+handlePlayerCollisions : Level -> Level
+handlePlayerCollisions level =
+    if level.invincibleFrames |> Quantity.greaterThan (Quantity 0) then
+        level
+
+    else
+        handlePlayerCollisionsHelper [] level.enemies level
+
+
+handlePlayerCollisionsHelper : List Enemy -> List Enemy -> Level -> Level
+handlePlayerCollisionsHelper checkedEnemies toCheckEnemies level =
+    case toCheckEnemies of
+        [] ->
+            level
+
+        nextEnemy :: restEnemies ->
+            if enemyPlayerCollision (enemyToVisualPoint nextEnemy) level then
+                { level
+                    | hearts = level.hearts - 1
+                    , enemies = checkedEnemies ++ restEnemies
+                    , invincibleFrames = initialInvincibleFrames
+                }
+
+            else
+                handlePlayerCollisionsHelper
+                    (nextEnemy :: checkedEnemies)
+                    restEnemies
+                    level
 
 
 movePlayer : Duration -> Level -> Level
@@ -1461,12 +1501,14 @@ movePlayer deltaDuration level =
                             , playerTarget = findNextTarget level.board level.playerFacing moveDetails.to playerFrame
                         }
                             |> scorePoints
+                            |> handlePlayerCollisions
                 in
-                -- if enemyPlayerCollision (enemyToVisualPoint enemy) nextLevel then
-                --     -- TODO: handle collision
-                --     nextLevel
-                -- else
-                nextLevel
+                if nextLevel.hearts < 1 then
+                    -- TODO: handle 0 hearts
+                    nextLevel
+
+                else
+                    nextLevel
 
             else if remainingDuration |> Quantity.lessThan (Quantity 0) then
                 let
@@ -1480,13 +1522,15 @@ movePlayer deltaDuration level =
                             , playerTarget = findNextTarget level.board level.playerFacing moveDetails.to playerFrame
                         }
                             |> scorePoints
+                            |> handlePlayerCollisions
                 in
-                -- if enemyPlayerCollision (enemyToVisualPoint enemy) nextLevel then
-                --     -- TODO: handle collision
-                --     nextLevel
-                -- else
-                nextLevel
-                    |> tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
+                if nextLevel.hearts < 1 then
+                    -- TODO: handle 0 hearts
+                    nextLevel
+
+                else
+                    nextLevel
+                        |> tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
 
             else
                 let
@@ -1516,12 +1560,14 @@ movePlayer deltaDuration level =
                             , playerTarget = MoveForward { moveDetails | duration = remainingDuration }
                         }
                             |> scorePoints
+                            |> handlePlayerCollisions
                 in
-                -- if enemyPlayerCollision (enemyToVisualPoint enemy) nextLevel then
-                --     -- TODO: handle collision
-                --     nextLevel
-                -- else
-                nextLevel
+                if nextLevel.hearts < 1 then
+                    -- TODO: handle 0 hearts
+                    nextLevel
+
+                else
+                    nextLevel
 
         TraverseEdge edgeDetails ->
             let
@@ -1590,13 +1636,15 @@ movePlayer deltaDuration level =
                             , playerTarget = findNextTarget level.board level.playerFacing edgeDetails.to correctedPlayerFrame
                         }
                             |> scorePoints
+                            |> handlePlayerCollisions
                 in
-                -- if enemyPlayerCollision (enemyToVisualPoint enemy) nextLevel then
-                --     -- TODO: handle collision
-                --     nextLevel
-                -- else
-                nextLevel
-                    |> tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
+                if nextLevel.hearts < 1 then
+                    -- TODO: handle 0 hearts
+                    nextLevel
+
+                else
+                    nextLevel
+                        |> tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
 
             else
                 let
@@ -1646,12 +1694,14 @@ movePlayer deltaDuration level =
                                 , playerTarget = findNextTarget level.board level.playerFacing edgeDetails.to correctedPlayerFrame
                             }
                                 |> scorePoints
+                                |> handlePlayerCollisions
                     in
-                    -- if enemyPlayerCollision (enemyToVisualPoint enemy) nextLevel then
-                    --     -- TODO: handle collision
-                    --     nextLevel
-                    -- else
-                    nextLevel
+                    if nextLevel.hearts < 1 then
+                        -- TODO: handle 0 hearts
+                        nextLevel
+
+                    else
+                        nextLevel
 
                 else
                     let
@@ -1689,12 +1739,61 @@ movePlayer deltaDuration level =
                                 , playerTarget = TraverseEdge { edgeDetails | duration = remainingDuration }
                             }
                                 |> scorePoints
+                                |> handlePlayerCollisions
                     in
-                    -- if enemyPlayerCollision (enemyToVisualPoint enemy) nextLevel then
-                    --     -- TODO: handle collision
-                    --     nextLevel
-                    -- else
-                    nextLevel
+                    if nextLevel.hearts < 1 then
+                        -- TODO: handle 0 hearts
+                        nextLevel
+
+                    else
+                        nextLevel
+
+
+viewStats : Level -> Html msg
+viewStats level =
+    Html.div
+        [ Html.Attributes.style "position" "absolute"
+        , Html.Attributes.style "padding" "0.5rem"
+        , Html.Attributes.style "top" "0"
+        , Html.Attributes.style "left" "0"
+        , Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "gap" "1rem"
+        , Html.Attributes.style "color" "white"
+        ]
+        [ Html.h3
+            [ Html.Attributes.style "margin" "0"
+            ]
+            [ Html.text ("Score: " ++ String.fromInt level.score) ]
+        , let
+            fullHearts =
+                level.hearts // 2
+
+            brokenHearts =
+                level.hearts |> remainderBy 2
+          in
+          List.range 0 (fullHearts - 1)
+            |> List.map
+                (\_ ->
+                    Phosphor.heart Phosphor.Fill
+                        |> Phosphor.toHtml []
+                )
+            |> (\hearts ->
+                    if brokenHearts == 1 then
+                        (Phosphor.heartBreak Phosphor.Fill
+                            |> Phosphor.toHtml []
+                        )
+                            :: hearts
+
+                    else
+                        hearts
+               )
+            |> Html.div
+                [ Html.Attributes.style "color" "red"
+                , Html.Attributes.style "display" "flex"
+                , Html.Attributes.style "flex-direction" "row-reverse"
+                , Html.Attributes.style "gap" "0.5rem"
+                ]
+        ]
 
 
 scorePoints : Level -> Level

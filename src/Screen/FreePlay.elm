@@ -252,14 +252,7 @@ view toSharedMsg sharedModel toMsg model =
                     , List.map Board.viewEnemy model.level.enemies
                     ]
                 )
-            , Html.div
-                [ Html.Attributes.style "position" "absolute"
-                , Html.Attributes.style "padding" "0.5rem"
-                , Html.Attributes.style "top" "0"
-                , Html.Attributes.style "left" "0"
-                ]
-                [ Html.h3 [] [ Html.text ("Score: " ++ String.fromInt model.level.score) ]
-                ]
+            , Board.viewStats model.level
             , Html.div
                 [ Html.Attributes.style "position" "absolute"
                 , Html.Attributes.style "padding" "0.5rem"
