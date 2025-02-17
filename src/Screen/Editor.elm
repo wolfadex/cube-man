@@ -421,6 +421,20 @@ update toSharedMsg sharedModel toMsg msg model =
                                                             |> Dict.insert model.editorCursor
                                                                 model.selectedBlockType
 
+                                                    Board.EnemySpawner ->
+                                                        board.blocks
+                                                            |> Dict.map
+                                                                (\_ block ->
+                                                                    case block of
+                                                                        Board.EnemySpawner ->
+                                                                            Board.Wall
+
+                                                                        _ ->
+                                                                            block
+                                                                )
+                                                            |> Dict.insert model.editorCursor
+                                                                model.selectedBlockType
+
                                                     _ ->
                                                         Dict.insert model.editorCursor
                                                             model.selectedBlockType
