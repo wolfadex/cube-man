@@ -166,8 +166,7 @@ tick deltaMs model =
             { model
                 | level =
                     model.level
-                        |> Board.tickPlayer deltaMs
-                        |> Board.tickEnemies deltaMs
+                        |> Board.tick deltaMs
             }
 
 
@@ -266,6 +265,7 @@ view toSharedMsg sharedModel toMsg model =
                              -- }
                             )
                     , [ Board.viewPlayer model.level.playerFacing model.level.playerFrame ]
+                    , List.map Board.viewEnemy model.level.enemies
                     ]
                 )
             , Html.div

@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739775065431"
+    "1739776737364"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -12320,7 +12320,7 @@ var $ianmackenzie$elm_geometry$Direction3d$z = $ianmackenzie$elm_geometry$Direct
 var $ianmackenzie$elm_geometry$Frame3d$atOrigin = $ianmackenzie$elm_geometry$Geometry$Types$Frame3d(
 	{originPoint: $ianmackenzie$elm_geometry$Point3d$origin, xDirection: $ianmackenzie$elm_geometry$Direction3d$x, yDirection: $ianmackenzie$elm_geometry$Direction3d$y, zDirection: $ianmackenzie$elm_geometry$Direction3d$z});
 var $author$project$Board$empty = {blocks: $elm$core$Dict$empty, maxX: 0, maxY: 0, maxZ: 0};
-var $author$project$Board$emptyLevel = {board: $author$project$Board$empty, playerFacing: $author$project$Board$Forward, playerFrame: $ianmackenzie$elm_geometry$Frame3d$atOrigin, playerTarget: $author$project$Board$NoTarget, playerWantFacing: $author$project$Board$Forward, score: 0};
+var $author$project$Board$emptyLevel = {board: $author$project$Board$empty, enemies: _List_Nil, playerFacing: $author$project$Board$Forward, playerFrame: $ianmackenzie$elm_geometry$Frame3d$atOrigin, playerTarget: $author$project$Board$NoTarget, playerWantFacing: $author$project$Board$Forward, score: 0};
 var $MartinSStewart$elm_serialize$Serialize$version = 1;
 var $MartinSStewart$elm_serialize$Serialize$encodeToJson = F2(
 	function (codec, value) {
@@ -15944,14 +15944,13 @@ var $author$project$Board$init = function (board) {
 	} else {
 		var spawnFrame = _v0.a;
 		return $elm$core$Maybe$Just(
-			{
-				board: $author$project$Board$optimize(board),
-				playerFacing: $author$project$Board$Forward,
-				playerFrame: spawnFrame,
-				playerTarget: A3($author$project$Board$initTarget, board, $author$project$Board$Forward, spawnFrame),
-				playerWantFacing: $author$project$Board$Forward,
-				score: 0
-			});
+			_Utils_update(
+				$author$project$Board$emptyLevel,
+				{
+					board: $author$project$Board$optimize(board),
+					playerFrame: spawnFrame,
+					playerTarget: A3($author$project$Board$initTarget, board, $author$project$Board$Forward, spawnFrame)
+				}));
 	}
 };
 var $elm$core$Set$insert = F2(
@@ -16920,42 +16919,68 @@ var $elm$core$Set$remove = F2(
 		return $elm$core$Set$Set_elm_builtin(
 			A2($elm$core$Dict$remove, key, dict));
 	});
+var $author$project$Board$durationEnemyMovement = $ianmackenzie$elm_units$Duration$seconds(0.5);
 var $author$project$Board$tickEnemySpawners = F2(
 	function (deltaDuration, level) {
 		var board = level.board;
+		var _v0 = A3(
+			$elm$core$Dict$foldl,
+			F3(
+				function (point, block, _v1) {
+					var blocks = _v1.a;
+					var possibleEnemy = _v1.b;
+					if (block.$ === 'EnemySpawner') {
+						var details = block.a;
+						var timeTillSpawn = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, details.timeTillSpawn);
+						return A2(
+							$ianmackenzie$elm_units$Quantity$lessThan,
+							$ianmackenzie$elm_units$Quantity$Quantity(0),
+							timeTillSpawn) ? _Utils_Tuple2(
+							A3(
+								$elm$core$Dict$insert,
+								point,
+								$author$project$Board$EnemySpawner(
+									_Utils_update(
+										details,
+										{
+											timeTillSpawn: A2($ianmackenzie$elm_units$Quantity$plus, details.timeBetweenSpawns, timeTillSpawn)
+										})),
+								blocks),
+							($elm$core$List$length(level.enemies) < 3) ? $elm$core$Maybe$Just(
+								{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: point, movingTo: point, targetPoint: point}) : possibleEnemy) : _Utils_Tuple2(
+							A3(
+								$elm$core$Dict$insert,
+								point,
+								$author$project$Board$EnemySpawner(
+									_Utils_update(
+										details,
+										{timeTillSpawn: timeTillSpawn})),
+								blocks),
+							possibleEnemy);
+					} else {
+						return _Utils_Tuple2(
+							A3($elm$core$Dict$insert, point, block, blocks),
+							possibleEnemy);
+					}
+				}),
+			_Utils_Tuple2($elm$core$Dict$empty, $elm$core$Maybe$Nothing),
+			board.blocks);
+		var updatedBlocks = _v0.a;
+		var enemySpawned = _v0.b;
 		return _Utils_update(
 			level,
 			{
 				board: _Utils_update(
 					board,
-					{
-						blocks: A3(
-							$elm$core$Dict$foldl,
-							F3(
-								function (point, block, blocks) {
-									if (block.$ === 'EnemySpawner') {
-										var details = block.a;
-										var timeTillSpawn = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, details.timeTillSpawn);
-										return A3(
-											$elm$core$Dict$insert,
-											point,
-											$author$project$Board$EnemySpawner(
-												_Utils_update(
-													details,
-													{
-														timeTillSpawn: A2(
-															$ianmackenzie$elm_units$Quantity$lessThan,
-															$ianmackenzie$elm_units$Quantity$Quantity(0),
-															timeTillSpawn) ? A2($ianmackenzie$elm_units$Quantity$plus, details.timeBetweenSpawns, timeTillSpawn) : timeTillSpawn
-													})),
-											blocks);
-									} else {
-										return A3($elm$core$Dict$insert, point, block, blocks);
-									}
-								}),
-							$elm$core$Dict$empty,
-							board.blocks)
-					})
+					{blocks: updatedBlocks}),
+				enemies: function () {
+					if (enemySpawned.$ === 'Nothing') {
+						return level.enemies;
+					} else {
+						var enemy = enemySpawned.a;
+						return A2($elm$core$List$cons, enemy, level.enemies);
+					}
+				}()
 			});
 	});
 var $author$project$Board$tickEnemies = F2(
@@ -17490,6 +17515,13 @@ var $author$project$Board$tickPlayer = F2(
 			deltaDuration,
 			$author$project$Board$setPlayerFacing(model));
 	});
+var $author$project$Board$tick = F2(
+	function (deltaDUration, level) {
+		return A2(
+			$author$project$Board$tickEnemies,
+			deltaDUration,
+			A2($author$project$Board$tickPlayer, deltaDUration, level));
+	});
 var $author$project$Screen$Editor$tick = F2(
 	function (deltaMs, model) {
 		var _v0 = model.editorMode;
@@ -17499,10 +17531,7 @@ var $author$project$Screen$Editor$tick = F2(
 			return _Utils_update(
 				model,
 				{
-					level: A2(
-						$author$project$Board$tickEnemies,
-						deltaMs,
-						A2($author$project$Board$tickPlayer, deltaMs, model.level))
+					level: A2($author$project$Board$tick, deltaMs, model.level)
 				});
 		}
 	});
@@ -18133,10 +18162,7 @@ var $author$project$Screen$FreePlay$tick = F2(
 			return _Utils_update(
 				model,
 				{
-					level: A2(
-						$author$project$Board$tickEnemies,
-						deltaMs,
-						A2($author$project$Board$tickPlayer, deltaMs, model.level))
+					level: A2($author$project$Board$tick, deltaMs, model.level)
 				});
 		}
 	});
@@ -25044,6 +25070,96 @@ var $author$project$Screen$Editor$viewCursor = F3(
 							$ianmackenzie$elm_units$Length$meters(0.1))))
 				]));
 	});
+var $ianmackenzie$elm_3d_scene$Scene3d$cone = F2(
+	function (givenMaterial, givenCone) {
+		return A4($ianmackenzie$elm_3d_scene$Scene3d$Entity$cone, true, false, givenMaterial, givenCone);
+	});
+var $author$project$Board$viewEnemy = function (enemy) {
+	var material = A2(
+		$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
+		$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$red),
+		$ianmackenzie$elm_units$Luminance$nits(10000));
+	var dimensions = {
+		length: $ianmackenzie$elm_units$Length$meters(0.45),
+		radius: $ianmackenzie$elm_units$Length$meters(0.1)
+	};
+	return $ianmackenzie$elm_3d_scene$Scene3d$group(
+		_List_fromArray(
+			[
+				A2(
+				$ianmackenzie$elm_3d_scene$Scene3d$cone,
+				material,
+				A3(
+					$ianmackenzie$elm_geometry$Cone3d$startingAt,
+					A3(
+						$ianmackenzie$elm_geometry$Point3d$translateIn,
+						$ianmackenzie$elm_geometry$Direction3d$negativeX,
+						$ianmackenzie$elm_units$Length$meters(0.15),
+						$author$project$Board$pointToPoint3d(enemy.movingFrom)),
+					$ianmackenzie$elm_geometry$Direction3d$positiveX,
+					dimensions)),
+				A2(
+				$ianmackenzie$elm_3d_scene$Scene3d$cone,
+				material,
+				A3(
+					$ianmackenzie$elm_geometry$Cone3d$startingAt,
+					A3(
+						$ianmackenzie$elm_geometry$Point3d$translateIn,
+						$ianmackenzie$elm_geometry$Direction3d$positiveX,
+						$ianmackenzie$elm_units$Length$meters(0.15),
+						$author$project$Board$pointToPoint3d(enemy.movingFrom)),
+					$ianmackenzie$elm_geometry$Direction3d$negativeX,
+					dimensions)),
+				A2(
+				$ianmackenzie$elm_3d_scene$Scene3d$cone,
+				material,
+				A3(
+					$ianmackenzie$elm_geometry$Cone3d$startingAt,
+					A3(
+						$ianmackenzie$elm_geometry$Point3d$translateIn,
+						$ianmackenzie$elm_geometry$Direction3d$negativeY,
+						$ianmackenzie$elm_units$Length$meters(0.15),
+						$author$project$Board$pointToPoint3d(enemy.movingFrom)),
+					$ianmackenzie$elm_geometry$Direction3d$positiveY,
+					dimensions)),
+				A2(
+				$ianmackenzie$elm_3d_scene$Scene3d$cone,
+				material,
+				A3(
+					$ianmackenzie$elm_geometry$Cone3d$startingAt,
+					A3(
+						$ianmackenzie$elm_geometry$Point3d$translateIn,
+						$ianmackenzie$elm_geometry$Direction3d$positiveY,
+						$ianmackenzie$elm_units$Length$meters(0.15),
+						$author$project$Board$pointToPoint3d(enemy.movingFrom)),
+					$ianmackenzie$elm_geometry$Direction3d$negativeY,
+					dimensions)),
+				A2(
+				$ianmackenzie$elm_3d_scene$Scene3d$cone,
+				material,
+				A3(
+					$ianmackenzie$elm_geometry$Cone3d$startingAt,
+					A3(
+						$ianmackenzie$elm_geometry$Point3d$translateIn,
+						$ianmackenzie$elm_geometry$Direction3d$negativeZ,
+						$ianmackenzie$elm_units$Length$meters(0.15),
+						$author$project$Board$pointToPoint3d(enemy.movingFrom)),
+					$ianmackenzie$elm_geometry$Direction3d$positiveZ,
+					dimensions)),
+				A2(
+				$ianmackenzie$elm_3d_scene$Scene3d$cone,
+				material,
+				A3(
+					$ianmackenzie$elm_geometry$Cone3d$startingAt,
+					A3(
+						$ianmackenzie$elm_geometry$Point3d$translateIn,
+						$ianmackenzie$elm_geometry$Direction3d$positiveZ,
+						$ianmackenzie$elm_units$Length$meters(0.15),
+						$author$project$Board$pointToPoint3d(enemy.movingFrom)),
+					$ianmackenzie$elm_geometry$Direction3d$negativeZ,
+					dimensions))
+			]));
+};
 var $author$project$Screen$Editor$BlockTypeSelected = function (a) {
 	return {$: 'BlockTypeSelected', a: a};
 };
@@ -27464,10 +27580,6 @@ var $author$project$Screen$Editor$viewHeader = F4(
 					]));
 		}
 	});
-var $ianmackenzie$elm_3d_scene$Scene3d$cone = F2(
-	function (givenMaterial, givenCone) {
-		return A4($ianmackenzie$elm_3d_scene$Scene3d$Entity$cone, true, false, givenMaterial, givenCone);
-	});
 var $author$project$Screen$Editor$viewOrientationArrows = $ianmackenzie$elm_3d_scene$Scene3d$group(
 	_List_fromArray(
 		[
@@ -27761,8 +27873,8 @@ var $author$project$Screen$Editor$view = F4(
 							[
 								function () {
 								var lights = function () {
-									var _v11 = model.editorMode;
-									if (_v11.$ === 'TestGame') {
+									var _v10 = model.editorMode;
+									if (_v10.$ === 'TestGame') {
 										return A2(
 											$author$project$Board$gameLights,
 											model.level.board,
@@ -27868,19 +27980,13 @@ var $author$project$Screen$Editor$view = F4(
 													[
 														A2(
 														$elm$core$List$map,
-														function () {
-															var _v10 = model.editorMode;
-															if (_v10.$ === 'TestGame') {
-																return $author$project$Board$viewBlock;
-															} else {
-																return A3($author$project$Screen$Editor$viewBlock, sharedModel, model.level.board, model);
-															}
-														}(),
+														$author$project$Board$viewBlock,
 														$elm$core$Dict$toList(model.level.board.blocks)),
 														_List_fromArray(
 														[
 															A2($author$project$Board$viewPlayer, model.level.playerFacing, model.level.playerFrame)
-														])
+														]),
+														A2($elm$core$List$map, $author$project$Board$viewEnemy, model.level.enemies)
 													]));
 										}
 									}());
@@ -27888,8 +27994,8 @@ var $author$project$Screen$Editor$view = F4(
 							])),
 						A4($author$project$Screen$Editor$viewHeader, toSharedMsg, sharedModel, toMsg, model),
 						function () {
-						var _v12 = model.editorMode;
-						if (_v12.$ === 'TestGame') {
+						var _v11 = model.editorMode;
+						if (_v11.$ === 'TestGame') {
 							return A2(
 								$elm$html$Html$div,
 								_List_fromArray(
@@ -27928,8 +28034,8 @@ var $author$project$Screen$Editor$view = F4(
 								_List_fromArray(
 									[
 										function () {
-										var _v13 = model.selectedBlock;
-										if (_v13.$ === 'Nothing') {
+										var _v12 = model.selectedBlock;
+										if (_v12.$ === 'Nothing') {
 											return A2(
 												$elm$html$Html$span,
 												_List_Nil,
@@ -27938,9 +28044,9 @@ var $author$project$Screen$Editor$view = F4(
 														$elm$html$Html$text('No block selected')
 													]));
 										} else {
-											var _v14 = _v13.a;
-											var point = _v14.a;
-											var block = _v14.b;
+											var _v13 = _v12.a;
+											var point = _v13.a;
+											var block = _v13.b;
 											switch (block.$) {
 												case 'Empty':
 													return A2(
@@ -28389,11 +28495,11 @@ var $author$project$Screen$Editor$view = F4(
 														$elm$html$Html$text('Load')
 													])),
 												function () {
-												var _v18 = model.boardLoadError;
-												if (_v18.$ === 'Nothing') {
+												var _v17 = model.boardLoadError;
+												if (_v17.$ === 'Nothing') {
 													return $elm$html$Html$text('');
 												} else {
-													var error = _v18.a;
+													var error = _v17.a;
 													return A2(
 														$elm$html$Html$small,
 														_List_Nil,
@@ -28439,13 +28545,13 @@ var $author$project$Screen$Editor$view = F4(
 																} else {
 																	switch (value.a.$) {
 																		case 'DefaultBoard':
-																			var _v21 = value.a;
+																			var _v20 = value.a;
 																			return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$defaultBoard);
 																		case 'BasicMiniBoard':
-																			var _v22 = value.a;
+																			var _v21 = value.a;
 																			return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$basicMiniBoard);
 																		default:
-																			var _v23 = value.a;
+																			var _v22 = value.a;
 																			return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$zigZagBoard);
 																	}
 																}
@@ -28622,7 +28728,8 @@ var $author$project$Screen$FreePlay$view = F4(
 								_List_fromArray(
 								[
 									A2($author$project$Board$viewPlayer, model.level.playerFacing, model.level.playerFrame)
-								])
+								]),
+								A2($elm$core$List$map, $author$project$Board$viewEnemy, model.level.enemies)
 							]))),
 					A2(
 					$elm$html$Html$div,

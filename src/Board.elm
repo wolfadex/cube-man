@@ -5,6 +5,7 @@ module Board exposing
     , Board
     , BoardLoadError(..)
     , BoardPlayError(..)
+    , Enemy
     , EnemySpawnerDetails
     , ExampleBoards(..)
     , Facing(..)
@@ -29,10 +30,10 @@ module Board exposing
     , initTarget
     , point3dToPoint
     , pointToPoint3d
-    , tickEnemies
-    , tickPlayer
+    , tick
     , view3dScene
     , viewBlock
+    , viewEnemy
     , viewPlayer
     , zigZagBoard
     )
@@ -454,6 +455,83 @@ view3dScene lights screenSize camera entities =
         , camera = camera
         , entities = entities
         }
+
+
+viewEnemy : Enemy -> Scene3d.Entity WorldCoordinates
+viewEnemy enemy =
+    let
+        material =
+            Scene3d.Material.emissive
+                (Scene3d.Light.color Color.red)
+                (Luminance.nits 10000)
+
+        dimensions =
+            { radius = Length.meters 0.1
+            , length = Length.meters 0.45
+            }
+    in
+    Scene3d.group
+        [ Scene3d.cone
+            material
+            (Cone3d.startingAt
+                (enemy.movingFrom
+                    |> pointToPoint3d
+                    |> Point3d.translateIn Direction3d.negativeX (Length.meters 0.15)
+                )
+                Direction3d.positiveX
+                dimensions
+            )
+        , Scene3d.cone
+            material
+            (Cone3d.startingAt
+                (enemy.movingFrom
+                    |> pointToPoint3d
+                    |> Point3d.translateIn Direction3d.positiveX (Length.meters 0.15)
+                )
+                Direction3d.negativeX
+                dimensions
+            )
+        , Scene3d.cone
+            material
+            (Cone3d.startingAt
+                (enemy.movingFrom
+                    |> pointToPoint3d
+                    |> Point3d.translateIn Direction3d.negativeY (Length.meters 0.15)
+                )
+                Direction3d.positiveY
+                dimensions
+            )
+        , Scene3d.cone
+            material
+            (Cone3d.startingAt
+                (enemy.movingFrom
+                    |> pointToPoint3d
+                    |> Point3d.translateIn Direction3d.positiveY (Length.meters 0.15)
+                )
+                Direction3d.negativeY
+                dimensions
+            )
+        , Scene3d.cone
+            material
+            (Cone3d.startingAt
+                (enemy.movingFrom
+                    |> pointToPoint3d
+                    |> Point3d.translateIn Direction3d.negativeZ (Length.meters 0.15)
+                )
+                Direction3d.positiveZ
+                dimensions
+            )
+        , Scene3d.cone
+            material
+            (Cone3d.startingAt
+                (enemy.movingFrom
+                    |> pointToPoint3d
+                    |> Point3d.translateIn Direction3d.positiveZ (Length.meters 0.15)
+                )
+                Direction3d.negativeZ
+                dimensions
+            )
+        ]
 
 
 type alias TexturedMesh =
@@ -1054,6 +1132,18 @@ durationForEdgeMovement =
     Duration.seconds 0.75
 
 
+durationEnemyMovement : Duration
+durationEnemyMovement =
+    Duration.seconds 0.5
+
+
+tick : Duration -> Level -> Level
+tick deltaDUration level =
+    level
+        |> tickPlayer deltaDUration
+        |> tickEnemies deltaDUration
+
+
 tickEnemies : Duration -> Level -> Level
 tickEnemies deltaDuration level =
     level
@@ -1066,39 +1156,66 @@ tickEnemySpawners deltaDuration level =
     let
         board =
             level.board
+
+        ( updatedBlocks, enemySpawned ) =
+            Dict.foldl
+                (\point block ( blocks, possibleEnemy ) ->
+                    case block of
+                        EnemySpawner details ->
+                            let
+                                timeTillSpawn =
+                                    details.timeTillSpawn
+                                        |> Quantity.minus deltaDuration
+                            in
+                            if timeTillSpawn |> Quantity.lessThan (Quantity 0) then
+                                ( Dict.insert point
+                                    (EnemySpawner
+                                        { details
+                                            | timeTillSpawn = timeTillSpawn |> Quantity.plus details.timeBetweenSpawns
+                                        }
+                                    )
+                                    blocks
+                                , if List.length level.enemies < 3 then
+                                    Just
+                                        { targetPoint = point
+                                        , movingFrom = point
+                                        , movingTo = point
+                                        , durationBetweenMoves = durationEnemyMovement
+                                        }
+
+                                  else
+                                    possibleEnemy
+                                )
+
+                            else
+                                ( Dict.insert point
+                                    (EnemySpawner
+                                        { details
+                                            | timeTillSpawn = timeTillSpawn
+                                        }
+                                    )
+                                    blocks
+                                , possibleEnemy
+                                )
+
+                        _ ->
+                            ( Dict.insert point block blocks, possibleEnemy )
+                )
+                ( Dict.empty, Nothing )
+                board.blocks
     in
     { level
         | board =
             { board
-                | blocks =
-                    Dict.foldl
-                        (\point block blocks ->
-                            case block of
-                                EnemySpawner details ->
-                                    let
-                                        timeTillSpawn =
-                                            details.timeTillSpawn
-                                                |> Quantity.minus deltaDuration
-                                    in
-                                    Dict.insert point
-                                        (EnemySpawner
-                                            { details
-                                                | timeTillSpawn =
-                                                    if timeTillSpawn |> Quantity.lessThan (Quantity 0) then
-                                                        timeTillSpawn |> Quantity.plus details.timeBetweenSpawns
-
-                                                    else
-                                                        timeTillSpawn
-                                            }
-                                        )
-                                        blocks
-
-                                _ ->
-                                    Dict.insert point block blocks
-                        )
-                        Dict.empty
-                        board.blocks
+                | blocks = updatedBlocks
             }
+        , enemies =
+            case enemySpawned of
+                Nothing ->
+                    level.enemies
+
+                Just enemy ->
+                    enemy :: level.enemies
     }
 
 
@@ -1116,6 +1233,15 @@ type alias Level =
     , playerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
     , board : Board
     , score : Int
+    , enemies : List Enemy
+    }
+
+
+type alias Enemy =
+    { targetPoint : Point
+    , movingFrom : Point
+    , movingTo : Point
+    , durationBetweenMoves : Duration
     }
 
 
@@ -1127,6 +1253,7 @@ emptyLevel =
     , playerFrame = Frame3d.atOrigin
     , board = empty
     , score = 0
+    , enemies = []
     }
 
 
@@ -1138,12 +1265,10 @@ init board =
 
         Just spawnFrame ->
             Just
-                { board = optimize board
-                , playerFrame = spawnFrame
-                , score = 0
-                , playerTarget = initTarget board Forward spawnFrame
-                , playerFacing = Forward
-                , playerWantFacing = Forward
+                { emptyLevel
+                    | board = optimize board
+                    , playerFrame = spawnFrame
+                    , playerTarget = initTarget board Forward spawnFrame
                 }
 
 

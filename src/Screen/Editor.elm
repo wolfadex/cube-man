@@ -937,8 +937,7 @@ tick deltaMs model =
             { model
                 | level =
                     model.level
-                        |> Board.tickPlayer deltaMs
-                        |> Board.tickEnemies deltaMs
+                        |> Board.tick deltaMs
             }
 
 
@@ -1236,15 +1235,9 @@ view toSharedMsg sharedModel toMsg model =
                         List.concat
                             [ model.level.board.blocks
                                 |> Dict.toList
-                                |> List.map
-                                    (case model.editorMode of
-                                        TestGame ->
-                                            Board.viewBlock
-
-                                        EditBoard ->
-                                            viewBlock sharedModel model.level.board model
-                                    )
+                                |> List.map Board.viewBlock
                             , [ Board.viewPlayer model.level.playerFacing model.level.playerFrame ]
+                            , List.map Board.viewEnemy model.level.enemies
                             ]
                 )
             ]
