@@ -25,6 +25,7 @@ module Board exposing
     , findSpawn
     , gameLights
     , gamePlayCamera
+    , handleGameKeyPressed
     , indexToPoint
     , init
     , initTarget
@@ -53,6 +54,7 @@ import Duration exposing (Duration)
 import Ease
 import Frame3d exposing (Frame3d)
 import Html exposing (Html)
+import Input
 import Length
 import Luminance
 import LuminousFlux
@@ -1763,6 +1765,31 @@ neighborBlocks ( x, y, z ) blocks =
           in
           Dict.get p blocks |> Maybe.map (Tuple.pair p)
         ]
+
+
+handleGameKeyPressed : ({ m | level : Level } -> { m | level : Level }) -> Input.Mapping -> String -> { m | level : Level } -> { m | level : Level }
+handleGameKeyPressed onOpenMenu inputMapping key model =
+    let
+        level =
+            model.level
+    in
+    if Input.isInputKey inputMapping.moveUp key then
+        { model | level = { level | playerWantFacing = Forward } }
+
+    else if Input.isInputKey inputMapping.moveDown key then
+        { model | level = { level | playerWantFacing = Backward } }
+
+    else if Input.isInputKey inputMapping.moveLeft key then
+        { model | level = { level | playerWantFacing = Left } }
+
+    else if Input.isInputKey inputMapping.moveRight key then
+        { model | level = { level | playerWantFacing = Right } }
+
+    else if key == "Escape" then
+        onOpenMenu model
+
+    else
+        model
 
 
 

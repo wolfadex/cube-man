@@ -369,7 +369,13 @@ update toSharedMsg sharedModel toMsg msg model =
                     handleEditorKeyPressed toSharedMsg sharedModel toMsg key { model | editorKeysDown = Set.insert key model.editorKeysDown }
 
                 TestGame ->
-                    handleGameKeyPressed sharedModel key { model | editorKeysDown = Set.insert key model.editorKeysDown }
+                    ( Board.handleGameKeyPressed
+                        (\m -> { m | showSettings = True })
+                        sharedModel.inputMapping
+                        key
+                        { model | editorKeysDown = Set.insert key model.editorKeysDown }
+                    , Cmd.none
+                    )
 
         KeyUp key ->
             ( { model | editorKeysDown = Set.remove key model.editorKeysDown }, Cmd.none )
@@ -989,16 +995,6 @@ handleEditorKeyPressed toSharedMsg sharedModel _ key model =
         showSettings (not model.showSettings) model
 
     else if key == "p" then
-        -- ( { model
-        --     | blockPalette =
-        --         case model.blockPalette of
-        --             Board.SimpleBlocks ->
-        --                 Board.RainbowBlocks
-        --             Board.RainbowBlocks ->
-        --                 Board.SimpleBlocks
-        --   }
-        -- , Cmd.none
-        -- )
         ( model
         , (Shared.SetBlockPalette <|
             case sharedModel.blockPalette of
@@ -1010,6 +1006,11 @@ handleEditorKeyPressed toSharedMsg sharedModel _ key model =
           )
             |> Task.succeed
             |> Task.perform toSharedMsg
+        )
+
+    else if key == "Escape" then
+        ( { model | showSettings = True }
+        , Cmd.none
         )
 
     else
@@ -1061,28 +1062,6 @@ redo model =
     )
 
 
-handleGameKeyPressed : Shared.LoadedModel -> String -> Model -> ( Model, Cmd msg )
-handleGameKeyPressed sharedModel key model =
-    let
-        level =
-            model.level
-    in
-    if Input.isInputKey sharedModel.inputMapping.moveUp key then
-        ( { model | level = { level | playerWantFacing = Board.Forward } }, Cmd.none )
-
-    else if Input.isInputKey sharedModel.inputMapping.moveDown key then
-        ( { model | level = { level | playerWantFacing = Board.Backward } }, Cmd.none )
-
-    else if Input.isInputKey sharedModel.inputMapping.moveLeft key then
-        ( { model | level = { level | playerWantFacing = Board.Left } }, Cmd.none )
-
-    else if Input.isInputKey sharedModel.inputMapping.moveRight key then
-        ( { model | level = { level | playerWantFacing = Board.Right } }, Cmd.none )
-
-    else
-        ( model, Cmd.none )
-
-
 view : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> List (Html msg)
 view toSharedMsg sharedModel toMsg model =
     [ Html.div
@@ -1093,7 +1072,7 @@ view toSharedMsg sharedModel toMsg model =
                     "auto auto"
 
                 TestGame ->
-                    "auto 8rem"
+                    "auto 10rem"
         , Html.Attributes.style "grid-template-rows" <|
             case model.editorMode of
                 EditBoard ->
@@ -1242,6 +1221,7 @@ view toSharedMsg sharedModel toMsg model =
                 )
             ]
         , viewHeader toSharedMsg sharedModel toMsg model
+        , viewSettings toSharedMsg sharedModel toMsg model
         , case model.editorMode of
             TestGame ->
                 Html.div
@@ -1249,11 +1229,25 @@ view toSharedMsg sharedModel toMsg model =
                     , Html.Attributes.style "grid-row" "1"
                     , Html.Attributes.style "padding" "0.5rem"
                     ]
-                    [ Html.button
-                        [ Html.Attributes.type_ "button"
-                        , Html.Events.onClick (toMsg ChangeMode)
+                    [ Html.div
+                        [ Html.Attributes.style "display" "flex"
+                        , Html.Attributes.style "gap" "1rem"
+                        , Html.Attributes.style "align-items" "flex-start"
                         ]
-                        [ Html.text "Edit Level"
+                        [ Html.button
+                            [ Html.Attributes.type_ "button"
+                            , Html.Events.onClick (toMsg (ShowSettings True))
+                            , Html.Attributes.title ("Settings - " ++ Input.viewInputKeyHoverText sharedModel.inputMapping.toggleSettings)
+                            ]
+                            [ Phosphor.gear Phosphor.Regular
+                                |> Phosphor.toHtml []
+                            ]
+                        , Html.button
+                            [ Html.Attributes.type_ "button"
+                            , Html.Events.onClick (toMsg ChangeMode)
+                            ]
+                            [ Html.text "Edit Level"
+                            ]
                         ]
                     ]
 
@@ -1564,6 +1558,391 @@ view toSharedMsg sharedModel toMsg model =
                     ]
         ]
     ]
+
+
+viewSettings : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> Html msg
+viewSettings toSharedMsg sharedModel toMsg model =
+    Html.Extra.modal { open = model.showSettings, onClose = toMsg (ShowSettings False) }
+        []
+        [ Html.h2
+            [ Html.Attributes.style "width" "100%"
+            , Html.Attributes.style "margin-top" "0"
+            ]
+            [ Html.text "Settings"
+            , Html.button
+                [ Html.Attributes.style "float" "right"
+                , Html.Attributes.style "background" "none"
+                , Html.Attributes.type_ "button"
+                , Html.Attributes.title "Close"
+                , Html.Events.onClick (toMsg (ShowSettings False))
+                ]
+                [ Phosphor.xCircle Phosphor.Regular
+                    |> Phosphor.toHtml []
+                ]
+            ]
+        , Html.span [] [ Html.text "Hold 'Shift' and move mouse to use camera actions (orbit, pan, zoom)" ]
+        , Html.br [] []
+        , Html.br [] []
+        , let
+            viewMapping =
+                Input.viewMapping (Shared.SetMapping >> toSharedMsg)
+          in
+          Html.table
+            []
+            [ Html.thead []
+                [ Html.tr []
+                    [ Html.th [ Html.Attributes.attribute "align" "left" ] [ Html.text "Input" ]
+                    , Html.th [] [ Html.text "Primary Key" ]
+                    , Html.th [] [ Html.text "Secondary Key" ]
+                    ]
+                ]
+            , Html.tbody []
+                (Html.tr []
+                    [ Html.th [] [ Html.h3 [] [ Html.text "Character Movement" ] ]
+                    ]
+                    :: List.map viewMapping
+                        [ { label = "Face up"
+                          , keys = sharedModel.inputMapping.moveUp
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.moveUp
+                                    in
+                                    { inputMapping | moveUp = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.moveUp
+                                    in
+                                    { inputMapping | moveUp = ( primary, key ) }
+                          }
+                        , { label = "Face down"
+                          , keys = sharedModel.inputMapping.moveDown
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.moveDown
+                                    in
+                                    { inputMapping | moveDown = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.moveDown
+                                    in
+                                    { inputMapping | moveDown = ( primary, key ) }
+                          }
+                        , { label = "Face left"
+                          , keys = sharedModel.inputMapping.moveLeft
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.moveLeft
+                                    in
+                                    { inputMapping | moveLeft = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.moveLeft
+                                    in
+                                    { inputMapping | moveLeft = ( primary, key ) }
+                          }
+                        , { label = "Face right"
+                          , keys = sharedModel.inputMapping.moveRight
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.moveRight
+                                    in
+                                    { inputMapping | moveRight = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.moveRight
+                                    in
+                                    { inputMapping | moveRight = ( primary, key ) }
+                          }
+                        ]
+                    ++ [ Html.tr []
+                            [ Html.th [] [ Html.h3 [] [ Html.text "Editor" ] ]
+                            ]
+                       , Html.tr []
+                            [ Html.th [] [ Html.text "Camera" ]
+                            ]
+                       ]
+                    ++ List.map viewMapping
+                        [ { label = "Orbit"
+                          , keys = sharedModel.inputMapping.cameraOrbit
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.cameraOrbit
+                                    in
+                                    { inputMapping | cameraOrbit = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.cameraOrbit
+                                    in
+                                    { inputMapping | cameraOrbit = ( primary, key ) }
+                          }
+                        , { label = "Pan"
+                          , keys = sharedModel.inputMapping.cameraPan
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.cameraPan
+                                    in
+                                    { inputMapping | cameraPan = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.cameraPan
+                                    in
+                                    { inputMapping | cameraPan = ( primary, key ) }
+                          }
+                        , { label = "Zoom"
+                          , keys = sharedModel.inputMapping.cameraZoom
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.cameraZoom
+                                    in
+                                    { inputMapping | cameraZoom = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.cameraZoom
+                                    in
+                                    { inputMapping | cameraZoom = ( primary, key ) }
+                          }
+                        , { label = "Reset"
+                          , keys = sharedModel.inputMapping.cameraReset
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.cameraReset
+                                    in
+                                    { inputMapping | cameraReset = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.cameraReset
+                                    in
+                                    { inputMapping | cameraReset = ( primary, key ) }
+                          }
+                        ]
+                    ++ [ Html.tr []
+                            [ Html.th [] [ Html.text "Block Edit" ]
+                            ]
+                       ]
+                    ++ List.map viewMapping
+                        [ { label = "Select"
+                          , keys = sharedModel.inputMapping.blockSelect
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.blockSelect
+                                    in
+                                    { inputMapping | blockSelect = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.blockSelect
+                                    in
+                                    { inputMapping | blockSelect = ( primary, key ) }
+                          }
+                        , { label = "Add"
+                          , keys = sharedModel.inputMapping.blockAdd
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.blockAdd
+                                    in
+                                    { inputMapping | blockAdd = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.blockAdd
+                                    in
+                                    { inputMapping | blockAdd = ( primary, key ) }
+                          }
+                        , { label = "Remove"
+                          , keys = sharedModel.inputMapping.blockRemove
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.blockRemove
+                                    in
+                                    { inputMapping | blockRemove = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.blockRemove
+                                    in
+                                    { inputMapping | blockRemove = ( primary, key ) }
+                          }
+                        ]
+                    ++ [ Html.tr []
+                            [ Html.th [] [ Html.text "Block Type" ]
+                            ]
+                       ]
+                    ++ List.map viewMapping
+                        [ { label = "Wall"
+                          , keys = sharedModel.inputMapping.blockTypeWall
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.blockTypeWall
+                                    in
+                                    { inputMapping | blockTypeWall = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.blockTypeWall
+                                    in
+                                    { inputMapping | blockTypeWall = ( primary, key ) }
+                          }
+                        , { label = "Edge"
+                          , keys = sharedModel.inputMapping.blockTypeEdge
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.blockTypeEdge
+                                    in
+                                    { inputMapping | blockTypeEdge = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.blockTypeEdge
+                                    in
+                                    { inputMapping | blockTypeEdge = ( primary, key ) }
+                          }
+                        , { label = "Point Pickup"
+                          , keys = sharedModel.inputMapping.blockTypePointPickup
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.blockTypePointPickup
+                                    in
+                                    { inputMapping | blockTypePointPickup = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.blockTypePointPickup
+                                    in
+                                    { inputMapping | blockTypePointPickup = ( primary, key ) }
+                          }
+                        , { label = "Player Spawn"
+                          , keys = sharedModel.inputMapping.blockTypePlayerSpawn
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.blockTypePlayerSpawn
+                                    in
+                                    { inputMapping | blockTypePlayerSpawn = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.blockTypePlayerSpawn
+                                    in
+                                    { inputMapping | blockTypePlayerSpawn = ( primary, key ) }
+                          }
+                        ]
+                    ++ [ Html.tr []
+                            [ Html.th [] [ Html.text "Undo / Redo" ]
+                            ]
+                       ]
+                    ++ List.map viewMapping
+                        [ { label = "Undo"
+                          , keys = sharedModel.inputMapping.undo
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.undo
+                                    in
+                                    { inputMapping | undo = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.undo
+                                    in
+                                    { inputMapping | undo = ( primary, key ) }
+                          }
+                        , { label = "Redo"
+                          , keys = sharedModel.inputMapping.redo
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.redo
+                                    in
+                                    { inputMapping | redo = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.redo
+                                    in
+                                    { inputMapping | redo = ( primary, key ) }
+                          }
+                        ]
+                    ++ [ Html.tr []
+                            [ Html.th [] [ Html.text "Other" ]
+                            ]
+                       , viewMapping
+                            { label = "Open Settings"
+                            , keys = sharedModel.inputMapping.toggleSettings
+                            , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.toggleSettings
+                                    in
+                                    { inputMapping | toggleSettings = ( key, secondary ) }
+                            , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.toggleSettings
+                                    in
+                                    { inputMapping | toggleSettings = ( primary, key ) }
+                            }
+                       ]
+                )
+            ]
+        ]
 
 
 editorCamera : Model -> Camera3d Length.Meters Board.WorldCoordinates
@@ -2479,385 +2858,4 @@ viewHeader toSharedMsg sharedModel toMsg model =
                     , Html.Attributes.style "margin-left" "auto"
                     ]
                     [ Html.text "Exit" ]
-                , Html.Extra.modal { open = model.showSettings, onClose = toMsg (ShowSettings False) }
-                    []
-                    [ Html.h2
-                        [ Html.Attributes.style "width" "100%"
-                        , Html.Attributes.style "margin-top" "0"
-                        ]
-                        [ Html.text "Settings"
-                        , Html.button
-                            [ Html.Attributes.style "float" "right"
-                            , Html.Attributes.style "background" "none"
-                            , Html.Attributes.type_ "button"
-                            , Html.Attributes.title "Close"
-                            , Html.Events.onClick (toMsg (ShowSettings False))
-                            ]
-                            [ Phosphor.xCircle Phosphor.Regular
-                                |> Phosphor.toHtml []
-                            ]
-                        ]
-                    , Html.span [] [ Html.text "Hold 'Shift' and move mouse to use camera actions (orbit, pan, zoom)" ]
-                    , Html.br [] []
-                    , Html.br [] []
-                    , let
-                        viewMapping =
-                            Input.viewMapping (Shared.SetMapping >> toSharedMsg)
-                      in
-                      Html.table
-                        []
-                        [ Html.thead []
-                            [ Html.tr []
-                                [ Html.th [ Html.Attributes.attribute "align" "left" ] [ Html.text "Input" ]
-                                , Html.th [] [ Html.text "Primary Key" ]
-                                , Html.th [] [ Html.text "Secondary Key" ]
-                                ]
-                            ]
-                        , Html.tbody []
-                            (Html.tr []
-                                [ Html.th [] [ Html.h3 [] [ Html.text "Character Movement" ] ]
-                                ]
-                                :: List.map viewMapping
-                                    [ { label = "Face up"
-                                      , keys = sharedModel.inputMapping.moveUp
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.moveUp
-                                                in
-                                                { inputMapping | moveUp = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.moveUp
-                                                in
-                                                { inputMapping | moveUp = ( primary, key ) }
-                                      }
-                                    , { label = "Face down"
-                                      , keys = sharedModel.inputMapping.moveDown
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.moveDown
-                                                in
-                                                { inputMapping | moveDown = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.moveDown
-                                                in
-                                                { inputMapping | moveDown = ( primary, key ) }
-                                      }
-                                    , { label = "Face left"
-                                      , keys = sharedModel.inputMapping.moveLeft
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.moveLeft
-                                                in
-                                                { inputMapping | moveLeft = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.moveLeft
-                                                in
-                                                { inputMapping | moveLeft = ( primary, key ) }
-                                      }
-                                    , { label = "Face right"
-                                      , keys = sharedModel.inputMapping.moveRight
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.moveRight
-                                                in
-                                                { inputMapping | moveRight = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.moveRight
-                                                in
-                                                { inputMapping | moveRight = ( primary, key ) }
-                                      }
-                                    ]
-                                ++ [ Html.tr []
-                                        [ Html.th [] [ Html.h3 [] [ Html.text "Editor" ] ]
-                                        ]
-                                   , Html.tr []
-                                        [ Html.th [] [ Html.text "Camera" ]
-                                        ]
-                                   ]
-                                ++ List.map viewMapping
-                                    [ { label = "Orbit"
-                                      , keys = sharedModel.inputMapping.cameraOrbit
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.cameraOrbit
-                                                in
-                                                { inputMapping | cameraOrbit = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.cameraOrbit
-                                                in
-                                                { inputMapping | cameraOrbit = ( primary, key ) }
-                                      }
-                                    , { label = "Pan"
-                                      , keys = sharedModel.inputMapping.cameraPan
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.cameraPan
-                                                in
-                                                { inputMapping | cameraPan = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.cameraPan
-                                                in
-                                                { inputMapping | cameraPan = ( primary, key ) }
-                                      }
-                                    , { label = "Zoom"
-                                      , keys = sharedModel.inputMapping.cameraZoom
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.cameraZoom
-                                                in
-                                                { inputMapping | cameraZoom = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.cameraZoom
-                                                in
-                                                { inputMapping | cameraZoom = ( primary, key ) }
-                                      }
-                                    , { label = "Reset"
-                                      , keys = sharedModel.inputMapping.cameraReset
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.cameraReset
-                                                in
-                                                { inputMapping | cameraReset = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.cameraReset
-                                                in
-                                                { inputMapping | cameraReset = ( primary, key ) }
-                                      }
-                                    ]
-                                ++ [ Html.tr []
-                                        [ Html.th [] [ Html.text "Block Edit" ]
-                                        ]
-                                   ]
-                                ++ List.map viewMapping
-                                    [ { label = "Select"
-                                      , keys = sharedModel.inputMapping.blockSelect
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.blockSelect
-                                                in
-                                                { inputMapping | blockSelect = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.blockSelect
-                                                in
-                                                { inputMapping | blockSelect = ( primary, key ) }
-                                      }
-                                    , { label = "Add"
-                                      , keys = sharedModel.inputMapping.blockAdd
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.blockAdd
-                                                in
-                                                { inputMapping | blockAdd = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.blockAdd
-                                                in
-                                                { inputMapping | blockAdd = ( primary, key ) }
-                                      }
-                                    , { label = "Remove"
-                                      , keys = sharedModel.inputMapping.blockRemove
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.blockRemove
-                                                in
-                                                { inputMapping | blockRemove = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.blockRemove
-                                                in
-                                                { inputMapping | blockRemove = ( primary, key ) }
-                                      }
-                                    ]
-                                ++ [ Html.tr []
-                                        [ Html.th [] [ Html.text "Block Type" ]
-                                        ]
-                                   ]
-                                ++ List.map viewMapping
-                                    [ { label = "Wall"
-                                      , keys = sharedModel.inputMapping.blockTypeWall
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.blockTypeWall
-                                                in
-                                                { inputMapping | blockTypeWall = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.blockTypeWall
-                                                in
-                                                { inputMapping | blockTypeWall = ( primary, key ) }
-                                      }
-                                    , { label = "Edge"
-                                      , keys = sharedModel.inputMapping.blockTypeEdge
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.blockTypeEdge
-                                                in
-                                                { inputMapping | blockTypeEdge = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.blockTypeEdge
-                                                in
-                                                { inputMapping | blockTypeEdge = ( primary, key ) }
-                                      }
-                                    , { label = "Point Pickup"
-                                      , keys = sharedModel.inputMapping.blockTypePointPickup
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.blockTypePointPickup
-                                                in
-                                                { inputMapping | blockTypePointPickup = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.blockTypePointPickup
-                                                in
-                                                { inputMapping | blockTypePointPickup = ( primary, key ) }
-                                      }
-                                    , { label = "Player Spawn"
-                                      , keys = sharedModel.inputMapping.blockTypePlayerSpawn
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.blockTypePlayerSpawn
-                                                in
-                                                { inputMapping | blockTypePlayerSpawn = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.blockTypePlayerSpawn
-                                                in
-                                                { inputMapping | blockTypePlayerSpawn = ( primary, key ) }
-                                      }
-                                    ]
-                                ++ [ Html.tr []
-                                        [ Html.th [] [ Html.text "Undo / Redo" ]
-                                        ]
-                                   ]
-                                ++ List.map viewMapping
-                                    [ { label = "Undo"
-                                      , keys = sharedModel.inputMapping.undo
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.undo
-                                                in
-                                                { inputMapping | undo = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.undo
-                                                in
-                                                { inputMapping | undo = ( primary, key ) }
-                                      }
-                                    , { label = "Redo"
-                                      , keys = sharedModel.inputMapping.redo
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.redo
-                                                in
-                                                { inputMapping | redo = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.redo
-                                                in
-                                                { inputMapping | redo = ( primary, key ) }
-                                      }
-                                    ]
-                                ++ [ Html.tr []
-                                        [ Html.th [] [ Html.text "Other" ]
-                                        ]
-                                   , viewMapping
-                                        { label = "Open Settings"
-                                        , keys = sharedModel.inputMapping.toggleSettings
-                                        , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.toggleSettings
-                                                in
-                                                { inputMapping | toggleSettings = ( key, secondary ) }
-                                        , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.toggleSettings
-                                                in
-                                                { inputMapping | toggleSettings = ( primary, key ) }
-                                        }
-                                   ]
-                            )
-                        ]
-                    ]
                 ]

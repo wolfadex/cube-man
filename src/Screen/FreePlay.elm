@@ -153,7 +153,13 @@ update sharedModel msg model =
                     ( model, Cmd.none )
 
                 FreePlayBoardLoaded ->
-                    handleGameKeyPressed sharedModel key model
+                    ( Board.handleGameKeyPressed
+                        (\m -> { m | showFreePlayMenu = True })
+                        sharedModel.inputMapping
+                        key
+                        model
+                    , Cmd.none
+                    )
 
 
 tick : Duration -> Model -> Model
@@ -168,28 +174,6 @@ tick deltaMs model =
                     model.level
                         |> Board.tick deltaMs
             }
-
-
-handleGameKeyPressed : Shared.LoadedModel -> String -> Model -> ( Model, Cmd Msg )
-handleGameKeyPressed sharedModel key model =
-    let
-        level =
-            model.level
-    in
-    if Input.isInputKey sharedModel.inputMapping.moveUp key then
-        ( { model | level = { level | playerWantFacing = Board.Forward } }, Cmd.none )
-
-    else if Input.isInputKey sharedModel.inputMapping.moveDown key then
-        ( { model | level = { level | playerWantFacing = Board.Backward } }, Cmd.none )
-
-    else if Input.isInputKey sharedModel.inputMapping.moveLeft key then
-        ( { model | level = { level | playerWantFacing = Board.Left } }, Cmd.none )
-
-    else if Input.isInputKey sharedModel.inputMapping.moveRight key then
-        ( { model | level = { level | playerWantFacing = Board.Right } }, Cmd.none )
-
-    else
-        ( model, Cmd.none )
 
 
 view : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> List (Html msg)

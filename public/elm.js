@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739781131029"
+    "1739819712640"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -15839,47 +15839,43 @@ var $author$project$Screen$Editor$handleEditorKeyPressed = F5(
 							} else {
 								return $author$project$Board$SimpleBlocks;
 							}
-						}())))) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none))))))))))))))));
+						}())))) : ((key === 'Escape') ? _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{showSettings: true}),
+			$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none)))))))))))))))));
 	});
 var $author$project$Board$Backward = {$: 'Backward'};
 var $author$project$Board$Left = {$: 'Left'};
 var $author$project$Board$Right = {$: 'Right'};
-var $author$project$Screen$Editor$handleGameKeyPressed = F3(
-	function (sharedModel, key, model) {
+var $author$project$Board$handleGameKeyPressed = F4(
+	function (onOpenMenu, inputMapping, key, model) {
 		var level = model.level;
-		return A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveUp, key) ? _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{
-					level: _Utils_update(
-						level,
-						{playerWantFacing: $author$project$Board$Forward})
-				}),
-			$elm$core$Platform$Cmd$none) : (A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveDown, key) ? _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{
-					level: _Utils_update(
-						level,
-						{playerWantFacing: $author$project$Board$Backward})
-				}),
-			$elm$core$Platform$Cmd$none) : (A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveLeft, key) ? _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{
-					level: _Utils_update(
-						level,
-						{playerWantFacing: $author$project$Board$Left})
-				}),
-			$elm$core$Platform$Cmd$none) : (A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveRight, key) ? _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{
-					level: _Utils_update(
-						level,
-						{playerWantFacing: $author$project$Board$Right})
-				}),
-			$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none))));
+		return A2($author$project$Input$isInputKey, inputMapping.moveUp, key) ? _Utils_update(
+			model,
+			{
+				level: _Utils_update(
+					level,
+					{playerWantFacing: $author$project$Board$Forward})
+			}) : (A2($author$project$Input$isInputKey, inputMapping.moveDown, key) ? _Utils_update(
+			model,
+			{
+				level: _Utils_update(
+					level,
+					{playerWantFacing: $author$project$Board$Backward})
+			}) : (A2($author$project$Input$isInputKey, inputMapping.moveLeft, key) ? _Utils_update(
+			model,
+			{
+				level: _Utils_update(
+					level,
+					{playerWantFacing: $author$project$Board$Left})
+			}) : (A2($author$project$Input$isInputKey, inputMapping.moveRight, key) ? _Utils_update(
+			model,
+			{
+				level: _Utils_update(
+					level,
+					{playerWantFacing: $author$project$Board$Right})
+			}) : ((key === 'Escape') ? onOpenMenu(model) : model))));
 	});
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
@@ -18071,15 +18067,22 @@ var $author$project$Screen$Editor$update = F5(
 								editorKeysDown: A2($elm$core$Set$insert, key, model.editorKeysDown)
 							}));
 				} else {
-					return A3(
-						$author$project$Screen$Editor$handleGameKeyPressed,
-						sharedModel,
-						key,
-						_Utils_update(
-							model,
-							{
-								editorKeysDown: A2($elm$core$Set$insert, key, model.editorKeysDown)
-							}));
+					return _Utils_Tuple2(
+						A4(
+							$author$project$Board$handleGameKeyPressed,
+							function (m) {
+								return _Utils_update(
+									m,
+									{showSettings: true});
+							},
+							sharedModel.inputMapping,
+							key,
+							_Utils_update(
+								model,
+								{
+									editorKeysDown: A2($elm$core$Set$insert, key, model.editorKeysDown)
+								})),
+						$elm$core$Platform$Cmd$none);
 				}
 			case 'KeyUp':
 				var key = msg.a;
@@ -18505,43 +18508,6 @@ var $author$project$Screen$Editor$update = F5(
 		}
 	});
 var $author$project$Screen$FreePlay$FreePlayBoardLoaded = {$: 'FreePlayBoardLoaded'};
-var $author$project$Screen$FreePlay$handleGameKeyPressed = F3(
-	function (sharedModel, key, model) {
-		var level = model.level;
-		return A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveUp, key) ? _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{
-					level: _Utils_update(
-						level,
-						{playerWantFacing: $author$project$Board$Forward})
-				}),
-			$elm$core$Platform$Cmd$none) : (A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveDown, key) ? _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{
-					level: _Utils_update(
-						level,
-						{playerWantFacing: $author$project$Board$Backward})
-				}),
-			$elm$core$Platform$Cmd$none) : (A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveLeft, key) ? _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{
-					level: _Utils_update(
-						level,
-						{playerWantFacing: $author$project$Board$Left})
-				}),
-			$elm$core$Platform$Cmd$none) : (A2($author$project$Input$isInputKey, sharedModel.inputMapping.moveRight, key) ? _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{
-					level: _Utils_update(
-						level,
-						{playerWantFacing: $author$project$Board$Right})
-				}),
-			$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none))));
-	});
 var $author$project$Screen$FreePlay$tick = F2(
 	function (deltaMs, model) {
 		var _v0 = model.freePlayMode;
@@ -18632,7 +18598,18 @@ var $author$project$Screen$FreePlay$update = F3(
 				if (_v4.$ === 'FreePlayBoardSelection') {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				} else {
-					return A3($author$project$Screen$FreePlay$handleGameKeyPressed, sharedModel, key, model);
+					return _Utils_Tuple2(
+						A4(
+							$author$project$Board$handleGameKeyPressed,
+							function (m) {
+								return _Utils_update(
+									m,
+									{showFreePlayMenu: true});
+							},
+							sharedModel.inputMapping,
+							key,
+							model),
+						$elm$core$Platform$Cmd$none);
 				}
 		}
 	});
@@ -18877,10 +18854,14 @@ var $author$project$Screen$Editor$MaxZChanged = function (a) {
 	return {$: 'MaxZChanged', a: a};
 };
 var $author$project$Screen$Editor$NoOp = {$: 'NoOp'};
+var $phosphor_icons$phosphor_elm$Phosphor$Regular = {$: 'Regular'};
 var $author$project$Screen$Editor$SetBlock = F2(
 	function (a, b) {
 		return {$: 'SetBlock', a: a, b: b};
 	});
+var $author$project$Screen$Editor$ShowSettings = function (a) {
+	return {$: 'ShowSettings', a: a};
+};
 var $author$project$Screen$Editor$XLowerVisibleChanged = function (a) {
 	return {$: 'XLowerVisibleChanged', a: a};
 };
@@ -19857,6 +19838,103 @@ var $author$project$Board$gamePlayCamera = function (playerFrame) {
 			}()
 		});
 };
+var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
+var $phosphor_icons$phosphor_elm$Phosphor$IconVariant = function (a) {
+	return {$: 'IconVariant', a: a};
+};
+var $phosphor_icons$phosphor_elm$Phosphor$defaultAttributes = {
+	_class: $elm$core$Maybe$Just('ph-icon'),
+	size: 1,
+	sizeUnit: 'em'
+};
+var $phosphor_icons$phosphor_elm$Phosphor$makeBuilder = function (src) {
+	return $phosphor_icons$phosphor_elm$Phosphor$IconVariant(
+		{attrs: $phosphor_icons$phosphor_elm$Phosphor$defaultAttributes, src: src});
+};
+var $elm$svg$Svg$Attributes$opacity = _VirtualDom_attribute('opacity');
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$path = $elm$svg$Svg$trustedNode('path');
+var $phosphor_icons$phosphor_elm$Phosphor$gear = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M128,76a52,52,0,1,0,52,52A52.06,52.06,0,0,0,128,76Zm0,80a28,28,0,1,1,28-28A28,28,0,0,1,128,156Zm92-27.21v-1.58l14-17.51a12,12,0,0,0,2.23-10.59A111.75,111.75,0,0,0,225,71.89,12,12,0,0,0,215.89,66L193.61,63.5l-1.11-1.11L190,40.1A12,12,0,0,0,184.11,31a111.67,111.67,0,0,0-27.23-11.27A12,12,0,0,0,146.3,22L128.79,36h-1.58L109.7,22a12,12,0,0,0-10.59-2.23A111.75,111.75,0,0,0,71.89,31.05,12,12,0,0,0,66,40.11L63.5,62.39,62.39,63.5,40.1,66A12,12,0,0,0,31,71.89,111.67,111.67,0,0,0,19.77,99.12,12,12,0,0,0,22,109.7l14,17.51v1.58L22,146.3a12,12,0,0,0-2.23,10.59,111.75,111.75,0,0,0,11.29,27.22A12,12,0,0,0,40.11,190l22.28,2.48,1.11,1.11L66,215.9A12,12,0,0,0,71.89,225a111.67,111.67,0,0,0,27.23,11.27A12,12,0,0,0,109.7,234l17.51-14h1.58l17.51,14a12,12,0,0,0,10.59,2.23A111.75,111.75,0,0,0,184.11,225a12,12,0,0,0,5.91-9.06l2.48-22.28,1.11-1.11L215.9,190a12,12,0,0,0,9.06-5.91,111.67,111.67,0,0,0,11.27-27.23A12,12,0,0,0,234,146.3Zm-24.12-4.89a70.1,70.1,0,0,1,0,8.2,12,12,0,0,0,2.61,8.22l12.84,16.05A86.47,86.47,0,0,1,207,166.86l-20.43,2.27a12,12,0,0,0-7.65,4,69,69,0,0,1-5.8,5.8,12,12,0,0,0-4,7.65L166.86,207a86.47,86.47,0,0,1-10.49,4.35l-16.05-12.85a12,12,0,0,0-7.5-2.62c-.24,0-.48,0-.72,0a70.1,70.1,0,0,1-8.2,0,12.06,12.06,0,0,0-8.22,2.6L99.63,211.33A86.47,86.47,0,0,1,89.14,207l-2.27-20.43a12,12,0,0,0-4-7.65,69,69,0,0,1-5.8-5.8,12,12,0,0,0-7.65-4L49,166.86a86.47,86.47,0,0,1-4.35-10.49l12.84-16.05a12,12,0,0,0,2.61-8.22,70.1,70.1,0,0,1,0-8.2,12,12,0,0,0-2.61-8.22L44.67,99.63A86.47,86.47,0,0,1,49,89.14l20.43-2.27a12,12,0,0,0,7.65-4,69,69,0,0,1,5.8-5.8,12,12,0,0,0,4-7.65L89.14,49a86.47,86.47,0,0,1,10.49-4.35l16.05,12.85a12.06,12.06,0,0,0,8.22,2.6,70.1,70.1,0,0,1,8.2,0,12,12,0,0,0,8.22-2.6l16.05-12.85A86.47,86.47,0,0,1,166.86,49l2.27,20.43a12,12,0,0,0,4,7.65,69,69,0,0,1,5.8,5.8,12,12,0,0,0,7.65,4L207,89.14a86.47,86.47,0,0,1,4.35,10.49l-12.84,16.05A12,12,0,0,0,195.88,123.9Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M207.86,123.18l16.78-21a99.14,99.14,0,0,0-10.07-24.29l-26.7-3a81,81,0,0,0-6.81-6.81l-3-26.71a99.43,99.43,0,0,0-24.3-10l-21,16.77a81.59,81.59,0,0,0-9.64,0l-21-16.78A99.14,99.14,0,0,0,77.91,41.43l-3,26.7a81,81,0,0,0-6.81,6.81l-26.71,3a99.43,99.43,0,0,0-10,24.3l16.77,21a81.59,81.59,0,0,0,0,9.64l-16.78,21a99.14,99.14,0,0,0,10.07,24.29l26.7,3a81,81,0,0,0,6.81,6.81l3,26.71a99.43,99.43,0,0,0,24.3,10l21-16.77a81.59,81.59,0,0,0,9.64,0l21,16.78a99.14,99.14,0,0,0,24.29-10.07l3-26.7a81,81,0,0,0,6.81-6.81l26.71-3a99.43,99.43,0,0,0,10-24.3l-16.77-21A81.59,81.59,0,0,0,207.86,123.18ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.6,107.6,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.29,107.29,0,0,0-26.25-10.86,8,8,0,0,0-7.06,1.48L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.6,107.6,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8.06,8.06,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8.06,8.06,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M216,130.16q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.6,107.6,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.29,107.29,0,0,0-26.25-10.86,8,8,0,0,0-7.06,1.48L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.6,107.6,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M128,82a46,46,0,1,0,46,46A46.06,46.06,0,0,0,128,82Zm0,80a34,34,0,1,1,34-34A34,34,0,0,1,128,162ZM214,130.84c.06-1.89.06-3.79,0-5.68L229.33,106a6,6,0,0,0,1.11-5.29A105.34,105.34,0,0,0,219.76,74.9a6,6,0,0,0-4.53-3l-24.45-2.71q-1.93-2.07-4-4l-2.72-24.46a6,6,0,0,0-3-4.53,105.65,105.65,0,0,0-25.77-10.66A6,6,0,0,0,150,26.68l-19.2,15.37c-1.89-.06-3.79-.06-5.68,0L106,26.67a6,6,0,0,0-5.29-1.11A105.34,105.34,0,0,0,74.9,36.24a6,6,0,0,0-3,4.53L69.23,65.22q-2.07,1.94-4,4L40.76,72a6,6,0,0,0-4.53,3,105.65,105.65,0,0,0-10.66,25.77A6,6,0,0,0,26.68,106l15.37,19.2c-.06,1.89-.06,3.79,0,5.68L26.67,150.05a6,6,0,0,0-1.11,5.29A105.34,105.34,0,0,0,36.24,181.1a6,6,0,0,0,4.53,3l24.45,2.71q1.94,2.07,4,4L72,215.24a6,6,0,0,0,3,4.53,105.65,105.65,0,0,0,25.77,10.66,6,6,0,0,0,5.29-1.11L125.16,214c1.89.06,3.79.06,5.68,0l19.21,15.38a6,6,0,0,0,3.75,1.31,6.2,6.2,0,0,0,1.54-.2,105.34,105.34,0,0,0,25.76-10.68,6,6,0,0,0,3-4.53l2.71-24.45q2.07-1.93,4-4l24.46-2.72a6,6,0,0,0,4.53-3,105.49,105.49,0,0,0,10.66-25.77,6,6,0,0,0-1.11-5.29Zm-3.1,41.63-23.64,2.63a6,6,0,0,0-3.82,2,75.14,75.14,0,0,1-6.31,6.31,6,6,0,0,0-2,3.82l-2.63,23.63A94.28,94.28,0,0,1,155.14,218l-18.57-14.86a6,6,0,0,0-3.75-1.31h-.36a78.07,78.07,0,0,1-8.92,0,6,6,0,0,0-4.11,1.3L100.87,218a94.13,94.13,0,0,1-17.34-7.17L80.9,187.21a6,6,0,0,0-2-3.82,75.14,75.14,0,0,1-6.31-6.31,6,6,0,0,0-3.82-2l-23.63-2.63A94.28,94.28,0,0,1,38,155.14l14.86-18.57a6,6,0,0,0,1.3-4.11,78.07,78.07,0,0,1,0-8.92,6,6,0,0,0-1.3-4.11L38,100.87a94.13,94.13,0,0,1,7.17-17.34L68.79,80.9a6,6,0,0,0,3.82-2,75.14,75.14,0,0,1,6.31-6.31,6,6,0,0,0,2-3.82l2.63-23.63A94.28,94.28,0,0,1,100.86,38l18.57,14.86a6,6,0,0,0,4.11,1.3,78.07,78.07,0,0,1,8.92,0,6,6,0,0,0,4.11-1.3L155.13,38a94.13,94.13,0,0,1,17.34,7.17l2.63,23.64a6,6,0,0,0,2,3.82,75.14,75.14,0,0,1,6.31,6.31,6,6,0,0,0,3.82,2l23.63,2.63A94.28,94.28,0,0,1,218,100.86l-14.86,18.57a6,6,0,0,0-1.3,4.11,78.07,78.07,0,0,1,0,8.92,6,6,0,0,0,1.3,4.11L218,155.13A94.13,94.13,0,0,1,210.85,172.47Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.71,107.71,0,0,0-26.25-10.87,8,8,0,0,0-7.06,1.49L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8,8,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8,8,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M128,84a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,84Zm0,80a36,36,0,1,1,36-36A36,36,0,0,1,128,164Zm83.93-32.49q.13-3.51,0-7l15.83-19.79a4,4,0,0,0,.75-3.53A103.64,103.64,0,0,0,218,75.9a4,4,0,0,0-3-2l-25.19-2.8c-1.58-1.71-3.24-3.37-4.95-4.95L182.07,41a4,4,0,0,0-2-3A104,104,0,0,0,154.82,27.5a4,4,0,0,0-3.53.74L131.51,44.07q-3.51-.14-7,0L104.7,28.24a4,4,0,0,0-3.53-.75A103.64,103.64,0,0,0,75.9,38a4,4,0,0,0-2,3l-2.8,25.19c-1.71,1.58-3.37,3.24-4.95,4.95L41,73.93a4,4,0,0,0-3,2A104,104,0,0,0,27.5,101.18a4,4,0,0,0,.74,3.53l15.83,19.78q-.14,3.51,0,7L28.24,151.3a4,4,0,0,0-.75,3.53A103.64,103.64,0,0,0,38,180.1a4,4,0,0,0,3,2l25.19,2.8c1.58,1.71,3.24,3.37,4.95,4.95l2.8,25.2a4,4,0,0,0,2,3,104,104,0,0,0,25.28,10.46,4,4,0,0,0,3.53-.74l19.78-15.83q3.51.13,7,0l19.79,15.83a4,4,0,0,0,2.5.88,4,4,0,0,0,1-.13A103.64,103.64,0,0,0,180.1,218a4,4,0,0,0,2-3l2.8-25.19c1.71-1.58,3.37-3.24,4.95-4.95l25.2-2.8a4,4,0,0,0,3-2,104,104,0,0,0,10.46-25.28,4,4,0,0,0-.74-3.53Zm.17,42.83-24.67,2.74a4,4,0,0,0-2.55,1.32,76.2,76.2,0,0,1-6.48,6.48,4,4,0,0,0-1.32,2.55l-2.74,24.66a95.45,95.45,0,0,1-19.64,8.15l-19.38-15.51a4,4,0,0,0-2.5-.87h-.24a73.67,73.67,0,0,1-9.16,0,4,4,0,0,0-2.74.87l-19.37,15.5a95.33,95.33,0,0,1-19.65-8.13l-2.74-24.67a4,4,0,0,0-1.32-2.55,76.2,76.2,0,0,1-6.48-6.48,4,4,0,0,0-2.55-1.32l-24.66-2.74a95.45,95.45,0,0,1-8.15-19.64l15.51-19.38a4,4,0,0,0,.87-2.74,77.76,77.76,0,0,1,0-9.16,4,4,0,0,0-.87-2.74l-15.5-19.37A95.33,95.33,0,0,1,43.9,81.66l24.67-2.74a4,4,0,0,0,2.55-1.32,76.2,76.2,0,0,1,6.48-6.48,4,4,0,0,0,1.32-2.55l2.74-24.66a95.45,95.45,0,0,1,19.64-8.15l19.38,15.51a4,4,0,0,0,2.74.87,73.67,73.67,0,0,1,9.16,0,4,4,0,0,0,2.74-.87l19.37-15.5a95.33,95.33,0,0,1,19.65,8.13l2.74,24.67a4,4,0,0,0,1.32,2.55,76.2,76.2,0,0,1,6.48,6.48,4,4,0,0,0,2.55,1.32l24.66,2.74a95.45,95.45,0,0,1,8.15,19.64l-15.51,19.38a4,4,0,0,0-.87,2.74,77.76,77.76,0,0,1,0,9.16,4,4,0,0,0,.87,2.74l15.5,19.37A95.33,95.33,0,0,1,212.1,174.34Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
+};
 var $avh4$elm_color$Color$RgbaSpace = F4(
 	function (a, b, c, d) {
 		return {$: 'RgbaSpace', a: a, b: b, c: c, d: d};
@@ -20078,6 +20156,64 @@ var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight = $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature(
 	$ianmackenzie$elm_units$Temperature$kelvins(5600));
+var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
+var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
+var $elm$svg$Svg$map = $elm$virtual_dom$VirtualDom$map;
+var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+var $elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
+var $elm$svg$Svg$Attributes$strokeLinejoin = _VirtualDom_attribute('stroke-linejoin');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $phosphor_icons$phosphor_elm$Phosphor$xmlns = function (s) {
+	return A2(
+		$elm$virtual_dom$VirtualDom$property,
+		'xmlns',
+		$elm$json$Json$Encode$string(s));
+};
+var $phosphor_icons$phosphor_elm$Phosphor$toHtml = F2(
+	function (attributes, _v0) {
+		var src = _v0.a.src;
+		var attrs = _v0.a.attrs;
+		var strSize = $elm$core$String$fromFloat(attrs.size);
+		var baseAttributes = _List_fromArray(
+			[
+				$phosphor_icons$phosphor_elm$Phosphor$xmlns('http://www.w3.org/2000/svg'),
+				$elm$svg$Svg$Attributes$fill('currentColor'),
+				$elm$svg$Svg$Attributes$height(
+				_Utils_ap(strSize, attrs.sizeUnit)),
+				$elm$svg$Svg$Attributes$width(
+				_Utils_ap(strSize, attrs.sizeUnit)),
+				$elm$svg$Svg$Attributes$stroke('currentColor'),
+				$elm$svg$Svg$Attributes$strokeLinecap('round'),
+				$elm$svg$Svg$Attributes$strokeLinejoin('round'),
+				$elm$svg$Svg$Attributes$viewBox('0 0 256 256')
+			]);
+		var combinedAttributes = _Utils_ap(
+			function () {
+				var _v1 = attrs._class;
+				if (_v1.$ === 'Just') {
+					var c = _v1.a;
+					return A2(
+						$elm$core$List$cons,
+						$elm$svg$Svg$Attributes$class(c),
+						baseAttributes);
+				} else {
+					return baseAttributes;
+				}
+			}(),
+			attributes);
+		return A2(
+			$elm$svg$Svg$svg,
+			combinedAttributes,
+			A2(
+				$elm$core$List$map,
+				$elm$svg$Svg$map($elm$core$Basics$never),
+				src));
+	});
 var $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor = function (a) {
 	return {$: 'BackgroundColor', a: a};
 };
@@ -25573,7 +25709,6 @@ var $author$project$Screen$Editor$BlockTypeSelected = function (a) {
 	return {$: 'BlockTypeSelected', a: a};
 };
 var $author$project$Screen$Editor$Redo = {$: 'Redo'};
-var $phosphor_icons$phosphor_elm$Phosphor$Regular = {$: 'Regular'};
 var $author$project$Screen$Editor$ResetCamera = {$: 'ResetCamera'};
 var $author$project$Screen$Editor$SetBlockEditMode = function (a) {
 	return {$: 'SetBlockEditMode', a: a};
@@ -25581,39 +25716,17 @@ var $author$project$Screen$Editor$SetBlockEditMode = function (a) {
 var $author$project$Screen$Editor$SetCameraMode = function (a) {
 	return {$: 'SetCameraMode', a: a};
 };
-var $author$project$Shared$SetMapping = function (a) {
-	return {$: 'SetMapping', a: a};
-};
 var $author$project$Shared$SetScreen = function (a) {
 	return {$: 'SetScreen', a: a};
 };
 var $author$project$Screen$Editor$ShowBoardBounds = function (a) {
 	return {$: 'ShowBoardBounds', a: a};
 };
-var $author$project$Screen$Editor$ShowSettings = function (a) {
-	return {$: 'ShowSettings', a: a};
-};
 var $author$project$Screen$Editor$Undo = {$: 'Undo'};
 var $author$project$Html$Attributes$Extra$aria = F2(
 	function (attrib, value) {
 		return A2($elm$html$Html$Attributes$attribute, 'aria-' + attrib, value);
 	});
-var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
-var $phosphor_icons$phosphor_elm$Phosphor$IconVariant = function (a) {
-	return {$: 'IconVariant', a: a};
-};
-var $phosphor_icons$phosphor_elm$Phosphor$defaultAttributes = {
-	_class: $elm$core$Maybe$Just('ph-icon'),
-	size: 1,
-	sizeUnit: 'em'
-};
-var $phosphor_icons$phosphor_elm$Phosphor$makeBuilder = function (src) {
-	return $phosphor_icons$phosphor_elm$Phosphor$IconVariant(
-		{attrs: $phosphor_icons$phosphor_elm$Phosphor$defaultAttributes, src: src});
-};
-var $elm$svg$Svg$Attributes$opacity = _VirtualDom_attribute('opacity');
-var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var $elm$svg$Svg$path = $elm$svg$Svg$trustedNode('path');
 var $phosphor_icons$phosphor_elm$Phosphor$arrowClockwise = function (weight) {
 	var elements = function () {
 		switch (weight.$) {
@@ -26195,87 +26308,6 @@ var $phosphor_icons$phosphor_elm$Phosphor$cursor = function (weight) {
 	}();
 	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
-var $phosphor_icons$phosphor_elm$Phosphor$gear = function (weight) {
-	var elements = function () {
-		switch (weight.$) {
-			case 'Bold':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M128,76a52,52,0,1,0,52,52A52.06,52.06,0,0,0,128,76Zm0,80a28,28,0,1,1,28-28A28,28,0,0,1,128,156Zm92-27.21v-1.58l14-17.51a12,12,0,0,0,2.23-10.59A111.75,111.75,0,0,0,225,71.89,12,12,0,0,0,215.89,66L193.61,63.5l-1.11-1.11L190,40.1A12,12,0,0,0,184.11,31a111.67,111.67,0,0,0-27.23-11.27A12,12,0,0,0,146.3,22L128.79,36h-1.58L109.7,22a12,12,0,0,0-10.59-2.23A111.75,111.75,0,0,0,71.89,31.05,12,12,0,0,0,66,40.11L63.5,62.39,62.39,63.5,40.1,66A12,12,0,0,0,31,71.89,111.67,111.67,0,0,0,19.77,99.12,12,12,0,0,0,22,109.7l14,17.51v1.58L22,146.3a12,12,0,0,0-2.23,10.59,111.75,111.75,0,0,0,11.29,27.22A12,12,0,0,0,40.11,190l22.28,2.48,1.11,1.11L66,215.9A12,12,0,0,0,71.89,225a111.67,111.67,0,0,0,27.23,11.27A12,12,0,0,0,109.7,234l17.51-14h1.58l17.51,14a12,12,0,0,0,10.59,2.23A111.75,111.75,0,0,0,184.11,225a12,12,0,0,0,5.91-9.06l2.48-22.28,1.11-1.11L215.9,190a12,12,0,0,0,9.06-5.91,111.67,111.67,0,0,0,11.27-27.23A12,12,0,0,0,234,146.3Zm-24.12-4.89a70.1,70.1,0,0,1,0,8.2,12,12,0,0,0,2.61,8.22l12.84,16.05A86.47,86.47,0,0,1,207,166.86l-20.43,2.27a12,12,0,0,0-7.65,4,69,69,0,0,1-5.8,5.8,12,12,0,0,0-4,7.65L166.86,207a86.47,86.47,0,0,1-10.49,4.35l-16.05-12.85a12,12,0,0,0-7.5-2.62c-.24,0-.48,0-.72,0a70.1,70.1,0,0,1-8.2,0,12.06,12.06,0,0,0-8.22,2.6L99.63,211.33A86.47,86.47,0,0,1,89.14,207l-2.27-20.43a12,12,0,0,0-4-7.65,69,69,0,0,1-5.8-5.8,12,12,0,0,0-7.65-4L49,166.86a86.47,86.47,0,0,1-4.35-10.49l12.84-16.05a12,12,0,0,0,2.61-8.22,70.1,70.1,0,0,1,0-8.2,12,12,0,0,0-2.61-8.22L44.67,99.63A86.47,86.47,0,0,1,49,89.14l20.43-2.27a12,12,0,0,0,7.65-4,69,69,0,0,1,5.8-5.8,12,12,0,0,0,4-7.65L89.14,49a86.47,86.47,0,0,1,10.49-4.35l16.05,12.85a12.06,12.06,0,0,0,8.22,2.6,70.1,70.1,0,0,1,8.2,0,12,12,0,0,0,8.22-2.6l16.05-12.85A86.47,86.47,0,0,1,166.86,49l2.27,20.43a12,12,0,0,0,4,7.65,69,69,0,0,1,5.8,5.8,12,12,0,0,0,7.65,4L207,89.14a86.47,86.47,0,0,1,4.35,10.49l-12.84,16.05A12,12,0,0,0,195.88,123.9Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Duotone':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M207.86,123.18l16.78-21a99.14,99.14,0,0,0-10.07-24.29l-26.7-3a81,81,0,0,0-6.81-6.81l-3-26.71a99.43,99.43,0,0,0-24.3-10l-21,16.77a81.59,81.59,0,0,0-9.64,0l-21-16.78A99.14,99.14,0,0,0,77.91,41.43l-3,26.7a81,81,0,0,0-6.81,6.81l-26.71,3a99.43,99.43,0,0,0-10,24.3l16.77,21a81.59,81.59,0,0,0,0,9.64l-16.78,21a99.14,99.14,0,0,0,10.07,24.29l26.7,3a81,81,0,0,0,6.81,6.81l3,26.71a99.43,99.43,0,0,0,24.3,10l21-16.77a81.59,81.59,0,0,0,9.64,0l21,16.78a99.14,99.14,0,0,0,24.29-10.07l3-26.7a81,81,0,0,0,6.81-6.81l26.71-3a99.43,99.43,0,0,0,10-24.3l-16.77-21A81.59,81.59,0,0,0,207.86,123.18ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z'),
-								$elm$svg$Svg$Attributes$opacity('0.2')
-							]),
-						_List_Nil),
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.6,107.6,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.29,107.29,0,0,0-26.25-10.86,8,8,0,0,0-7.06,1.48L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.6,107.6,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8.06,8.06,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8.06,8.06,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Fill':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M216,130.16q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.6,107.6,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.29,107.29,0,0,0-26.25-10.86,8,8,0,0,0-7.06,1.48L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.6,107.6,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Light':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M128,82a46,46,0,1,0,46,46A46.06,46.06,0,0,0,128,82Zm0,80a34,34,0,1,1,34-34A34,34,0,0,1,128,162ZM214,130.84c.06-1.89.06-3.79,0-5.68L229.33,106a6,6,0,0,0,1.11-5.29A105.34,105.34,0,0,0,219.76,74.9a6,6,0,0,0-4.53-3l-24.45-2.71q-1.93-2.07-4-4l-2.72-24.46a6,6,0,0,0-3-4.53,105.65,105.65,0,0,0-25.77-10.66A6,6,0,0,0,150,26.68l-19.2,15.37c-1.89-.06-3.79-.06-5.68,0L106,26.67a6,6,0,0,0-5.29-1.11A105.34,105.34,0,0,0,74.9,36.24a6,6,0,0,0-3,4.53L69.23,65.22q-2.07,1.94-4,4L40.76,72a6,6,0,0,0-4.53,3,105.65,105.65,0,0,0-10.66,25.77A6,6,0,0,0,26.68,106l15.37,19.2c-.06,1.89-.06,3.79,0,5.68L26.67,150.05a6,6,0,0,0-1.11,5.29A105.34,105.34,0,0,0,36.24,181.1a6,6,0,0,0,4.53,3l24.45,2.71q1.94,2.07,4,4L72,215.24a6,6,0,0,0,3,4.53,105.65,105.65,0,0,0,25.77,10.66,6,6,0,0,0,5.29-1.11L125.16,214c1.89.06,3.79.06,5.68,0l19.21,15.38a6,6,0,0,0,3.75,1.31,6.2,6.2,0,0,0,1.54-.2,105.34,105.34,0,0,0,25.76-10.68,6,6,0,0,0,3-4.53l2.71-24.45q2.07-1.93,4-4l24.46-2.72a6,6,0,0,0,4.53-3,105.49,105.49,0,0,0,10.66-25.77,6,6,0,0,0-1.11-5.29Zm-3.1,41.63-23.64,2.63a6,6,0,0,0-3.82,2,75.14,75.14,0,0,1-6.31,6.31,6,6,0,0,0-2,3.82l-2.63,23.63A94.28,94.28,0,0,1,155.14,218l-18.57-14.86a6,6,0,0,0-3.75-1.31h-.36a78.07,78.07,0,0,1-8.92,0,6,6,0,0,0-4.11,1.3L100.87,218a94.13,94.13,0,0,1-17.34-7.17L80.9,187.21a6,6,0,0,0-2-3.82,75.14,75.14,0,0,1-6.31-6.31,6,6,0,0,0-3.82-2l-23.63-2.63A94.28,94.28,0,0,1,38,155.14l14.86-18.57a6,6,0,0,0,1.3-4.11,78.07,78.07,0,0,1,0-8.92,6,6,0,0,0-1.3-4.11L38,100.87a94.13,94.13,0,0,1,7.17-17.34L68.79,80.9a6,6,0,0,0,3.82-2,75.14,75.14,0,0,1,6.31-6.31,6,6,0,0,0,2-3.82l2.63-23.63A94.28,94.28,0,0,1,100.86,38l18.57,14.86a6,6,0,0,0,4.11,1.3,78.07,78.07,0,0,1,8.92,0,6,6,0,0,0,4.11-1.3L155.13,38a94.13,94.13,0,0,1,17.34,7.17l2.63,23.64a6,6,0,0,0,2,3.82,75.14,75.14,0,0,1,6.31,6.31,6,6,0,0,0,3.82,2l23.63,2.63A94.28,94.28,0,0,1,218,100.86l-14.86,18.57a6,6,0,0,0-1.3,4.11,78.07,78.07,0,0,1,0,8.92,6,6,0,0,0,1.3,4.11L218,155.13A94.13,94.13,0,0,1,210.85,172.47Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Regular':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.71,107.71,0,0,0-26.25-10.87,8,8,0,0,0-7.06,1.49L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8,8,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8,8,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z')
-							]),
-						_List_Nil)
-					]);
-			default:
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M128,84a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,84Zm0,80a36,36,0,1,1,36-36A36,36,0,0,1,128,164Zm83.93-32.49q.13-3.51,0-7l15.83-19.79a4,4,0,0,0,.75-3.53A103.64,103.64,0,0,0,218,75.9a4,4,0,0,0-3-2l-25.19-2.8c-1.58-1.71-3.24-3.37-4.95-4.95L182.07,41a4,4,0,0,0-2-3A104,104,0,0,0,154.82,27.5a4,4,0,0,0-3.53.74L131.51,44.07q-3.51-.14-7,0L104.7,28.24a4,4,0,0,0-3.53-.75A103.64,103.64,0,0,0,75.9,38a4,4,0,0,0-2,3l-2.8,25.19c-1.71,1.58-3.37,3.24-4.95,4.95L41,73.93a4,4,0,0,0-3,2A104,104,0,0,0,27.5,101.18a4,4,0,0,0,.74,3.53l15.83,19.78q-.14,3.51,0,7L28.24,151.3a4,4,0,0,0-.75,3.53A103.64,103.64,0,0,0,38,180.1a4,4,0,0,0,3,2l25.19,2.8c1.58,1.71,3.24,3.37,4.95,4.95l2.8,25.2a4,4,0,0,0,2,3,104,104,0,0,0,25.28,10.46,4,4,0,0,0,3.53-.74l19.78-15.83q3.51.13,7,0l19.79,15.83a4,4,0,0,0,2.5.88,4,4,0,0,0,1-.13A103.64,103.64,0,0,0,180.1,218a4,4,0,0,0,2-3l2.8-25.19c1.71-1.58,3.37-3.24,4.95-4.95l25.2-2.8a4,4,0,0,0,3-2,104,104,0,0,0,10.46-25.28,4,4,0,0,0-.74-3.53Zm.17,42.83-24.67,2.74a4,4,0,0,0-2.55,1.32,76.2,76.2,0,0,1-6.48,6.48,4,4,0,0,0-1.32,2.55l-2.74,24.66a95.45,95.45,0,0,1-19.64,8.15l-19.38-15.51a4,4,0,0,0-2.5-.87h-.24a73.67,73.67,0,0,1-9.16,0,4,4,0,0,0-2.74.87l-19.37,15.5a95.33,95.33,0,0,1-19.65-8.13l-2.74-24.67a4,4,0,0,0-1.32-2.55,76.2,76.2,0,0,1-6.48-6.48,4,4,0,0,0-2.55-1.32l-24.66-2.74a95.45,95.45,0,0,1-8.15-19.64l15.51-19.38a4,4,0,0,0,.87-2.74,77.76,77.76,0,0,1,0-9.16,4,4,0,0,0-.87-2.74l-15.5-19.37A95.33,95.33,0,0,1,43.9,81.66l24.67-2.74a4,4,0,0,0,2.55-1.32,76.2,76.2,0,0,1,6.48-6.48,4,4,0,0,0,1.32-2.55l2.74-24.66a95.45,95.45,0,0,1,19.64-8.15l19.38,15.51a4,4,0,0,0,2.74.87,73.67,73.67,0,0,1,9.16,0,4,4,0,0,0,2.74-.87l19.37-15.5a95.33,95.33,0,0,1,19.65,8.13l2.74,24.67a4,4,0,0,0,1.32,2.55,76.2,76.2,0,0,1,6.48,6.48,4,4,0,0,0,2.55,1.32l24.66,2.74a95.45,95.45,0,0,1,8.15,19.64l-15.51,19.38a4,4,0,0,0-.87,2.74,77.76,77.76,0,0,1,0,9.16,4,4,0,0,0,.87,2.74l15.5,19.37A95.33,95.33,0,0,1,212.1,174.34Z')
-							]),
-						_List_Nil)
-					]);
-		}
-	}();
-	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
-};
 var $phosphor_icons$phosphor_elm$Phosphor$gridNine = function (weight) {
 	var elements = function () {
 		switch (weight.$) {
@@ -26357,33 +26389,7 @@ var $phosphor_icons$phosphor_elm$Phosphor$gridNine = function (weight) {
 	}();
 	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
-var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$html$Html$h3 = _VirtualDom_node('h3');
-var $elm$virtual_dom$VirtualDom$node = function (tag) {
-	return _VirtualDom_node(
-		_VirtualDom_noScript(tag));
-};
-var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
-var $author$project$Html$Extra$modal = F3(
-	function (config, attributes, children) {
-		return A3(
-			$elm$html$Html$node,
-			'dialog',
-			_Utils_ap(
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$Attributes$property,
-						'___modal-open',
-						$elm$json$Json$Encode$bool(config.open)),
-						A2(
-						$elm$html$Html$Events$on,
-						'close',
-						$elm$json$Json$Decode$succeed(config.onClose))
-					]),
-				attributes),
-			children);
-	});
 var $phosphor_icons$phosphor_elm$Phosphor$plus = function (weight) {
 	var elements = function () {
 		switch (weight.$) {
@@ -26465,194 +26471,11 @@ var $phosphor_icons$phosphor_elm$Phosphor$plus = function (weight) {
 	}();
 	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
-var $elm$html$Html$table = _VirtualDom_node('table');
-var $elm$html$Html$tbody = _VirtualDom_node('tbody');
-var $elm$html$Html$th = _VirtualDom_node('th');
-var $elm$html$Html$thead = _VirtualDom_node('thead');
-var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
-var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
-var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
-var $elm$svg$Svg$map = $elm$virtual_dom$VirtualDom$map;
-var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
-var $elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
-var $elm$svg$Svg$Attributes$strokeLinejoin = _VirtualDom_attribute('stroke-linejoin');
-var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
-var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $phosphor_icons$phosphor_elm$Phosphor$xmlns = function (s) {
-	return A2(
-		$elm$virtual_dom$VirtualDom$property,
-		'xmlns',
-		$elm$json$Json$Encode$string(s));
-};
-var $phosphor_icons$phosphor_elm$Phosphor$toHtml = F2(
-	function (attributes, _v0) {
-		var src = _v0.a.src;
-		var attrs = _v0.a.attrs;
-		var strSize = $elm$core$String$fromFloat(attrs.size);
-		var baseAttributes = _List_fromArray(
-			[
-				$phosphor_icons$phosphor_elm$Phosphor$xmlns('http://www.w3.org/2000/svg'),
-				$elm$svg$Svg$Attributes$fill('currentColor'),
-				$elm$svg$Svg$Attributes$height(
-				_Utils_ap(strSize, attrs.sizeUnit)),
-				$elm$svg$Svg$Attributes$width(
-				_Utils_ap(strSize, attrs.sizeUnit)),
-				$elm$svg$Svg$Attributes$stroke('currentColor'),
-				$elm$svg$Svg$Attributes$strokeLinecap('round'),
-				$elm$svg$Svg$Attributes$strokeLinejoin('round'),
-				$elm$svg$Svg$Attributes$viewBox('0 0 256 256')
-			]);
-		var combinedAttributes = _Utils_ap(
-			function () {
-				var _v1 = attrs._class;
-				if (_v1.$ === 'Just') {
-					var c = _v1.a;
-					return A2(
-						$elm$core$List$cons,
-						$elm$svg$Svg$Attributes$class(c),
-						baseAttributes);
-				} else {
-					return baseAttributes;
-				}
-			}(),
-			attributes);
-		return A2(
-			$elm$svg$Svg$svg,
-			combinedAttributes,
-			A2(
-				$elm$core$List$map,
-				$elm$svg$Svg$map($elm$core$Basics$never),
-				src));
-	});
-var $elm$html$Html$tr = _VirtualDom_node('tr');
 var $author$project$Input$viewInputKeyHoverText = function (_v0) {
 	var primary = _v0.a;
 	var secondary = _v0.b;
 	return (secondary === '') ? primary : (primary + (' | ' + secondary));
 };
-var $elm$virtual_dom$VirtualDom$Custom = function (a) {
-	return {$: 'Custom', a: a};
-};
-var $elm$html$Html$Events$custom = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Custom(decoder));
-	});
-var $author$project$Input$decodeMappingChange = F2(
-	function (toMsg, fn) {
-		return A2(
-			$elm$json$Json$Decode$andThen,
-			function (key) {
-				switch (key) {
-					case 'Tab':
-						return $elm$json$Json$Decode$fail('Don\'t capture');
-					case 'Shift':
-						return $elm$json$Json$Decode$fail('Don\'t capture');
-					case 'Meta':
-						return $elm$json$Json$Decode$fail('Don\'t capture');
-					case 'Alt':
-						return $elm$json$Json$Decode$fail('Don\'t capture');
-					case 'Control':
-						return $elm$json$Json$Decode$fail('Don\'t capture');
-					case 'Escape':
-						return $elm$json$Json$Decode$fail('Don\'t capture');
-					case 'Enter':
-						return $elm$json$Json$Decode$fail('Don\'t capture');
-					case 'Backspace':
-						return $elm$json$Json$Decode$succeed(
-							{
-								message: toMsg(
-									fn('')),
-								preventDefault: true,
-								stopPropagation: true
-							});
-					default:
-						return $elm$json$Json$Decode$succeed(
-							{
-								message: toMsg(
-									fn(key)),
-								preventDefault: true,
-								stopPropagation: true
-							});
-				}
-			},
-			A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
-	});
-var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
-var $elm$html$Html$td = _VirtualDom_node('td');
-var $author$project$Input$viewMapping = F2(
-	function (toMsg, mapping) {
-		var _v0 = mapping.keys;
-		var primary = _v0.a;
-		var secondary = _v0.b;
-		return A2(
-			$elm$html$Html$tr,
-			_List_Nil,
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$th,
-					_List_fromArray(
-						[
-							A2($elm$html$Html$Attributes$attribute, 'align', 'left')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(mapping.label)
-						])),
-					A2(
-					$elm$html$Html$td,
-					_List_fromArray(
-						[
-							A2($elm$html$Html$Attributes$attribute, 'align', 'center')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$input,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$value(primary),
-									A2(
-									$elm$html$Html$Events$custom,
-									'keydown',
-									A2($author$project$Input$decodeMappingChange, toMsg, mapping.setPrimary)),
-									A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-									A2($elm$html$Html$Attributes$style, 'width', '100%'),
-									$elm$html$Html$Attributes$placeholder('must be set')
-								]),
-							_List_Nil)
-						])),
-					A2(
-					$elm$html$Html$td,
-					_List_fromArray(
-						[
-							A2($elm$html$Html$Attributes$attribute, 'align', 'center')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$input,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$value(secondary),
-									A2(
-									$elm$html$Html$Events$custom,
-									'keydown',
-									A2($author$project$Input$decodeMappingChange, toMsg, mapping.setSecondary)),
-									A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-									A2($elm$html$Html$Attributes$style, 'width', '100%'),
-									$elm$html$Html$Attributes$placeholder('not set')
-								]),
-							_List_Nil)
-						]))
-				]));
-	});
 var $phosphor_icons$phosphor_elm$Phosphor$x = function (weight) {
 	var elements = function () {
 		switch (weight.$) {
@@ -26727,87 +26550,6 @@ var $phosphor_icons$phosphor_elm$Phosphor$x = function (weight) {
 						_List_fromArray(
 							[
 								$elm$svg$Svg$Attributes$d('M202.83,197.17a4,4,0,0,1-5.66,5.66L128,133.66,58.83,202.83a4,4,0,0,1-5.66-5.66L122.34,128,53.17,58.83a4,4,0,0,1,5.66-5.66L128,122.34l69.17-69.17a4,4,0,1,1,5.66,5.66L133.66,128Z')
-							]),
-						_List_Nil)
-					]);
-		}
-	}();
-	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
-};
-var $phosphor_icons$phosphor_elm$Phosphor$xCircle = function (weight) {
-	var elements = function () {
-		switch (weight.$) {
-			case 'Bold':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M168.49,104.49,145,128l23.52,23.51a12,12,0,0,1-17,17L128,145l-23.51,23.52a12,12,0,0,1-17-17L111,128,87.51,104.49a12,12,0,0,1,17-17L128,111l23.51-23.52a12,12,0,0,1,17,17ZM236,128A108,108,0,1,1,128,20,108.12,108.12,0,0,1,236,128Zm-24,0a84,84,0,1,0-84,84A84.09,84.09,0,0,0,212,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Duotone':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z'),
-								$elm$svg$Svg$Attributes$opacity('0.2')
-							]),
-						_List_Nil),
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M165.66,101.66,139.31,128l26.35,26.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Fill':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm37.66,130.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32L139.31,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Light':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M164.24,100.24,136.48,128l27.76,27.76a6,6,0,1,1-8.48,8.48L128,136.48l-27.76,27.76a6,6,0,0,1-8.48-8.48L119.52,128,91.76,100.24a6,6,0,0,1,8.48-8.48L128,119.52l27.76-27.76a6,6,0,0,1,8.48,8.48ZM230,128A102,102,0,1,1,128,26,102.12,102.12,0,0,1,230,128Zm-12,0a90,90,0,1,0-90,90A90.1,90.1,0,0,0,218,128Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Regular':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M165.66,101.66,139.31,128l26.35,26.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z')
-							]),
-						_List_Nil)
-					]);
-			default:
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M162.83,98.83,133.66,128l29.17,29.17a4,4,0,0,1-5.66,5.66L128,133.66,98.83,162.83a4,4,0,0,1-5.66-5.66L122.34,128,93.17,98.83a4,4,0,0,1,5.66-5.66L128,122.34l29.17-29.17a4,4,0,1,1,5.66,5.66ZM228,128A100,100,0,1,1,128,28,100.11,100.11,0,0,1,228,128Zm-8,0a92,92,0,1,0-92,92A92.1,92.1,0,0,0,220,128Z')
 							]),
 						_List_Nil)
 					]);
@@ -27294,697 +27036,6 @@ var $author$project$Screen$Editor$viewHeader = F4(
 						_List_fromArray(
 							[
 								$elm$html$Html$text('Exit')
-							])),
-						A3(
-						$author$project$Html$Extra$modal,
-						{
-							onClose: toMsg(
-								$author$project$Screen$Editor$ShowSettings(false)),
-							open: model.showSettings
-						},
-						_List_Nil,
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$h2,
-								_List_fromArray(
-									[
-										A2($elm$html$Html$Attributes$style, 'width', '100%'),
-										A2($elm$html$Html$Attributes$style, 'margin-top', '0')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Settings'),
-										A2(
-										$elm$html$Html$button,
-										_List_fromArray(
-											[
-												A2($elm$html$Html$Attributes$style, 'float', 'right'),
-												A2($elm$html$Html$Attributes$style, 'background', 'none'),
-												$elm$html$Html$Attributes$type_('button'),
-												$elm$html$Html$Attributes$title('Close'),
-												$elm$html$Html$Events$onClick(
-												toMsg(
-													$author$project$Screen$Editor$ShowSettings(false)))
-											]),
-										_List_fromArray(
-											[
-												A2(
-												$phosphor_icons$phosphor_elm$Phosphor$toHtml,
-												_List_Nil,
-												$phosphor_icons$phosphor_elm$Phosphor$xCircle($phosphor_icons$phosphor_elm$Phosphor$Regular))
-											]))
-									])),
-								A2(
-								$elm$html$Html$span,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Hold \'Shift\' and move mouse to use camera actions (orbit, pan, zoom)')
-									])),
-								A2($elm$html$Html$br, _List_Nil, _List_Nil),
-								A2($elm$html$Html$br, _List_Nil, _List_Nil),
-								function () {
-								var viewMapping = $author$project$Input$viewMapping(
-									A2($elm$core$Basics$composeR, $author$project$Shared$SetMapping, toSharedMsg));
-								return A2(
-									$elm$html$Html$table,
-									_List_Nil,
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$thead,
-											_List_Nil,
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$tr,
-													_List_Nil,
-													_List_fromArray(
-														[
-															A2(
-															$elm$html$Html$th,
-															_List_fromArray(
-																[
-																	A2($elm$html$Html$Attributes$attribute, 'align', 'left')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('Input')
-																])),
-															A2(
-															$elm$html$Html$th,
-															_List_Nil,
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('Primary Key')
-																])),
-															A2(
-															$elm$html$Html$th,
-															_List_Nil,
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('Secondary Key')
-																]))
-														]))
-												])),
-											A2(
-											$elm$html$Html$tbody,
-											_List_Nil,
-											A2(
-												$elm$core$List$cons,
-												A2(
-													$elm$html$Html$tr,
-													_List_Nil,
-													_List_fromArray(
-														[
-															A2(
-															$elm$html$Html$th,
-															_List_Nil,
-															_List_fromArray(
-																[
-																	A2(
-																	$elm$html$Html$h3,
-																	_List_Nil,
-																	_List_fromArray(
-																		[
-																			$elm$html$Html$text('Character Movement')
-																		]))
-																]))
-														])),
-												_Utils_ap(
-													A2(
-														$elm$core$List$map,
-														viewMapping,
-														_List_fromArray(
-															[
-																{
-																keys: sharedModel.inputMapping.moveUp,
-																label: 'Face up',
-																setPrimary: F2(
-																	function (key, inputMapping) {
-																		var _v3 = inputMapping.moveUp;
-																		var secondary = _v3.b;
-																		return _Utils_update(
-																			inputMapping,
-																			{
-																				moveUp: _Utils_Tuple2(key, secondary)
-																			});
-																	}),
-																setSecondary: F2(
-																	function (key, inputMapping) {
-																		var _v4 = inputMapping.moveUp;
-																		var primary = _v4.a;
-																		return _Utils_update(
-																			inputMapping,
-																			{
-																				moveUp: _Utils_Tuple2(primary, key)
-																			});
-																	})
-															},
-																{
-																keys: sharedModel.inputMapping.moveDown,
-																label: 'Face down',
-																setPrimary: F2(
-																	function (key, inputMapping) {
-																		var _v5 = inputMapping.moveDown;
-																		var secondary = _v5.b;
-																		return _Utils_update(
-																			inputMapping,
-																			{
-																				moveDown: _Utils_Tuple2(key, secondary)
-																			});
-																	}),
-																setSecondary: F2(
-																	function (key, inputMapping) {
-																		var _v6 = inputMapping.moveDown;
-																		var primary = _v6.a;
-																		return _Utils_update(
-																			inputMapping,
-																			{
-																				moveDown: _Utils_Tuple2(primary, key)
-																			});
-																	})
-															},
-																{
-																keys: sharedModel.inputMapping.moveLeft,
-																label: 'Face left',
-																setPrimary: F2(
-																	function (key, inputMapping) {
-																		var _v7 = inputMapping.moveLeft;
-																		var secondary = _v7.b;
-																		return _Utils_update(
-																			inputMapping,
-																			{
-																				moveLeft: _Utils_Tuple2(key, secondary)
-																			});
-																	}),
-																setSecondary: F2(
-																	function (key, inputMapping) {
-																		var _v8 = inputMapping.moveLeft;
-																		var primary = _v8.a;
-																		return _Utils_update(
-																			inputMapping,
-																			{
-																				moveLeft: _Utils_Tuple2(primary, key)
-																			});
-																	})
-															},
-																{
-																keys: sharedModel.inputMapping.moveRight,
-																label: 'Face right',
-																setPrimary: F2(
-																	function (key, inputMapping) {
-																		var _v9 = inputMapping.moveRight;
-																		var secondary = _v9.b;
-																		return _Utils_update(
-																			inputMapping,
-																			{
-																				moveRight: _Utils_Tuple2(key, secondary)
-																			});
-																	}),
-																setSecondary: F2(
-																	function (key, inputMapping) {
-																		var _v10 = inputMapping.moveRight;
-																		var primary = _v10.a;
-																		return _Utils_update(
-																			inputMapping,
-																			{
-																				moveRight: _Utils_Tuple2(primary, key)
-																			});
-																	})
-															}
-															])),
-													_Utils_ap(
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$tr,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		A2(
-																		$elm$html$Html$th,
-																		_List_Nil,
-																		_List_fromArray(
-																			[
-																				A2(
-																				$elm$html$Html$h3,
-																				_List_Nil,
-																				_List_fromArray(
-																					[
-																						$elm$html$Html$text('Editor')
-																					]))
-																			]))
-																	])),
-																A2(
-																$elm$html$Html$tr,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		A2(
-																		$elm$html$Html$th,
-																		_List_Nil,
-																		_List_fromArray(
-																			[
-																				$elm$html$Html$text('Camera')
-																			]))
-																	]))
-															]),
-														_Utils_ap(
-															A2(
-																$elm$core$List$map,
-																viewMapping,
-																_List_fromArray(
-																	[
-																		{
-																		keys: sharedModel.inputMapping.cameraOrbit,
-																		label: 'Orbit',
-																		setPrimary: F2(
-																			function (key, inputMapping) {
-																				var _v11 = inputMapping.cameraOrbit;
-																				var secondary = _v11.b;
-																				return _Utils_update(
-																					inputMapping,
-																					{
-																						cameraOrbit: _Utils_Tuple2(key, secondary)
-																					});
-																			}),
-																		setSecondary: F2(
-																			function (key, inputMapping) {
-																				var _v12 = inputMapping.cameraOrbit;
-																				var primary = _v12.a;
-																				return _Utils_update(
-																					inputMapping,
-																					{
-																						cameraOrbit: _Utils_Tuple2(primary, key)
-																					});
-																			})
-																	},
-																		{
-																		keys: sharedModel.inputMapping.cameraPan,
-																		label: 'Pan',
-																		setPrimary: F2(
-																			function (key, inputMapping) {
-																				var _v13 = inputMapping.cameraPan;
-																				var secondary = _v13.b;
-																				return _Utils_update(
-																					inputMapping,
-																					{
-																						cameraPan: _Utils_Tuple2(key, secondary)
-																					});
-																			}),
-																		setSecondary: F2(
-																			function (key, inputMapping) {
-																				var _v14 = inputMapping.cameraPan;
-																				var primary = _v14.a;
-																				return _Utils_update(
-																					inputMapping,
-																					{
-																						cameraPan: _Utils_Tuple2(primary, key)
-																					});
-																			})
-																	},
-																		{
-																		keys: sharedModel.inputMapping.cameraZoom,
-																		label: 'Zoom',
-																		setPrimary: F2(
-																			function (key, inputMapping) {
-																				var _v15 = inputMapping.cameraZoom;
-																				var secondary = _v15.b;
-																				return _Utils_update(
-																					inputMapping,
-																					{
-																						cameraZoom: _Utils_Tuple2(key, secondary)
-																					});
-																			}),
-																		setSecondary: F2(
-																			function (key, inputMapping) {
-																				var _v16 = inputMapping.cameraZoom;
-																				var primary = _v16.a;
-																				return _Utils_update(
-																					inputMapping,
-																					{
-																						cameraZoom: _Utils_Tuple2(primary, key)
-																					});
-																			})
-																	},
-																		{
-																		keys: sharedModel.inputMapping.cameraReset,
-																		label: 'Reset',
-																		setPrimary: F2(
-																			function (key, inputMapping) {
-																				var _v17 = inputMapping.cameraReset;
-																				var secondary = _v17.b;
-																				return _Utils_update(
-																					inputMapping,
-																					{
-																						cameraReset: _Utils_Tuple2(key, secondary)
-																					});
-																			}),
-																		setSecondary: F2(
-																			function (key, inputMapping) {
-																				var _v18 = inputMapping.cameraReset;
-																				var primary = _v18.a;
-																				return _Utils_update(
-																					inputMapping,
-																					{
-																						cameraReset: _Utils_Tuple2(primary, key)
-																					});
-																			})
-																	}
-																	])),
-															_Utils_ap(
-																_List_fromArray(
-																	[
-																		A2(
-																		$elm$html$Html$tr,
-																		_List_Nil,
-																		_List_fromArray(
-																			[
-																				A2(
-																				$elm$html$Html$th,
-																				_List_Nil,
-																				_List_fromArray(
-																					[
-																						$elm$html$Html$text('Block Edit')
-																					]))
-																			]))
-																	]),
-																_Utils_ap(
-																	A2(
-																		$elm$core$List$map,
-																		viewMapping,
-																		_List_fromArray(
-																			[
-																				{
-																				keys: sharedModel.inputMapping.blockSelect,
-																				label: 'Select',
-																				setPrimary: F2(
-																					function (key, inputMapping) {
-																						var _v19 = inputMapping.blockSelect;
-																						var secondary = _v19.b;
-																						return _Utils_update(
-																							inputMapping,
-																							{
-																								blockSelect: _Utils_Tuple2(key, secondary)
-																							});
-																					}),
-																				setSecondary: F2(
-																					function (key, inputMapping) {
-																						var _v20 = inputMapping.blockSelect;
-																						var primary = _v20.a;
-																						return _Utils_update(
-																							inputMapping,
-																							{
-																								blockSelect: _Utils_Tuple2(primary, key)
-																							});
-																					})
-																			},
-																				{
-																				keys: sharedModel.inputMapping.blockAdd,
-																				label: 'Add',
-																				setPrimary: F2(
-																					function (key, inputMapping) {
-																						var _v21 = inputMapping.blockAdd;
-																						var secondary = _v21.b;
-																						return _Utils_update(
-																							inputMapping,
-																							{
-																								blockAdd: _Utils_Tuple2(key, secondary)
-																							});
-																					}),
-																				setSecondary: F2(
-																					function (key, inputMapping) {
-																						var _v22 = inputMapping.blockAdd;
-																						var primary = _v22.a;
-																						return _Utils_update(
-																							inputMapping,
-																							{
-																								blockAdd: _Utils_Tuple2(primary, key)
-																							});
-																					})
-																			},
-																				{
-																				keys: sharedModel.inputMapping.blockRemove,
-																				label: 'Remove',
-																				setPrimary: F2(
-																					function (key, inputMapping) {
-																						var _v23 = inputMapping.blockRemove;
-																						var secondary = _v23.b;
-																						return _Utils_update(
-																							inputMapping,
-																							{
-																								blockRemove: _Utils_Tuple2(key, secondary)
-																							});
-																					}),
-																				setSecondary: F2(
-																					function (key, inputMapping) {
-																						var _v24 = inputMapping.blockRemove;
-																						var primary = _v24.a;
-																						return _Utils_update(
-																							inputMapping,
-																							{
-																								blockRemove: _Utils_Tuple2(primary, key)
-																							});
-																					})
-																			}
-																			])),
-																	_Utils_ap(
-																		_List_fromArray(
-																			[
-																				A2(
-																				$elm$html$Html$tr,
-																				_List_Nil,
-																				_List_fromArray(
-																					[
-																						A2(
-																						$elm$html$Html$th,
-																						_List_Nil,
-																						_List_fromArray(
-																							[
-																								$elm$html$Html$text('Block Type')
-																							]))
-																					]))
-																			]),
-																		_Utils_ap(
-																			A2(
-																				$elm$core$List$map,
-																				viewMapping,
-																				_List_fromArray(
-																					[
-																						{
-																						keys: sharedModel.inputMapping.blockTypeWall,
-																						label: 'Wall',
-																						setPrimary: F2(
-																							function (key, inputMapping) {
-																								var _v25 = inputMapping.blockTypeWall;
-																								var secondary = _v25.b;
-																								return _Utils_update(
-																									inputMapping,
-																									{
-																										blockTypeWall: _Utils_Tuple2(key, secondary)
-																									});
-																							}),
-																						setSecondary: F2(
-																							function (key, inputMapping) {
-																								var _v26 = inputMapping.blockTypeWall;
-																								var primary = _v26.a;
-																								return _Utils_update(
-																									inputMapping,
-																									{
-																										blockTypeWall: _Utils_Tuple2(primary, key)
-																									});
-																							})
-																					},
-																						{
-																						keys: sharedModel.inputMapping.blockTypeEdge,
-																						label: 'Edge',
-																						setPrimary: F2(
-																							function (key, inputMapping) {
-																								var _v27 = inputMapping.blockTypeEdge;
-																								var secondary = _v27.b;
-																								return _Utils_update(
-																									inputMapping,
-																									{
-																										blockTypeEdge: _Utils_Tuple2(key, secondary)
-																									});
-																							}),
-																						setSecondary: F2(
-																							function (key, inputMapping) {
-																								var _v28 = inputMapping.blockTypeEdge;
-																								var primary = _v28.a;
-																								return _Utils_update(
-																									inputMapping,
-																									{
-																										blockTypeEdge: _Utils_Tuple2(primary, key)
-																									});
-																							})
-																					},
-																						{
-																						keys: sharedModel.inputMapping.blockTypePointPickup,
-																						label: 'Point Pickup',
-																						setPrimary: F2(
-																							function (key, inputMapping) {
-																								var _v29 = inputMapping.blockTypePointPickup;
-																								var secondary = _v29.b;
-																								return _Utils_update(
-																									inputMapping,
-																									{
-																										blockTypePointPickup: _Utils_Tuple2(key, secondary)
-																									});
-																							}),
-																						setSecondary: F2(
-																							function (key, inputMapping) {
-																								var _v30 = inputMapping.blockTypePointPickup;
-																								var primary = _v30.a;
-																								return _Utils_update(
-																									inputMapping,
-																									{
-																										blockTypePointPickup: _Utils_Tuple2(primary, key)
-																									});
-																							})
-																					},
-																						{
-																						keys: sharedModel.inputMapping.blockTypePlayerSpawn,
-																						label: 'Player Spawn',
-																						setPrimary: F2(
-																							function (key, inputMapping) {
-																								var _v31 = inputMapping.blockTypePlayerSpawn;
-																								var secondary = _v31.b;
-																								return _Utils_update(
-																									inputMapping,
-																									{
-																										blockTypePlayerSpawn: _Utils_Tuple2(key, secondary)
-																									});
-																							}),
-																						setSecondary: F2(
-																							function (key, inputMapping) {
-																								var _v32 = inputMapping.blockTypePlayerSpawn;
-																								var primary = _v32.a;
-																								return _Utils_update(
-																									inputMapping,
-																									{
-																										blockTypePlayerSpawn: _Utils_Tuple2(primary, key)
-																									});
-																							})
-																					}
-																					])),
-																			_Utils_ap(
-																				_List_fromArray(
-																					[
-																						A2(
-																						$elm$html$Html$tr,
-																						_List_Nil,
-																						_List_fromArray(
-																							[
-																								A2(
-																								$elm$html$Html$th,
-																								_List_Nil,
-																								_List_fromArray(
-																									[
-																										$elm$html$Html$text('Undo / Redo')
-																									]))
-																							]))
-																					]),
-																				_Utils_ap(
-																					A2(
-																						$elm$core$List$map,
-																						viewMapping,
-																						_List_fromArray(
-																							[
-																								{
-																								keys: sharedModel.inputMapping.undo,
-																								label: 'Undo',
-																								setPrimary: F2(
-																									function (key, inputMapping) {
-																										var _v33 = inputMapping.undo;
-																										var secondary = _v33.b;
-																										return _Utils_update(
-																											inputMapping,
-																											{
-																												undo: _Utils_Tuple2(key, secondary)
-																											});
-																									}),
-																								setSecondary: F2(
-																									function (key, inputMapping) {
-																										var _v34 = inputMapping.undo;
-																										var primary = _v34.a;
-																										return _Utils_update(
-																											inputMapping,
-																											{
-																												undo: _Utils_Tuple2(primary, key)
-																											});
-																									})
-																							},
-																								{
-																								keys: sharedModel.inputMapping.redo,
-																								label: 'Redo',
-																								setPrimary: F2(
-																									function (key, inputMapping) {
-																										var _v35 = inputMapping.redo;
-																										var secondary = _v35.b;
-																										return _Utils_update(
-																											inputMapping,
-																											{
-																												redo: _Utils_Tuple2(key, secondary)
-																											});
-																									}),
-																								setSecondary: F2(
-																									function (key, inputMapping) {
-																										var _v36 = inputMapping.redo;
-																										var primary = _v36.a;
-																										return _Utils_update(
-																											inputMapping,
-																											{
-																												redo: _Utils_Tuple2(primary, key)
-																											});
-																									})
-																							}
-																							])),
-																					_List_fromArray(
-																						[
-																							A2(
-																							$elm$html$Html$tr,
-																							_List_Nil,
-																							_List_fromArray(
-																								[
-																									A2(
-																									$elm$html$Html$th,
-																									_List_Nil,
-																									_List_fromArray(
-																										[
-																											$elm$html$Html$text('Other')
-																										]))
-																								])),
-																							viewMapping(
-																							{
-																								keys: sharedModel.inputMapping.toggleSettings,
-																								label: 'Open Settings',
-																								setPrimary: F2(
-																									function (key, inputMapping) {
-																										var _v37 = inputMapping.toggleSettings;
-																										var secondary = _v37.b;
-																										return _Utils_update(
-																											inputMapping,
-																											{
-																												toggleSettings: _Utils_Tuple2(key, secondary)
-																											});
-																									}),
-																								setSecondary: F2(
-																									function (key, inputMapping) {
-																										var _v38 = inputMapping.toggleSettings;
-																										var primary = _v38.a;
-																										return _Utils_update(
-																											inputMapping,
-																											{
-																												toggleSettings: _Utils_Tuple2(primary, key)
-																											});
-																									})
-																							})
-																						]))))))))))))
-										]));
-							}()
 							]))
 					]));
 		}
@@ -28167,6 +27218,935 @@ var $author$project$Board$viewPlayer = F2(
 								})))
 					])));
 	});
+var $author$project$Shared$SetMapping = function (a) {
+	return {$: 'SetMapping', a: a};
+};
+var $elm$html$Html$h2 = _VirtualDom_node('h2');
+var $elm$virtual_dom$VirtualDom$node = function (tag) {
+	return _VirtualDom_node(
+		_VirtualDom_noScript(tag));
+};
+var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
+var $author$project$Html$Extra$modal = F3(
+	function (config, attributes, children) {
+		return A3(
+			$elm$html$Html$node,
+			'dialog',
+			_Utils_ap(
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$Attributes$property,
+						'___modal-open',
+						$elm$json$Json$Encode$bool(config.open)),
+						A2(
+						$elm$html$Html$Events$on,
+						'close',
+						$elm$json$Json$Decode$succeed(config.onClose))
+					]),
+				attributes),
+			children);
+	});
+var $elm$html$Html$table = _VirtualDom_node('table');
+var $elm$html$Html$tbody = _VirtualDom_node('tbody');
+var $elm$html$Html$th = _VirtualDom_node('th');
+var $elm$html$Html$thead = _VirtualDom_node('thead');
+var $elm$html$Html$tr = _VirtualDom_node('tr');
+var $elm$virtual_dom$VirtualDom$Custom = function (a) {
+	return {$: 'Custom', a: a};
+};
+var $elm$html$Html$Events$custom = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Custom(decoder));
+	});
+var $author$project$Input$decodeMappingChange = F2(
+	function (toMsg, fn) {
+		return A2(
+			$elm$json$Json$Decode$andThen,
+			function (key) {
+				switch (key) {
+					case 'Tab':
+						return $elm$json$Json$Decode$fail('Don\'t capture');
+					case 'Shift':
+						return $elm$json$Json$Decode$fail('Don\'t capture');
+					case 'Meta':
+						return $elm$json$Json$Decode$fail('Don\'t capture');
+					case 'Alt':
+						return $elm$json$Json$Decode$fail('Don\'t capture');
+					case 'Control':
+						return $elm$json$Json$Decode$fail('Don\'t capture');
+					case 'Escape':
+						return $elm$json$Json$Decode$fail('Don\'t capture');
+					case 'Enter':
+						return $elm$json$Json$Decode$fail('Don\'t capture');
+					case 'Backspace':
+						return $elm$json$Json$Decode$succeed(
+							{
+								message: toMsg(
+									fn('')),
+								preventDefault: true,
+								stopPropagation: true
+							});
+					default:
+						return $elm$json$Json$Decode$succeed(
+							{
+								message: toMsg(
+									fn(key)),
+								preventDefault: true,
+								stopPropagation: true
+							});
+				}
+			},
+			A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
+	});
+var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$html$Html$td = _VirtualDom_node('td');
+var $author$project$Input$viewMapping = F2(
+	function (toMsg, mapping) {
+		var _v0 = mapping.keys;
+		var primary = _v0.a;
+		var secondary = _v0.b;
+		return A2(
+			$elm$html$Html$tr,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$th,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$attribute, 'align', 'left')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(mapping.label)
+						])),
+					A2(
+					$elm$html$Html$td,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$attribute, 'align', 'center')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$input,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$value(primary),
+									A2(
+									$elm$html$Html$Events$custom,
+									'keydown',
+									A2($author$project$Input$decodeMappingChange, toMsg, mapping.setPrimary)),
+									A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+									A2($elm$html$Html$Attributes$style, 'width', '100%'),
+									$elm$html$Html$Attributes$placeholder('must be set')
+								]),
+							_List_Nil)
+						])),
+					A2(
+					$elm$html$Html$td,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$attribute, 'align', 'center')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$input,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$value(secondary),
+									A2(
+									$elm$html$Html$Events$custom,
+									'keydown',
+									A2($author$project$Input$decodeMappingChange, toMsg, mapping.setSecondary)),
+									A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+									A2($elm$html$Html$Attributes$style, 'width', '100%'),
+									$elm$html$Html$Attributes$placeholder('not set')
+								]),
+							_List_Nil)
+						]))
+				]));
+	});
+var $phosphor_icons$phosphor_elm$Phosphor$xCircle = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M168.49,104.49,145,128l23.52,23.51a12,12,0,0,1-17,17L128,145l-23.51,23.52a12,12,0,0,1-17-17L111,128,87.51,104.49a12,12,0,0,1,17-17L128,111l23.51-23.52a12,12,0,0,1,17,17ZM236,128A108,108,0,1,1,128,20,108.12,108.12,0,0,1,236,128Zm-24,0a84,84,0,1,0-84,84A84.09,84.09,0,0,0,212,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M165.66,101.66,139.31,128l26.35,26.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm37.66,130.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32L139.31,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M164.24,100.24,136.48,128l27.76,27.76a6,6,0,1,1-8.48,8.48L128,136.48l-27.76,27.76a6,6,0,0,1-8.48-8.48L119.52,128,91.76,100.24a6,6,0,0,1,8.48-8.48L128,119.52l27.76-27.76a6,6,0,0,1,8.48,8.48ZM230,128A102,102,0,1,1,128,26,102.12,102.12,0,0,1,230,128Zm-12,0a90,90,0,1,0-90,90A90.1,90.1,0,0,0,218,128Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M165.66,101.66,139.31,128l26.35,26.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M162.83,98.83,133.66,128l29.17,29.17a4,4,0,0,1-5.66,5.66L128,133.66,98.83,162.83a4,4,0,0,1-5.66-5.66L122.34,128,93.17,98.83a4,4,0,0,1,5.66-5.66L128,122.34l29.17-29.17a4,4,0,1,1,5.66,5.66ZM228,128A100,100,0,1,1,128,28,100.11,100.11,0,0,1,228,128Zm-8,0a92,92,0,1,0-92,92A92.1,92.1,0,0,0,220,128Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
+};
+var $author$project$Screen$Editor$viewSettings = F4(
+	function (toSharedMsg, sharedModel, toMsg, model) {
+		return A3(
+			$author$project$Html$Extra$modal,
+			{
+				onClose: toMsg(
+					$author$project$Screen$Editor$ShowSettings(false)),
+				open: model.showSettings
+			},
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$h2,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'width', '100%'),
+							A2($elm$html$Html$Attributes$style, 'margin-top', '0')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Settings'),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'float', 'right'),
+									A2($elm$html$Html$Attributes$style, 'background', 'none'),
+									$elm$html$Html$Attributes$type_('button'),
+									$elm$html$Html$Attributes$title('Close'),
+									$elm$html$Html$Events$onClick(
+									toMsg(
+										$author$project$Screen$Editor$ShowSettings(false)))
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+									_List_Nil,
+									$phosphor_icons$phosphor_elm$Phosphor$xCircle($phosphor_icons$phosphor_elm$Phosphor$Regular))
+								]))
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Hold \'Shift\' and move mouse to use camera actions (orbit, pan, zoom)')
+						])),
+					A2($elm$html$Html$br, _List_Nil, _List_Nil),
+					A2($elm$html$Html$br, _List_Nil, _List_Nil),
+					function () {
+					var viewMapping = $author$project$Input$viewMapping(
+						A2($elm$core$Basics$composeR, $author$project$Shared$SetMapping, toSharedMsg));
+					return A2(
+						$elm$html$Html$table,
+						_List_Nil,
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$thead,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$tr,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$th,
+												_List_fromArray(
+													[
+														A2($elm$html$Html$Attributes$attribute, 'align', 'left')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Input')
+													])),
+												A2(
+												$elm$html$Html$th,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Primary Key')
+													])),
+												A2(
+												$elm$html$Html$th,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Secondary Key')
+													]))
+											]))
+									])),
+								A2(
+								$elm$html$Html$tbody,
+								_List_Nil,
+								A2(
+									$elm$core$List$cons,
+									A2(
+										$elm$html$Html$tr,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$th,
+												_List_Nil,
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$h3,
+														_List_Nil,
+														_List_fromArray(
+															[
+																$elm$html$Html$text('Character Movement')
+															]))
+													]))
+											])),
+									_Utils_ap(
+										A2(
+											$elm$core$List$map,
+											viewMapping,
+											_List_fromArray(
+												[
+													{
+													keys: sharedModel.inputMapping.moveUp,
+													label: 'Face up',
+													setPrimary: F2(
+														function (key, inputMapping) {
+															var _v0 = inputMapping.moveUp;
+															var secondary = _v0.b;
+															return _Utils_update(
+																inputMapping,
+																{
+																	moveUp: _Utils_Tuple2(key, secondary)
+																});
+														}),
+													setSecondary: F2(
+														function (key, inputMapping) {
+															var _v1 = inputMapping.moveUp;
+															var primary = _v1.a;
+															return _Utils_update(
+																inputMapping,
+																{
+																	moveUp: _Utils_Tuple2(primary, key)
+																});
+														})
+												},
+													{
+													keys: sharedModel.inputMapping.moveDown,
+													label: 'Face down',
+													setPrimary: F2(
+														function (key, inputMapping) {
+															var _v2 = inputMapping.moveDown;
+															var secondary = _v2.b;
+															return _Utils_update(
+																inputMapping,
+																{
+																	moveDown: _Utils_Tuple2(key, secondary)
+																});
+														}),
+													setSecondary: F2(
+														function (key, inputMapping) {
+															var _v3 = inputMapping.moveDown;
+															var primary = _v3.a;
+															return _Utils_update(
+																inputMapping,
+																{
+																	moveDown: _Utils_Tuple2(primary, key)
+																});
+														})
+												},
+													{
+													keys: sharedModel.inputMapping.moveLeft,
+													label: 'Face left',
+													setPrimary: F2(
+														function (key, inputMapping) {
+															var _v4 = inputMapping.moveLeft;
+															var secondary = _v4.b;
+															return _Utils_update(
+																inputMapping,
+																{
+																	moveLeft: _Utils_Tuple2(key, secondary)
+																});
+														}),
+													setSecondary: F2(
+														function (key, inputMapping) {
+															var _v5 = inputMapping.moveLeft;
+															var primary = _v5.a;
+															return _Utils_update(
+																inputMapping,
+																{
+																	moveLeft: _Utils_Tuple2(primary, key)
+																});
+														})
+												},
+													{
+													keys: sharedModel.inputMapping.moveRight,
+													label: 'Face right',
+													setPrimary: F2(
+														function (key, inputMapping) {
+															var _v6 = inputMapping.moveRight;
+															var secondary = _v6.b;
+															return _Utils_update(
+																inputMapping,
+																{
+																	moveRight: _Utils_Tuple2(key, secondary)
+																});
+														}),
+													setSecondary: F2(
+														function (key, inputMapping) {
+															var _v7 = inputMapping.moveRight;
+															var primary = _v7.a;
+															return _Utils_update(
+																inputMapping,
+																{
+																	moveRight: _Utils_Tuple2(primary, key)
+																});
+														})
+												}
+												])),
+										_Utils_ap(
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$tr,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$th,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$h3,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Editor')
+																		]))
+																]))
+														])),
+													A2(
+													$elm$html$Html$tr,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$th,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('Camera')
+																]))
+														]))
+												]),
+											_Utils_ap(
+												A2(
+													$elm$core$List$map,
+													viewMapping,
+													_List_fromArray(
+														[
+															{
+															keys: sharedModel.inputMapping.cameraOrbit,
+															label: 'Orbit',
+															setPrimary: F2(
+																function (key, inputMapping) {
+																	var _v8 = inputMapping.cameraOrbit;
+																	var secondary = _v8.b;
+																	return _Utils_update(
+																		inputMapping,
+																		{
+																			cameraOrbit: _Utils_Tuple2(key, secondary)
+																		});
+																}),
+															setSecondary: F2(
+																function (key, inputMapping) {
+																	var _v9 = inputMapping.cameraOrbit;
+																	var primary = _v9.a;
+																	return _Utils_update(
+																		inputMapping,
+																		{
+																			cameraOrbit: _Utils_Tuple2(primary, key)
+																		});
+																})
+														},
+															{
+															keys: sharedModel.inputMapping.cameraPan,
+															label: 'Pan',
+															setPrimary: F2(
+																function (key, inputMapping) {
+																	var _v10 = inputMapping.cameraPan;
+																	var secondary = _v10.b;
+																	return _Utils_update(
+																		inputMapping,
+																		{
+																			cameraPan: _Utils_Tuple2(key, secondary)
+																		});
+																}),
+															setSecondary: F2(
+																function (key, inputMapping) {
+																	var _v11 = inputMapping.cameraPan;
+																	var primary = _v11.a;
+																	return _Utils_update(
+																		inputMapping,
+																		{
+																			cameraPan: _Utils_Tuple2(primary, key)
+																		});
+																})
+														},
+															{
+															keys: sharedModel.inputMapping.cameraZoom,
+															label: 'Zoom',
+															setPrimary: F2(
+																function (key, inputMapping) {
+																	var _v12 = inputMapping.cameraZoom;
+																	var secondary = _v12.b;
+																	return _Utils_update(
+																		inputMapping,
+																		{
+																			cameraZoom: _Utils_Tuple2(key, secondary)
+																		});
+																}),
+															setSecondary: F2(
+																function (key, inputMapping) {
+																	var _v13 = inputMapping.cameraZoom;
+																	var primary = _v13.a;
+																	return _Utils_update(
+																		inputMapping,
+																		{
+																			cameraZoom: _Utils_Tuple2(primary, key)
+																		});
+																})
+														},
+															{
+															keys: sharedModel.inputMapping.cameraReset,
+															label: 'Reset',
+															setPrimary: F2(
+																function (key, inputMapping) {
+																	var _v14 = inputMapping.cameraReset;
+																	var secondary = _v14.b;
+																	return _Utils_update(
+																		inputMapping,
+																		{
+																			cameraReset: _Utils_Tuple2(key, secondary)
+																		});
+																}),
+															setSecondary: F2(
+																function (key, inputMapping) {
+																	var _v15 = inputMapping.cameraReset;
+																	var primary = _v15.a;
+																	return _Utils_update(
+																		inputMapping,
+																		{
+																			cameraReset: _Utils_Tuple2(primary, key)
+																		});
+																})
+														}
+														])),
+												_Utils_ap(
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$th,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Block Edit')
+																		]))
+																]))
+														]),
+													_Utils_ap(
+														A2(
+															$elm$core$List$map,
+															viewMapping,
+															_List_fromArray(
+																[
+																	{
+																	keys: sharedModel.inputMapping.blockSelect,
+																	label: 'Select',
+																	setPrimary: F2(
+																		function (key, inputMapping) {
+																			var _v16 = inputMapping.blockSelect;
+																			var secondary = _v16.b;
+																			return _Utils_update(
+																				inputMapping,
+																				{
+																					blockSelect: _Utils_Tuple2(key, secondary)
+																				});
+																		}),
+																	setSecondary: F2(
+																		function (key, inputMapping) {
+																			var _v17 = inputMapping.blockSelect;
+																			var primary = _v17.a;
+																			return _Utils_update(
+																				inputMapping,
+																				{
+																					blockSelect: _Utils_Tuple2(primary, key)
+																				});
+																		})
+																},
+																	{
+																	keys: sharedModel.inputMapping.blockAdd,
+																	label: 'Add',
+																	setPrimary: F2(
+																		function (key, inputMapping) {
+																			var _v18 = inputMapping.blockAdd;
+																			var secondary = _v18.b;
+																			return _Utils_update(
+																				inputMapping,
+																				{
+																					blockAdd: _Utils_Tuple2(key, secondary)
+																				});
+																		}),
+																	setSecondary: F2(
+																		function (key, inputMapping) {
+																			var _v19 = inputMapping.blockAdd;
+																			var primary = _v19.a;
+																			return _Utils_update(
+																				inputMapping,
+																				{
+																					blockAdd: _Utils_Tuple2(primary, key)
+																				});
+																		})
+																},
+																	{
+																	keys: sharedModel.inputMapping.blockRemove,
+																	label: 'Remove',
+																	setPrimary: F2(
+																		function (key, inputMapping) {
+																			var _v20 = inputMapping.blockRemove;
+																			var secondary = _v20.b;
+																			return _Utils_update(
+																				inputMapping,
+																				{
+																					blockRemove: _Utils_Tuple2(key, secondary)
+																				});
+																		}),
+																	setSecondary: F2(
+																		function (key, inputMapping) {
+																			var _v21 = inputMapping.blockRemove;
+																			var primary = _v21.a;
+																			return _Utils_update(
+																				inputMapping,
+																				{
+																					blockRemove: _Utils_Tuple2(primary, key)
+																				});
+																		})
+																}
+																])),
+														_Utils_ap(
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$tr,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			A2(
+																			$elm$html$Html$th,
+																			_List_Nil,
+																			_List_fromArray(
+																				[
+																					$elm$html$Html$text('Block Type')
+																				]))
+																		]))
+																]),
+															_Utils_ap(
+																A2(
+																	$elm$core$List$map,
+																	viewMapping,
+																	_List_fromArray(
+																		[
+																			{
+																			keys: sharedModel.inputMapping.blockTypeWall,
+																			label: 'Wall',
+																			setPrimary: F2(
+																				function (key, inputMapping) {
+																					var _v22 = inputMapping.blockTypeWall;
+																					var secondary = _v22.b;
+																					return _Utils_update(
+																						inputMapping,
+																						{
+																							blockTypeWall: _Utils_Tuple2(key, secondary)
+																						});
+																				}),
+																			setSecondary: F2(
+																				function (key, inputMapping) {
+																					var _v23 = inputMapping.blockTypeWall;
+																					var primary = _v23.a;
+																					return _Utils_update(
+																						inputMapping,
+																						{
+																							blockTypeWall: _Utils_Tuple2(primary, key)
+																						});
+																				})
+																		},
+																			{
+																			keys: sharedModel.inputMapping.blockTypeEdge,
+																			label: 'Edge',
+																			setPrimary: F2(
+																				function (key, inputMapping) {
+																					var _v24 = inputMapping.blockTypeEdge;
+																					var secondary = _v24.b;
+																					return _Utils_update(
+																						inputMapping,
+																						{
+																							blockTypeEdge: _Utils_Tuple2(key, secondary)
+																						});
+																				}),
+																			setSecondary: F2(
+																				function (key, inputMapping) {
+																					var _v25 = inputMapping.blockTypeEdge;
+																					var primary = _v25.a;
+																					return _Utils_update(
+																						inputMapping,
+																						{
+																							blockTypeEdge: _Utils_Tuple2(primary, key)
+																						});
+																				})
+																		},
+																			{
+																			keys: sharedModel.inputMapping.blockTypePointPickup,
+																			label: 'Point Pickup',
+																			setPrimary: F2(
+																				function (key, inputMapping) {
+																					var _v26 = inputMapping.blockTypePointPickup;
+																					var secondary = _v26.b;
+																					return _Utils_update(
+																						inputMapping,
+																						{
+																							blockTypePointPickup: _Utils_Tuple2(key, secondary)
+																						});
+																				}),
+																			setSecondary: F2(
+																				function (key, inputMapping) {
+																					var _v27 = inputMapping.blockTypePointPickup;
+																					var primary = _v27.a;
+																					return _Utils_update(
+																						inputMapping,
+																						{
+																							blockTypePointPickup: _Utils_Tuple2(primary, key)
+																						});
+																				})
+																		},
+																			{
+																			keys: sharedModel.inputMapping.blockTypePlayerSpawn,
+																			label: 'Player Spawn',
+																			setPrimary: F2(
+																				function (key, inputMapping) {
+																					var _v28 = inputMapping.blockTypePlayerSpawn;
+																					var secondary = _v28.b;
+																					return _Utils_update(
+																						inputMapping,
+																						{
+																							blockTypePlayerSpawn: _Utils_Tuple2(key, secondary)
+																						});
+																				}),
+																			setSecondary: F2(
+																				function (key, inputMapping) {
+																					var _v29 = inputMapping.blockTypePlayerSpawn;
+																					var primary = _v29.a;
+																					return _Utils_update(
+																						inputMapping,
+																						{
+																							blockTypePlayerSpawn: _Utils_Tuple2(primary, key)
+																						});
+																				})
+																		}
+																		])),
+																_Utils_ap(
+																	_List_fromArray(
+																		[
+																			A2(
+																			$elm$html$Html$tr,
+																			_List_Nil,
+																			_List_fromArray(
+																				[
+																					A2(
+																					$elm$html$Html$th,
+																					_List_Nil,
+																					_List_fromArray(
+																						[
+																							$elm$html$Html$text('Undo / Redo')
+																						]))
+																				]))
+																		]),
+																	_Utils_ap(
+																		A2(
+																			$elm$core$List$map,
+																			viewMapping,
+																			_List_fromArray(
+																				[
+																					{
+																					keys: sharedModel.inputMapping.undo,
+																					label: 'Undo',
+																					setPrimary: F2(
+																						function (key, inputMapping) {
+																							var _v30 = inputMapping.undo;
+																							var secondary = _v30.b;
+																							return _Utils_update(
+																								inputMapping,
+																								{
+																									undo: _Utils_Tuple2(key, secondary)
+																								});
+																						}),
+																					setSecondary: F2(
+																						function (key, inputMapping) {
+																							var _v31 = inputMapping.undo;
+																							var primary = _v31.a;
+																							return _Utils_update(
+																								inputMapping,
+																								{
+																									undo: _Utils_Tuple2(primary, key)
+																								});
+																						})
+																				},
+																					{
+																					keys: sharedModel.inputMapping.redo,
+																					label: 'Redo',
+																					setPrimary: F2(
+																						function (key, inputMapping) {
+																							var _v32 = inputMapping.redo;
+																							var secondary = _v32.b;
+																							return _Utils_update(
+																								inputMapping,
+																								{
+																									redo: _Utils_Tuple2(key, secondary)
+																								});
+																						}),
+																					setSecondary: F2(
+																						function (key, inputMapping) {
+																							var _v33 = inputMapping.redo;
+																							var primary = _v33.a;
+																							return _Utils_update(
+																								inputMapping,
+																								{
+																									redo: _Utils_Tuple2(primary, key)
+																								});
+																						})
+																				}
+																				])),
+																		_List_fromArray(
+																			[
+																				A2(
+																				$elm$html$Html$tr,
+																				_List_Nil,
+																				_List_fromArray(
+																					[
+																						A2(
+																						$elm$html$Html$th,
+																						_List_Nil,
+																						_List_fromArray(
+																							[
+																								$elm$html$Html$text('Other')
+																							]))
+																					])),
+																				viewMapping(
+																				{
+																					keys: sharedModel.inputMapping.toggleSettings,
+																					label: 'Open Settings',
+																					setPrimary: F2(
+																						function (key, inputMapping) {
+																							var _v34 = inputMapping.toggleSettings;
+																							var secondary = _v34.b;
+																							return _Utils_update(
+																								inputMapping,
+																								{
+																									toggleSettings: _Utils_Tuple2(key, secondary)
+																								});
+																						}),
+																					setSecondary: F2(
+																						function (key, inputMapping) {
+																							var _v35 = inputMapping.toggleSettings;
+																							var primary = _v35.a;
+																							return _Utils_update(
+																								inputMapping,
+																								{
+																									toggleSettings: _Utils_Tuple2(primary, key)
+																								});
+																						})
+																				})
+																			]))))))))))))
+							]));
+				}()
+				]));
+	});
 var $ianmackenzie$elm_geometry$Axis3d$x = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$x);
 var $ianmackenzie$elm_geometry$Axis3d$z = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$z);
 var $author$project$Board$zigZagBoard = '[1,[9,9,9,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[1]],[[0,0,3],[1]],[[0,0,4],[1]],[[0,0,5],[1]],[[0,0,6],[1]],[[0,0,7],[1]],[[0,0,8],[1]],[[0,1,0],[2]],[[0,1,1],[0]],[[0,1,2],[3,false]],[[0,1,3],[1]],[[0,1,4],[1]],[[0,1,5],[1]],[[0,1,6],[3,false]],[[0,1,7],[0]],[[0,1,8],[2]],[[0,2,0],[1]],[[0,2,1],[1]],[[0,2,2],[3,false]],[[0,2,3],[1]],[[0,2,4],[1]],[[0,2,5],[1]],[[0,2,6],[3,false]],[[0,2,7],[1]],[[0,2,8],[1]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[3,false]],[[0,3,3],[1]],[[0,3,4],[1]],[[0,3,5],[1]],[[0,3,6],[3,false]],[[0,3,7],[1]],[[0,3,8],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[3,false]],[[0,4,3],[3,false]],[[0,4,4],[3,false]],[[0,4,5],[3,false]],[[0,4,6],[3,false]],[[0,4,7],[1]],[[0,4,8],[1]],[[0,5,0],[1]],[[0,5,1],[1]],[[0,5,2],[3,false]],[[0,5,3],[1]],[[0,5,4],[1]],[[0,5,5],[1]],[[0,5,6],[3,false]],[[0,5,7],[1]],[[0,5,8],[1]],[[0,6,0],[1]],[[0,6,1],[1]],[[0,6,2],[3,false]],[[0,6,3],[1]],[[0,6,4],[1]],[[0,6,5],[1]],[[0,6,6],[3,false]],[[0,6,7],[1]],[[0,6,8],[1]],[[0,7,0],[2]],[[0,7,1],[0]],[[0,7,2],[3,false]],[[0,7,3],[1]],[[0,7,4],[1]],[[0,7,5],[1]],[[0,7,6],[3,false]],[[0,7,7],[0]],[[0,7,8],[2]],[[0,8,0],[1]],[[0,8,1],[1]],[[0,8,2],[1]],[[0,8,3],[1]],[[0,8,4],[1]],[[0,8,5],[1]],[[0,8,6],[1]],[[0,8,7],[1]],[[0,8,8],[1]],[[1,0,0],[2]],[[1,0,1],[0]],[[1,0,2],[3,false]],[[1,0,3],[1]],[[1,0,4],[1]],[[1,0,5],[1]],[[1,0,6],[3,false]],[[1,0,7],[0]],[[1,0,8],[2]],[[1,1,0],[0]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,1,5],[1]],[[1,1,6],[1]],[[1,1,7],[1]],[[1,1,8],[0]],[[1,2,0],[3,false]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[1]],[[1,2,5],[1]],[[1,2,6],[1]],[[1,2,7],[1]],[[1,2,8],[1]],[[1,3,0],[3,false]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,3,5],[1]],[[1,3,6],[1]],[[1,3,7],[1]],[[1,3,8],[1]],[[1,4,0],[3,false]],[[1,4,1],[1]],[[1,4,2],[1]],[[1,4,3],[1]],[[1,4,4],[1]],[[1,4,5],[1]],[[1,4,6],[1]],[[1,4,7],[1]],[[1,4,8],[1]],[[1,5,0],[3,false]],[[1,5,1],[1]],[[1,5,2],[1]],[[1,5,3],[1]],[[1,5,4],[1]],[[1,5,5],[1]],[[1,5,6],[1]],[[1,5,7],[1]],[[1,5,8],[1]],[[1,6,0],[3,false]],[[1,6,1],[1]],[[1,6,2],[1]],[[1,6,3],[1]],[[1,6,4],[1]],[[1,6,5],[1]],[[1,6,6],[1]],[[1,6,7],[1]],[[1,6,8],[1]],[[1,7,0],[0]],[[1,7,1],[1]],[[1,7,2],[1]],[[1,7,3],[1]],[[1,7,4],[1]],[[1,7,5],[1]],[[1,7,6],[1]],[[1,7,7],[1]],[[1,7,8],[0]],[[1,8,0],[2]],[[1,8,1],[0]],[[1,8,2],[3,false]],[[1,8,3],[1]],[[1,8,4],[1]],[[1,8,5],[1]],[[1,8,6],[3,false]],[[1,8,7],[0]],[[1,8,8],[2]],[[2,0,0],[1]],[[2,0,1],[1]],[[2,0,2],[3,false]],[[2,0,3],[1]],[[2,0,4],[1]],[[2,0,5],[1]],[[2,0,6],[3,false]],[[2,0,7],[1]],[[2,0,8],[1]],[[2,1,0],[1]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[1]],[[2,1,5],[1]],[[2,1,6],[1]],[[2,1,7],[1]],[[2,1,8],[3,false]],[[2,2,0],[1]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[1]],[[2,2,5],[1]],[[2,2,6],[1]],[[2,2,7],[1]],[[2,2,8],[1]],[[2,3,0],[1]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[1]],[[2,3,5],[1]],[[2,3,6],[1]],[[2,3,7],[1]],[[2,3,8],[1]],[[2,4,0],[3,false]],[[2,4,1],[1]],[[2,4,2],[1]],[[2,4,3],[1]],[[2,4,4],[1]],[[2,4,5],[1]],[[2,4,6],[1]],[[2,4,7],[1]],[[2,4,8],[1]],[[2,5,0],[1]],[[2,5,1],[1]],[[2,5,2],[1]],[[2,5,3],[1]],[[2,5,4],[1]],[[2,5,5],[1]],[[2,5,6],[1]],[[2,5,7],[1]],[[2,5,8],[1]],[[2,6,0],[1]],[[2,6,1],[1]],[[2,6,2],[1]],[[2,6,3],[1]],[[2,6,4],[1]],[[2,6,5],[1]],[[2,6,6],[1]],[[2,6,7],[1]],[[2,6,8],[1]],[[2,7,0],[1]],[[2,7,1],[1]],[[2,7,2],[1]],[[2,7,3],[1]],[[2,7,4],[1]],[[2,7,5],[1]],[[2,7,6],[1]],[[2,7,7],[1]],[[2,7,8],[3,false]],[[2,8,0],[1]],[[2,8,1],[1]],[[2,8,2],[3,false]],[[2,8,3],[1]],[[2,8,4],[1]],[[2,8,5],[1]],[[2,8,6],[3,false]],[[2,8,7],[1]],[[2,8,8],[1]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[3,false]],[[3,0,3],[1]],[[3,0,4],[1]],[[3,0,5],[1]],[[3,0,6],[3,false]],[[3,0,7],[1]],[[3,0,8],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,1,5],[1]],[[3,1,6],[1]],[[3,1,7],[1]],[[3,1,8],[3,false]],[[3,2,0],[1]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[1]],[[3,2,5],[1]],[[3,2,6],[1]],[[3,2,7],[1]],[[3,2,8],[1]],[[3,3,0],[1]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,3,5],[1]],[[3,3,6],[1]],[[3,3,7],[1]],[[3,3,8],[1]],[[3,4,0],[3,false]],[[3,4,1],[1]],[[3,4,2],[1]],[[3,4,3],[1]],[[3,4,4],[1]],[[3,4,5],[1]],[[3,4,6],[1]],[[3,4,7],[1]],[[3,4,8],[1]],[[3,5,0],[1]],[[3,5,1],[1]],[[3,5,2],[1]],[[3,5,3],[1]],[[3,5,4],[1]],[[3,5,5],[1]],[[3,5,6],[1]],[[3,5,7],[1]],[[3,5,8],[1]],[[3,6,0],[1]],[[3,6,1],[1]],[[3,6,2],[1]],[[3,6,3],[1]],[[3,6,4],[1]],[[3,6,5],[1]],[[3,6,6],[1]],[[3,6,7],[1]],[[3,6,8],[1]],[[3,7,0],[1]],[[3,7,1],[1]],[[3,7,2],[1]],[[3,7,3],[1]],[[3,7,4],[1]],[[3,7,5],[1]],[[3,7,6],[1]],[[3,7,7],[1]],[[3,7,8],[3,false]],[[3,8,0],[1]],[[3,8,1],[1]],[[3,8,2],[3,false]],[[3,8,3],[1]],[[3,8,4],[1]],[[3,8,5],[1]],[[3,8,6],[3,false]],[[3,8,7],[1]],[[3,8,8],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[3,false]],[[4,0,3],[3,false]],[[4,0,4],[3,false]],[[4,0,5],[3,false]],[[4,0,6],[3,false]],[[4,0,7],[1]],[[4,0,8],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[1]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,1,5],[1]],[[4,1,6],[1]],[[4,1,7],[1]],[[4,1,8],[3,false]],[[4,2,0],[1]],[[4,2,1],[1]],[[4,2,2],[1]],[[4,2,3],[1]],[[4,2,4],[1]],[[4,2,5],[1]],[[4,2,6],[1]],[[4,2,7],[1]],[[4,2,8],[3,false]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[1]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,3,5],[1]],[[4,3,6],[1]],[[4,3,7],[1]],[[4,3,8],[3,false]],[[4,4,0],[3,false]],[[4,4,1],[1]],[[4,4,2],[1]],[[4,4,3],[1]],[[4,4,4],[1]],[[4,4,5],[1]],[[4,4,6],[1]],[[4,4,7],[1]],[[4,4,8],[3,false]],[[4,5,0],[1]],[[4,5,1],[1]],[[4,5,2],[1]],[[4,5,3],[1]],[[4,5,4],[1]],[[4,5,5],[1]],[[4,5,6],[1]],[[4,5,7],[1]],[[4,5,8],[3,false]],[[4,6,0],[1]],[[4,6,1],[1]],[[4,6,2],[1]],[[4,6,3],[1]],[[4,6,4],[1]],[[4,6,5],[1]],[[4,6,6],[1]],[[4,6,7],[1]],[[4,6,8],[3,false]],[[4,7,0],[1]],[[4,7,1],[1]],[[4,7,2],[1]],[[4,7,3],[1]],[[4,7,4],[1]],[[4,7,5],[1]],[[4,7,6],[1]],[[4,7,7],[1]],[[4,7,8],[3,false]],[[4,8,0],[1]],[[4,8,1],[1]],[[4,8,2],[3,false]],[[4,8,3],[0]],[[4,8,4],[0]],[[4,8,5],[4,[[5],[1]]]],[[4,8,6],[3,false]],[[4,8,7],[1]],[[4,8,8],[1]],[[5,0,0],[1]],[[5,0,1],[1]],[[5,0,2],[3,false]],[[5,0,3],[1]],[[5,0,4],[5]],[[5,0,5],[1]],[[5,0,6],[3,false]],[[5,0,7],[1]],[[5,0,8],[1]],[[5,1,0],[1]],[[5,1,1],[1]],[[5,1,2],[1]],[[5,1,3],[1]],[[5,1,4],[1]],[[5,1,5],[1]],[[5,1,6],[1]],[[5,1,7],[1]],[[5,1,8],[3,false]],[[5,2,0],[1]],[[5,2,1],[1]],[[5,2,2],[1]],[[5,2,3],[1]],[[5,2,4],[1]],[[5,2,5],[1]],[[5,2,6],[1]],[[5,2,7],[1]],[[5,2,8],[1]],[[5,3,0],[1]],[[5,3,1],[1]],[[5,3,2],[1]],[[5,3,3],[1]],[[5,3,4],[1]],[[5,3,5],[1]],[[5,3,6],[1]],[[5,3,7],[1]],[[5,3,8],[1]],[[5,4,0],[3,false]],[[5,4,1],[1]],[[5,4,2],[1]],[[5,4,3],[1]],[[5,4,4],[1]],[[5,4,5],[1]],[[5,4,6],[1]],[[5,4,7],[1]],[[5,4,8],[1]],[[5,5,0],[1]],[[5,5,1],[1]],[[5,5,2],[1]],[[5,5,3],[1]],[[5,5,4],[1]],[[5,5,5],[1]],[[5,5,6],[1]],[[5,5,7],[1]],[[5,5,8],[1]],[[5,6,0],[1]],[[5,6,1],[1]],[[5,6,2],[1]],[[5,6,3],[1]],[[5,6,4],[1]],[[5,6,5],[1]],[[5,6,6],[1]],[[5,6,7],[1]],[[5,6,8],[1]],[[5,7,0],[1]],[[5,7,1],[1]],[[5,7,2],[1]],[[5,7,3],[1]],[[5,7,4],[1]],[[5,7,5],[1]],[[5,7,6],[1]],[[5,7,7],[1]],[[5,7,8],[3,false]],[[5,8,0],[1]],[[5,8,1],[1]],[[5,8,2],[3,false]],[[5,8,3],[1]],[[5,8,4],[1]],[[5,8,5],[1]],[[5,8,6],[3,false]],[[5,8,7],[1]],[[5,8,8],[1]],[[6,0,0],[1]],[[6,0,1],[1]],[[6,0,2],[3,false]],[[6,0,3],[1]],[[6,0,4],[1]],[[6,0,5],[1]],[[6,0,6],[3,false]],[[6,0,7],[1]],[[6,0,8],[1]],[[6,1,0],[1]],[[6,1,1],[1]],[[6,1,2],[1]],[[6,1,3],[1]],[[6,1,4],[1]],[[6,1,5],[1]],[[6,1,6],[1]],[[6,1,7],[1]],[[6,1,8],[3,false]],[[6,2,0],[1]],[[6,2,1],[1]],[[6,2,2],[1]],[[6,2,3],[1]],[[6,2,4],[1]],[[6,2,5],[1]],[[6,2,6],[1]],[[6,2,7],[1]],[[6,2,8],[1]],[[6,3,0],[1]],[[6,3,1],[1]],[[6,3,2],[1]],[[6,3,3],[1]],[[6,3,4],[1]],[[6,3,5],[1]],[[6,3,6],[1]],[[6,3,7],[1]],[[6,3,8],[1]],[[6,4,0],[3,false]],[[6,4,1],[1]],[[6,4,2],[1]],[[6,4,3],[1]],[[6,4,4],[1]],[[6,4,5],[1]],[[6,4,6],[1]],[[6,4,7],[1]],[[6,4,8],[1]],[[6,5,0],[1]],[[6,5,1],[1]],[[6,5,2],[1]],[[6,5,3],[1]],[[6,5,4],[1]],[[6,5,5],[1]],[[6,5,6],[1]],[[6,5,7],[1]],[[6,5,8],[1]],[[6,6,0],[1]],[[6,6,1],[1]],[[6,6,2],[1]],[[6,6,3],[1]],[[6,6,4],[1]],[[6,6,5],[1]],[[6,6,6],[1]],[[6,6,7],[1]],[[6,6,8],[1]],[[6,7,0],[1]],[[6,7,1],[1]],[[6,7,2],[1]],[[6,7,3],[1]],[[6,7,4],[1]],[[6,7,5],[1]],[[6,7,6],[1]],[[6,7,7],[1]],[[6,7,8],[3,false]],[[6,8,0],[1]],[[6,8,1],[1]],[[6,8,2],[3,false]],[[6,8,3],[1]],[[6,8,4],[1]],[[6,8,5],[1]],[[6,8,6],[3,false]],[[6,8,7],[1]],[[6,8,8],[1]],[[7,0,0],[2]],[[7,0,1],[0]],[[7,0,2],[3,false]],[[7,0,3],[1]],[[7,0,4],[1]],[[7,0,5],[1]],[[7,0,6],[3,false]],[[7,0,7],[0]],[[7,0,8],[2]],[[7,1,0],[0]],[[7,1,1],[1]],[[7,1,2],[1]],[[7,1,3],[1]],[[7,1,4],[1]],[[7,1,5],[1]],[[7,1,6],[1]],[[7,1,7],[1]],[[7,1,8],[0]],[[7,2,0],[3,false]],[[7,2,1],[1]],[[7,2,2],[1]],[[7,2,3],[1]],[[7,2,4],[1]],[[7,2,5],[1]],[[7,2,6],[1]],[[7,2,7],[1]],[[7,2,8],[1]],[[7,3,0],[3,false]],[[7,3,1],[1]],[[7,3,2],[1]],[[7,3,3],[1]],[[7,3,4],[1]],[[7,3,5],[1]],[[7,3,6],[1]],[[7,3,7],[1]],[[7,3,8],[1]],[[7,4,0],[3,false]],[[7,4,1],[1]],[[7,4,2],[1]],[[7,4,3],[1]],[[7,4,4],[1]],[[7,4,5],[1]],[[7,4,6],[1]],[[7,4,7],[1]],[[7,4,8],[1]],[[7,5,0],[3,false]],[[7,5,1],[1]],[[7,5,2],[1]],[[7,5,3],[1]],[[7,5,4],[1]],[[7,5,5],[1]],[[7,5,6],[1]],[[7,5,7],[1]],[[7,5,8],[1]],[[7,6,0],[3,false]],[[7,6,1],[1]],[[7,6,2],[1]],[[7,6,3],[1]],[[7,6,4],[1]],[[7,6,5],[1]],[[7,6,6],[1]],[[7,6,7],[1]],[[7,6,8],[1]],[[7,7,0],[0]],[[7,7,1],[1]],[[7,7,2],[1]],[[7,7,3],[1]],[[7,7,4],[1]],[[7,7,5],[1]],[[7,7,6],[1]],[[7,7,7],[1]],[[7,7,8],[0]],[[7,8,0],[2]],[[7,8,1],[0]],[[7,8,2],[3,false]],[[7,8,3],[1]],[[7,8,4],[1]],[[7,8,5],[1]],[[7,8,6],[3,false]],[[7,8,7],[0]],[[7,8,8],[2]],[[8,0,0],[1]],[[8,0,1],[1]],[[8,0,2],[1]],[[8,0,3],[1]],[[8,0,4],[1]],[[8,0,5],[1]],[[8,0,6],[1]],[[8,0,7],[1]],[[8,0,8],[1]],[[8,1,0],[2]],[[8,1,1],[0]],[[8,1,2],[3,false]],[[8,1,3],[1]],[[8,1,4],[1]],[[8,1,5],[1]],[[8,1,6],[3,false]],[[8,1,7],[0]],[[8,1,8],[2]],[[8,2,0],[1]],[[8,2,1],[1]],[[8,2,2],[3,false]],[[8,2,3],[1]],[[8,2,4],[1]],[[8,2,5],[1]],[[8,2,6],[3,false]],[[8,2,7],[1]],[[8,2,8],[1]],[[8,3,0],[1]],[[8,3,1],[1]],[[8,3,2],[3,false]],[[8,3,3],[1]],[[8,3,4],[1]],[[8,3,5],[1]],[[8,3,6],[3,false]],[[8,3,7],[1]],[[8,3,8],[1]],[[8,4,0],[1]],[[8,4,1],[1]],[[8,4,2],[3,false]],[[8,4,3],[3,false]],[[8,4,4],[3,false]],[[8,4,5],[3,false]],[[8,4,6],[3,false]],[[8,4,7],[1]],[[8,4,8],[1]],[[8,5,0],[1]],[[8,5,1],[1]],[[8,5,2],[3,false]],[[8,5,3],[1]],[[8,5,4],[1]],[[8,5,5],[1]],[[8,5,6],[3,false]],[[8,5,7],[1]],[[8,5,8],[1]],[[8,6,0],[1]],[[8,6,1],[1]],[[8,6,2],[3,false]],[[8,6,3],[1]],[[8,6,4],[1]],[[8,6,5],[1]],[[8,6,6],[3,false]],[[8,6,7],[1]],[[8,6,8],[1]],[[8,7,0],[2]],[[8,7,1],[0]],[[8,7,2],[3,false]],[[8,7,3],[1]],[[8,7,4],[1]],[[8,7,5],[1]],[[8,7,6],[3,false]],[[8,7,7],[0]],[[8,7,8],[2]],[[8,8,0],[1]],[[8,8,1],[1]],[[8,8,2],[1]],[[8,8,3],[1]],[[8,8,4],[1]],[[8,8,5],[1]],[[8,8,6],[1]],[[8,8,7],[1]],[[8,8,8],[1]]]]]';
@@ -28187,7 +28167,7 @@ var $author$project$Screen$Editor$view = F4(
 							if (_v0.$ === 'EditBoard') {
 								return 'auto auto';
 							} else {
-								return 'auto 8rem';
+								return 'auto 10rem';
 							}
 						}()),
 						A2(
@@ -28402,6 +28382,7 @@ var $author$project$Screen$Editor$view = F4(
 							}()
 							])),
 						A4($author$project$Screen$Editor$viewHeader, toSharedMsg, sharedModel, toMsg, model),
+						A4($author$project$Screen$Editor$viewSettings, toSharedMsg, sharedModel, toMsg, model),
 						function () {
 						var _v11 = model.editorMode;
 						if (_v11.$ === 'TestGame') {
@@ -28416,16 +28397,45 @@ var $author$project$Screen$Editor$view = F4(
 								_List_fromArray(
 									[
 										A2(
-										$elm$html$Html$button,
+										$elm$html$Html$div,
 										_List_fromArray(
 											[
-												$elm$html$Html$Attributes$type_('button'),
-												$elm$html$Html$Events$onClick(
-												toMsg($author$project$Screen$Editor$ChangeMode))
+												A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+												A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
+												A2($elm$html$Html$Attributes$style, 'align-items', 'flex-start')
 											]),
 										_List_fromArray(
 											[
-												$elm$html$Html$text('Edit Level')
+												A2(
+												$elm$html$Html$button,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$type_('button'),
+														$elm$html$Html$Events$onClick(
+														toMsg(
+															$author$project$Screen$Editor$ShowSettings(true))),
+														$elm$html$Html$Attributes$title(
+														'Settings - ' + $author$project$Input$viewInputKeyHoverText(sharedModel.inputMapping.toggleSettings))
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+														_List_Nil,
+														$phosphor_icons$phosphor_elm$Phosphor$gear($phosphor_icons$phosphor_elm$Phosphor$Regular))
+													])),
+												A2(
+												$elm$html$Html$button,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$type_('button'),
+														$elm$html$Html$Events$onClick(
+														toMsg($author$project$Screen$Editor$ChangeMode))
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Edit Level')
+													]))
 											]))
 									]));
 						} else {
