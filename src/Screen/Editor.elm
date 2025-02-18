@@ -1215,7 +1215,7 @@ view toSharedMsg sharedModel toMsg model =
                             [ model.level.board.blocks
                                 |> Dict.toList
                                 |> List.map Board.viewBlock
-                            , [ Board.viewPlayer model.level.playerFacing model.level.playerFrame ]
+                            , [ Board.viewPlayer model.level ]
                             , List.map Board.viewEnemy model.level.enemies
                             ]
                 )
