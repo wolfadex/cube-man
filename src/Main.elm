@@ -49,7 +49,7 @@ init () =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model.sharedModel of
-        Shared.Loaded sharedModel ->
+        Shared.Loaded _ ->
             case model.screen of
                 Screen.Model.Menu menuModel ->
                     Screen.Menu.subscriptions menuModel
@@ -67,8 +67,11 @@ subscriptions model =
                         freePlayModel
 
                 Screen.Model.Editor editorModel ->
-                    Screen.Editor.subscriptions editorModel
-                        |> Sub.map EditorMsg
+                    Screen.Editor.subscriptions
+                        { toSharedMsg = SharedMsg
+                        , toMsg = EditorMsg
+                        }
+                        editorModel
 
         _ ->
             Sub.none

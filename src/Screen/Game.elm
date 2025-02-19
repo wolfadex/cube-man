@@ -55,7 +55,7 @@ update _ _ model =
 
 
 view : { setScreen : Screen -> msg, toSharedMsg : Shared.Msg -> msg, sharedModel : Shared.LoadedModel, toMsg : Msg -> msg, model : Model } -> List (Html msg)
-view { setScreen, toSharedMsg } =
+view { setScreen } =
     [ Html.div
         [ Html.Attributes.style "width" "100vw"
         , Html.Attributes.style "height" "100vh"

@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739933346420"
+    "1739935624123"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -18381,23 +18381,30 @@ var $author$project$Main$GameMsg = function (a) {
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Screen$Editor$BrowserResized = {$: 'BrowserResized'};
+var $author$project$Shared$SetScreenSize = function (a) {
+	return {$: 'SetScreenSize', a: a};
+};
 var $author$project$Screen$Editor$Tick = function (a) {
 	return {$: 'Tick', a: a};
 };
 var $author$project$Screen$Editor$KeyDown = function (a) {
 	return {$: 'KeyDown', a: a};
 };
-var $author$project$Screen$Editor$decodeKeyDown = A2(
-	$elm$json$Json$Decode$map,
-	$author$project$Screen$Editor$KeyDown,
-	A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
+var $author$project$Screen$Editor$decodeKeyDown = function (toMsg) {
+	return A2(
+		$elm$json$Json$Decode$map,
+		A2($elm$core$Basics$composeR, $author$project$Screen$Editor$KeyDown, toMsg),
+		A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
+};
 var $author$project$Screen$Editor$KeyUp = function (a) {
 	return {$: 'KeyUp', a: a};
 };
-var $author$project$Screen$Editor$decodeKeyUp = A2(
-	$elm$json$Json$Decode$map,
-	$author$project$Screen$Editor$KeyUp,
-	A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
+var $author$project$Screen$Editor$decodeKeyUp = function (toMsg) {
+	return A2(
+		$elm$json$Json$Decode$map,
+		A2($elm$core$Basics$composeR, $author$project$Screen$Editor$KeyUp, toMsg),
+		A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
+};
 var $ianmackenzie$elm_units$Duration$seconds = function (numSeconds) {
 	return $ianmackenzie$elm_units$Quantity$Quantity(numSeconds);
 };
@@ -18720,24 +18727,40 @@ var $elm$browser$Browser$Events$onResize = function (func) {
 				A2($elm$json$Json$Decode$field, 'innerWidth', $elm$json$Json$Decode$int),
 				A2($elm$json$Json$Decode$field, 'innerHeight', $elm$json$Json$Decode$int))));
 };
-var $author$project$Screen$Editor$subscriptions = function (model) {
-	return model.showSettings ? $elm$core$Platform$Sub$none : $elm$core$Platform$Sub$batch(
-		_List_fromArray(
-			[
-				$elm$browser$Browser$Events$onKeyDown($author$project$Screen$Editor$decodeKeyDown),
-				$elm$browser$Browser$Events$onKeyUp($author$project$Screen$Editor$decodeKeyUp),
-				$elm$browser$Browser$Events$onAnimationFrameDelta(
-				A2($elm$core$Basics$composeR, $ianmackenzie$elm_units$Duration$milliseconds, $author$project$Screen$Editor$Tick)),
-				$elm$browser$Browser$Events$onResize(
-				F2(
-					function (_v0, _v1) {
-						return $author$project$Screen$Editor$BrowserResized;
-					}))
-			]));
-};
-var $author$project$Shared$SetScreenSize = function (a) {
-	return {$: 'SetScreenSize', a: a};
-};
+var $author$project$Screen$Editor$subscriptions = F2(
+	function (_v0, model) {
+		var toSharedMsg = _v0.toSharedMsg;
+		var toMsg = _v0.toMsg;
+		return $elm$core$Platform$Sub$batch(
+			_List_fromArray(
+				[
+					$elm$browser$Browser$Events$onResize(
+					F2(
+						function (width, height) {
+							return toSharedMsg(
+								$author$project$Shared$SetScreenSize(
+									{height: height, width: width}));
+						})),
+					model.showSettings ? $elm$core$Platform$Sub$none : $elm$core$Platform$Sub$batch(
+					_List_fromArray(
+						[
+							$elm$browser$Browser$Events$onKeyDown(
+							$author$project$Screen$Editor$decodeKeyDown(toMsg)),
+							$elm$browser$Browser$Events$onKeyUp(
+							$author$project$Screen$Editor$decodeKeyUp(toMsg)),
+							$elm$browser$Browser$Events$onAnimationFrameDelta(
+							A2(
+								$elm$core$Basics$composeR,
+								$ianmackenzie$elm_units$Duration$milliseconds,
+								A2($elm$core$Basics$composeR, $author$project$Screen$Editor$Tick, toMsg))),
+							$elm$browser$Browser$Events$onResize(
+							F2(
+								function (_v1, _v2) {
+									return toMsg($author$project$Screen$Editor$BrowserResized);
+								}))
+						]))
+				]));
+	});
 var $author$project$Screen$FreePlay$Tick = function (a) {
 	return {$: 'Tick', a: a};
 };
@@ -18793,7 +18816,6 @@ var $author$project$Screen$Menu$subscriptions = function (_v0) {
 var $author$project$Main$subscriptions = function (model) {
 	var _v0 = model.sharedModel;
 	if (_v0.$ === 'Loaded') {
-		var sharedModel = _v0.a;
 		var _v1 = model.screen;
 		switch (_v1.$) {
 			case 'Menu':
@@ -18817,9 +18839,9 @@ var $author$project$Main$subscriptions = function (model) {
 			default:
 				var editorModel = _v1.a;
 				return A2(
-					$elm$core$Platform$Sub$map,
-					$author$project$Main$EditorMsg,
-					$author$project$Screen$Editor$subscriptions(editorModel));
+					$author$project$Screen$Editor$subscriptions,
+					{toMsg: $author$project$Main$EditorMsg, toSharedMsg: $author$project$Main$SharedMsg},
+					editorModel);
 		}
 	} else {
 		return $elm$core$Platform$Sub$none;
@@ -22428,7 +22450,7 @@ var $author$project$Board$movePlayer = F2(
 						$ianmackenzie$elm_units$Quantity$Quantity(0)),
 					$elm$core$Basics$EQ)) {
 					var playerFrame = A2($ianmackenzie$elm_geometry$Frame3d$moveTo, toPoint, level.playerFrame);
-					var nextLevel = $author$project$Board$handlePlayerCollisions(
+					return $author$project$Board$handlePlayerCollisions(
 						$author$project$Board$scorePoints(
 							_Utils_update(
 								level,
@@ -22436,7 +22458,6 @@ var $author$project$Board$movePlayer = F2(
 									playerFrame: playerFrame,
 									playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, moveDetails.to, playerFrame)
 								})));
-					return (nextLevel.hearts < 1) ? nextLevel : nextLevel;
 				} else {
 					if (A2(
 						$ianmackenzie$elm_units$Quantity$lessThan,
@@ -22460,7 +22481,7 @@ var $author$project$Board$movePlayer = F2(
 							nextLevel);
 					} else {
 						var fromPoint = $author$project$Board$pointToPoint3d(moveDetails.from);
-						var nextLevel = $author$project$Board$handlePlayerCollisions(
+						return $author$project$Board$handlePlayerCollisions(
 							$author$project$Board$scorePoints(
 								_Utils_update(
 									level,
@@ -22486,7 +22507,6 @@ var $author$project$Board$movePlayer = F2(
 												moveDetails,
 												{duration: remainingDuration}))
 									})));
-						return (nextLevel.hearts < 1) ? nextLevel : nextLevel;
 					}
 				}
 			default:
@@ -22581,7 +22601,7 @@ var $author$project$Board$movePlayer = F2(
 							edgeMovement,
 							level.playerFrame);
 						var correctedPlayerFrame = $author$project$Board$correctPlayerFrame(playerFrame);
-						var nextLevel = $author$project$Board$handlePlayerCollisions(
+						return $author$project$Board$handlePlayerCollisions(
 							$author$project$Board$scorePoints(
 								_Utils_update(
 									level,
@@ -22589,9 +22609,8 @@ var $author$project$Board$movePlayer = F2(
 										playerFrame: correctedPlayerFrame,
 										playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, edgeDetails.to, correctedPlayerFrame)
 									})));
-						return (nextLevel.hearts < 1) ? nextLevel : nextLevel;
 					} else {
-						var nextLevel = $author$project$Board$handlePlayerCollisions(
+						return $author$project$Board$handlePlayerCollisions(
 							$author$project$Board$scorePoints(
 								_Utils_update(
 									level,
@@ -22629,7 +22648,6 @@ var $author$project$Board$movePlayer = F2(
 												edgeDetails,
 												{duration: remainingDuration}))
 									})));
-						return (nextLevel.hearts < 1) ? nextLevel : nextLevel;
 					}
 				}
 		}
@@ -22646,10 +22664,10 @@ var $author$project$Board$tickPlayer = F2(
 	});
 var $author$project$Board$tick = F2(
 	function (deltaDuration, level) {
-		return A2(
+		return (level.hearts > 0) ? A2(
 			$author$project$Board$tickEnemies,
 			deltaDuration,
-			A2($author$project$Board$tickPlayer, deltaDuration, level));
+			A2($author$project$Board$tickPlayer, deltaDuration, level)) : level;
 	});
 var $author$project$Screen$Editor$tick = F2(
 	function (deltaMs, model) {
@@ -22737,12 +22755,28 @@ var $author$project$Screen$Editor$update = F5(
 							}),
 						$elm$core$Platform$Cmd$none);
 				}
+			case 'RestartLevel':
+				var board = $author$project$Undo$value(model.editorBoard);
+				var _v3 = $author$project$Board$init(board);
+				if (_v3.$ === 'Nothing') {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				} else {
+					var level = _v3.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{level: level}),
+						A2(
+							$elm$core$Task$attempt,
+							A2($elm$core$Basics$composeR, $author$project$Screen$Editor$EditorViewportResized, toMsg),
+							$elm$browser$Browser$Dom$getViewportOf('editor-viewport')));
+				}
 			case 'ChangeMode':
-				var _v3 = model.editorMode;
-				if (_v3.$ === 'EditBoard') {
+				var _v4 = model.editorMode;
+				if (_v4.$ === 'EditBoard') {
 					var board = $author$project$Undo$value(model.editorBoard);
-					var _v4 = $author$project$Board$init(board);
-					if (_v4.$ === 'Nothing') {
+					var _v5 = $author$project$Board$init(board);
+					if (_v5.$ === 'Nothing') {
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
@@ -22751,7 +22785,7 @@ var $author$project$Screen$Editor$update = F5(
 								}),
 							$elm$core$Platform$Cmd$none);
 					} else {
-						var level = _v4.a;
+						var level = _v5.a;
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
@@ -22802,8 +22836,8 @@ var $author$project$Screen$Editor$update = F5(
 					$elm$core$Platform$Cmd$none);
 			case 'KeyDown':
 				var key = msg.a;
-				var _v5 = model.editorMode;
-				if (_v5.$ === 'EditBoard') {
+				var _v6 = model.editorMode;
+				if (_v6.$ === 'EditBoard') {
 					return A5(
 						$author$project$Screen$Editor$handleEditorKeyPressed,
 						toSharedMsg,
@@ -22850,8 +22884,8 @@ var $author$project$Screen$Editor$update = F5(
 							{mouseDragging: $author$project$Screen$Editor$NoInteraction}),
 						$elm$core$Platform$Cmd$none);
 				} else {
-					var _v6 = model.blockEditMode;
-					switch (_v6.$) {
+					var _v7 = model.blockEditMode;
+					switch (_v7.$) {
 						case 'Remove':
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
@@ -22887,8 +22921,8 @@ var $author$project$Screen$Editor$update = F5(
 										board,
 										{
 											blocks: function () {
-												var _v10 = model.selectedBlockType;
-												switch (_v10.$) {
+												var _v11 = model.selectedBlockType;
+												switch (_v11.$) {
 													case 'PlayerSpawn':
 														return A3(
 															$elm$core$Dict$insert,
@@ -22897,7 +22931,7 @@ var $author$project$Screen$Editor$update = F5(
 															A2(
 																$elm$core$Dict$map,
 																F2(
-																	function (_v11, block) {
+																	function (_v12, block) {
 																		if (block.$ === 'PlayerSpawn') {
 																			return $author$project$Board$Empty;
 																		} else {
@@ -22913,7 +22947,7 @@ var $author$project$Screen$Editor$update = F5(
 															A2(
 																$elm$core$Dict$map,
 																F2(
-																	function (_v13, block) {
+																	function (_v14, block) {
 																		if (block.$ === 'EnemySpawner') {
 																			return $author$project$Board$Wall;
 																		} else {
@@ -22940,14 +22974,14 @@ var $author$project$Screen$Editor$update = F5(
 												$author$project$Board$boardCodec,
 												$author$project$Undo$value(editorBoard))),
 										boardPlayError: function () {
-											var _v7 = model.boardPlayError;
-											if (_v7.$ === 'Nothing') {
+											var _v8 = model.boardPlayError;
+											if (_v8.$ === 'Nothing') {
 												return model.boardPlayError;
 											} else {
-												var _v8 = _v7.a;
-												var _v9 = $author$project$Board$findSpawn(
+												var _v9 = _v8.a;
+												var _v10 = $author$project$Board$findSpawn(
 													$author$project$Undo$value(editorBoard));
-												if (_v9.$ === 'Nothing') {
+												if (_v10.$ === 'Nothing') {
 													return model.boardPlayError;
 												} else {
 													return $elm$core$Maybe$Nothing;
@@ -23083,13 +23117,13 @@ var $author$project$Screen$Editor$update = F5(
 				var maxXStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v15 = $elm$core$String$toInt(maxXStr);
-						if (_v15.$ === 'Nothing') {
+						var _v16 = $elm$core$String$toInt(maxXStr);
+						if (_v16.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxXRaw: maxXStr});
 						} else {
-							var maxX = _v15.a;
+							var maxX = _v16.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -23138,13 +23172,13 @@ var $author$project$Screen$Editor$update = F5(
 				var maxYStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v16 = $elm$core$String$toInt(maxYStr);
-						if (_v16.$ === 'Nothing') {
+						var _v17 = $elm$core$String$toInt(maxYStr);
+						if (_v17.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxYRaw: maxYStr});
 						} else {
-							var maxY = _v16.a;
+							var maxY = _v17.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -23193,13 +23227,13 @@ var $author$project$Screen$Editor$update = F5(
 				var maxZStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v17 = $elm$core$String$toInt(maxZStr);
-						if (_v17.$ === 'Nothing') {
+						var _v18 = $elm$core$String$toInt(maxZStr);
+						if (_v18.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxZRaw: maxZStr});
 						} else {
-							var maxZ = _v17.a;
+							var maxZ = _v18.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -23263,7 +23297,6 @@ var $author$project$Screen$Editor$update = F5(
 						$elm$browser$Browser$Dom$getViewportOf('editor-viewport')));
 			default:
 				if (msg.a.$ === 'Err') {
-					var err = msg.a.a;
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				} else {
 					var viewport = msg.a.a.viewport;
@@ -23517,7 +23550,6 @@ var $author$project$Shared$update = F2(
 							$elm$core$Platform$Cmd$none);
 					case 'ViewportResized':
 						if (_v0.b.a.$ === 'Err') {
-							var mod = _v0.a.a;
 							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 						} else {
 							var mod = _v0.a.a;
@@ -23749,6 +23781,7 @@ var $author$project$Screen$Editor$MaxZChanged = function (a) {
 };
 var $author$project$Screen$Editor$NoOp = {$: 'NoOp'};
 var $phosphor_icons$phosphor_elm$Phosphor$Regular = {$: 'Regular'};
+var $author$project$Screen$Editor$RestartLevel = {$: 'RestartLevel'};
 var $author$project$Screen$Editor$SetBlock = F2(
 	function (a, b) {
 		return {$: 'SetBlock', a: a, b: b};
@@ -30478,6 +30511,40 @@ var $author$project$Board$viewEnemy = function (enemy) {
 					dimensions))
 			]));
 };
+var $author$project$Board$viewGameOver = F2(
+	function (level, nextActions) {
+		return (level.hearts > 0) ? $elm$html$Html$text('') : A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'position', 'fixed'),
+					A2($elm$html$Html$Attributes$style, 'top', '50%'),
+					A2($elm$html$Html$Attributes$style, 'left', '50%'),
+					A2($elm$html$Html$Attributes$style, 'transform', 'translate(-50%, -50%)'),
+					A2($elm$html$Html$Attributes$style, 'background-color', 'rgba(255, 0, 0, 0.5)'),
+					A2($elm$html$Html$Attributes$style, 'font-size', '4rem'),
+					A2($elm$html$Html$Attributes$style, 'backdrop-filter', 'blur(5px)'),
+					A2($elm$html$Html$Attributes$style, 'padding', '4rem 8rem'),
+					A2($elm$html$Html$Attributes$style, 'border-radius', '1rem'),
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+					A2($elm$html$Html$Attributes$style, 'gap', '1rem')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'color', 'white')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Game Over')
+						])),
+					nextActions
+				]));
+	});
 var $author$project$Screen$Editor$BlockTypeSelected = function (a) {
 	return {$: 'BlockTypeSelected', a: a};
 };
@@ -31550,9 +31617,9 @@ var $phosphor_icons$phosphor_elm$Phosphor$x = function (weight) {
 	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
 var $author$project$Screen$Editor$viewHeader = F5(
-	function (setScreen, toSharedMsg, sharedModel, toMsg, model) {
-		var _v0 = model.editorMode;
-		if (_v0.$ === 'TestGame') {
+	function (setScreen, _v0, sharedModel, toMsg, model) {
+		var _v1 = model.editorMode;
+		if (_v1.$ === 'TestGame') {
 			return $author$project$Board$viewStats(model.level);
 		} else {
 			return A2(
@@ -31581,8 +31648,8 @@ var $author$project$Screen$Editor$viewHeader = F5(
 								$elm$html$Html$text('Play Level')
 							])),
 						function () {
-						var _v1 = model.boardPlayError;
-						if (_v1.$ === 'Nothing') {
+						var _v2 = model.boardPlayError;
+						if (_v2.$ === 'Nothing') {
 							return A2(
 								$elm$html$Html$span,
 								_List_fromArray(
@@ -31594,7 +31661,7 @@ var $author$project$Screen$Editor$viewHeader = F5(
 										$elm$html$Html$text('')
 									]));
 						} else {
-							var _v2 = _v1.a;
+							var _v3 = _v2.a;
 							return A2(
 								$elm$html$Html$span,
 								_List_fromArray(
@@ -33405,54 +33472,6 @@ var $author$project$Screen$Editor$view = function (_v0) {
 					_List_fromArray(
 						[
 							function () {
-							var lights = function () {
-								var _v13 = model.editorMode;
-								if (_v13.$ === 'TestGame') {
-									return A2(
-										$author$project$Board$gameLights,
-										model.level.board,
-										$ianmackenzie$elm_geometry$Frame3d$originPoint(model.level.playerFrame));
-								} else {
-									var upsideDownSky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-										{
-											chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-											intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
-											upDirection: $ianmackenzie$elm_geometry$Direction3d$negativeZ
-										});
-									var sun = A2(
-										$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
-										$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
-										{
-											chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
-											direction: A3(
-												$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-												$ianmackenzie$elm_geometry$Axis3d$z,
-												A2(
-													$ianmackenzie$elm_units$Quantity$plus,
-													$ianmackenzie$elm_units$Angle$degrees(90),
-													model.cameraRotation),
-												A3(
-													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-													$ianmackenzie$elm_geometry$Axis3d$x,
-													$ianmackenzie$elm_units$Angle$degrees(70),
-													$ianmackenzie$elm_geometry$Direction3d$negativeZ)),
-											intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
-										});
-									var sky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-										{
-											chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-											intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
-											upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
-										});
-									var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-										{
-											chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
-											intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
-											upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
-										});
-									return A4($ianmackenzie$elm_3d_scene$Scene3d$fourLights, sun, sky, environment, upsideDownSky);
-								}
-							}();
 							var _v7 = model.screenSize;
 							if (_v7.$ === 'Nothing') {
 								return A2(
@@ -33464,6 +33483,54 @@ var $author$project$Screen$Editor$view = function (_v0) {
 										]));
 							} else {
 								var screenSize = _v7.a;
+								var lights = function () {
+									var _v13 = model.editorMode;
+									if (_v13.$ === 'TestGame') {
+										return A2(
+											$author$project$Board$gameLights,
+											model.level.board,
+											$ianmackenzie$elm_geometry$Frame3d$originPoint(model.level.playerFrame));
+									} else {
+										var upsideDownSky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+											{
+												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+												intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
+												upDirection: $ianmackenzie$elm_geometry$Direction3d$negativeZ
+											});
+										var sun = A2(
+											$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
+											$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
+											{
+												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
+												direction: A3(
+													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+													$ianmackenzie$elm_geometry$Axis3d$z,
+													A2(
+														$ianmackenzie$elm_units$Quantity$plus,
+														$ianmackenzie$elm_units$Angle$degrees(90),
+														model.cameraRotation),
+													A3(
+														$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+														$ianmackenzie$elm_geometry$Axis3d$x,
+														$ianmackenzie$elm_units$Angle$degrees(70),
+														$ianmackenzie$elm_geometry$Direction3d$negativeZ)),
+												intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
+											});
+										var sky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+											{
+												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+												intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
+												upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
+											});
+										var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+											{
+												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
+												intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
+												upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
+											});
+										return A4($ianmackenzie$elm_3d_scene$Scene3d$fourLights, sun, sky, environment, upsideDownSky);
+									}
+								}();
 								return A4(
 									$author$project$Board$view3dScene,
 									lights,
@@ -33592,7 +33659,45 @@ var $author$project$Screen$Editor$view = function (_v0) {
 												[
 													$elm$html$Html$text('Edit Level')
 												]))
-										]))
+										])),
+									A2(
+									$author$project$Board$viewGameOver,
+									model.level,
+									A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+												A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+												A2($elm$html$Html$Attributes$style, 'gap', '0.5rem')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$button,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$type_('button'),
+														$elm$html$Html$Events$onClick(
+														toMsg($author$project$Screen$Editor$RestartLevel))
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Restart')
+													])),
+												A2(
+												$elm$html$Html$button,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$type_('button'),
+														$elm$html$Html$Events$onClick(
+														toMsg($author$project$Screen$Editor$ChangeMode))
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Edit')
+													]))
+											])))
 								]));
 					} else {
 						var editorBoard = $author$project$Undo$value(model.editorBoard);
@@ -34323,6 +34428,21 @@ var $author$project$Screen$FreePlay$view = function (_v0) {
 									]))),
 							$author$project$Board$viewStats(model.level),
 							A2(
+							$author$project$Board$viewGameOver,
+							model.level,
+							A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$type_('button'),
+										$elm$html$Html$Events$onClick(
+										toMsg($author$project$Screen$FreePlay$ExitFreePlayBoard))
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Select another board')
+									]))),
+							A2(
 							$elm$html$Html$div,
 							_List_fromArray(
 								[
@@ -34582,7 +34702,6 @@ var $author$project$Screen$FreePlay$view = function (_v0) {
 var $elm$html$Html$summary = _VirtualDom_node('summary');
 var $author$project$Screen$Game$view = function (_v0) {
 	var setScreen = _v0.setScreen;
-	var toSharedMsg = _v0.toSharedMsg;
 	return _List_fromArray(
 		[
 			A2(
@@ -34665,7 +34784,6 @@ var $author$project$Screen$Game = {$: 'Game'};
 var $author$project$Screen$Menu$view = function (_v0) {
 	var setScreen = _v0.setScreen;
 	var toSharedMsg = _v0.toSharedMsg;
-	var sharedModel = _v0.sharedModel;
 	return _List_fromArray(
 		[
 			A2(
@@ -34833,4 +34951,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$document(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Duration.Duration":{"args":[],"type":"Quantity.Quantity Basics.Float Duration.Seconds"},"Input.Mapping":{"args":[],"type":"{ moveUp : ( String.String, String.String ), moveDown : ( String.String, String.String ), moveLeft : ( String.String, String.String ), moveRight : ( String.String, String.String ), cameraOrbit : ( String.String, String.String ), cameraPan : ( String.String, String.String ), cameraZoom : ( String.String, String.String ), cameraReset : ( String.String, String.String ), blockSelect : ( String.String, String.String ), blockAdd : ( String.String, String.String ), blockRemove : ( String.String, String.String ), blockTypeWall : ( String.String, String.String ), blockTypeEdge : ( String.String, String.String ), blockTypePointPickup : ( String.String, String.String ), blockTypePlayerSpawn : ( String.String, String.String ), blockTypeEnemySpawner : ( String.String, String.String ), undo : ( String.String, String.String ), redo : ( String.String, String.String ), toggleSettings : ( String.String, String.String ) }"},"Scene3d.Mesh.Mesh":{"args":["coordinates","attributes"],"type":"Scene3d.Types.Mesh coordinates attributes"},"Board.Point":{"args":[],"type":"( Basics.Int, Basics.Int, Basics.Int )"},"Point2d.Point2d":{"args":["units","coordinates"],"type":"Geometry.Types.Point2d units coordinates"},"Shared.ScreenSize":{"args":[],"type":"{ width : Basics.Int, height : Basics.Int }"},"Scene3d.Material.Texture":{"args":["value"],"type":"Scene3d.Types.Texture value"},"Scene3d.Mesh.Textured":{"args":["coordinates"],"type":"Scene3d.Mesh.Mesh coordinates { normals : (), uvs : () }"},"Shared.TexturedMesh":{"args":[],"type":"( Scene3d.Mesh.Textured Board.WorldCoordinates, Scene3d.Material.Texture Color.Color )"},"Json.Decode.Value":{"args":[],"type":"Json.Encode.Value"},"Browser.Dom.Viewport":{"args":[],"type":"{ scene : { width : Basics.Float, height : Basics.Float }, viewport : { x : Basics.Float, y : Basics.Float, width : Basics.Float, height : Basics.Float } }"},"BoundingBox3d.BoundingBox3d":{"args":["units","coordinates"],"type":"Geometry.Types.BoundingBox3d units coordinates"},"Board.EnemySpawnerDetails":{"args":[],"type":"{ timeTillSpawn : Duration.Duration, timeBetweenSpawns : Duration.Duration }"},"LineSegment3d.LineSegment3d":{"args":["units","coordinates"],"type":"Geometry.Types.LineSegment3d units coordinates"},"WebGL.Texture.Options":{"args":[],"type":"{ magnify : WebGL.Texture.Resize WebGL.Texture.Bigger, minify : WebGL.Texture.Resize WebGL.Texture.Smaller, horizontalWrap : WebGL.Texture.Wrap, verticalWrap : WebGL.Texture.Wrap, flipY : Basics.Bool }"},"Scene3d.Types.PlainVertex":{"args":[],"type":"{ position : Math.Vector3.Vec3 }"},"Point3d.Point3d":{"args":["units","coordinates"],"type":"Geometry.Types.Point3d units coordinates"},"Polyline3d.Polyline3d":{"args":["units","coordinates"],"type":"Geometry.Types.Polyline3d units coordinates"},"Triangle3d.Triangle3d":{"args":["units","coordinates"],"type":"Geometry.Types.Triangle3d units coordinates"},"Vector3d.Vector3d":{"args":["units","coordinates"],"type":"Geometry.Types.Vector3d units coordinates"},"Scene3d.Types.VertexWithNormal":{"args":[],"type":"{ position : Math.Vector3.Vec3, normal : Math.Vector3.Vec3 }"},"Scene3d.Types.VertexWithNormalAndUv":{"args":[],"type":"{ position : Math.Vector3.Vec3, normal : Math.Vector3.Vec3, uv : Math.Vector2.Vec2 }"},"Scene3d.Types.VertexWithTangent":{"args":[],"type":"{ position : Math.Vector3.Vec3, normal : Math.Vector3.Vec3, uv : Math.Vector2.Vec2, tangent : Math.Vector3.Vec3 }"},"Scene3d.Types.VertexWithUv":{"args":[],"type":"{ position : Math.Vector3.Vec3, uv : Math.Vector2.Vec2 }"},"WebGL.RenderInfo":{"args":[],"type":"{ mode : Basics.Int, elemSize : Basics.Int, indexSize : Basics.Int }"},"Array.Tree":{"args":["a"],"type":"Elm.JsArray.JsArray (Array.Node a)"}},"unions":{"Main.Msg":{"args":[],"tags":{"SharedMsg":["Shared.Msg"],"SetScreen":["Screen.Screen"],"MenuMsg":["Screen.Menu.Msg"],"GameMsg":["Screen.Game.Msg"],"FreePlayMsg":["Screen.FreePlay.Msg"],"EditorMsg":["Screen.Editor.Msg"]}},"Screen.Editor.Msg":{"args":[],"tags":{"NoOp":[],"Tick":["Duration.Duration"],"KeyDown":["String.String"],"KeyUp":["String.String"],"MouseDown":["Json.Decode.Value"],"MouseUp":[],"MouseMove":["Json.Decode.Value","Point2d.Point2d Pixels.Pixels Board.ScreenCoordinates","Point2d.Point2d Pixels.Pixels Board.ScreenCoordinates"],"EncodingChanged":["String.String"],"LoadEditorBoard":["String.String"],"ChangeMode":[],"SetBlockEditMode":["Screen.Editor.BlockEditMode"],"SetCameraMode":["Screen.Editor.CameraMode"],"ResetCamera":[],"Undo":[],"Redo":[],"XLowerVisibleChanged":["Basics.Int"],"XUpperVisibleChanged":["Basics.Int"],"YLowerVisibleChanged":["Basics.Int"],"YUpperVisibleChanged":["Basics.Int"],"ZLowerVisibleChanged":["Basics.Int"],"ZUpperVisibleChanged":["Basics.Int"],"BlockTypeSelected":["Board.Block"],"SetBlock":["Board.Point","Board.Block"],"MaxXChanged":["String.String"],"MaxYChanged":["String.String"],"MaxZChanged":["String.String"],"ShowBoardBounds":["Basics.Bool"],"ShowSettings":["Basics.Bool"],"EditorViewportResized":["Result.Result Browser.Dom.Error Browser.Dom.Viewport"],"BrowserResized":[]}},"Screen.FreePlay.Msg":{"args":[],"tags":{"Tick":["Duration.Duration"],"KeyDown":["String.String"],"LoadFreePlayBoard":["String.String"],"ExitFreePlayBoard":[],"ShowFreePlayMenu":["Basics.Bool"]}},"Screen.Game.Msg":{"args":[],"tags":{"NoOp":[]}},"Screen.Menu.Msg":{"args":[],"tags":{"NoOp":[]}},"Shared.Msg":{"args":[],"tags":{"SetMapping":["Input.Mapping -> Input.Mapping"],"SetBlockPalette":["Board.BlockPalette"],"TaskStateUpdated":["Task.Parallel.Msg2 Shared.TexturedMesh Shared.TexturedMesh"],"OneTaskFailed":["Shared.Error"],"AllTasksCompleted":["Shared.TexturedMesh","Shared.TexturedMesh"],"ViewportResized":["Result.Result Browser.Dom.Error Browser.Dom.Viewport"],"SetScreenSize":["Shared.ScreenSize"]}},"Screen.Screen":{"args":[],"tags":{"Menu":[],"Game":[],"FreePlay":[],"Editor":[]}},"Board.Block":{"args":[],"tags":{"Empty":[],"Wall":[],"Edge":[],"PointPickup":["Basics.Bool"],"PlayerSpawn":["{ forward : Board.Axis, left : Board.Axis }"],"EnemySpawner":["Board.EnemySpawnerDetails"]}},"Screen.Editor.BlockEditMode":{"args":[],"tags":{"Add":[],"Remove":[],"Select":[]}},"Board.BlockPalette":{"args":[],"tags":{"SimpleBlocks":[],"RainbowBlocks":[]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Screen.Editor.CameraMode":{"args":[],"tags":{"Orbit":[],"Pan":[],"Zoom":[]}},"Color.Color":{"args":[],"tags":{"RgbaSpace":["Basics.Float","Basics.Float","Basics.Float","Basics.Float"]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Shared.Error":{"args":[],"tags":{"MeshLoadError":["String.String"],"TextureLoadError":["String.String"]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Scene3d.Types.Mesh":{"args":["coordinates","attributes"],"tags":{"EmptyMesh":[],"Triangles":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","List.List (Triangle3d.Triangle3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex","Scene3d.Types.BackFaceSetting"],"Facets":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","List.List (Triangle3d.Triangle3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.VertexWithNormal","Scene3d.Types.BackFaceSetting"],"Indexed":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh (Point3d.Point3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex","Scene3d.Types.BackFaceSetting"],"MeshWithNormals":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, normal : Vector3d.Vector3d Quantity.Unitless coordinates }","WebGL.Mesh Scene3d.Types.VertexWithNormal","Scene3d.Types.BackFaceSetting"],"MeshWithUvs":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, uv : ( Basics.Float, Basics.Float ) }","WebGL.Mesh Scene3d.Types.VertexWithUv","Scene3d.Types.BackFaceSetting"],"MeshWithNormalsAndUvs":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, normal : Vector3d.Vector3d Quantity.Unitless coordinates, uv : ( Basics.Float, Basics.Float ) }","WebGL.Mesh Scene3d.Types.VertexWithNormalAndUv","Scene3d.Types.BackFaceSetting"],"MeshWithTangents":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, normal : Vector3d.Vector3d Quantity.Unitless coordinates, uv : ( Basics.Float, Basics.Float ), tangent : Vector3d.Vector3d Quantity.Unitless coordinates }","WebGL.Mesh Scene3d.Types.VertexWithTangent","Scene3d.Types.BackFaceSetting"],"LineSegments":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","List.List (LineSegment3d.LineSegment3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex"],"Polyline":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","Polyline3d.Polyline3d Length.Meters coordinates","WebGL.Mesh Scene3d.Types.PlainVertex"],"Points":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","Basics.Float","List.List (Point3d.Point3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex"]}},"Task.Parallel.Msg2":{"args":["a","b"],"tags":{"LoadedA2":["a"],"LoadedB2":["b"]}},"Pixels.Pixels":{"args":[],"tags":{"Pixels":[]}},"Geometry.Types.Point2d":{"args":["units","coordinates"],"tags":{"Point2d":["{ x : Basics.Float, y : Basics.Float }"]}},"Quantity.Quantity":{"args":["number","units"],"tags":{"Quantity":["number"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"Board.ScreenCoordinates":{"args":[],"tags":{"ScreenCoordinates":["Basics.Never"]}},"Duration.Seconds":{"args":[],"tags":{"Seconds":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Scene3d.Types.Texture":{"args":["value"],"tags":{"Constant":["value"],"Texture":["{ url : String.String, options : WebGL.Texture.Options, data : WebGL.Texture.Texture }"]}},"Json.Encode.Value":{"args":[],"tags":{"Value":[]}},"Board.WorldCoordinates":{"args":[],"tags":{"WorldCoordinates":["Basics.Never"]}},"Board.Axis":{"args":[],"tags":{"PositiveX":[],"NegativeX":[],"PositiveY":[],"NegativeY":[],"PositiveZ":[],"NegativeZ":[]}},"Scene3d.Types.BackFaceSetting":{"args":[],"tags":{"KeepBackFaces":[],"CullBackFaces":[]}},"WebGL.Texture.Bigger":{"args":[],"tags":{"Bigger":[]}},"Geometry.Types.BoundingBox3d":{"args":["units","coordinates"],"tags":{"BoundingBox3d":["{ minX : Basics.Float, maxX : Basics.Float, minY : Basics.Float, maxY : Basics.Float, minZ : Basics.Float, maxZ : Basics.Float }"]}},"Geometry.Types.LineSegment3d":{"args":["units","coordinates"],"tags":{"LineSegment3d":["( Geometry.Types.Point3d units coordinates, Geometry.Types.Point3d units coordinates )"]}},"List.List":{"args":["a"],"tags":{}},"WebGL.Mesh":{"args":["attributes"],"tags":{"Mesh1":["WebGL.RenderInfo","List.List attributes"],"Mesh2":["WebGL.RenderInfo","List.List ( attributes, attributes )"],"Mesh3":["WebGL.RenderInfo","List.List ( attributes, attributes, attributes )"],"MeshIndexed3":["WebGL.RenderInfo","List.List attributes","List.List ( Basics.Int, Basics.Int, Basics.Int )"]}},"Length.Meters":{"args":[],"tags":{"Meters":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}},"Geometry.Types.Point3d":{"args":["units","coordinates"],"tags":{"Point3d":["{ x : Basics.Float, y : Basics.Float, z : Basics.Float }"]}},"Geometry.Types.Polyline3d":{"args":["units","coordinates"],"tags":{"Polyline3d":["List.List (Geometry.Types.Point3d units coordinates)"]}},"WebGL.Texture.Resize":{"args":["a"],"tags":{"Resize":["Basics.Int"]}},"WebGL.Texture.Smaller":{"args":[],"tags":{"Smaller":[]}},"WebGL.Texture.Texture":{"args":[],"tags":{"Texture":[]}},"Geometry.Types.Triangle3d":{"args":["units","coordinates"],"tags":{"Triangle3d":["( Geometry.Types.Point3d units coordinates, Geometry.Types.Point3d units coordinates, Geometry.Types.Point3d units coordinates )"]}},"TriangularMesh.TriangularMesh":{"args":["vertex"],"tags":{"TriangularMesh":["{ vertices : Array.Array vertex, faceIndices : List.List ( Basics.Int, Basics.Int, Basics.Int ) }"]}},"Quantity.Unitless":{"args":[],"tags":{"Unitless":[]}},"Math.Vector2.Vec2":{"args":[],"tags":{"Vec2":[]}},"Math.Vector3.Vec3":{"args":[],"tags":{"Vec3":[]}},"Geometry.Types.Vector3d":{"args":["units","coordinates"],"tags":{"Vector3d":["{ x : Basics.Float, y : Basics.Float, z : Basics.Float }"]}},"WebGL.Texture.Wrap":{"args":[],"tags":{"Wrap":["Basics.Int"]}},"Array.Array":{"args":["a"],"tags":{"Array_elm_builtin":["Basics.Int","Basics.Int","Array.Tree a","Elm.JsArray.JsArray a"]}},"Elm.JsArray.JsArray":{"args":["a"],"tags":{"JsArray":["a"]}},"Array.Node":{"args":["a"],"tags":{"SubTree":["Array.Tree a"],"Leaf":["Elm.JsArray.JsArray a"]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Duration.Duration":{"args":[],"type":"Quantity.Quantity Basics.Float Duration.Seconds"},"Input.Mapping":{"args":[],"type":"{ moveUp : ( String.String, String.String ), moveDown : ( String.String, String.String ), moveLeft : ( String.String, String.String ), moveRight : ( String.String, String.String ), cameraOrbit : ( String.String, String.String ), cameraPan : ( String.String, String.String ), cameraZoom : ( String.String, String.String ), cameraReset : ( String.String, String.String ), blockSelect : ( String.String, String.String ), blockAdd : ( String.String, String.String ), blockRemove : ( String.String, String.String ), blockTypeWall : ( String.String, String.String ), blockTypeEdge : ( String.String, String.String ), blockTypePointPickup : ( String.String, String.String ), blockTypePlayerSpawn : ( String.String, String.String ), blockTypeEnemySpawner : ( String.String, String.String ), undo : ( String.String, String.String ), redo : ( String.String, String.String ), toggleSettings : ( String.String, String.String ) }"},"Scene3d.Mesh.Mesh":{"args":["coordinates","attributes"],"type":"Scene3d.Types.Mesh coordinates attributes"},"Board.Point":{"args":[],"type":"( Basics.Int, Basics.Int, Basics.Int )"},"Point2d.Point2d":{"args":["units","coordinates"],"type":"Geometry.Types.Point2d units coordinates"},"Shared.ScreenSize":{"args":[],"type":"{ width : Basics.Int, height : Basics.Int }"},"Scene3d.Material.Texture":{"args":["value"],"type":"Scene3d.Types.Texture value"},"Scene3d.Mesh.Textured":{"args":["coordinates"],"type":"Scene3d.Mesh.Mesh coordinates { normals : (), uvs : () }"},"Shared.TexturedMesh":{"args":[],"type":"( Scene3d.Mesh.Textured Board.WorldCoordinates, Scene3d.Material.Texture Color.Color )"},"Json.Decode.Value":{"args":[],"type":"Json.Encode.Value"},"Browser.Dom.Viewport":{"args":[],"type":"{ scene : { width : Basics.Float, height : Basics.Float }, viewport : { x : Basics.Float, y : Basics.Float, width : Basics.Float, height : Basics.Float } }"},"BoundingBox3d.BoundingBox3d":{"args":["units","coordinates"],"type":"Geometry.Types.BoundingBox3d units coordinates"},"Board.EnemySpawnerDetails":{"args":[],"type":"{ timeTillSpawn : Duration.Duration, timeBetweenSpawns : Duration.Duration }"},"LineSegment3d.LineSegment3d":{"args":["units","coordinates"],"type":"Geometry.Types.LineSegment3d units coordinates"},"WebGL.Texture.Options":{"args":[],"type":"{ magnify : WebGL.Texture.Resize WebGL.Texture.Bigger, minify : WebGL.Texture.Resize WebGL.Texture.Smaller, horizontalWrap : WebGL.Texture.Wrap, verticalWrap : WebGL.Texture.Wrap, flipY : Basics.Bool }"},"Scene3d.Types.PlainVertex":{"args":[],"type":"{ position : Math.Vector3.Vec3 }"},"Point3d.Point3d":{"args":["units","coordinates"],"type":"Geometry.Types.Point3d units coordinates"},"Polyline3d.Polyline3d":{"args":["units","coordinates"],"type":"Geometry.Types.Polyline3d units coordinates"},"Triangle3d.Triangle3d":{"args":["units","coordinates"],"type":"Geometry.Types.Triangle3d units coordinates"},"Vector3d.Vector3d":{"args":["units","coordinates"],"type":"Geometry.Types.Vector3d units coordinates"},"Scene3d.Types.VertexWithNormal":{"args":[],"type":"{ position : Math.Vector3.Vec3, normal : Math.Vector3.Vec3 }"},"Scene3d.Types.VertexWithNormalAndUv":{"args":[],"type":"{ position : Math.Vector3.Vec3, normal : Math.Vector3.Vec3, uv : Math.Vector2.Vec2 }"},"Scene3d.Types.VertexWithTangent":{"args":[],"type":"{ position : Math.Vector3.Vec3, normal : Math.Vector3.Vec3, uv : Math.Vector2.Vec2, tangent : Math.Vector3.Vec3 }"},"Scene3d.Types.VertexWithUv":{"args":[],"type":"{ position : Math.Vector3.Vec3, uv : Math.Vector2.Vec2 }"},"WebGL.RenderInfo":{"args":[],"type":"{ mode : Basics.Int, elemSize : Basics.Int, indexSize : Basics.Int }"},"Array.Tree":{"args":["a"],"type":"Elm.JsArray.JsArray (Array.Node a)"}},"unions":{"Main.Msg":{"args":[],"tags":{"SharedMsg":["Shared.Msg"],"SetScreen":["Screen.Screen"],"MenuMsg":["Screen.Menu.Msg"],"GameMsg":["Screen.Game.Msg"],"FreePlayMsg":["Screen.FreePlay.Msg"],"EditorMsg":["Screen.Editor.Msg"]}},"Screen.Editor.Msg":{"args":[],"tags":{"NoOp":[],"Tick":["Duration.Duration"],"KeyDown":["String.String"],"KeyUp":["String.String"],"MouseDown":["Json.Decode.Value"],"MouseUp":[],"MouseMove":["Json.Decode.Value","Point2d.Point2d Pixels.Pixels Board.ScreenCoordinates","Point2d.Point2d Pixels.Pixels Board.ScreenCoordinates"],"EncodingChanged":["String.String"],"LoadEditorBoard":["String.String"],"ChangeMode":[],"RestartLevel":[],"SetBlockEditMode":["Screen.Editor.BlockEditMode"],"SetCameraMode":["Screen.Editor.CameraMode"],"ResetCamera":[],"Undo":[],"Redo":[],"XLowerVisibleChanged":["Basics.Int"],"XUpperVisibleChanged":["Basics.Int"],"YLowerVisibleChanged":["Basics.Int"],"YUpperVisibleChanged":["Basics.Int"],"ZLowerVisibleChanged":["Basics.Int"],"ZUpperVisibleChanged":["Basics.Int"],"BlockTypeSelected":["Board.Block"],"SetBlock":["Board.Point","Board.Block"],"MaxXChanged":["String.String"],"MaxYChanged":["String.String"],"MaxZChanged":["String.String"],"ShowBoardBounds":["Basics.Bool"],"ShowSettings":["Basics.Bool"],"EditorViewportResized":["Result.Result Browser.Dom.Error Browser.Dom.Viewport"],"BrowserResized":[]}},"Screen.FreePlay.Msg":{"args":[],"tags":{"Tick":["Duration.Duration"],"KeyDown":["String.String"],"LoadFreePlayBoard":["String.String"],"ExitFreePlayBoard":[],"ShowFreePlayMenu":["Basics.Bool"]}},"Screen.Game.Msg":{"args":[],"tags":{"NoOp":[]}},"Screen.Menu.Msg":{"args":[],"tags":{"NoOp":[]}},"Shared.Msg":{"args":[],"tags":{"SetMapping":["Input.Mapping -> Input.Mapping"],"SetBlockPalette":["Board.BlockPalette"],"TaskStateUpdated":["Task.Parallel.Msg2 Shared.TexturedMesh Shared.TexturedMesh"],"OneTaskFailed":["Shared.Error"],"AllTasksCompleted":["Shared.TexturedMesh","Shared.TexturedMesh"],"ViewportResized":["Result.Result Browser.Dom.Error Browser.Dom.Viewport"],"SetScreenSize":["Shared.ScreenSize"]}},"Screen.Screen":{"args":[],"tags":{"Menu":[],"Game":[],"FreePlay":[],"Editor":[]}},"Board.Block":{"args":[],"tags":{"Empty":[],"Wall":[],"Edge":[],"PointPickup":["Basics.Bool"],"PlayerSpawn":["{ forward : Board.Axis, left : Board.Axis }"],"EnemySpawner":["Board.EnemySpawnerDetails"]}},"Screen.Editor.BlockEditMode":{"args":[],"tags":{"Add":[],"Remove":[],"Select":[]}},"Board.BlockPalette":{"args":[],"tags":{"SimpleBlocks":[],"RainbowBlocks":[]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Screen.Editor.CameraMode":{"args":[],"tags":{"Orbit":[],"Pan":[],"Zoom":[]}},"Color.Color":{"args":[],"tags":{"RgbaSpace":["Basics.Float","Basics.Float","Basics.Float","Basics.Float"]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Shared.Error":{"args":[],"tags":{"MeshLoadError":["String.String"],"TextureLoadError":["String.String"]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Scene3d.Types.Mesh":{"args":["coordinates","attributes"],"tags":{"EmptyMesh":[],"Triangles":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","List.List (Triangle3d.Triangle3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex","Scene3d.Types.BackFaceSetting"],"Facets":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","List.List (Triangle3d.Triangle3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.VertexWithNormal","Scene3d.Types.BackFaceSetting"],"Indexed":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh (Point3d.Point3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex","Scene3d.Types.BackFaceSetting"],"MeshWithNormals":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, normal : Vector3d.Vector3d Quantity.Unitless coordinates }","WebGL.Mesh Scene3d.Types.VertexWithNormal","Scene3d.Types.BackFaceSetting"],"MeshWithUvs":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, uv : ( Basics.Float, Basics.Float ) }","WebGL.Mesh Scene3d.Types.VertexWithUv","Scene3d.Types.BackFaceSetting"],"MeshWithNormalsAndUvs":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, normal : Vector3d.Vector3d Quantity.Unitless coordinates, uv : ( Basics.Float, Basics.Float ) }","WebGL.Mesh Scene3d.Types.VertexWithNormalAndUv","Scene3d.Types.BackFaceSetting"],"MeshWithTangents":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, normal : Vector3d.Vector3d Quantity.Unitless coordinates, uv : ( Basics.Float, Basics.Float ), tangent : Vector3d.Vector3d Quantity.Unitless coordinates }","WebGL.Mesh Scene3d.Types.VertexWithTangent","Scene3d.Types.BackFaceSetting"],"LineSegments":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","List.List (LineSegment3d.LineSegment3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex"],"Polyline":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","Polyline3d.Polyline3d Length.Meters coordinates","WebGL.Mesh Scene3d.Types.PlainVertex"],"Points":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","Basics.Float","List.List (Point3d.Point3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex"]}},"Task.Parallel.Msg2":{"args":["a","b"],"tags":{"LoadedA2":["a"],"LoadedB2":["b"]}},"Pixels.Pixels":{"args":[],"tags":{"Pixels":[]}},"Geometry.Types.Point2d":{"args":["units","coordinates"],"tags":{"Point2d":["{ x : Basics.Float, y : Basics.Float }"]}},"Quantity.Quantity":{"args":["number","units"],"tags":{"Quantity":["number"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"Board.ScreenCoordinates":{"args":[],"tags":{"ScreenCoordinates":["Basics.Never"]}},"Duration.Seconds":{"args":[],"tags":{"Seconds":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Scene3d.Types.Texture":{"args":["value"],"tags":{"Constant":["value"],"Texture":["{ url : String.String, options : WebGL.Texture.Options, data : WebGL.Texture.Texture }"]}},"Json.Encode.Value":{"args":[],"tags":{"Value":[]}},"Board.WorldCoordinates":{"args":[],"tags":{"WorldCoordinates":["Basics.Never"]}},"Board.Axis":{"args":[],"tags":{"PositiveX":[],"NegativeX":[],"PositiveY":[],"NegativeY":[],"PositiveZ":[],"NegativeZ":[]}},"Scene3d.Types.BackFaceSetting":{"args":[],"tags":{"KeepBackFaces":[],"CullBackFaces":[]}},"WebGL.Texture.Bigger":{"args":[],"tags":{"Bigger":[]}},"Geometry.Types.BoundingBox3d":{"args":["units","coordinates"],"tags":{"BoundingBox3d":["{ minX : Basics.Float, maxX : Basics.Float, minY : Basics.Float, maxY : Basics.Float, minZ : Basics.Float, maxZ : Basics.Float }"]}},"Geometry.Types.LineSegment3d":{"args":["units","coordinates"],"tags":{"LineSegment3d":["( Geometry.Types.Point3d units coordinates, Geometry.Types.Point3d units coordinates )"]}},"List.List":{"args":["a"],"tags":{}},"WebGL.Mesh":{"args":["attributes"],"tags":{"Mesh1":["WebGL.RenderInfo","List.List attributes"],"Mesh2":["WebGL.RenderInfo","List.List ( attributes, attributes )"],"Mesh3":["WebGL.RenderInfo","List.List ( attributes, attributes, attributes )"],"MeshIndexed3":["WebGL.RenderInfo","List.List attributes","List.List ( Basics.Int, Basics.Int, Basics.Int )"]}},"Length.Meters":{"args":[],"tags":{"Meters":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}},"Geometry.Types.Point3d":{"args":["units","coordinates"],"tags":{"Point3d":["{ x : Basics.Float, y : Basics.Float, z : Basics.Float }"]}},"Geometry.Types.Polyline3d":{"args":["units","coordinates"],"tags":{"Polyline3d":["List.List (Geometry.Types.Point3d units coordinates)"]}},"WebGL.Texture.Resize":{"args":["a"],"tags":{"Resize":["Basics.Int"]}},"WebGL.Texture.Smaller":{"args":[],"tags":{"Smaller":[]}},"WebGL.Texture.Texture":{"args":[],"tags":{"Texture":[]}},"Geometry.Types.Triangle3d":{"args":["units","coordinates"],"tags":{"Triangle3d":["( Geometry.Types.Point3d units coordinates, Geometry.Types.Point3d units coordinates, Geometry.Types.Point3d units coordinates )"]}},"TriangularMesh.TriangularMesh":{"args":["vertex"],"tags":{"TriangularMesh":["{ vertices : Array.Array vertex, faceIndices : List.List ( Basics.Int, Basics.Int, Basics.Int ) }"]}},"Quantity.Unitless":{"args":[],"tags":{"Unitless":[]}},"Math.Vector2.Vec2":{"args":[],"tags":{"Vec2":[]}},"Math.Vector3.Vec3":{"args":[],"tags":{"Vec3":[]}},"Geometry.Types.Vector3d":{"args":["units","coordinates"],"tags":{"Vector3d":["{ x : Basics.Float, y : Basics.Float, z : Basics.Float }"]}},"WebGL.Texture.Wrap":{"args":[],"tags":{"Wrap":["Basics.Int"]}},"Array.Array":{"args":["a"],"tags":{"Array_elm_builtin":["Basics.Int","Basics.Int","Array.Tree a","Elm.JsArray.JsArray a"]}},"Elm.JsArray.JsArray":{"args":["a"],"tags":{"JsArray":["a"]}},"Array.Node":{"args":["a"],"tags":{"SubTree":["Array.Tree a"],"Leaf":["Elm.JsArray.JsArray a"]}}}}})}});}(this));

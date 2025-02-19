@@ -184,7 +184,7 @@ update msg model =
         ( Loaded mod, SetBlockPalette blockPalette ) ->
             ( Loaded { mod | blockPalette = blockPalette }, Cmd.none )
 
-        ( Loaded mod, ViewportResized (Err _) ) ->
+        ( Loaded _, ViewportResized (Err _) ) ->
             ( model, Cmd.none )
 
         ( Loaded mod, ViewportResized (Ok { viewport }) ) ->

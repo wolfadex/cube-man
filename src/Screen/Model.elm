@@ -1,4 +1,4 @@
-module Screen.Model exposing (..)
+module Screen.Model exposing (Screen(..))
 
 import Screen.Editor
 import Screen.FreePlay

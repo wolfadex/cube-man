@@ -35,6 +35,7 @@ module Board exposing
     , view3dScene
     , viewBlock
     , viewEnemy
+    , viewGameOver
     , viewPlayer
     , viewStats
     , zigZagBoard
@@ -1193,9 +1194,13 @@ durationEnemyMovement =
 
 tick : Duration -> Level -> Level
 tick deltaDuration level =
-    level
-        |> tickPlayer deltaDuration
-        |> tickEnemies deltaDuration
+    if level.hearts > 0 then
+        level
+            |> tickPlayer deltaDuration
+            |> tickEnemies deltaDuration
+
+    else
+        level
 
 
 tickEnemies : Duration -> Level -> Level
@@ -1528,21 +1533,13 @@ movePlayer deltaDuration level =
                     playerFrame =
                         level.playerFrame
                             |> Frame3d.moveTo toPoint
-
-                    nextLevel =
-                        { level
-                            | playerFrame = playerFrame
-                            , playerTarget = findNextTarget level.board level.playerFacing moveDetails.to playerFrame
-                        }
-                            |> scorePoints
-                            |> handlePlayerCollisions
                 in
-                if nextLevel.hearts < 1 then
-                    -- TODO: handle 0 hearts
-                    nextLevel
-
-                else
-                    nextLevel
+                { level
+                    | playerFrame = playerFrame
+                    , playerTarget = findNextTarget level.board level.playerFacing moveDetails.to playerFrame
+                }
+                    |> scorePoints
+                    |> handlePlayerCollisions
 
             else if remainingDuration |> Quantity.lessThan (Quantity 0) then
                 let
@@ -1570,38 +1567,30 @@ movePlayer deltaDuration level =
                 let
                     fromPoint =
                         pointToPoint3d moveDetails.from
-
-                    nextLevel =
-                        { level
-                            | playerFrame =
-                                level.playerFrame
-                                    |> Frame3d.moveTo
-                                        (Point3d.translateBy
-                                            (Vector3d.from fromPoint toPoint
-                                                |> Vector3d.scaleBy
-                                                    (let
-                                                        (Quantity durFordMove) =
-                                                            durationForForwardMovement
-
-                                                        (Quantity remDur) =
-                                                            remainingDuration
-                                                     in
-                                                     (durFordMove - remDur) / durFordMove
-                                                    )
-                                            )
-                                            fromPoint
-                                        )
-                            , playerTarget = MoveForward { moveDetails | duration = remainingDuration }
-                        }
-                            |> scorePoints
-                            |> handlePlayerCollisions
                 in
-                if nextLevel.hearts < 1 then
-                    -- TODO: handle 0 hearts
-                    nextLevel
+                { level
+                    | playerFrame =
+                        level.playerFrame
+                            |> Frame3d.moveTo
+                                (Point3d.translateBy
+                                    (Vector3d.from fromPoint toPoint
+                                        |> Vector3d.scaleBy
+                                            (let
+                                                (Quantity durFordMove) =
+                                                    durationForForwardMovement
 
-                else
-                    nextLevel
+                                                (Quantity remDur) =
+                                                    remainingDuration
+                                             in
+                                             (durFordMove - remDur) / durFordMove
+                                            )
+                                    )
+                                    fromPoint
+                                )
+                    , playerTarget = MoveForward { moveDetails | duration = remainingDuration }
+                }
+                    |> scorePoints
+                    |> handlePlayerCollisions
 
         TraverseEdge edgeDetails ->
             let
@@ -1721,66 +1710,49 @@ movePlayer deltaDuration level =
 
                         correctedPlayerFrame =
                             correctPlayerFrame playerFrame
-
-                        nextLevel =
-                            { level
-                                | playerFrame = correctedPlayerFrame
-                                , playerTarget = findNextTarget level.board level.playerFacing edgeDetails.to correctedPlayerFrame
-                            }
-                                |> scorePoints
-                                |> handlePlayerCollisions
                     in
-                    if nextLevel.hearts < 1 then
-                        -- TODO: handle 0 hearts
-                        nextLevel
-
-                    else
-                        nextLevel
+                    { level
+                        | playerFrame = correctedPlayerFrame
+                        , playerTarget = findNextTarget level.board level.playerFacing edgeDetails.to correctedPlayerFrame
+                    }
+                        |> scorePoints
+                        |> handlePlayerCollisions
 
                 else
-                    let
-                        nextLevel =
-                            { level
-                                | playerFrame =
-                                    level.playerFrame
-                                        |> Frame3d.rotateAround
-                                            (Axis3d.through
-                                                (level.playerFrame
-                                                    |> Frame3d.originPoint
-                                                    |> point3dToPoint
-                                                    |> pointToPoint3d
-                                                    |> Point3d.translateIn
-                                                        (Frame3d.zDirection level.playerFrame)
-                                                        (Length.meters -1)
-                                                )
-                                                (case level.playerFacing of
-                                                    Forward ->
-                                                        Frame3d.yDirection level.playerFrame
+                    { level
+                        | playerFrame =
+                            level.playerFrame
+                                |> Frame3d.rotateAround
+                                    (Axis3d.through
+                                        (level.playerFrame
+                                            |> Frame3d.originPoint
+                                            |> point3dToPoint
+                                            |> pointToPoint3d
+                                            |> Point3d.translateIn
+                                                (Frame3d.zDirection level.playerFrame)
+                                                (Length.meters -1)
+                                        )
+                                        (case level.playerFacing of
+                                            Forward ->
+                                                Frame3d.yDirection level.playerFrame
 
-                                                    Backward ->
-                                                        Frame3d.yDirection level.playerFrame
-                                                            |> Direction3d.reverse
+                                            Backward ->
+                                                Frame3d.yDirection level.playerFrame
+                                                    |> Direction3d.reverse
 
-                                                    Left ->
-                                                        Frame3d.xDirection level.playerFrame
-                                                            |> Direction3d.reverse
+                                            Left ->
+                                                Frame3d.xDirection level.playerFrame
+                                                    |> Direction3d.reverse
 
-                                                    Right ->
-                                                        Frame3d.xDirection level.playerFrame
-                                                )
-                                            )
-                                            edgeMovement
-                                , playerTarget = TraverseEdge { edgeDetails | duration = remainingDuration }
-                            }
-                                |> scorePoints
-                                |> handlePlayerCollisions
-                    in
-                    if nextLevel.hearts < 1 then
-                        -- TODO: handle 0 hearts
-                        nextLevel
-
-                    else
-                        nextLevel
+                                            Right ->
+                                                Frame3d.xDirection level.playerFrame
+                                        )
+                                    )
+                                    edgeMovement
+                        , playerTarget = TraverseEdge { edgeDetails | duration = remainingDuration }
+                    }
+                        |> scorePoints
+                        |> handlePlayerCollisions
 
 
 viewStats : Level -> Html msg
@@ -2024,6 +1996,31 @@ handleGameKeyPressed onOpenMenu inputMapping key model =
 
     else
         model
+
+
+viewGameOver : Level -> Html msg -> Html msg
+viewGameOver level nextActions =
+    if level.hearts > 0 then
+        Html.text ""
+
+    else
+        Html.div
+            [ Html.Attributes.style "position" "fixed"
+            , Html.Attributes.style "top" "50%"
+            , Html.Attributes.style "left" "50%"
+            , Html.Attributes.style "transform" "translate(-50%, -50%)"
+            , Html.Attributes.style "background-color" "rgba(255, 0, 0, 0.5)"
+            , Html.Attributes.style "font-size" "4rem"
+            , Html.Attributes.style "backdrop-filter" "blur(5px)"
+            , Html.Attributes.style "padding" "4rem 8rem"
+            , Html.Attributes.style "border-radius" "1rem"
+            , Html.Attributes.style "display" "flex"
+            , Html.Attributes.style "flex-direction" "column"
+            , Html.Attributes.style "gap" "1rem"
+            ]
+            [ Html.span [ Html.Attributes.style "color" "white" ] [ Html.text "Game Over" ]
+            , nextActions
+            ]
 
 
 

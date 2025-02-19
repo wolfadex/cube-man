@@ -209,29 +209,32 @@ init =
     )
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    if model.showSettings then
-        Sub.none
+subscriptions : { toSharedMsg : Shared.Msg -> msg, toMsg : Msg -> msg } -> Model -> Sub msg
+subscriptions { toSharedMsg, toMsg } model =
+    Sub.batch
+        [ Browser.Events.onResize (\width height -> Shared.SetScreenSize { width = width, height = height } |> toSharedMsg)
+        , if model.showSettings then
+            Sub.none
 
-    else
-        Sub.batch
-            [ Browser.Events.onKeyDown decodeKeyDown
-            , Browser.Events.onKeyUp decodeKeyUp
-            , Browser.Events.onAnimationFrameDelta (Duration.milliseconds >> Tick)
-            , Browser.Events.onResize (\_ _ -> BrowserResized)
-            ]
+          else
+            Sub.batch
+                [ Browser.Events.onKeyDown (decodeKeyDown toMsg)
+                , Browser.Events.onKeyUp (decodeKeyUp toMsg)
+                , Browser.Events.onAnimationFrameDelta (Duration.milliseconds >> Tick >> toMsg)
+                , Browser.Events.onResize (\_ _ -> toMsg BrowserResized)
+                ]
+        ]
 
 
-decodeKeyDown : Json.Decode.Decoder Msg
-decodeKeyDown =
-    Json.Decode.map KeyDown
+decodeKeyDown : (Msg -> msg) -> Json.Decode.Decoder msg
+decodeKeyDown toMsg =
+    Json.Decode.map (KeyDown >> toMsg)
         (Json.Decode.field "key" Json.Decode.string)
 
 
-decodeKeyUp : Json.Decode.Decoder Msg
-decodeKeyUp =
-    Json.Decode.map KeyUp
+decodeKeyUp : (Msg -> msg) -> Json.Decode.Decoder msg
+decodeKeyUp toMsg =
+    Json.Decode.map (KeyUp >> toMsg)
         (Json.Decode.field "key" Json.Decode.string)
 
 
@@ -246,6 +249,7 @@ type Msg
     | EncodingChanged String
     | LoadEditorBoard String
     | ChangeMode
+    | RestartLevel
     | SetBlockEditMode BlockEditMode
     | SetCameraMode CameraMode
     | ResetCamera
@@ -323,6 +327,23 @@ update toSharedMsg sharedModel toMsg msg model =
                         | boardLoadError = Just error
                       }
                     , Cmd.none
+                    )
+
+        RestartLevel ->
+            let
+                board =
+                    Undo.value model.editorBoard
+            in
+            case Board.init board of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just level ->
+                    ( { model
+                        | level = level
+                      }
+                    , Browser.Dom.getViewportOf "editor-viewport"
+                        |> Task.attempt (EditorViewportResized >> toMsg)
                     )
 
         ChangeMode ->
@@ -760,7 +781,7 @@ update toSharedMsg sharedModel toMsg msg model =
                 |> Task.attempt (EditorViewportResized >> toMsg)
             )
 
-        EditorViewportResized (Err err) ->
+        EditorViewportResized (Err _) ->
             ( model, Cmd.none )
 
         EditorViewportResized (Ok { viewport }) ->
@@ -1160,55 +1181,55 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                             ]
                    )
             )
-            [ let
-                lights =
-                    case model.editorMode of
-                        TestGame ->
-                            Board.gameLights model.level.board (Frame3d.originPoint model.level.playerFrame)
-
-                        EditBoard ->
-                            let
-                                sun =
-                                    Scene3d.Light.directional (Scene3d.Light.castsShadows True)
-                                        { direction =
-                                            Direction3d.negativeZ
-                                                |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
-                                                |> Direction3d.rotateAround Axis3d.z
-                                                    (model.cameraRotation
-                                                        |> Quantity.plus (Angle.degrees 90)
-                                                    )
-                                        , intensity = Illuminance.lux 80000
-                                        , chromaticity = Scene3d.Light.sunlight
-                                        }
-
-                                sky =
-                                    Scene3d.Light.overhead
-                                        { upDirection = Direction3d.positiveZ
-                                        , chromaticity = Scene3d.Light.skylight
-                                        , intensity = Illuminance.lux 20000
-                                        }
-
-                                upsideDownSky =
-                                    Scene3d.Light.overhead
-                                        { upDirection = Direction3d.negativeZ
-                                        , chromaticity = Scene3d.Light.skylight
-                                        , intensity = Illuminance.lux 40000
-                                        }
-
-                                environment =
-                                    Scene3d.Light.overhead
-                                        { upDirection = Direction3d.reverse Direction3d.positiveZ
-                                        , chromaticity = Scene3d.Light.daylight
-                                        , intensity = Illuminance.lux 15000
-                                        }
-                            in
-                            Scene3d.fourLights sun sky environment upsideDownSky
-              in
-              case model.screenSize of
+            [ case model.screenSize of
                 Nothing ->
                     Html.div [] [ Html.text "Loading..." ]
 
                 Just screenSize ->
+                    let
+                        lights =
+                            case model.editorMode of
+                                TestGame ->
+                                    Board.gameLights model.level.board (Frame3d.originPoint model.level.playerFrame)
+
+                                EditBoard ->
+                                    let
+                                        sun =
+                                            Scene3d.Light.directional (Scene3d.Light.castsShadows True)
+                                                { direction =
+                                                    Direction3d.negativeZ
+                                                        |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
+                                                        |> Direction3d.rotateAround Axis3d.z
+                                                            (model.cameraRotation
+                                                                |> Quantity.plus (Angle.degrees 90)
+                                                            )
+                                                , intensity = Illuminance.lux 80000
+                                                , chromaticity = Scene3d.Light.sunlight
+                                                }
+
+                                        sky =
+                                            Scene3d.Light.overhead
+                                                { upDirection = Direction3d.positiveZ
+                                                , chromaticity = Scene3d.Light.skylight
+                                                , intensity = Illuminance.lux 20000
+                                                }
+
+                                        upsideDownSky =
+                                            Scene3d.Light.overhead
+                                                { upDirection = Direction3d.negativeZ
+                                                , chromaticity = Scene3d.Light.skylight
+                                                , intensity = Illuminance.lux 40000
+                                                }
+
+                                        environment =
+                                            Scene3d.Light.overhead
+                                                { upDirection = Direction3d.reverse Direction3d.positiveZ
+                                                , chromaticity = Scene3d.Light.daylight
+                                                , intensity = Illuminance.lux 15000
+                                                }
+                                    in
+                                    Scene3d.fourLights sun sky environment upsideDownSky
+                    in
                     Board.view3dScene
                         lights
                         screenSize
@@ -1297,6 +1318,24 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                             [ Html.text "Edit Level"
                             ]
                         ]
+                    , Board.viewGameOver model.level
+                        (Html.div
+                            [ Html.Attributes.style "display" "flex"
+                            , Html.Attributes.style "flex-direction" "column"
+                            , Html.Attributes.style "gap" "0.5rem"
+                            ]
+                            [ Html.button
+                                [ Html.Attributes.type_ "button"
+                                , Html.Events.onClick (toMsg RestartLevel)
+                                ]
+                                [ Html.text "Restart" ]
+                            , Html.button
+                                [ Html.Attributes.type_ "button"
+                                , Html.Events.onClick (toMsg ChangeMode)
+                                ]
+                                [ Html.text "Edit" ]
+                            ]
+                        )
                     ]
 
             EditBoard ->
@@ -2692,7 +2731,7 @@ viewBounds board =
 
 
 viewHeader : (Screen -> msg) -> (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> Html msg
-viewHeader setScreen toSharedMsg sharedModel toMsg model =
+viewHeader setScreen _ sharedModel toMsg model =
     case model.editorMode of
         TestGame ->
             -- Html.div

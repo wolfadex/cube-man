@@ -264,6 +264,13 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                         ]
                     )
                 , Board.viewStats model.level
+                , Board.viewGameOver model.level
+                    (Html.button
+                        [ Html.Attributes.type_ "button"
+                        , Html.Events.onClick (toMsg ExitFreePlayBoard)
+                        ]
+                        [ Html.text "Select another board" ]
+                    )
                 , Html.div
                     [ Html.Attributes.style "position" "absolute"
                     , Html.Attributes.style "padding" "0.5rem"
