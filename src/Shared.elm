@@ -56,6 +56,7 @@ init =
     )
 
 
+loadMeshes : ( Task.Parallel.State2 Msg TexturedMesh TexturedMesh, Cmd Msg )
 loadMeshes =
     Task.Parallel.attempt2
         { task1 = loadMesh "wall_3"

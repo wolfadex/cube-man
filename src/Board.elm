@@ -43,7 +43,6 @@ module Board exposing
 
 import AStar.Generalised
 import Angle exposing (Angle)
-import AngularSpeed
 import Axis3d
 import Block3d
 import Camera3d exposing (Camera3d)
