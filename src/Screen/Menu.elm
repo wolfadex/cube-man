@@ -3,6 +3,7 @@ module Screen.Menu exposing (Model, Msg(..), init, subscriptions, update, view)
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events
+import Screen exposing (Screen)
 import Shared
 
 
@@ -29,8 +30,8 @@ update _ _ model =
     ( model, Cmd.none )
 
 
-view : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> List (Html msg)
-view toSharedMsg sharedModel _ _ =
+view : { setScreen : Screen -> msg, toSharedMsg : Shared.Msg -> msg, sharedModel : Shared.LoadedModel, toMsg : Msg -> msg, model : Model } -> List (Html msg)
+view { setScreen, toSharedMsg, sharedModel } =
     [ Html.div
         [ Html.Attributes.style "width" "100vw"
         , Html.Attributes.style "height" "100vh"
@@ -66,7 +67,7 @@ view toSharedMsg sharedModel _ _ =
                     [ Html.Attributes.type_ "button"
                     , Html.Attributes.style "text-align" "center"
                     , Html.Attributes.style "padding" "0.5rem 2rem"
-                    , Html.Events.onClick (toSharedMsg (Shared.SetScreen Shared.Game))
+                    , Html.Events.onClick (setScreen Screen.Game)
                     ]
                     [ Html.span [ Html.Attributes.style "text-decoration" "line-through" ] [ Html.text "Play" ]
                     , Html.br [] []
@@ -76,14 +77,14 @@ view toSharedMsg sharedModel _ _ =
                     [ Html.Attributes.type_ "button"
                     , Html.Attributes.style "text-align" "center"
                     , Html.Attributes.style "padding" "0.5rem 2rem"
-                    , Html.Events.onClick (toSharedMsg (Shared.SetScreen Shared.FreePlay))
+                    , Html.Events.onClick (setScreen Screen.FreePlay)
                     ]
                     [ Html.text "Free Play" ]
                 , Html.button
                     [ Html.Attributes.type_ "button"
                     , Html.Attributes.style "text-align" "center"
                     , Html.Attributes.style "padding" "0.5rem 2rem"
-                    , Html.Events.onClick (toSharedMsg (Shared.SetScreen Shared.Editor))
+                    , Html.Events.onClick (setScreen Screen.Editor)
                     ]
                     [ Html.text "Level Editor" ]
                 ]

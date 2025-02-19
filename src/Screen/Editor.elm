@@ -18,6 +18,7 @@ import Axis3d.Extra
 import Block3d
 import Board exposing (Board)
 import BoundingBox3d
+import Browser.Dom
 import Browser.Events
 import Camera3d exposing (Camera3d)
 import Color exposing (Color)
@@ -50,6 +51,7 @@ import Rectangle2d
 import Scene3d
 import Scene3d.Light
 import Scene3d.Material
+import Screen exposing (Screen)
 import Serialize
 import Set exposing (Set)
 import Shared
@@ -92,7 +94,7 @@ type alias Model =
     , editorMaxYRaw : String
     , editorMaxZRaw : String
     , showSettings : Bool
-    , screenSize : { width : Int, height : Int }
+    , screenSize : Maybe Shared.ScreenSize
     }
 
 
@@ -161,7 +163,7 @@ init =
       , editorBoard = Undo.init board
       , boardLoadError = Nothing
       , boardPlayError = Nothing
-      , screenSize = { width = 800, height = 600 }
+      , screenSize = Nothing
       , editorCursor = ( 0, 0, 0 )
       , editorKeysDown = Set.empty
       , cameraRotation = Angle.degrees 225
@@ -202,7 +204,8 @@ init =
       -- , blockPalette = SimpleBlocks
       , showSettings = False
       }
-    , Cmd.none
+    , Browser.Dom.getViewportOf "editor-viewport"
+        |> Task.attempt EditorViewportResized
     )
 
 
@@ -216,6 +219,7 @@ subscriptions model =
             [ Browser.Events.onKeyDown decodeKeyDown
             , Browser.Events.onKeyUp decodeKeyUp
             , Browser.Events.onAnimationFrameDelta (Duration.milliseconds >> Tick)
+            , Browser.Events.onResize (\_ _ -> BrowserResized)
             ]
 
 
@@ -260,6 +264,8 @@ type Msg
     | MaxZChanged String
     | ShowBoardBounds Bool
     | ShowSettings Bool
+    | EditorViewportResized (Result Browser.Dom.Error Browser.Dom.Viewport)
+    | BrowserResized
 
 
 update : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
@@ -335,14 +341,16 @@ update toSharedMsg sharedModel toMsg msg model =
                                 | editorMode = TestGame
                                 , level = level
                               }
-                            , Cmd.none
+                            , Browser.Dom.getViewportOf "editor-viewport"
+                                |> Task.attempt (EditorViewportResized >> toMsg)
                             )
 
                 TestGame ->
                     ( { model
                         | editorMode = EditBoard
                       }
-                    , Cmd.none
+                    , Browser.Dom.getViewportOf "editor-viewport"
+                        |> Task.attempt (EditorViewportResized >> toMsg)
                     )
 
         SetBlockEditMode blockEditMode ->
@@ -746,6 +754,26 @@ update toSharedMsg sharedModel toMsg msg model =
         ShowSettings show ->
             showSettings show model
 
+        BrowserResized ->
+            ( model
+            , Browser.Dom.getViewportOf "editor-viewport"
+                |> Task.attempt (EditorViewportResized >> toMsg)
+            )
+
+        EditorViewportResized (Err err) ->
+            ( model, Cmd.none )
+
+        EditorViewportResized (Ok { viewport }) ->
+            ( { model
+                | screenSize =
+                    Just
+                        { width = round viewport.width
+                        , height = round viewport.height
+                        }
+              }
+            , Cmd.none
+            )
+
 
 moveCameraByMouse : Json.Encode.Value -> Point2d Pixels Board.ScreenCoordinates -> Model -> ( Model, Cmd msg )
 moveCameraByMouse pointerId movement model =
@@ -826,111 +854,116 @@ moveCameraByMouse pointerId movement model =
 
 moveCursorByMouse : Point2d Pixels Board.ScreenCoordinates -> Model -> ( Model, Cmd msg )
 moveCursorByMouse offset model =
-    let
-        ray : Axis3d Length.Meters Board.WorldCoordinates
-        ray =
-            Camera3d.ray
-                (editorCamera model)
-                (Rectangle2d.from
-                    (Point2d.pixels 0 (toFloat model.screenSize.height))
-                    (Point2d.pixels (toFloat model.screenSize.width) 0)
-                )
-                offset
-
-        editorBoard =
-            Undo.value model.editorBoard
-
-        maybeIntersection =
-            Dict.foldl
-                (\point block maybeInter ->
-                    case block of
-                        Board.Empty ->
-                            maybeInter
-
-                        _ ->
-                            let
-                                ( x, y, z ) =
-                                    point
-                            in
-                            if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
-                                maybeInter
-
-                            else
-                                let
-                                    boundingBox =
-                                        BoundingBox3d.withDimensions
-                                            ( Length.meters 1, Length.meters 1, Length.meters 1 )
-                                            (Board.pointToPoint3d point)
-                                in
-                                case Axis3d.Extra.intersectionAxisAlignedBoundingBox3d ray boundingBox of
-                                    Nothing ->
-                                        maybeInter
-
-                                    Just intersection ->
-                                        let
-                                            newDist =
-                                                Point3d.distanceFrom (Axis3d.originPoint ray) (Axis3d.originPoint intersection)
-                                        in
-                                        case maybeInter of
-                                            Nothing ->
-                                                Just ( intersection, newDist )
-
-                                            Just ( _, prevDist ) ->
-                                                if newDist |> Quantity.lessThan prevDist then
-                                                    Just ( intersection, newDist )
-
-                                                else
-                                                    maybeInter
-                )
-                Nothing
-                editorBoard.blocks
-    in
-    case maybeIntersection of
+    case model.screenSize of
         Nothing ->
             ( model, Cmd.none )
 
-        Just ( intersection, _ ) ->
-            ( { model
-                | editorCursor =
-                    case model.blockEditMode of
-                        Remove ->
-                            Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
-                                |> Point3d.Extra.constrain
-                                    { min = Point3d.origin
-                                    , max =
-                                        Point3d.meters
-                                            (toFloat editorBoard.maxX - 1)
-                                            (toFloat editorBoard.maxY - 1)
-                                            (toFloat editorBoard.maxZ - 1)
-                                    }
-                                |> Board.point3dToPoint
+        Just screenSize ->
+            let
+                ray : Axis3d Length.Meters Board.WorldCoordinates
+                ray =
+                    Camera3d.ray
+                        (editorCamera model)
+                        (Rectangle2d.from
+                            (Point2d.pixels 0 (toFloat screenSize.height))
+                            (Point2d.pixels (toFloat screenSize.width) 0)
+                        )
+                        offset
 
-                        Add ->
-                            Point3d.along intersection (Length.meters 0.5)
-                                |> Point3d.Extra.constrain
-                                    { min = Point3d.origin
-                                    , max =
-                                        Point3d.meters
-                                            (toFloat editorBoard.maxX - 1)
-                                            (toFloat editorBoard.maxY - 1)
-                                            (toFloat editorBoard.maxZ - 1)
-                                    }
-                                |> Board.point3dToPoint
+                editorBoard =
+                    Undo.value model.editorBoard
 
-                        Select ->
-                            Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
-                                |> Point3d.Extra.constrain
-                                    { min = Point3d.origin
-                                    , max =
-                                        Point3d.meters
-                                            (toFloat editorBoard.maxX - 1)
-                                            (toFloat editorBoard.maxY - 1)
-                                            (toFloat editorBoard.maxZ - 1)
-                                    }
-                                |> Board.point3dToPoint
-              }
-            , Cmd.none
-            )
+                maybeIntersection =
+                    Dict.foldl
+                        (\point block maybeInter ->
+                            case block of
+                                Board.Empty ->
+                                    maybeInter
+
+                                _ ->
+                                    let
+                                        ( x, y, z ) =
+                                            point
+                                    in
+                                    if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
+                                        maybeInter
+
+                                    else
+                                        let
+                                            boundingBox =
+                                                BoundingBox3d.withDimensions
+                                                    ( Length.meters 1, Length.meters 1, Length.meters 1 )
+                                                    (Board.pointToPoint3d point)
+                                        in
+                                        case Axis3d.Extra.intersectionAxisAlignedBoundingBox3d ray boundingBox of
+                                            Nothing ->
+                                                maybeInter
+
+                                            Just intersection ->
+                                                let
+                                                    newDist =
+                                                        Point3d.distanceFrom (Axis3d.originPoint ray) (Axis3d.originPoint intersection)
+                                                in
+                                                case maybeInter of
+                                                    Nothing ->
+                                                        Just ( intersection, newDist )
+
+                                                    Just ( _, prevDist ) ->
+                                                        if newDist |> Quantity.lessThan prevDist then
+                                                            Just ( intersection, newDist )
+
+                                                        else
+                                                            maybeInter
+                        )
+                        Nothing
+                        editorBoard.blocks
+            in
+            case maybeIntersection of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just ( intersection, _ ) ->
+                    ( { model
+                        | editorCursor =
+                            case model.blockEditMode of
+                                Remove ->
+                                    Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
+                                        |> Point3d.Extra.constrain
+                                            { min = Point3d.origin
+                                            , max =
+                                                Point3d.meters
+                                                    (toFloat editorBoard.maxX - 1)
+                                                    (toFloat editorBoard.maxY - 1)
+                                                    (toFloat editorBoard.maxZ - 1)
+                                            }
+                                        |> Board.point3dToPoint
+
+                                Add ->
+                                    Point3d.along intersection (Length.meters 0.5)
+                                        |> Point3d.Extra.constrain
+                                            { min = Point3d.origin
+                                            , max =
+                                                Point3d.meters
+                                                    (toFloat editorBoard.maxX - 1)
+                                                    (toFloat editorBoard.maxY - 1)
+                                                    (toFloat editorBoard.maxZ - 1)
+                                            }
+                                        |> Board.point3dToPoint
+
+                                Select ->
+                                    Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
+                                        |> Point3d.Extra.constrain
+                                            { min = Point3d.origin
+                                            , max =
+                                                Point3d.meters
+                                                    (toFloat editorBoard.maxX - 1)
+                                                    (toFloat editorBoard.maxY - 1)
+                                                    (toFloat editorBoard.maxZ - 1)
+                                            }
+                                        |> Board.point3dToPoint
+                      }
+                    , Cmd.none
+                    )
 
 
 tick : Duration -> Model -> Model
@@ -1062,17 +1095,17 @@ redo model =
     )
 
 
-view : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> List (Html msg)
-view toSharedMsg sharedModel toMsg model =
+view : { setScreen : Screen -> msg, toSharedMsg : Shared.Msg -> msg, sharedModel : Shared.LoadedModel, toMsg : Msg -> msg, model : Model } -> List (Html msg)
+view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
     [ Html.div
         [ Html.Attributes.style "display" "grid"
         , Html.Attributes.style "grid-template-columns" <|
             case model.editorMode of
                 EditBoard ->
-                    "auto auto"
+                    "calc(100vw - 25rem) 25rem"
 
                 TestGame ->
-                    "auto 10rem"
+                    "calc(100vw - 10rem) 10rem"
         , Html.Attributes.style "grid-template-rows" <|
             case model.editorMode of
                 EditBoard ->
@@ -1080,9 +1113,19 @@ view toSharedMsg sharedModel toMsg model =
 
                 TestGame ->
                     "auto"
+        , Html.Attributes.style "width" "100vw"
         ]
         [ Html.div
-            ([ Html.Attributes.style "grid-column" <|
+            ([ Html.Attributes.id "editor-viewport"
+             , case model.editorMode of
+                EditBoard ->
+                    Html.Attributes.class ""
+
+                TestGame ->
+                    Html.Attributes.style "width" <|
+                        -- "calc(100vw - 25rem)"
+                        "100vw"
+             , Html.Attributes.style "grid-column" <|
                 case model.editorMode of
                     EditBoard ->
                         "1"
@@ -1161,66 +1204,71 @@ view toSharedMsg sharedModel toMsg model =
                             in
                             Scene3d.fourLights sun sky environment upsideDownSky
               in
-              Board.view3dScene
-                lights
-                model.screenSize
-                (case model.editorMode of
-                    TestGame ->
-                        Board.gamePlayCamera model.level.playerFrame
+              case model.screenSize of
+                Nothing ->
+                    Html.div [] [ Html.text "Loading..." ]
 
-                    EditBoard ->
-                        editorCamera model
-                )
-                (case model.editorMode of
-                    EditBoard ->
-                        let
-                            editorBoard =
-                                model.editorBoard
-                                    |> Undo.value
-                        in
-                        List.concat
-                            [ editorBoard.blocks
-                                |> Dict.toList
-                                |> List.map (viewBlock sharedModel editorBoard model)
-                            , [ viewCursor
-                                    (case model.blockEditMode of
-                                        Select ->
-                                            Color.white
+                Just screenSize ->
+                    Board.view3dScene
+                        lights
+                        screenSize
+                        (case model.editorMode of
+                            TestGame ->
+                                Board.gamePlayCamera model.level.playerFrame
 
-                                        Remove ->
-                                            Color.red
+                            EditBoard ->
+                                editorCamera model
+                        )
+                        (case model.editorMode of
+                            EditBoard ->
+                                let
+                                    editorBoard =
+                                        model.editorBoard
+                                            |> Undo.value
+                                in
+                                List.concat
+                                    [ editorBoard.blocks
+                                        |> Dict.toList
+                                        |> List.map (viewBlock sharedModel editorBoard model)
+                                    , [ viewCursor
+                                            (case model.blockEditMode of
+                                                Select ->
+                                                    Color.white
 
-                                        Add ->
-                                            Color.green
-                                    )
-                                    model.cursorBounce
-                                    model.editorCursor
-                              , viewOrientationArrows
-                              , case model.selectedBlock of
-                                    Nothing ->
-                                        Scene3d.nothing
+                                                Remove ->
+                                                    Color.red
 
-                                    Just ( point, _ ) ->
-                                        viewCursor Color.yellow model.cursorBounce point
-                              , if model.showBoardBounds then
-                                    viewBounds editorBoard
+                                                Add ->
+                                                    Color.green
+                                            )
+                                            model.cursorBounce
+                                            model.editorCursor
+                                      , viewOrientationArrows
+                                      , case model.selectedBlock of
+                                            Nothing ->
+                                                Scene3d.nothing
 
-                                else
-                                    Scene3d.nothing
-                              ]
-                            ]
+                                            Just ( point, _ ) ->
+                                                viewCursor Color.yellow model.cursorBounce point
+                                      , if model.showBoardBounds then
+                                            viewBounds editorBoard
 
-                    TestGame ->
-                        List.concat
-                            [ model.level.board.blocks
-                                |> Dict.toList
-                                |> List.map Board.viewBlock
-                            , [ Board.viewPlayer model.level ]
-                            , List.map Board.viewEnemy model.level.enemies
-                            ]
-                )
+                                        else
+                                            Scene3d.nothing
+                                      ]
+                                    ]
+
+                            TestGame ->
+                                List.concat
+                                    [ model.level.board.blocks
+                                        |> Dict.toList
+                                        |> List.map Board.viewBlock
+                                    , [ Board.viewPlayer model.level ]
+                                    , List.map Board.viewEnemy model.level.enemies
+                                    ]
+                        )
             ]
-        , viewHeader toSharedMsg sharedModel toMsg model
+        , viewHeader setScreen toSharedMsg sharedModel toMsg model
         , viewSettings toSharedMsg sharedModel toMsg model
         , case model.editorMode of
             TestGame ->
@@ -1262,6 +1310,7 @@ view toSharedMsg sharedModel toMsg model =
                     , Html.Attributes.style "grid-row" "2"
                     , Html.Attributes.style "padding" "0.5rem"
                     , Html.Attributes.style "height" "80vh"
+                    , Html.Attributes.style "width" "25rem"
                     , Html.Attributes.style "overflow" "auto"
                     ]
                     [ case model.selectedBlock of
@@ -2642,8 +2691,8 @@ viewBounds board =
         )
 
 
-viewHeader : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> Html msg
-viewHeader toSharedMsg sharedModel toMsg model =
+viewHeader : (Screen -> msg) -> (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> Html msg
+viewHeader setScreen toSharedMsg sharedModel toMsg model =
     case model.editorMode of
         TestGame ->
             -- Html.div
@@ -2855,7 +2904,7 @@ viewHeader toSharedMsg sharedModel toMsg model =
                     ]
                 , Html.button
                     [ Html.Attributes.type_ "button"
-                    , Html.Events.onClick (toSharedMsg (Shared.SetScreen Shared.Menu))
+                    , Html.Events.onClick (setScreen Screen.Menu)
                     , Html.Attributes.style "margin-left" "auto"
                     ]
                     [ Html.text "Exit" ]

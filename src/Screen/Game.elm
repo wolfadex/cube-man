@@ -13,6 +13,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Length
+import Screen exposing (Screen)
 import Shared
 
 
@@ -53,8 +54,8 @@ update _ _ model =
     ( model, Cmd.none )
 
 
-view : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> List (Html msg)
-view toSharedMsg _ _ _ =
+view : { setScreen : Screen -> msg, toSharedMsg : Shared.Msg -> msg, sharedModel : Shared.LoadedModel, toMsg : Msg -> msg, model : Model } -> List (Html msg)
+view { setScreen, toSharedMsg } =
     [ Html.div
         [ Html.Attributes.style "width" "100vw"
         , Html.Attributes.style "height" "100vh"
@@ -88,7 +89,7 @@ view toSharedMsg _ _ _ =
                 [ Html.Attributes.type_ "button"
                 , Html.Attributes.style "text-align" "center"
                 , Html.Attributes.style "padding" "0.5rem 2rem"
-                , Html.Events.onClick (toSharedMsg (Shared.SetScreen Shared.Menu))
+                , Html.Events.onClick (setScreen Screen.Menu)
                 ]
                 [ Html.text "Main Menu" ]
             ]

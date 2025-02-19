@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739839669133"
+    "1739933346420"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -8640,184 +8640,6 @@ function _Browser_load(url)
 }
 
 
-// BYTES
-
-function _Bytes_width(bytes)
-{
-	return bytes.byteLength;
-}
-
-var _Bytes_getHostEndianness = F2(function(le, be)
-{
-	return _Scheduler_binding(function(callback)
-	{
-		callback(_Scheduler_succeed(new Uint8Array(new Uint32Array([1]))[0] === 1 ? le : be));
-	});
-});
-
-
-// ENCODERS
-
-function _Bytes_encode(encoder)
-{
-	var mutableBytes = new DataView(new ArrayBuffer($elm$bytes$Bytes$Encode$getWidth(encoder)));
-	$elm$bytes$Bytes$Encode$write(encoder)(mutableBytes)(0);
-	return mutableBytes;
-}
-
-
-// SIGNED INTEGERS
-
-var _Bytes_write_i8  = F3(function(mb, i, n) { mb.setInt8(i, n); return i + 1; });
-var _Bytes_write_i16 = F4(function(mb, i, n, isLE) { mb.setInt16(i, n, isLE); return i + 2; });
-var _Bytes_write_i32 = F4(function(mb, i, n, isLE) { mb.setInt32(i, n, isLE); return i + 4; });
-
-
-// UNSIGNED INTEGERS
-
-var _Bytes_write_u8  = F3(function(mb, i, n) { mb.setUint8(i, n); return i + 1 ;});
-var _Bytes_write_u16 = F4(function(mb, i, n, isLE) { mb.setUint16(i, n, isLE); return i + 2; });
-var _Bytes_write_u32 = F4(function(mb, i, n, isLE) { mb.setUint32(i, n, isLE); return i + 4; });
-
-
-// FLOATS
-
-var _Bytes_write_f32 = F4(function(mb, i, n, isLE) { mb.setFloat32(i, n, isLE); return i + 4; });
-var _Bytes_write_f64 = F4(function(mb, i, n, isLE) { mb.setFloat64(i, n, isLE); return i + 8; });
-
-
-// BYTES
-
-var _Bytes_write_bytes = F3(function(mb, offset, bytes)
-{
-	for (var i = 0, len = bytes.byteLength, limit = len - 4; i <= limit; i += 4)
-	{
-		mb.setUint32(offset + i, bytes.getUint32(i));
-	}
-	for (; i < len; i++)
-	{
-		mb.setUint8(offset + i, bytes.getUint8(i));
-	}
-	return offset + len;
-});
-
-
-// STRINGS
-
-function _Bytes_getStringWidth(string)
-{
-	for (var width = 0, i = 0; i < string.length; i++)
-	{
-		var code = string.charCodeAt(i);
-		width +=
-			(code < 0x80) ? 1 :
-			(code < 0x800) ? 2 :
-			(code < 0xD800 || 0xDBFF < code) ? 3 : (i++, 4);
-	}
-	return width;
-}
-
-var _Bytes_write_string = F3(function(mb, offset, string)
-{
-	for (var i = 0; i < string.length; i++)
-	{
-		var code = string.charCodeAt(i);
-		offset +=
-			(code < 0x80)
-				? (mb.setUint8(offset, code)
-				, 1
-				)
-				:
-			(code < 0x800)
-				? (mb.setUint16(offset, 0xC080 /* 0b1100000010000000 */
-					| (code >>> 6 & 0x1F /* 0b00011111 */) << 8
-					| code & 0x3F /* 0b00111111 */)
-				, 2
-				)
-				:
-			(code < 0xD800 || 0xDBFF < code)
-				? (mb.setUint16(offset, 0xE080 /* 0b1110000010000000 */
-					| (code >>> 12 & 0xF /* 0b00001111 */) << 8
-					| code >>> 6 & 0x3F /* 0b00111111 */)
-				, mb.setUint8(offset + 2, 0x80 /* 0b10000000 */
-					| code & 0x3F /* 0b00111111 */)
-				, 3
-				)
-				:
-			(code = (code - 0xD800) * 0x400 + string.charCodeAt(++i) - 0xDC00 + 0x10000
-			, mb.setUint32(offset, 0xF0808080 /* 0b11110000100000001000000010000000 */
-				| (code >>> 18 & 0x7 /* 0b00000111 */) << 24
-				| (code >>> 12 & 0x3F /* 0b00111111 */) << 16
-				| (code >>> 6 & 0x3F /* 0b00111111 */) << 8
-				| code & 0x3F /* 0b00111111 */)
-			, 4
-			);
-	}
-	return offset;
-});
-
-
-// DECODER
-
-var _Bytes_decode = F2(function(decoder, bytes)
-{
-	try {
-		return $elm$core$Maybe$Just(A2(decoder, bytes, 0).b);
-	} catch(e) {
-		return $elm$core$Maybe$Nothing;
-	}
-});
-
-var _Bytes_read_i8  = F2(function(      bytes, offset) { return _Utils_Tuple2(offset + 1, bytes.getInt8(offset)); });
-var _Bytes_read_i16 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 2, bytes.getInt16(offset, isLE)); });
-var _Bytes_read_i32 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 4, bytes.getInt32(offset, isLE)); });
-var _Bytes_read_u8  = F2(function(      bytes, offset) { return _Utils_Tuple2(offset + 1, bytes.getUint8(offset)); });
-var _Bytes_read_u16 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 2, bytes.getUint16(offset, isLE)); });
-var _Bytes_read_u32 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 4, bytes.getUint32(offset, isLE)); });
-var _Bytes_read_f32 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 4, bytes.getFloat32(offset, isLE)); });
-var _Bytes_read_f64 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 8, bytes.getFloat64(offset, isLE)); });
-
-var _Bytes_read_bytes = F3(function(len, bytes, offset)
-{
-	return _Utils_Tuple2(offset + len, new DataView(bytes.buffer, bytes.byteOffset + offset, len));
-});
-
-var _Bytes_read_string = F3(function(len, bytes, offset)
-{
-	var string = '';
-	var end = offset + len;
-	for (; offset < end;)
-	{
-		var byte = bytes.getUint8(offset++);
-		string +=
-			(byte < 128)
-				? String.fromCharCode(byte)
-				:
-			((byte & 0xE0 /* 0b11100000 */) === 0xC0 /* 0b11000000 */)
-				? String.fromCharCode((byte & 0x1F /* 0b00011111 */) << 6 | bytes.getUint8(offset++) & 0x3F /* 0b00111111 */)
-				:
-			((byte & 0xF0 /* 0b11110000 */) === 0xE0 /* 0b11100000 */)
-				? String.fromCharCode(
-					(byte & 0xF /* 0b00001111 */) << 12
-					| (bytes.getUint8(offset++) & 0x3F /* 0b00111111 */) << 6
-					| bytes.getUint8(offset++) & 0x3F /* 0b00111111 */
-				)
-				:
-				(byte =
-					((byte & 0x7 /* 0b00000111 */) << 18
-						| (bytes.getUint8(offset++) & 0x3F /* 0b00111111 */) << 12
-						| (bytes.getUint8(offset++) & 0x3F /* 0b00111111 */) << 6
-						| bytes.getUint8(offset++) & 0x3F /* 0b00111111 */
-					) - 0x10000
-				, String.fromCharCode(Math.floor(byte / 0x400) + 0xD800, byte % 0x400 + 0xDC00)
-				);
-	}
-	return _Utils_Tuple2(offset, string);
-});
-
-var _Bytes_decodeFailure = F2(function() { throw 0; });
-
-
 
 // SEND REQUEST
 
@@ -10066,6 +9888,184 @@ var _MJS_m4x4makeBasis = F3(function(vx, vy, vz) {
 
     return r;
 });
+
+
+// BYTES
+
+function _Bytes_width(bytes)
+{
+	return bytes.byteLength;
+}
+
+var _Bytes_getHostEndianness = F2(function(le, be)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(new Uint8Array(new Uint32Array([1]))[0] === 1 ? le : be));
+	});
+});
+
+
+// ENCODERS
+
+function _Bytes_encode(encoder)
+{
+	var mutableBytes = new DataView(new ArrayBuffer($elm$bytes$Bytes$Encode$getWidth(encoder)));
+	$elm$bytes$Bytes$Encode$write(encoder)(mutableBytes)(0);
+	return mutableBytes;
+}
+
+
+// SIGNED INTEGERS
+
+var _Bytes_write_i8  = F3(function(mb, i, n) { mb.setInt8(i, n); return i + 1; });
+var _Bytes_write_i16 = F4(function(mb, i, n, isLE) { mb.setInt16(i, n, isLE); return i + 2; });
+var _Bytes_write_i32 = F4(function(mb, i, n, isLE) { mb.setInt32(i, n, isLE); return i + 4; });
+
+
+// UNSIGNED INTEGERS
+
+var _Bytes_write_u8  = F3(function(mb, i, n) { mb.setUint8(i, n); return i + 1 ;});
+var _Bytes_write_u16 = F4(function(mb, i, n, isLE) { mb.setUint16(i, n, isLE); return i + 2; });
+var _Bytes_write_u32 = F4(function(mb, i, n, isLE) { mb.setUint32(i, n, isLE); return i + 4; });
+
+
+// FLOATS
+
+var _Bytes_write_f32 = F4(function(mb, i, n, isLE) { mb.setFloat32(i, n, isLE); return i + 4; });
+var _Bytes_write_f64 = F4(function(mb, i, n, isLE) { mb.setFloat64(i, n, isLE); return i + 8; });
+
+
+// BYTES
+
+var _Bytes_write_bytes = F3(function(mb, offset, bytes)
+{
+	for (var i = 0, len = bytes.byteLength, limit = len - 4; i <= limit; i += 4)
+	{
+		mb.setUint32(offset + i, bytes.getUint32(i));
+	}
+	for (; i < len; i++)
+	{
+		mb.setUint8(offset + i, bytes.getUint8(i));
+	}
+	return offset + len;
+});
+
+
+// STRINGS
+
+function _Bytes_getStringWidth(string)
+{
+	for (var width = 0, i = 0; i < string.length; i++)
+	{
+		var code = string.charCodeAt(i);
+		width +=
+			(code < 0x80) ? 1 :
+			(code < 0x800) ? 2 :
+			(code < 0xD800 || 0xDBFF < code) ? 3 : (i++, 4);
+	}
+	return width;
+}
+
+var _Bytes_write_string = F3(function(mb, offset, string)
+{
+	for (var i = 0; i < string.length; i++)
+	{
+		var code = string.charCodeAt(i);
+		offset +=
+			(code < 0x80)
+				? (mb.setUint8(offset, code)
+				, 1
+				)
+				:
+			(code < 0x800)
+				? (mb.setUint16(offset, 0xC080 /* 0b1100000010000000 */
+					| (code >>> 6 & 0x1F /* 0b00011111 */) << 8
+					| code & 0x3F /* 0b00111111 */)
+				, 2
+				)
+				:
+			(code < 0xD800 || 0xDBFF < code)
+				? (mb.setUint16(offset, 0xE080 /* 0b1110000010000000 */
+					| (code >>> 12 & 0xF /* 0b00001111 */) << 8
+					| code >>> 6 & 0x3F /* 0b00111111 */)
+				, mb.setUint8(offset + 2, 0x80 /* 0b10000000 */
+					| code & 0x3F /* 0b00111111 */)
+				, 3
+				)
+				:
+			(code = (code - 0xD800) * 0x400 + string.charCodeAt(++i) - 0xDC00 + 0x10000
+			, mb.setUint32(offset, 0xF0808080 /* 0b11110000100000001000000010000000 */
+				| (code >>> 18 & 0x7 /* 0b00000111 */) << 24
+				| (code >>> 12 & 0x3F /* 0b00111111 */) << 16
+				| (code >>> 6 & 0x3F /* 0b00111111 */) << 8
+				| code & 0x3F /* 0b00111111 */)
+			, 4
+			);
+	}
+	return offset;
+});
+
+
+// DECODER
+
+var _Bytes_decode = F2(function(decoder, bytes)
+{
+	try {
+		return $elm$core$Maybe$Just(A2(decoder, bytes, 0).b);
+	} catch(e) {
+		return $elm$core$Maybe$Nothing;
+	}
+});
+
+var _Bytes_read_i8  = F2(function(      bytes, offset) { return _Utils_Tuple2(offset + 1, bytes.getInt8(offset)); });
+var _Bytes_read_i16 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 2, bytes.getInt16(offset, isLE)); });
+var _Bytes_read_i32 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 4, bytes.getInt32(offset, isLE)); });
+var _Bytes_read_u8  = F2(function(      bytes, offset) { return _Utils_Tuple2(offset + 1, bytes.getUint8(offset)); });
+var _Bytes_read_u16 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 2, bytes.getUint16(offset, isLE)); });
+var _Bytes_read_u32 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 4, bytes.getUint32(offset, isLE)); });
+var _Bytes_read_f32 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 4, bytes.getFloat32(offset, isLE)); });
+var _Bytes_read_f64 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 8, bytes.getFloat64(offset, isLE)); });
+
+var _Bytes_read_bytes = F3(function(len, bytes, offset)
+{
+	return _Utils_Tuple2(offset + len, new DataView(bytes.buffer, bytes.byteOffset + offset, len));
+});
+
+var _Bytes_read_string = F3(function(len, bytes, offset)
+{
+	var string = '';
+	var end = offset + len;
+	for (; offset < end;)
+	{
+		var byte = bytes.getUint8(offset++);
+		string +=
+			(byte < 128)
+				? String.fromCharCode(byte)
+				:
+			((byte & 0xE0 /* 0b11100000 */) === 0xC0 /* 0b11000000 */)
+				? String.fromCharCode((byte & 0x1F /* 0b00011111 */) << 6 | bytes.getUint8(offset++) & 0x3F /* 0b00111111 */)
+				:
+			((byte & 0xF0 /* 0b11110000 */) === 0xE0 /* 0b11100000 */)
+				? String.fromCharCode(
+					(byte & 0xF /* 0b00001111 */) << 12
+					| (bytes.getUint8(offset++) & 0x3F /* 0b00111111 */) << 6
+					| bytes.getUint8(offset++) & 0x3F /* 0b00111111 */
+				)
+				:
+				(byte =
+					((byte & 0x7 /* 0b00000111 */) << 18
+						| (bytes.getUint8(offset++) & 0x3F /* 0b00111111 */) << 12
+						| (bytes.getUint8(offset++) & 0x3F /* 0b00111111 */) << 6
+						| bytes.getUint8(offset++) & 0x3F /* 0b00111111 */
+					) - 0x10000
+				, String.fromCharCode(Math.floor(byte / 0x400) + 0xD800, byte % 0x400 + 0xDC00)
+				);
+	}
+	return _Utils_Tuple2(offset, string);
+});
+
+var _Bytes_decodeFailure = F2(function() { throw 0; });
 
 
 var _WebGL_guid = 0;
@@ -16508,14 +16508,8 @@ var $elm$core$Basics$never = function (_v0) {
 	}
 };
 var $elm$browser$Browser$document = _Browser_document;
-var $author$project$Main$EditorMsg = function (a) {
-	return {$: 'EditorMsg', a: a};
-};
-var $author$project$Main$FreePlayMsg = function (a) {
-	return {$: 'FreePlayMsg', a: a};
-};
-var $author$project$Main$GameMsg = function (a) {
-	return {$: 'GameMsg', a: a};
+var $author$project$Screen$Model$Menu = function (a) {
+	return {$: 'Menu', a: a};
 };
 var $author$project$Main$MenuMsg = function (a) {
 	return {$: 'MenuMsg', a: a};
@@ -16523,1398 +16517,12 @@ var $author$project$Main$MenuMsg = function (a) {
 var $author$project$Main$SharedMsg = function (a) {
 	return {$: 'SharedMsg', a: a};
 };
-var $author$project$Screen$Editor$EditBoard = {$: 'EditBoard'};
-var $author$project$Screen$Editor$NoInteraction = {$: 'NoInteraction'};
-var $author$project$Screen$Editor$Orbit = {$: 'Orbit'};
-var $author$project$Screen$Editor$Select = {$: 'Select'};
-var $author$project$Board$Wall = {$: 'Wall'};
-var $author$project$Board$Board = F4(
-	function (maxX, maxY, maxZ, blocks) {
-		return {blocks: blocks, maxX: maxX, maxY: maxY, maxZ: maxZ};
-	});
-var $author$project$Board$Edge = {$: 'Edge'};
-var $author$project$Board$Empty = {$: 'Empty'};
-var $author$project$Board$EnemySpawner = function (a) {
-	return {$: 'EnemySpawner', a: a};
-};
-var $author$project$Board$PlayerSpawn = function (a) {
-	return {$: 'PlayerSpawn', a: a};
-};
-var $author$project$Board$PointPickup = function (a) {
-	return {$: 'PointPickup', a: a};
-};
-var $MartinSStewart$elm_serialize$Serialize$DataCorrupted = {$: 'DataCorrupted'};
-var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $elm$json$Json$Encode$bool = _Json_wrap;
-var $MartinSStewart$elm_serialize$Serialize$Codec = function (a) {
-	return {$: 'Codec', a: a};
-};
-var $MartinSStewart$elm_serialize$Serialize$build = F4(
-	function (encoder_, decoder_, jsonEncoder, jsonDecoder) {
-		return $MartinSStewart$elm_serialize$Serialize$Codec(
-			{decoder: decoder_, encoder: encoder_, jsonDecoder: jsonDecoder, jsonEncoder: jsonEncoder});
-	});
-var $elm$bytes$Bytes$Decode$Decoder = function (a) {
-	return {$: 'Decoder', a: a};
-};
-var $elm$bytes$Bytes$Decode$map = F2(
-	function (func, _v0) {
-		var decodeA = _v0.a;
-		return $elm$bytes$Bytes$Decode$Decoder(
-			F2(
-				function (bites, offset) {
-					var _v1 = A2(decodeA, bites, offset);
-					var aOffset = _v1.a;
-					var a = _v1.b;
-					return _Utils_Tuple2(
-						aOffset,
-						func(a));
-				}));
-	});
-var $elm$bytes$Bytes$Encode$getWidth = function (builder) {
-	switch (builder.$) {
-		case 'I8':
-			return 1;
-		case 'I16':
-			return 2;
-		case 'I32':
-			return 4;
-		case 'U8':
-			return 1;
-		case 'U16':
-			return 2;
-		case 'U32':
-			return 4;
-		case 'F32':
-			return 4;
-		case 'F64':
-			return 8;
-		case 'Seq':
-			var w = builder.a;
-			return w;
-		case 'Utf8':
-			var w = builder.a;
-			return w;
-		default:
-			var bs = builder.a;
-			return _Bytes_width(bs);
-	}
-};
-var $elm$bytes$Bytes$LE = {$: 'LE'};
-var $elm$bytes$Bytes$Encode$write = F3(
-	function (builder, mb, offset) {
-		switch (builder.$) {
-			case 'I8':
-				var n = builder.a;
-				return A3(_Bytes_write_i8, mb, offset, n);
-			case 'I16':
-				var e = builder.a;
-				var n = builder.b;
-				return A4(
-					_Bytes_write_i16,
-					mb,
-					offset,
-					n,
-					_Utils_eq(e, $elm$bytes$Bytes$LE));
-			case 'I32':
-				var e = builder.a;
-				var n = builder.b;
-				return A4(
-					_Bytes_write_i32,
-					mb,
-					offset,
-					n,
-					_Utils_eq(e, $elm$bytes$Bytes$LE));
-			case 'U8':
-				var n = builder.a;
-				return A3(_Bytes_write_u8, mb, offset, n);
-			case 'U16':
-				var e = builder.a;
-				var n = builder.b;
-				return A4(
-					_Bytes_write_u16,
-					mb,
-					offset,
-					n,
-					_Utils_eq(e, $elm$bytes$Bytes$LE));
-			case 'U32':
-				var e = builder.a;
-				var n = builder.b;
-				return A4(
-					_Bytes_write_u32,
-					mb,
-					offset,
-					n,
-					_Utils_eq(e, $elm$bytes$Bytes$LE));
-			case 'F32':
-				var e = builder.a;
-				var n = builder.b;
-				return A4(
-					_Bytes_write_f32,
-					mb,
-					offset,
-					n,
-					_Utils_eq(e, $elm$bytes$Bytes$LE));
-			case 'F64':
-				var e = builder.a;
-				var n = builder.b;
-				return A4(
-					_Bytes_write_f64,
-					mb,
-					offset,
-					n,
-					_Utils_eq(e, $elm$bytes$Bytes$LE));
-			case 'Seq':
-				var bs = builder.b;
-				return A3($elm$bytes$Bytes$Encode$writeSequence, bs, mb, offset);
-			case 'Utf8':
-				var s = builder.b;
-				return A3(_Bytes_write_string, mb, offset, s);
-			default:
-				var bs = builder.a;
-				return A3(_Bytes_write_bytes, mb, offset, bs);
-		}
-	});
-var $elm$bytes$Bytes$Encode$writeSequence = F3(
-	function (builders, mb, offset) {
-		writeSequence:
-		while (true) {
-			if (!builders.b) {
-				return offset;
-			} else {
-				var b = builders.a;
-				var bs = builders.b;
-				var $temp$builders = bs,
-					$temp$mb = mb,
-					$temp$offset = A3($elm$bytes$Bytes$Encode$write, b, mb, offset);
-				builders = $temp$builders;
-				mb = $temp$mb;
-				offset = $temp$offset;
-				continue writeSequence;
-			}
-		}
-	});
-var $elm$bytes$Bytes$Decode$unsignedInt8 = $elm$bytes$Bytes$Decode$Decoder(_Bytes_read_u8);
-var $elm$bytes$Bytes$Encode$U8 = function (a) {
-	return {$: 'U8', a: a};
-};
-var $elm$bytes$Bytes$Encode$unsignedInt8 = $elm$bytes$Bytes$Encode$U8;
-var $MartinSStewart$elm_serialize$Serialize$bool = A4(
-	$MartinSStewart$elm_serialize$Serialize$build,
-	function (value) {
-		if (value) {
-			return $elm$bytes$Bytes$Encode$unsignedInt8(1);
-		} else {
-			return $elm$bytes$Bytes$Encode$unsignedInt8(0);
-		}
-	},
-	A2(
-		$elm$bytes$Bytes$Decode$map,
-		function (value) {
-			switch (value) {
-				case 0:
-					return $elm$core$Result$Ok(false);
-				case 1:
-					return $elm$core$Result$Ok(true);
-				default:
-					return $elm$core$Result$Err($MartinSStewart$elm_serialize$Serialize$DataCorrupted);
-			}
-		},
-		$elm$bytes$Bytes$Decode$unsignedInt8),
-	$elm$json$Json$Encode$bool,
-	A2($elm$json$Json$Decode$map, $elm$core$Result$Ok, $elm$json$Json$Decode$bool));
-var $MartinSStewart$elm_serialize$Serialize$CustomTypeCodec = function (a) {
-	return {$: 'CustomTypeCodec', a: a};
-};
-var $MartinSStewart$elm_serialize$Serialize$customType = function (match) {
-	return $MartinSStewart$elm_serialize$Serialize$CustomTypeCodec(
-		{
-			decoder: function (_v0) {
-				return $elm$core$Basics$identity;
-			},
-			idCounter: 0,
-			jsonDecoder: function (_v1) {
-				return $elm$core$Basics$identity;
-			},
-			jsonMatch: match,
-			match: match
-		});
-};
-var $elm$bytes$Bytes$Decode$andThen = F2(
-	function (callback, _v0) {
-		var decodeA = _v0.a;
-		return $elm$bytes$Bytes$Decode$Decoder(
-			F2(
-				function (bites, offset) {
-					var _v1 = A2(decodeA, bites, offset);
-					var newOffset = _v1.a;
-					var a = _v1.b;
-					var _v2 = callback(a);
-					var decodeB = _v2.a;
-					return A2(decodeB, bites, newOffset);
-				}));
-	});
-var $elm$json$Json$Decode$andThen = _Json_andThen;
-var $elm$bytes$Bytes$BE = {$: 'BE'};
-var $MartinSStewart$elm_serialize$Serialize$endian = $elm$bytes$Bytes$BE;
-var $elm$json$Json$Decode$index = _Json_decodeIndex;
-var $elm$bytes$Bytes$Decode$succeed = function (a) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		F2(
-			function (_v0, offset) {
-				return _Utils_Tuple2(offset, a);
-			}));
-};
-var $elm$bytes$Bytes$Decode$unsignedInt16 = function (endianness) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		_Bytes_read_u16(
-			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
-};
-var $MartinSStewart$elm_serialize$Serialize$finishCustomType = function (_v0) {
-	var am = _v0.a;
-	return A4(
-		$MartinSStewart$elm_serialize$Serialize$build,
-		A2(
-			$elm$core$Basics$composeR,
-			am.match,
-			function (_v1) {
-				var _v2 = _v1.a;
-				var a = _v2.a;
-				return a;
-			}),
-		A2(
-			$elm$bytes$Bytes$Decode$andThen,
-			function (tag) {
-				return A2(
-					am.decoder,
-					tag,
-					$elm$bytes$Bytes$Decode$succeed(
-						$elm$core$Result$Err($MartinSStewart$elm_serialize$Serialize$DataCorrupted)));
-			},
-			$elm$bytes$Bytes$Decode$unsignedInt16($MartinSStewart$elm_serialize$Serialize$endian)),
-		A2(
-			$elm$core$Basics$composeR,
-			am.jsonMatch,
-			function (_v3) {
-				var _v4 = _v3.a;
-				var a = _v4.b;
-				return a;
-			}),
-		A2(
-			$elm$json$Json$Decode$andThen,
-			function (tag) {
-				return A2(
-					am.jsonDecoder,
-					tag,
-					$elm$json$Json$Decode$succeed(
-						$elm$core$Result$Err($MartinSStewart$elm_serialize$Serialize$DataCorrupted)));
-			},
-			A2($elm$json$Json$Decode$index, 0, $elm$json$Json$Decode$int)));
-};
-var $elm$json$Json$Encode$float = _Json_wrap;
-var $elm$bytes$Bytes$Decode$float64 = function (endianness) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		_Bytes_read_f64(
-			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
-};
-var $elm$bytes$Bytes$Encode$F64 = F2(
-	function (a, b) {
-		return {$: 'F64', a: a, b: b};
-	});
-var $elm$bytes$Bytes$Encode$float64 = $elm$bytes$Bytes$Encode$F64;
-var $MartinSStewart$elm_serialize$Serialize$float = A4(
-	$MartinSStewart$elm_serialize$Serialize$build,
-	$elm$bytes$Bytes$Encode$float64($MartinSStewart$elm_serialize$Serialize$endian),
-	A2(
-		$elm$bytes$Bytes$Decode$map,
-		$elm$core$Result$Ok,
-		$elm$bytes$Bytes$Decode$float64($MartinSStewart$elm_serialize$Serialize$endian)),
-	$elm$json$Json$Encode$float,
-	A2($elm$json$Json$Decode$map, $elm$core$Result$Ok, $elm$json$Json$Decode$float));
-var $ianmackenzie$elm_units$Duration$inSeconds = function (_v0) {
-	var numSeconds = _v0.a;
-	return numSeconds;
-};
-var $ianmackenzie$elm_units$Quantity$Quantity = function (a) {
-	return {$: 'Quantity', a: a};
-};
-var $ianmackenzie$elm_units$Duration$seconds = function (numSeconds) {
-	return $ianmackenzie$elm_units$Quantity$Quantity(numSeconds);
-};
-var $MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper = function (_v0) {
-	var m = _v0.a;
-	return m.decoder;
-};
-var $MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper = function (_v0) {
-	var m = _v0.a;
-	return m.encoder;
-};
-var $MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper = function (_v0) {
-	var m = _v0.a;
-	return m.jsonDecoder;
-};
-var $MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper = function (_v0) {
-	var m = _v0.a;
-	return m.jsonEncoder;
-};
-var $MartinSStewart$elm_serialize$Serialize$result1 = F2(
-	function (ctor, value) {
-		if (value.$ === 'Ok') {
-			var ok = value.a;
-			return $elm$core$Result$Ok(
-				ctor(ok));
-		} else {
-			var err = value.a;
-			return $elm$core$Result$Err(err);
-		}
-	});
-var $MartinSStewart$elm_serialize$Serialize$VariantEncoder = function (a) {
-	return {$: 'VariantEncoder', a: a};
-};
-var $elm$json$Json$Encode$int = _Json_wrap;
-var $elm$json$Json$Encode$null = _Json_encodeNull;
-var $elm$bytes$Bytes$Encode$Seq = F2(
-	function (a, b) {
-		return {$: 'Seq', a: a, b: b};
-	});
-var $elm$bytes$Bytes$Encode$getWidths = F2(
-	function (width, builders) {
-		getWidths:
-		while (true) {
-			if (!builders.b) {
-				return width;
-			} else {
-				var b = builders.a;
-				var bs = builders.b;
-				var $temp$width = width + $elm$bytes$Bytes$Encode$getWidth(b),
-					$temp$builders = bs;
-				width = $temp$width;
-				builders = $temp$builders;
-				continue getWidths;
-			}
-		}
-	});
-var $elm$bytes$Bytes$Encode$sequence = function (builders) {
-	return A2(
-		$elm$bytes$Bytes$Encode$Seq,
-		A2($elm$bytes$Bytes$Encode$getWidths, 0, builders),
-		builders);
-};
-var $elm$bytes$Bytes$Encode$U16 = F2(
-	function (a, b) {
-		return {$: 'U16', a: a, b: b};
-	});
-var $elm$bytes$Bytes$Encode$unsignedInt16 = $elm$bytes$Bytes$Encode$U16;
-var $MartinSStewart$elm_serialize$Serialize$variant = F5(
-	function (matchPiece, matchJsonPiece, decoderPiece, jsonDecoderPiece, _v0) {
-		var am = _v0.a;
-		var jsonEnc = function (v) {
-			return $MartinSStewart$elm_serialize$Serialize$VariantEncoder(
-				_Utils_Tuple2(
-					$elm$bytes$Bytes$Encode$sequence(_List_Nil),
-					A2(
-						$elm$json$Json$Encode$list,
-						$elm$core$Basics$identity,
-						A2(
-							$elm$core$List$cons,
-							$elm$json$Json$Encode$int(am.idCounter),
-							v))));
-		};
-		var jsonDecoder_ = F2(
-			function (tag, orElse) {
-				return _Utils_eq(tag, am.idCounter) ? jsonDecoderPiece : A2(am.jsonDecoder, tag, orElse);
-			});
-		var enc = function (v) {
-			return $MartinSStewart$elm_serialize$Serialize$VariantEncoder(
-				_Utils_Tuple2(
-					$elm$bytes$Bytes$Encode$sequence(
-						A2(
-							$elm$core$List$cons,
-							A2($elm$bytes$Bytes$Encode$unsignedInt16, $MartinSStewart$elm_serialize$Serialize$endian, am.idCounter),
-							v)),
-					$elm$json$Json$Encode$null));
-		};
-		var decoder_ = F2(
-			function (tag, orElse) {
-				return _Utils_eq(tag, am.idCounter) ? decoderPiece : A2(am.decoder, tag, orElse);
-			});
-		return $MartinSStewart$elm_serialize$Serialize$CustomTypeCodec(
-			{
-				decoder: decoder_,
-				idCounter: am.idCounter + 1,
-				jsonDecoder: jsonDecoder_,
-				jsonMatch: am.jsonMatch(
-					matchJsonPiece(jsonEnc)),
-				match: am.match(
-					matchPiece(enc))
-			});
-	});
-var $MartinSStewart$elm_serialize$Serialize$variant1 = F2(
-	function (ctor, m1) {
-		return A4(
-			$MartinSStewart$elm_serialize$Serialize$variant,
-			F2(
-				function (c, v) {
-					return c(
-						_List_fromArray(
-							[
-								A2($MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper, m1, v)
-							]));
-				}),
-			F2(
-				function (c, v) {
-					return c(
-						_List_fromArray(
-							[
-								A2($MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper, m1, v)
-							]));
-				}),
-			A2(
-				$elm$bytes$Bytes$Decode$map,
-				$MartinSStewart$elm_serialize$Serialize$result1(ctor),
-				$MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper(m1)),
-			A2(
-				$elm$json$Json$Decode$map,
-				$MartinSStewart$elm_serialize$Serialize$result1(ctor),
-				A2(
-					$elm$json$Json$Decode$index,
-					1,
-					$MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper(m1))));
-	});
-var $author$project$Units$Serialize$durationCodec = $MartinSStewart$elm_serialize$Serialize$finishCustomType(
-	A3(
-		$MartinSStewart$elm_serialize$Serialize$variant1,
-		$ianmackenzie$elm_units$Duration$seconds,
-		$MartinSStewart$elm_serialize$Serialize$float,
-		$MartinSStewart$elm_serialize$Serialize$customType(
-			F2(
-				function (encoder, value) {
-					return encoder(
-						$ianmackenzie$elm_units$Duration$inSeconds(value));
-				}))));
-var $MartinSStewart$elm_serialize$Serialize$RecordCodec = function (a) {
-	return {$: 'RecordCodec', a: a};
-};
-var $elm$bytes$Bytes$Decode$map2 = F3(
-	function (func, _v0, _v1) {
-		var decodeA = _v0.a;
-		var decodeB = _v1.a;
-		return $elm$bytes$Bytes$Decode$Decoder(
-			F2(
-				function (bites, offset) {
-					var _v2 = A2(decodeA, bites, offset);
-					var aOffset = _v2.a;
-					var a = _v2.b;
-					var _v3 = A2(decodeB, bites, aOffset);
-					var bOffset = _v3.a;
-					var b = _v3.b;
-					return _Utils_Tuple2(
-						bOffset,
-						A2(func, a, b));
-				}));
-	});
-var $MartinSStewart$elm_serialize$Serialize$field = F3(
-	function (getter, codec, _v0) {
-		var recordCodec = _v0.a;
-		return $MartinSStewart$elm_serialize$Serialize$RecordCodec(
-			{
-				decoder: A3(
-					$elm$bytes$Bytes$Decode$map2,
-					F2(
-						function (f, x) {
-							var _v1 = _Utils_Tuple2(f, x);
-							if (_v1.a.$ === 'Ok') {
-								if (_v1.b.$ === 'Ok') {
-									var fOk = _v1.a.a;
-									var xOk = _v1.b.a;
-									return $elm$core$Result$Ok(
-										fOk(xOk));
-								} else {
-									var err = _v1.b.a;
-									return $elm$core$Result$Err(err);
-								}
-							} else {
-								var err = _v1.a.a;
-								return $elm$core$Result$Err(err);
-							}
-						}),
-					recordCodec.decoder,
-					$MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper(codec)),
-				encoder: function (v) {
-					return A2(
-						$elm$core$List$cons,
-						A2(
-							$MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper,
-							codec,
-							getter(v)),
-						recordCodec.encoder(v));
-				},
-				fieldIndex: recordCodec.fieldIndex + 1,
-				jsonDecoder: A3(
-					$elm$json$Json$Decode$map2,
-					F2(
-						function (f, x) {
-							var _v2 = _Utils_Tuple2(f, x);
-							if (_v2.a.$ === 'Ok') {
-								if (_v2.b.$ === 'Ok') {
-									var fOk = _v2.a.a;
-									var xOk = _v2.b.a;
-									return $elm$core$Result$Ok(
-										fOk(xOk));
-								} else {
-									var err = _v2.b.a;
-									return $elm$core$Result$Err(err);
-								}
-							} else {
-								var err = _v2.a.a;
-								return $elm$core$Result$Err(err);
-							}
-						}),
-					recordCodec.jsonDecoder,
-					A2(
-						$elm$json$Json$Decode$index,
-						recordCodec.fieldIndex,
-						$MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper(codec))),
-				jsonEncoder: function (v) {
-					return A2(
-						$elm$core$List$cons,
-						A2(
-							$MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper,
-							codec,
-							getter(v)),
-						recordCodec.jsonEncoder(v));
-				}
-			});
-	});
-var $MartinSStewart$elm_serialize$Serialize$finishRecord = function (_v0) {
-	var codec = _v0.a;
-	return $MartinSStewart$elm_serialize$Serialize$Codec(
-		{
-			decoder: codec.decoder,
-			encoder: A2(
-				$elm$core$Basics$composeR,
-				codec.encoder,
-				A2($elm$core$Basics$composeR, $elm$core$List$reverse, $elm$bytes$Bytes$Encode$sequence)),
-			jsonDecoder: codec.jsonDecoder,
-			jsonEncoder: A2(
-				$elm$core$Basics$composeR,
-				codec.jsonEncoder,
-				A2(
-					$elm$core$Basics$composeR,
-					$elm$core$List$reverse,
-					$elm$json$Json$Encode$list($elm$core$Basics$identity)))
-		});
-};
-var $MartinSStewart$elm_serialize$Serialize$record = function (ctor) {
-	return $MartinSStewart$elm_serialize$Serialize$RecordCodec(
-		{
-			decoder: $elm$bytes$Bytes$Decode$succeed(
-				$elm$core$Result$Ok(ctor)),
-			encoder: function (_v0) {
-				return _List_Nil;
-			},
-			fieldIndex: 0,
-			jsonDecoder: $elm$json$Json$Decode$succeed(
-				$elm$core$Result$Ok(ctor)),
-			jsonEncoder: function (_v1) {
-				return _List_Nil;
-			}
-		});
-};
-var $author$project$Board$enemySpawnerDetailsCodec = $MartinSStewart$elm_serialize$Serialize$finishRecord(
-	A3(
-		$MartinSStewart$elm_serialize$Serialize$field,
-		function ($) {
-			return $.timeBetweenSpawns;
-		},
-		$author$project$Units$Serialize$durationCodec,
-		$MartinSStewart$elm_serialize$Serialize$record(
-			function (timeBetweenSpawns) {
-				return {timeBetweenSpawns: timeBetweenSpawns, timeTillSpawn: timeBetweenSpawns};
-			})));
-var $author$project$Board$NegativeX = {$: 'NegativeX'};
-var $author$project$Board$NegativeY = {$: 'NegativeY'};
-var $author$project$Board$NegativeZ = {$: 'NegativeZ'};
-var $author$project$Board$PositiveX = {$: 'PositiveX'};
-var $author$project$Board$PositiveY = {$: 'PositiveY'};
-var $author$project$Board$PositiveZ = {$: 'PositiveZ'};
-var $MartinSStewart$elm_serialize$Serialize$variant0 = function (ctor) {
-	return A4(
-		$MartinSStewart$elm_serialize$Serialize$variant,
-		function (c) {
-			return c(_List_Nil);
-		},
-		function (c) {
-			return c(_List_Nil);
-		},
-		$elm$bytes$Bytes$Decode$succeed(
-			$elm$core$Result$Ok(ctor)),
-		$elm$json$Json$Decode$succeed(
-			$elm$core$Result$Ok(ctor)));
-};
-var $author$project$Board$axisCodec = $MartinSStewart$elm_serialize$Serialize$finishCustomType(
-	A2(
-		$MartinSStewart$elm_serialize$Serialize$variant0,
-		$author$project$Board$NegativeZ,
-		A2(
-			$MartinSStewart$elm_serialize$Serialize$variant0,
-			$author$project$Board$PositiveZ,
-			A2(
-				$MartinSStewart$elm_serialize$Serialize$variant0,
-				$author$project$Board$NegativeY,
-				A2(
-					$MartinSStewart$elm_serialize$Serialize$variant0,
-					$author$project$Board$PositiveY,
-					A2(
-						$MartinSStewart$elm_serialize$Serialize$variant0,
-						$author$project$Board$NegativeX,
-						A2(
-							$MartinSStewart$elm_serialize$Serialize$variant0,
-							$author$project$Board$PositiveX,
-							$MartinSStewart$elm_serialize$Serialize$customType(
-								F7(
-									function (positiveXEncoder, negativeXEncoder, positiveYEncoder, negativeYEncoder, positiveZEncoder, negativeZEncoder, value) {
-										switch (value.$) {
-											case 'PositiveX':
-												return positiveXEncoder;
-											case 'NegativeX':
-												return negativeXEncoder;
-											case 'PositiveY':
-												return positiveYEncoder;
-											case 'NegativeY':
-												return negativeYEncoder;
-											case 'PositiveZ':
-												return positiveZEncoder;
-											default:
-												return negativeZEncoder;
-										}
-									})))))))));
-var $author$project$Board$playerSpawnDetailsCodec = $MartinSStewart$elm_serialize$Serialize$finishRecord(
-	A3(
-		$MartinSStewart$elm_serialize$Serialize$field,
-		function ($) {
-			return $.left;
-		},
-		$author$project$Board$axisCodec,
-		A3(
-			$MartinSStewart$elm_serialize$Serialize$field,
-			function ($) {
-				return $.forward;
-			},
-			$author$project$Board$axisCodec,
-			$MartinSStewart$elm_serialize$Serialize$record(
-				F2(
-					function (forward, left) {
-						return {forward: forward, left: left};
-					})))));
-var $author$project$Board$blockCodec = $MartinSStewart$elm_serialize$Serialize$finishCustomType(
-	A3(
-		$MartinSStewart$elm_serialize$Serialize$variant1,
-		$author$project$Board$EnemySpawner,
-		$author$project$Board$enemySpawnerDetailsCodec,
-		A3(
-			$MartinSStewart$elm_serialize$Serialize$variant1,
-			$author$project$Board$PlayerSpawn,
-			$author$project$Board$playerSpawnDetailsCodec,
-			A3(
-				$MartinSStewart$elm_serialize$Serialize$variant1,
-				$author$project$Board$PointPickup,
-				$MartinSStewart$elm_serialize$Serialize$bool,
-				A2(
-					$MartinSStewart$elm_serialize$Serialize$variant0,
-					$author$project$Board$Edge,
-					A2(
-						$MartinSStewart$elm_serialize$Serialize$variant0,
-						$author$project$Board$Wall,
-						A2(
-							$MartinSStewart$elm_serialize$Serialize$variant0,
-							$author$project$Board$Empty,
-							$MartinSStewart$elm_serialize$Serialize$customType(
-								F7(
-									function (emptyEncoder, wallEncoder, edgeEncoder, pointPickupEncoder, playerSpawnEncoder, enemySpawnerEncoder, value) {
-										switch (value.$) {
-											case 'Empty':
-												return emptyEncoder;
-											case 'Wall':
-												return wallEncoder;
-											case 'Edge':
-												return edgeEncoder;
-											case 'PointPickup':
-												var collected = value.a;
-												return pointPickupEncoder(collected);
-											case 'PlayerSpawn':
-												var details = value.a;
-												return playerSpawnEncoder(details);
-											default:
-												var details = value.a;
-												return enemySpawnerEncoder(details);
-										}
-									})))))))));
-var $elm$bytes$Bytes$Encode$U32 = F2(
-	function (a, b) {
-		return {$: 'U32', a: a, b: b};
-	});
-var $elm$bytes$Bytes$Encode$unsignedInt32 = $elm$bytes$Bytes$Encode$U32;
-var $MartinSStewart$elm_serialize$Serialize$listEncode = F2(
-	function (encoder_, list_) {
-		return $elm$bytes$Bytes$Encode$sequence(
-			A2(
-				$elm$core$List$cons,
-				A2(
-					$elm$bytes$Bytes$Encode$unsignedInt32,
-					$MartinSStewart$elm_serialize$Serialize$endian,
-					$elm$core$List$length(list_)),
-				A2($elm$core$List$map, encoder_, list_)));
-	});
-var $elm$bytes$Bytes$Decode$Done = function (a) {
-	return {$: 'Done', a: a};
-};
-var $elm$bytes$Bytes$Decode$Loop = function (a) {
-	return {$: 'Loop', a: a};
-};
-var $MartinSStewart$elm_serialize$Serialize$listStep = F2(
-	function (decoder_, _v0) {
-		var n = _v0.a;
-		var xs = _v0.b;
-		return (n <= 0) ? $elm$bytes$Bytes$Decode$succeed(
-			$elm$bytes$Bytes$Decode$Done(
-				$elm$core$Result$Ok(
-					$elm$core$List$reverse(xs)))) : A2(
-			$elm$bytes$Bytes$Decode$map,
-			function (x) {
-				if (x.$ === 'Ok') {
-					var ok = x.a;
-					return $elm$bytes$Bytes$Decode$Loop(
-						_Utils_Tuple2(
-							n - 1,
-							A2($elm$core$List$cons, ok, xs)));
-				} else {
-					var err = x.a;
-					return $elm$bytes$Bytes$Decode$Done(
-						$elm$core$Result$Err(err));
-				}
-			},
-			decoder_);
-	});
-var $elm$bytes$Bytes$Decode$loopHelp = F4(
-	function (state, callback, bites, offset) {
-		loopHelp:
-		while (true) {
-			var _v0 = callback(state);
-			var decoder = _v0.a;
-			var _v1 = A2(decoder, bites, offset);
-			var newOffset = _v1.a;
-			var step = _v1.b;
-			if (step.$ === 'Loop') {
-				var newState = step.a;
-				var $temp$state = newState,
-					$temp$callback = callback,
-					$temp$bites = bites,
-					$temp$offset = newOffset;
-				state = $temp$state;
-				callback = $temp$callback;
-				bites = $temp$bites;
-				offset = $temp$offset;
-				continue loopHelp;
-			} else {
-				var result = step.a;
-				return _Utils_Tuple2(newOffset, result);
-			}
-		}
-	});
-var $elm$bytes$Bytes$Decode$loop = F2(
-	function (state, callback) {
-		return $elm$bytes$Bytes$Decode$Decoder(
-			A2($elm$bytes$Bytes$Decode$loopHelp, state, callback));
-	});
-var $elm$bytes$Bytes$Decode$unsignedInt32 = function (endianness) {
-	return $elm$bytes$Bytes$Decode$Decoder(
-		_Bytes_read_u32(
-			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
-};
-var $MartinSStewart$elm_serialize$Serialize$list = function (codec) {
-	return A4(
-		$MartinSStewart$elm_serialize$Serialize$build,
-		$MartinSStewart$elm_serialize$Serialize$listEncode(
-			$MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper(codec)),
-		A2(
-			$elm$bytes$Bytes$Decode$andThen,
-			function (length) {
-				return A2(
-					$elm$bytes$Bytes$Decode$loop,
-					_Utils_Tuple2(length, _List_Nil),
-					$MartinSStewart$elm_serialize$Serialize$listStep(
-						$MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper(codec)));
-			},
-			$elm$bytes$Bytes$Decode$unsignedInt32($MartinSStewart$elm_serialize$Serialize$endian)),
-		$elm$json$Json$Encode$list(
-			$MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper(codec)),
-		A2(
-			$elm$json$Json$Decode$map,
-			A2(
-				$elm$core$List$foldr,
-				F2(
-					function (value, state) {
-						var _v0 = _Utils_Tuple2(value, state);
-						if (_v0.b.$ === 'Err') {
-							return state;
-						} else {
-							if (_v0.a.$ === 'Ok') {
-								var ok = _v0.a.a;
-								var okState = _v0.b.a;
-								return $elm$core$Result$Ok(
-									A2($elm$core$List$cons, ok, okState));
-							} else {
-								var error = _v0.a.a;
-								return $elm$core$Result$Err(error);
-							}
-						}
-					}),
-				$elm$core$Result$Ok(_List_Nil)),
-			$elm$json$Json$Decode$list(
-				$MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper(codec))));
-};
-var $elm$core$Result$map = F2(
-	function (func, ra) {
-		if (ra.$ === 'Ok') {
-			var a = ra.a;
-			return $elm$core$Result$Ok(
-				func(a));
-		} else {
-			var e = ra.a;
-			return $elm$core$Result$Err(e);
-		}
-	});
-var $MartinSStewart$elm_serialize$Serialize$mapHelper = F3(
-	function (fromBytes_, toBytes_, codec) {
-		return A4(
-			$MartinSStewart$elm_serialize$Serialize$build,
-			function (v) {
-				return A2(
-					$MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper,
-					codec,
-					toBytes_(v));
-			},
-			A2(
-				$elm$bytes$Bytes$Decode$map,
-				fromBytes_,
-				$MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper(codec)),
-			function (v) {
-				return A2(
-					$MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper,
-					codec,
-					toBytes_(v));
-			},
-			A2(
-				$elm$json$Json$Decode$map,
-				fromBytes_,
-				$MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper(codec)));
-	});
-var $elm$core$Tuple$pair = F2(
-	function (a, b) {
-		return _Utils_Tuple2(a, b);
-	});
-var $MartinSStewart$elm_serialize$Serialize$tuple = F2(
-	function (codecFirst, codecSecond) {
-		return $MartinSStewart$elm_serialize$Serialize$finishRecord(
-			A3(
-				$MartinSStewart$elm_serialize$Serialize$field,
-				$elm$core$Tuple$second,
-				codecSecond,
-				A3(
-					$MartinSStewart$elm_serialize$Serialize$field,
-					$elm$core$Tuple$first,
-					codecFirst,
-					$MartinSStewart$elm_serialize$Serialize$record($elm$core$Tuple$pair))));
-	});
-var $MartinSStewart$elm_serialize$Serialize$dict = F2(
-	function (keyCodec, valueCodec) {
-		return A3(
-			$MartinSStewart$elm_serialize$Serialize$mapHelper,
-			$elm$core$Result$map($elm$core$Dict$fromList),
-			$elm$core$Dict$toList,
-			$MartinSStewart$elm_serialize$Serialize$list(
-				A2($MartinSStewart$elm_serialize$Serialize$tuple, keyCodec, valueCodec)));
-	});
-var $elm$core$Basics$round = _Basics_round;
-var $MartinSStewart$elm_serialize$Serialize$int = A4(
-	$MartinSStewart$elm_serialize$Serialize$build,
-	A2(
-		$elm$core$Basics$composeR,
-		$elm$core$Basics$toFloat,
-		$elm$bytes$Bytes$Encode$float64($MartinSStewart$elm_serialize$Serialize$endian)),
-	A2(
-		$elm$bytes$Bytes$Decode$map,
-		A2($elm$core$Basics$composeR, $elm$core$Basics$round, $elm$core$Result$Ok),
-		$elm$bytes$Bytes$Decode$float64($MartinSStewart$elm_serialize$Serialize$endian)),
-	$elm$json$Json$Encode$int,
-	A2($elm$json$Json$Decode$map, $elm$core$Result$Ok, $elm$json$Json$Decode$int));
-var $MartinSStewart$elm_serialize$Serialize$triple = F3(
-	function (codecFirst, codecSecond, codecThird) {
-		return $MartinSStewart$elm_serialize$Serialize$finishRecord(
-			A3(
-				$MartinSStewart$elm_serialize$Serialize$field,
-				function (_v2) {
-					var c = _v2.c;
-					return c;
-				},
-				codecThird,
-				A3(
-					$MartinSStewart$elm_serialize$Serialize$field,
-					function (_v1) {
-						var b = _v1.b;
-						return b;
-					},
-					codecSecond,
-					A3(
-						$MartinSStewart$elm_serialize$Serialize$field,
-						function (_v0) {
-							var a = _v0.a;
-							return a;
-						},
-						codecFirst,
-						$MartinSStewart$elm_serialize$Serialize$record(
-							F3(
-								function (a, b, c) {
-									return _Utils_Tuple3(a, b, c);
-								}))))));
-	});
-var $author$project$Board$pointCodec = A3($MartinSStewart$elm_serialize$Serialize$triple, $MartinSStewart$elm_serialize$Serialize$int, $MartinSStewart$elm_serialize$Serialize$int, $MartinSStewart$elm_serialize$Serialize$int);
-var $author$project$Board$boardCodec = $MartinSStewart$elm_serialize$Serialize$finishRecord(
-	A3(
-		$MartinSStewart$elm_serialize$Serialize$field,
-		function ($) {
-			return $.blocks;
-		},
-		A2($MartinSStewart$elm_serialize$Serialize$dict, $author$project$Board$pointCodec, $author$project$Board$blockCodec),
-		A3(
-			$MartinSStewart$elm_serialize$Serialize$field,
-			function ($) {
-				return $.maxZ;
-			},
-			$MartinSStewart$elm_serialize$Serialize$int,
-			A3(
-				$MartinSStewart$elm_serialize$Serialize$field,
-				function ($) {
-					return $.maxY;
-				},
-				$MartinSStewart$elm_serialize$Serialize$int,
-				A3(
-					$MartinSStewart$elm_serialize$Serialize$field,
-					function ($) {
-						return $.maxX;
-					},
-					$MartinSStewart$elm_serialize$Serialize$int,
-					$MartinSStewart$elm_serialize$Serialize$record($author$project$Board$Board))))));
-var $elm$core$Basics$pi = _Basics_pi;
-var $ianmackenzie$elm_units$Angle$radians = function (numRadians) {
-	return $ianmackenzie$elm_units$Quantity$Quantity(numRadians);
-};
-var $ianmackenzie$elm_units$Angle$degrees = function (numDegrees) {
-	return $ianmackenzie$elm_units$Angle$radians($elm$core$Basics$pi * (numDegrees / 180));
-};
-var $elm$core$Set$Set_elm_builtin = function (a) {
-	return {$: 'Set_elm_builtin', a: a};
-};
-var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
-var $author$project$Board$Forward = {$: 'Forward'};
-var $author$project$Board$NoTarget = {$: 'NoTarget'};
-var $ianmackenzie$elm_geometry$Geometry$Types$Frame3d = function (a) {
-	return {$: 'Frame3d', a: a};
-};
-var $ianmackenzie$elm_geometry$Geometry$Types$Point3d = function (a) {
-	return {$: 'Point3d', a: a};
-};
-var $ianmackenzie$elm_geometry$Point3d$origin = $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
-	{x: 0, y: 0, z: 0});
-var $ianmackenzie$elm_geometry$Geometry$Types$Direction3d = function (a) {
-	return {$: 'Direction3d', a: a};
-};
-var $ianmackenzie$elm_geometry$Direction3d$unsafe = function (givenComponents) {
-	return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(givenComponents);
-};
-var $ianmackenzie$elm_geometry$Direction3d$positiveX = $ianmackenzie$elm_geometry$Direction3d$unsafe(
-	{x: 1, y: 0, z: 0});
-var $ianmackenzie$elm_geometry$Direction3d$x = $ianmackenzie$elm_geometry$Direction3d$positiveX;
-var $ianmackenzie$elm_geometry$Direction3d$positiveY = $ianmackenzie$elm_geometry$Direction3d$unsafe(
-	{x: 0, y: 1, z: 0});
-var $ianmackenzie$elm_geometry$Direction3d$y = $ianmackenzie$elm_geometry$Direction3d$positiveY;
-var $ianmackenzie$elm_geometry$Direction3d$positiveZ = $ianmackenzie$elm_geometry$Direction3d$unsafe(
-	{x: 0, y: 0, z: 1});
-var $ianmackenzie$elm_geometry$Direction3d$z = $ianmackenzie$elm_geometry$Direction3d$positiveZ;
-var $ianmackenzie$elm_geometry$Frame3d$atOrigin = $ianmackenzie$elm_geometry$Geometry$Types$Frame3d(
-	{originPoint: $ianmackenzie$elm_geometry$Point3d$origin, xDirection: $ianmackenzie$elm_geometry$Direction3d$x, yDirection: $ianmackenzie$elm_geometry$Direction3d$y, zDirection: $ianmackenzie$elm_geometry$Direction3d$z});
-var $author$project$Board$empty = {blocks: $elm$core$Dict$empty, maxX: 0, maxY: 0, maxZ: 0};
-var $author$project$Board$emptyLevel = {
-	board: $author$project$Board$empty,
-	enemies: _List_Nil,
-	hearts: 6,
-	invincibleFrames: $ianmackenzie$elm_units$Duration$seconds(0),
-	playerFacing: $author$project$Board$Forward,
-	playerFrame: $ianmackenzie$elm_geometry$Frame3d$atOrigin,
-	playerTarget: $author$project$Board$NoTarget,
-	playerWantFacing: $author$project$Board$Forward,
-	score: 0
-};
-var $MartinSStewart$elm_serialize$Serialize$version = 1;
-var $MartinSStewart$elm_serialize$Serialize$encodeToJson = F2(
-	function (codec, value) {
-		return A2(
-			$elm$json$Json$Encode$list,
-			$elm$core$Basics$identity,
-			_List_fromArray(
-				[
-					$elm$json$Json$Encode$int($MartinSStewart$elm_serialize$Serialize$version),
-					A2($MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper, codec, value)
-				]));
-	});
-var $author$project$Board$indexToPoint = F2(
-	function (_v0, index) {
-		var maxY = _v0.maxY;
-		var maxZ = _v0.maxZ;
-		var x = (index / (maxY * maxZ)) | 0;
-		var y = ((index - ((x * maxY) * maxZ)) / maxZ) | 0;
-		var z = (index - ((x * maxY) * maxZ)) - (y * maxZ);
-		return _Utils_Tuple3(x, y, z);
-	});
-var $author$project$Animation$Animating = function (a) {
-	return {$: 'Animating', a: a};
-};
-var $author$project$Animation$Animation = function (a) {
-	return {$: 'Animation', a: a};
-};
-var $author$project$Animation$Complete = function (a) {
-	return {$: 'Complete', a: a};
-};
-var $author$project$Animation$NoAnimation = {$: 'NoAnimation'};
-var $author$project$Animation$init = F2(
-	function (_default, frames) {
-		return $author$project$Animation$Animation(
-			{
-				_default: _default,
-				frames: frames,
-				loops: false,
-				state: function () {
-					if (!frames.b) {
-						return $author$project$Animation$NoAnimation;
-					} else {
-						if (!frames.b.b) {
-							var frame = frames.a;
-							return $author$project$Animation$Complete(frame.value);
-						} else {
-							return $author$project$Animation$Animating(0);
-						}
-					}
-				}(),
-				totalTime: A3(
-					$elm$core$List$foldl,
-					F2(
-						function (frame, total) {
-							return frame.offset + total;
-						}),
-					0,
-					frames)
-			});
-	});
-var $author$project$Undo$Stack = function (a) {
-	return {$: 'Stack', a: a};
-};
-var $author$project$Undo$init = function (v) {
-	return $author$project$Undo$Stack(
-		_Utils_Tuple3(_List_Nil, v, _List_Nil));
-};
-var $ianmackenzie$elm_units$Length$meters = function (numMeters) {
-	return $ianmackenzie$elm_units$Quantity$Quantity(numMeters);
-};
-var $ianmackenzie$elm_geometry$Point3d$meters = F3(
-	function (x, y, z) {
-		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
-			{x: x, y: y, z: z});
-	});
-var $elm$core$List$repeatHelp = F3(
-	function (result, n, value) {
-		repeatHelp:
-		while (true) {
-			if (n <= 0) {
-				return result;
-			} else {
-				var $temp$result = A2($elm$core$List$cons, value, result),
-					$temp$n = n - 1,
-					$temp$value = value;
-				result = $temp$result;
-				n = $temp$n;
-				value = $temp$value;
-				continue repeatHelp;
-			}
-		}
-	});
-var $elm$core$List$repeat = F2(
-	function (n, value) {
-		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
-	});
-var $author$project$Animation$withLoop = function (_v0) {
-	var anim = _v0.a;
-	return $author$project$Animation$Animation(
-		_Utils_update(
-			anim,
-			{loops: true}));
-};
-var $author$project$Screen$Editor$init = function () {
-	var maxZ = 9;
-	var maxY = 9;
-	var maxX = 9;
-	var sizeHelper = {maxX: maxX, maxY: maxY, maxZ: maxZ};
-	var board = {
-		blocks: A3(
-			$elm$core$List$foldl,
-			F2(
-				function (block, _v0) {
-					var index = _v0.a;
-					var blocks = _v0.b;
-					return _Utils_Tuple2(
-						index + 1,
-						A3(
-							$elm$core$Dict$insert,
-							A2($author$project$Board$indexToPoint, sizeHelper, index),
-							block,
-							blocks));
-				}),
-			_Utils_Tuple2(0, $elm$core$Dict$empty),
-			A2($elm$core$List$repeat, (maxX * maxY) * maxZ, $author$project$Board$Wall)).b,
-		maxX: maxX,
-		maxY: maxY,
-		maxZ: maxZ
-	};
-	return _Utils_Tuple2(
-		{
-			blockEditMode: $author$project$Screen$Editor$Select,
-			boardEncoding: A2(
-				$elm$json$Json$Encode$encode,
-				0,
-				A2($MartinSStewart$elm_serialize$Serialize$encodeToJson, $author$project$Board$boardCodec, board)),
-			boardLoadError: $elm$core$Maybe$Nothing,
-			boardPlayError: $elm$core$Maybe$Nothing,
-			cameraDistance: $ianmackenzie$elm_units$Length$meters(30),
-			cameraElevation: $ianmackenzie$elm_units$Angle$degrees(25),
-			cameraFocalPoint: A3($ianmackenzie$elm_geometry$Point3d$meters, (maxX - 1) / 2, (maxY - 1) / 2, (maxZ - 1) / 2),
-			cameraMode: $author$project$Screen$Editor$Orbit,
-			cameraRotation: $ianmackenzie$elm_units$Angle$degrees(225),
-			cursorBounce: $author$project$Animation$withLoop(
-				A2(
-					$author$project$Animation$init,
-					0,
-					_List_fromArray(
-						[
-							{offset: 0, value: 0},
-							{offset: 500, value: 1},
-							{offset: 500, value: 0}
-						]))),
-			editorBoard: $author$project$Undo$init(board),
-			editorCursor: _Utils_Tuple3(0, 0, 0),
-			editorKeysDown: $elm$core$Set$empty,
-			editorMaxXRaw: $elm$core$String$fromInt(maxX),
-			editorMaxYRaw: $elm$core$String$fromInt(maxY),
-			editorMaxZRaw: $elm$core$String$fromInt(maxZ),
-			editorMode: $author$project$Screen$Editor$EditBoard,
-			level: $author$project$Board$emptyLevel,
-			mouseDragging: $author$project$Screen$Editor$NoInteraction,
-			screenSize: {height: 600, width: 800},
-			selectedBlock: $elm$core$Maybe$Nothing,
-			selectedBlockType: $author$project$Board$Wall,
-			showBoardBounds: true,
-			showSettings: false,
-			xLowerVisible: 0,
-			xUpperVisible: maxX - 1,
-			yLowerVisible: 0,
-			yUpperVisible: maxY - 1,
-			zLowerVisible: 0,
-			zUpperVisible: maxZ - 1
-		},
-		$elm$core$Platform$Cmd$none);
-}();
-var $author$project$Screen$FreePlay$FreePlayBoardSelection = {$: 'FreePlayBoardSelection'};
-var $author$project$Screen$FreePlay$init = _Utils_Tuple2(
-	{boardLoadError: $elm$core$Maybe$Nothing, boardPlayError: $elm$core$Maybe$Nothing, freePlayMode: $author$project$Screen$FreePlay$FreePlayBoardSelection, level: $author$project$Board$emptyLevel, showFreePlayMenu: false},
-	$elm$core$Platform$Cmd$none);
-var $author$project$Board$MoveForward = function (a) {
-	return {$: 'MoveForward', a: a};
-};
-var $author$project$Board$TraverseEdge = function (a) {
-	return {$: 'TraverseEdge', a: a};
-};
-var $author$project$Board$durationForEdgeMovement = $ianmackenzie$elm_units$Duration$seconds(0.75);
-var $author$project$Board$durationForForwardMovement = $ianmackenzie$elm_units$Duration$seconds(0.25);
-var $ianmackenzie$elm_geometry$Frame3d$originPoint = function (_v0) {
-	var properties = _v0.a;
-	return properties.originPoint;
-};
-var $ianmackenzie$elm_geometry$Point3d$unwrap = function (_v0) {
-	var pointCoordinates = _v0.a;
-	return pointCoordinates;
-};
-var $author$project$Board$point3dToPoint = function (point) {
-	var parts = $ianmackenzie$elm_geometry$Point3d$unwrap(point);
-	return _Utils_Tuple3(
-		$elm$core$Basics$round(parts.x),
-		$elm$core$Basics$round(parts.y),
-		$elm$core$Basics$round(parts.z));
-};
-var $author$project$Board$pointToPoint3d = function (_v0) {
-	var x = _v0.a;
-	var y = _v0.b;
-	var z = _v0.c;
-	return A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z);
-};
-var $ianmackenzie$elm_geometry$Direction3d$reverse = function (_v0) {
-	var d = _v0.a;
-	return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
-		{x: -d.x, y: -d.y, z: -d.z});
-};
-var $ianmackenzie$elm_geometry$Point3d$translateBy = F2(
-	function (_v0, _v1) {
-		var v = _v0.a;
-		var p = _v1.a;
-		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
-			{x: p.x + v.x, y: p.y + v.y, z: p.z + v.z});
-	});
-var $ianmackenzie$elm_geometry$Frame3d$unsafe = function (properties) {
-	return $ianmackenzie$elm_geometry$Geometry$Types$Frame3d(properties);
-};
-var $ianmackenzie$elm_geometry$Frame3d$xDirection = function (_v0) {
-	var properties = _v0.a;
-	return properties.xDirection;
-};
-var $ianmackenzie$elm_geometry$Frame3d$yDirection = function (_v0) {
-	var properties = _v0.a;
-	return properties.yDirection;
-};
-var $ianmackenzie$elm_geometry$Frame3d$zDirection = function (_v0) {
-	var properties = _v0.a;
-	return properties.zDirection;
-};
-var $ianmackenzie$elm_geometry$Frame3d$translateBy = F2(
-	function (vector, frame) {
-		return $ianmackenzie$elm_geometry$Frame3d$unsafe(
-			{
-				originPoint: A2(
-					$ianmackenzie$elm_geometry$Point3d$translateBy,
-					vector,
-					$ianmackenzie$elm_geometry$Frame3d$originPoint(frame)),
-				xDirection: $ianmackenzie$elm_geometry$Frame3d$xDirection(frame),
-				yDirection: $ianmackenzie$elm_geometry$Frame3d$yDirection(frame),
-				zDirection: $ianmackenzie$elm_geometry$Frame3d$zDirection(frame)
-			});
-	});
-var $ianmackenzie$elm_geometry$Geometry$Types$Vector3d = function (a) {
-	return {$: 'Vector3d', a: a};
-};
-var $ianmackenzie$elm_geometry$Vector3d$withLength = F2(
-	function (_v0, _v1) {
-		var a = _v0.a;
-		var d = _v1.a;
-		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
-			{x: a * d.x, y: a * d.y, z: a * d.z});
-	});
-var $ianmackenzie$elm_geometry$Frame3d$translateIn = F3(
-	function (direction, distance, frame) {
-		return A2(
-			$ianmackenzie$elm_geometry$Frame3d$translateBy,
-			A2($ianmackenzie$elm_geometry$Vector3d$withLength, distance, direction),
-			frame);
-	});
-var $ianmackenzie$elm_geometry$Point3d$translateIn = F3(
-	function (_v0, _v1, _v2) {
-		var d = _v0.a;
-		var distance = _v1.a;
-		var p = _v2.a;
-		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
-			{x: p.x + (distance * d.x), y: p.y + (distance * d.y), z: p.z + (distance * d.z)});
-	});
-var $author$project$Board$findNextTarget = F4(
-	function (board, playerFacing, fromPoint, playerFrame) {
-		var toPoint = $author$project$Board$point3dToPoint(
-			$ianmackenzie$elm_geometry$Frame3d$originPoint(
-				A3(
-					$ianmackenzie$elm_geometry$Frame3d$translateIn,
-					function () {
-						switch (playerFacing.$) {
-							case 'Forward':
-								return $ianmackenzie$elm_geometry$Frame3d$xDirection(playerFrame);
-							case 'Backward':
-								return $ianmackenzie$elm_geometry$Direction3d$reverse(
-									$ianmackenzie$elm_geometry$Frame3d$xDirection(playerFrame));
-							case 'Right':
-								return $ianmackenzie$elm_geometry$Direction3d$reverse(
-									$ianmackenzie$elm_geometry$Frame3d$yDirection(playerFrame));
-							default:
-								return $ianmackenzie$elm_geometry$Frame3d$yDirection(playerFrame);
-						}
-					}(),
-					$ianmackenzie$elm_units$Length$meters(1),
-					playerFrame)));
-		var _v0 = A2($elm$core$Dict$get, toPoint, board.blocks);
-		if (_v0.$ === 'Nothing') {
-			return $author$project$Board$NoTarget;
-		} else {
-			switch (_v0.a.$) {
-				case 'Wall':
-					var _v1 = _v0.a;
-					return $author$project$Board$NoTarget;
-				case 'EnemySpawner':
-					return $author$project$Board$NoTarget;
-				case 'Empty':
-					var _v2 = _v0.a;
-					return $author$project$Board$MoveForward(
-						{duration: $author$project$Board$durationForForwardMovement, from: fromPoint, to: toPoint});
-				case 'PlayerSpawn':
-					return $author$project$Board$MoveForward(
-						{duration: $author$project$Board$durationForForwardMovement, from: fromPoint, to: toPoint});
-				case 'PointPickup':
-					return $author$project$Board$MoveForward(
-						{duration: $author$project$Board$durationForForwardMovement, from: fromPoint, to: toPoint});
-				default:
-					var _v3 = _v0.a;
-					return $author$project$Board$TraverseEdge(
-						{
-							duration: $author$project$Board$durationForEdgeMovement,
-							from: fromPoint,
-							to: $author$project$Board$point3dToPoint(
-								A3(
-									$ianmackenzie$elm_geometry$Point3d$translateIn,
-									$ianmackenzie$elm_geometry$Frame3d$zDirection(playerFrame),
-									$ianmackenzie$elm_units$Length$meters(-1),
-									$author$project$Board$pointToPoint3d(toPoint)))
-						});
-			}
-		}
-	});
-var $author$project$Board$initTarget = F3(
-	function (board, facing, playerFrame) {
-		return A4(
-			$author$project$Board$findNextTarget,
-			board,
-			facing,
-			$author$project$Board$point3dToPoint(
-				$ianmackenzie$elm_geometry$Frame3d$originPoint(playerFrame)),
-			playerFrame);
-	});
-var $author$project$Screen$Game$init = _Utils_Tuple2(
-	{
-		board: $author$project$Board$empty,
-		playerFacing: $author$project$Board$Forward,
-		playerFrame: $ianmackenzie$elm_geometry$Frame3d$atOrigin,
-		playerTarget: A3($author$project$Board$initTarget, $author$project$Board$empty, $author$project$Board$Forward, $ianmackenzie$elm_geometry$Frame3d$atOrigin),
-		playerWantFacing: $author$project$Board$Forward,
-		score: 0
-	},
-	$elm$core$Platform$Cmd$none);
 var $author$project$Screen$Menu$init = _Utils_Tuple2(
 	{},
 	$elm$core$Platform$Cmd$none);
 var $author$project$Shared$Loaded = function (a) {
 	return {$: 'Loaded', a: a};
 };
-var $author$project$Shared$Menu = {$: 'Menu'};
 var $author$project$Board$SimpleBlocks = {$: 'SimpleBlocks'};
 var $author$project$Input$defaultMapping = {
 	blockAdd: _Utils_Tuple2('w', ''),
@@ -18019,6 +16627,37 @@ var $author$project$Shared$TextureLoadError = function (a) {
 	return {$: 'TextureLoadError', a: a};
 };
 var $elm$http$Http$Timeout = {$: 'Timeout'};
+var $ianmackenzie$elm_geometry$Geometry$Types$Frame3d = function (a) {
+	return {$: 'Frame3d', a: a};
+};
+var $ianmackenzie$elm_geometry$Geometry$Types$Point3d = function (a) {
+	return {$: 'Point3d', a: a};
+};
+var $ianmackenzie$elm_geometry$Point3d$origin = $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
+	{x: 0, y: 0, z: 0});
+var $ianmackenzie$elm_geometry$Geometry$Types$Direction3d = function (a) {
+	return {$: 'Direction3d', a: a};
+};
+var $ianmackenzie$elm_geometry$Direction3d$unsafe = function (givenComponents) {
+	return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(givenComponents);
+};
+var $ianmackenzie$elm_geometry$Direction3d$positiveX = $ianmackenzie$elm_geometry$Direction3d$unsafe(
+	{x: 1, y: 0, z: 0});
+var $ianmackenzie$elm_geometry$Direction3d$x = $ianmackenzie$elm_geometry$Direction3d$positiveX;
+var $ianmackenzie$elm_geometry$Direction3d$positiveY = $ianmackenzie$elm_geometry$Direction3d$unsafe(
+	{x: 0, y: 1, z: 0});
+var $ianmackenzie$elm_geometry$Direction3d$y = $ianmackenzie$elm_geometry$Direction3d$positiveY;
+var $ianmackenzie$elm_geometry$Direction3d$positiveZ = $ianmackenzie$elm_geometry$Direction3d$unsafe(
+	{x: 0, y: 0, z: 1});
+var $ianmackenzie$elm_geometry$Direction3d$z = $ianmackenzie$elm_geometry$Direction3d$positiveZ;
+var $ianmackenzie$elm_geometry$Frame3d$atOrigin = $ianmackenzie$elm_geometry$Geometry$Types$Frame3d(
+	{originPoint: $ianmackenzie$elm_geometry$Point3d$origin, xDirection: $ianmackenzie$elm_geometry$Direction3d$x, yDirection: $ianmackenzie$elm_geometry$Direction3d$y, zDirection: $ianmackenzie$elm_geometry$Direction3d$z});
+var $ianmackenzie$elm_units$Quantity$Quantity = function (a) {
+	return {$: 'Quantity', a: a};
+};
+var $ianmackenzie$elm_units$Length$meters = function (numMeters) {
+	return $ianmackenzie$elm_units$Quantity$Quantity(numMeters);
+};
 var $ianmackenzie$elm_units$Length$centimeters = function (numCentimeters) {
 	return $ianmackenzie$elm_units$Length$meters(0.01 * numCentimeters);
 };
@@ -18942,6 +17581,9 @@ var $elm$http$Http$task = function (r) {
 		$elm$http$Http$resultToTask,
 		{allowCookiesFromOtherDomains: false, body: r.body, expect: r.resolver, headers: r.headers, method: r.method, timeout: r.timeout, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
+var $ianmackenzie$elm_geometry$Geometry$Types$Vector3d = function (a) {
+	return {$: 'Vector3d', a: a};
+};
 var $ianmackenzie$elm_geometry$Vector3d$cross = F2(
 	function (_v0, _v1) {
 		var v2 = _v0.a;
@@ -19112,6 +17754,10 @@ var $ianmackenzie$elm_3d_scene$Scene3d$Types$MeshWithNormalsAndUvs = F4(
 		return {$: 'MeshWithNormalsAndUvs', a: a, b: b, c: c, d: d};
 	});
 var $elm_explorations$linear_algebra$Math$Vector3$fromRecord = _MJS_v3fromRecord;
+var $ianmackenzie$elm_geometry$Point3d$unwrap = function (_v0) {
+	var pointCoordinates = _v0.a;
+	return pointCoordinates;
+};
 var $ianmackenzie$elm_geometry_linear_algebra_interop$Geometry$Interop$LinearAlgebra$Point3d$toVec3 = function (point) {
 	return $elm_explorations$linear_algebra$Math$Vector3$fromRecord(
 		$ianmackenzie$elm_geometry$Point3d$unwrap(point));
@@ -19700,7 +18346,6 @@ var $author$project$Shared$init = function () {
 			{
 				blockPalette: $author$project$Board$SimpleBlocks,
 				inputMapping: $author$project$Input$defaultMapping,
-				screen: $author$project$Shared$Menu,
 				screenSize: {height: 600, width: 800}
 			}),
 		loadingCmd);
@@ -19712,29 +18357,30 @@ var $author$project$Main$init = function (_v0) {
 	var _v2 = $author$project$Screen$Menu$init;
 	var menuModel = _v2.a;
 	var menuCmd = _v2.b;
-	var _v3 = $author$project$Screen$Game$init;
-	var gameModel = _v3.a;
-	var gameCmd = _v3.b;
-	var _v4 = $author$project$Screen$FreePlay$init;
-	var freePlayModel = _v4.a;
-	var freePlayCmd = _v4.b;
-	var _v5 = $author$project$Screen$Editor$init;
-	var editorModel = _v5.a;
-	var editorCmd = _v5.b;
 	return _Utils_Tuple2(
-		{editorModel: editorModel, freePlayModel: freePlayModel, gameModel: gameModel, menuModel: menuModel, sharedModel: sharedModel},
+		{
+			screen: $author$project$Screen$Model$Menu(menuModel),
+			sharedModel: sharedModel
+		},
 		$elm$core$Platform$Cmd$batch(
 			_List_fromArray(
 				[
 					A2($elm$core$Platform$Cmd$map, $author$project$Main$SharedMsg, sharedCmd),
-					A2($elm$core$Platform$Cmd$map, $author$project$Main$MenuMsg, menuCmd),
-					A2($elm$core$Platform$Cmd$map, $author$project$Main$GameMsg, gameCmd),
-					A2($elm$core$Platform$Cmd$map, $author$project$Main$FreePlayMsg, freePlayCmd),
-					A2($elm$core$Platform$Cmd$map, $author$project$Main$EditorMsg, editorCmd)
+					A2($elm$core$Platform$Cmd$map, $author$project$Main$MenuMsg, menuCmd)
 				])));
+};
+var $author$project$Main$EditorMsg = function (a) {
+	return {$: 'EditorMsg', a: a};
+};
+var $author$project$Main$FreePlayMsg = function (a) {
+	return {$: 'FreePlayMsg', a: a};
+};
+var $author$project$Main$GameMsg = function (a) {
+	return {$: 'GameMsg', a: a};
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$Screen$Editor$BrowserResized = {$: 'BrowserResized'};
 var $author$project$Screen$Editor$Tick = function (a) {
 	return {$: 'Tick', a: a};
 };
@@ -19752,6 +18398,9 @@ var $author$project$Screen$Editor$decodeKeyUp = A2(
 	$elm$json$Json$Decode$map,
 	$author$project$Screen$Editor$KeyUp,
 	A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
+var $ianmackenzie$elm_units$Duration$seconds = function (numSeconds) {
+	return $ianmackenzie$elm_units$Quantity$Quantity(numSeconds);
+};
 var $ianmackenzie$elm_units$Duration$milliseconds = function (numMilliseconds) {
 	return $ianmackenzie$elm_units$Duration$seconds(0.001 * numMilliseconds);
 };
@@ -20056,6 +18705,21 @@ var $elm$browser$Browser$Events$on = F3(
 	});
 var $elm$browser$Browser$Events$onKeyDown = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keydown');
 var $elm$browser$Browser$Events$onKeyUp = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keyup');
+var $elm$browser$Browser$Events$Window = {$: 'Window'};
+var $elm$browser$Browser$Events$onResize = function (func) {
+	return A3(
+		$elm$browser$Browser$Events$on,
+		$elm$browser$Browser$Events$Window,
+		'resize',
+		A2(
+			$elm$json$Json$Decode$field,
+			'target',
+			A3(
+				$elm$json$Json$Decode$map2,
+				func,
+				A2($elm$json$Json$Decode$field, 'innerWidth', $elm$json$Json$Decode$int),
+				A2($elm$json$Json$Decode$field, 'innerHeight', $elm$json$Json$Decode$int))));
+};
 var $author$project$Screen$Editor$subscriptions = function (model) {
 	return model.showSettings ? $elm$core$Platform$Sub$none : $elm$core$Platform$Sub$batch(
 		_List_fromArray(
@@ -20063,8 +18727,16 @@ var $author$project$Screen$Editor$subscriptions = function (model) {
 				$elm$browser$Browser$Events$onKeyDown($author$project$Screen$Editor$decodeKeyDown),
 				$elm$browser$Browser$Events$onKeyUp($author$project$Screen$Editor$decodeKeyUp),
 				$elm$browser$Browser$Events$onAnimationFrameDelta(
-				A2($elm$core$Basics$composeR, $ianmackenzie$elm_units$Duration$milliseconds, $author$project$Screen$Editor$Tick))
+				A2($elm$core$Basics$composeR, $ianmackenzie$elm_units$Duration$milliseconds, $author$project$Screen$Editor$Tick)),
+				$elm$browser$Browser$Events$onResize(
+				F2(
+					function (_v0, _v1) {
+						return $author$project$Screen$Editor$BrowserResized;
+					}))
 			]));
+};
+var $author$project$Shared$SetScreenSize = function (a) {
+	return {$: 'SetScreenSize', a: a};
 };
 var $author$project$Screen$FreePlay$Tick = function (a) {
 	return {$: 'Tick', a: a};
@@ -20072,24 +18744,46 @@ var $author$project$Screen$FreePlay$Tick = function (a) {
 var $author$project$Screen$FreePlay$KeyDown = function (a) {
 	return {$: 'KeyDown', a: a};
 };
-var $author$project$Screen$FreePlay$decodeKeyDown = A2(
-	$elm$json$Json$Decode$map,
-	$author$project$Screen$FreePlay$KeyDown,
-	A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
-var $author$project$Screen$FreePlay$subscriptions = function (model) {
-	var _v0 = model.freePlayMode;
-	if (_v0.$ === 'FreePlayBoardSelection') {
-		return $elm$core$Platform$Sub$none;
-	} else {
-		return model.showFreePlayMenu ? $elm$core$Platform$Sub$none : $elm$core$Platform$Sub$batch(
+var $author$project$Screen$FreePlay$decodeKeyDown = function (toMsg) {
+	return A2(
+		$elm$json$Json$Decode$map,
+		A2($elm$core$Basics$composeR, $author$project$Screen$FreePlay$KeyDown, toMsg),
+		A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
+};
+var $author$project$Screen$FreePlay$subscriptions = F2(
+	function (_v0, model) {
+		var toSharedMsg = _v0.toSharedMsg;
+		var toMsg = _v0.toMsg;
+		return $elm$core$Platform$Sub$batch(
 			_List_fromArray(
 				[
-					$elm$browser$Browser$Events$onAnimationFrameDelta(
-					A2($elm$core$Basics$composeR, $ianmackenzie$elm_units$Duration$milliseconds, $author$project$Screen$FreePlay$Tick)),
-					$elm$browser$Browser$Events$onKeyDown($author$project$Screen$FreePlay$decodeKeyDown)
+					$elm$browser$Browser$Events$onResize(
+					F2(
+						function (width, height) {
+							return toSharedMsg(
+								$author$project$Shared$SetScreenSize(
+									{height: height, width: width}));
+						})),
+					function () {
+					var _v1 = model.freePlayMode;
+					if (_v1.$ === 'FreePlayBoardSelection') {
+						return $elm$core$Platform$Sub$none;
+					} else {
+						return model.showFreePlayMenu ? $elm$core$Platform$Sub$none : $elm$core$Platform$Sub$batch(
+							_List_fromArray(
+								[
+									$elm$browser$Browser$Events$onAnimationFrameDelta(
+									A2(
+										$elm$core$Basics$composeR,
+										$ianmackenzie$elm_units$Duration$milliseconds,
+										A2($elm$core$Basics$composeR, $author$project$Screen$FreePlay$Tick, toMsg))),
+									$elm$browser$Browser$Events$onKeyDown(
+									$author$project$Screen$FreePlay$decodeKeyDown(toMsg))
+								]));
+					}
+				}()
 				]));
-	}
-};
+	});
 var $author$project$Screen$Game$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
@@ -20100,33 +18794,1424 @@ var $author$project$Main$subscriptions = function (model) {
 	var _v0 = model.sharedModel;
 	if (_v0.$ === 'Loaded') {
 		var sharedModel = _v0.a;
-		var _v1 = sharedModel.screen;
+		var _v1 = model.screen;
 		switch (_v1.$) {
 			case 'Menu':
+				var menuModel = _v1.a;
 				return A2(
 					$elm$core$Platform$Sub$map,
 					$author$project$Main$MenuMsg,
-					$author$project$Screen$Menu$subscriptions(model.menuModel));
+					$author$project$Screen$Menu$subscriptions(menuModel));
 			case 'Game':
+				var gameModel = _v1.a;
 				return A2(
 					$elm$core$Platform$Sub$map,
 					$author$project$Main$GameMsg,
-					$author$project$Screen$Game$subscriptions(model.gameModel));
+					$author$project$Screen$Game$subscriptions(gameModel));
 			case 'FreePlay':
+				var freePlayModel = _v1.a;
 				return A2(
-					$elm$core$Platform$Sub$map,
-					$author$project$Main$FreePlayMsg,
-					$author$project$Screen$FreePlay$subscriptions(model.freePlayModel));
+					$author$project$Screen$FreePlay$subscriptions,
+					{toMsg: $author$project$Main$FreePlayMsg, toSharedMsg: $author$project$Main$SharedMsg},
+					freePlayModel);
 			default:
+				var editorModel = _v1.a;
 				return A2(
 					$elm$core$Platform$Sub$map,
 					$author$project$Main$EditorMsg,
-					$author$project$Screen$Editor$subscriptions(model.editorModel));
+					$author$project$Screen$Editor$subscriptions(editorModel));
 		}
 	} else {
 		return $elm$core$Platform$Sub$none;
 	}
 };
+var $author$project$Screen$Model$Editor = function (a) {
+	return {$: 'Editor', a: a};
+};
+var $author$project$Screen$Model$FreePlay = function (a) {
+	return {$: 'FreePlay', a: a};
+};
+var $author$project$Screen$Model$Game = function (a) {
+	return {$: 'Game', a: a};
+};
+var $author$project$Screen$Editor$EditBoard = {$: 'EditBoard'};
+var $author$project$Screen$Editor$EditorViewportResized = function (a) {
+	return {$: 'EditorViewportResized', a: a};
+};
+var $author$project$Screen$Editor$NoInteraction = {$: 'NoInteraction'};
+var $author$project$Screen$Editor$Orbit = {$: 'Orbit'};
+var $author$project$Screen$Editor$Select = {$: 'Select'};
+var $author$project$Board$Wall = {$: 'Wall'};
+var $elm$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return $elm$core$Task$command(
+			$elm$core$Task$Perform(
+				A2(
+					$elm$core$Task$onError,
+					A2(
+						$elm$core$Basics$composeL,
+						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+						$elm$core$Result$Err),
+					A2(
+						$elm$core$Task$andThen,
+						A2(
+							$elm$core$Basics$composeL,
+							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+							$elm$core$Result$Ok),
+						task))));
+	});
+var $author$project$Board$Board = F4(
+	function (maxX, maxY, maxZ, blocks) {
+		return {blocks: blocks, maxX: maxX, maxY: maxY, maxZ: maxZ};
+	});
+var $author$project$Board$Edge = {$: 'Edge'};
+var $author$project$Board$Empty = {$: 'Empty'};
+var $author$project$Board$EnemySpawner = function (a) {
+	return {$: 'EnemySpawner', a: a};
+};
+var $author$project$Board$PlayerSpawn = function (a) {
+	return {$: 'PlayerSpawn', a: a};
+};
+var $author$project$Board$PointPickup = function (a) {
+	return {$: 'PointPickup', a: a};
+};
+var $MartinSStewart$elm_serialize$Serialize$DataCorrupted = {$: 'DataCorrupted'};
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $MartinSStewart$elm_serialize$Serialize$Codec = function (a) {
+	return {$: 'Codec', a: a};
+};
+var $MartinSStewart$elm_serialize$Serialize$build = F4(
+	function (encoder_, decoder_, jsonEncoder, jsonDecoder) {
+		return $MartinSStewart$elm_serialize$Serialize$Codec(
+			{decoder: decoder_, encoder: encoder_, jsonDecoder: jsonDecoder, jsonEncoder: jsonEncoder});
+	});
+var $elm$bytes$Bytes$Decode$Decoder = function (a) {
+	return {$: 'Decoder', a: a};
+};
+var $elm$bytes$Bytes$Decode$map = F2(
+	function (func, _v0) {
+		var decodeA = _v0.a;
+		return $elm$bytes$Bytes$Decode$Decoder(
+			F2(
+				function (bites, offset) {
+					var _v1 = A2(decodeA, bites, offset);
+					var aOffset = _v1.a;
+					var a = _v1.b;
+					return _Utils_Tuple2(
+						aOffset,
+						func(a));
+				}));
+	});
+var $elm$bytes$Bytes$Encode$getWidth = function (builder) {
+	switch (builder.$) {
+		case 'I8':
+			return 1;
+		case 'I16':
+			return 2;
+		case 'I32':
+			return 4;
+		case 'U8':
+			return 1;
+		case 'U16':
+			return 2;
+		case 'U32':
+			return 4;
+		case 'F32':
+			return 4;
+		case 'F64':
+			return 8;
+		case 'Seq':
+			var w = builder.a;
+			return w;
+		case 'Utf8':
+			var w = builder.a;
+			return w;
+		default:
+			var bs = builder.a;
+			return _Bytes_width(bs);
+	}
+};
+var $elm$bytes$Bytes$LE = {$: 'LE'};
+var $elm$bytes$Bytes$Encode$write = F3(
+	function (builder, mb, offset) {
+		switch (builder.$) {
+			case 'I8':
+				var n = builder.a;
+				return A3(_Bytes_write_i8, mb, offset, n);
+			case 'I16':
+				var e = builder.a;
+				var n = builder.b;
+				return A4(
+					_Bytes_write_i16,
+					mb,
+					offset,
+					n,
+					_Utils_eq(e, $elm$bytes$Bytes$LE));
+			case 'I32':
+				var e = builder.a;
+				var n = builder.b;
+				return A4(
+					_Bytes_write_i32,
+					mb,
+					offset,
+					n,
+					_Utils_eq(e, $elm$bytes$Bytes$LE));
+			case 'U8':
+				var n = builder.a;
+				return A3(_Bytes_write_u8, mb, offset, n);
+			case 'U16':
+				var e = builder.a;
+				var n = builder.b;
+				return A4(
+					_Bytes_write_u16,
+					mb,
+					offset,
+					n,
+					_Utils_eq(e, $elm$bytes$Bytes$LE));
+			case 'U32':
+				var e = builder.a;
+				var n = builder.b;
+				return A4(
+					_Bytes_write_u32,
+					mb,
+					offset,
+					n,
+					_Utils_eq(e, $elm$bytes$Bytes$LE));
+			case 'F32':
+				var e = builder.a;
+				var n = builder.b;
+				return A4(
+					_Bytes_write_f32,
+					mb,
+					offset,
+					n,
+					_Utils_eq(e, $elm$bytes$Bytes$LE));
+			case 'F64':
+				var e = builder.a;
+				var n = builder.b;
+				return A4(
+					_Bytes_write_f64,
+					mb,
+					offset,
+					n,
+					_Utils_eq(e, $elm$bytes$Bytes$LE));
+			case 'Seq':
+				var bs = builder.b;
+				return A3($elm$bytes$Bytes$Encode$writeSequence, bs, mb, offset);
+			case 'Utf8':
+				var s = builder.b;
+				return A3(_Bytes_write_string, mb, offset, s);
+			default:
+				var bs = builder.a;
+				return A3(_Bytes_write_bytes, mb, offset, bs);
+		}
+	});
+var $elm$bytes$Bytes$Encode$writeSequence = F3(
+	function (builders, mb, offset) {
+		writeSequence:
+		while (true) {
+			if (!builders.b) {
+				return offset;
+			} else {
+				var b = builders.a;
+				var bs = builders.b;
+				var $temp$builders = bs,
+					$temp$mb = mb,
+					$temp$offset = A3($elm$bytes$Bytes$Encode$write, b, mb, offset);
+				builders = $temp$builders;
+				mb = $temp$mb;
+				offset = $temp$offset;
+				continue writeSequence;
+			}
+		}
+	});
+var $elm$bytes$Bytes$Decode$unsignedInt8 = $elm$bytes$Bytes$Decode$Decoder(_Bytes_read_u8);
+var $elm$bytes$Bytes$Encode$U8 = function (a) {
+	return {$: 'U8', a: a};
+};
+var $elm$bytes$Bytes$Encode$unsignedInt8 = $elm$bytes$Bytes$Encode$U8;
+var $MartinSStewart$elm_serialize$Serialize$bool = A4(
+	$MartinSStewart$elm_serialize$Serialize$build,
+	function (value) {
+		if (value) {
+			return $elm$bytes$Bytes$Encode$unsignedInt8(1);
+		} else {
+			return $elm$bytes$Bytes$Encode$unsignedInt8(0);
+		}
+	},
+	A2(
+		$elm$bytes$Bytes$Decode$map,
+		function (value) {
+			switch (value) {
+				case 0:
+					return $elm$core$Result$Ok(false);
+				case 1:
+					return $elm$core$Result$Ok(true);
+				default:
+					return $elm$core$Result$Err($MartinSStewart$elm_serialize$Serialize$DataCorrupted);
+			}
+		},
+		$elm$bytes$Bytes$Decode$unsignedInt8),
+	$elm$json$Json$Encode$bool,
+	A2($elm$json$Json$Decode$map, $elm$core$Result$Ok, $elm$json$Json$Decode$bool));
+var $MartinSStewart$elm_serialize$Serialize$CustomTypeCodec = function (a) {
+	return {$: 'CustomTypeCodec', a: a};
+};
+var $MartinSStewart$elm_serialize$Serialize$customType = function (match) {
+	return $MartinSStewart$elm_serialize$Serialize$CustomTypeCodec(
+		{
+			decoder: function (_v0) {
+				return $elm$core$Basics$identity;
+			},
+			idCounter: 0,
+			jsonDecoder: function (_v1) {
+				return $elm$core$Basics$identity;
+			},
+			jsonMatch: match,
+			match: match
+		});
+};
+var $elm$bytes$Bytes$Decode$andThen = F2(
+	function (callback, _v0) {
+		var decodeA = _v0.a;
+		return $elm$bytes$Bytes$Decode$Decoder(
+			F2(
+				function (bites, offset) {
+					var _v1 = A2(decodeA, bites, offset);
+					var newOffset = _v1.a;
+					var a = _v1.b;
+					var _v2 = callback(a);
+					var decodeB = _v2.a;
+					return A2(decodeB, bites, newOffset);
+				}));
+	});
+var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $elm$bytes$Bytes$BE = {$: 'BE'};
+var $MartinSStewart$elm_serialize$Serialize$endian = $elm$bytes$Bytes$BE;
+var $elm$json$Json$Decode$index = _Json_decodeIndex;
+var $elm$bytes$Bytes$Decode$succeed = function (a) {
+	return $elm$bytes$Bytes$Decode$Decoder(
+		F2(
+			function (_v0, offset) {
+				return _Utils_Tuple2(offset, a);
+			}));
+};
+var $elm$bytes$Bytes$Decode$unsignedInt16 = function (endianness) {
+	return $elm$bytes$Bytes$Decode$Decoder(
+		_Bytes_read_u16(
+			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
+};
+var $MartinSStewart$elm_serialize$Serialize$finishCustomType = function (_v0) {
+	var am = _v0.a;
+	return A4(
+		$MartinSStewart$elm_serialize$Serialize$build,
+		A2(
+			$elm$core$Basics$composeR,
+			am.match,
+			function (_v1) {
+				var _v2 = _v1.a;
+				var a = _v2.a;
+				return a;
+			}),
+		A2(
+			$elm$bytes$Bytes$Decode$andThen,
+			function (tag) {
+				return A2(
+					am.decoder,
+					tag,
+					$elm$bytes$Bytes$Decode$succeed(
+						$elm$core$Result$Err($MartinSStewart$elm_serialize$Serialize$DataCorrupted)));
+			},
+			$elm$bytes$Bytes$Decode$unsignedInt16($MartinSStewart$elm_serialize$Serialize$endian)),
+		A2(
+			$elm$core$Basics$composeR,
+			am.jsonMatch,
+			function (_v3) {
+				var _v4 = _v3.a;
+				var a = _v4.b;
+				return a;
+			}),
+		A2(
+			$elm$json$Json$Decode$andThen,
+			function (tag) {
+				return A2(
+					am.jsonDecoder,
+					tag,
+					$elm$json$Json$Decode$succeed(
+						$elm$core$Result$Err($MartinSStewart$elm_serialize$Serialize$DataCorrupted)));
+			},
+			A2($elm$json$Json$Decode$index, 0, $elm$json$Json$Decode$int)));
+};
+var $elm$json$Json$Encode$float = _Json_wrap;
+var $elm$bytes$Bytes$Decode$float64 = function (endianness) {
+	return $elm$bytes$Bytes$Decode$Decoder(
+		_Bytes_read_f64(
+			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
+};
+var $elm$bytes$Bytes$Encode$F64 = F2(
+	function (a, b) {
+		return {$: 'F64', a: a, b: b};
+	});
+var $elm$bytes$Bytes$Encode$float64 = $elm$bytes$Bytes$Encode$F64;
+var $MartinSStewart$elm_serialize$Serialize$float = A4(
+	$MartinSStewart$elm_serialize$Serialize$build,
+	$elm$bytes$Bytes$Encode$float64($MartinSStewart$elm_serialize$Serialize$endian),
+	A2(
+		$elm$bytes$Bytes$Decode$map,
+		$elm$core$Result$Ok,
+		$elm$bytes$Bytes$Decode$float64($MartinSStewart$elm_serialize$Serialize$endian)),
+	$elm$json$Json$Encode$float,
+	A2($elm$json$Json$Decode$map, $elm$core$Result$Ok, $elm$json$Json$Decode$float));
+var $ianmackenzie$elm_units$Duration$inSeconds = function (_v0) {
+	var numSeconds = _v0.a;
+	return numSeconds;
+};
+var $MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper = function (_v0) {
+	var m = _v0.a;
+	return m.decoder;
+};
+var $MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper = function (_v0) {
+	var m = _v0.a;
+	return m.encoder;
+};
+var $MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper = function (_v0) {
+	var m = _v0.a;
+	return m.jsonDecoder;
+};
+var $MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper = function (_v0) {
+	var m = _v0.a;
+	return m.jsonEncoder;
+};
+var $MartinSStewart$elm_serialize$Serialize$result1 = F2(
+	function (ctor, value) {
+		if (value.$ === 'Ok') {
+			var ok = value.a;
+			return $elm$core$Result$Ok(
+				ctor(ok));
+		} else {
+			var err = value.a;
+			return $elm$core$Result$Err(err);
+		}
+	});
+var $MartinSStewart$elm_serialize$Serialize$VariantEncoder = function (a) {
+	return {$: 'VariantEncoder', a: a};
+};
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $elm$bytes$Bytes$Encode$Seq = F2(
+	function (a, b) {
+		return {$: 'Seq', a: a, b: b};
+	});
+var $elm$bytes$Bytes$Encode$getWidths = F2(
+	function (width, builders) {
+		getWidths:
+		while (true) {
+			if (!builders.b) {
+				return width;
+			} else {
+				var b = builders.a;
+				var bs = builders.b;
+				var $temp$width = width + $elm$bytes$Bytes$Encode$getWidth(b),
+					$temp$builders = bs;
+				width = $temp$width;
+				builders = $temp$builders;
+				continue getWidths;
+			}
+		}
+	});
+var $elm$bytes$Bytes$Encode$sequence = function (builders) {
+	return A2(
+		$elm$bytes$Bytes$Encode$Seq,
+		A2($elm$bytes$Bytes$Encode$getWidths, 0, builders),
+		builders);
+};
+var $elm$bytes$Bytes$Encode$U16 = F2(
+	function (a, b) {
+		return {$: 'U16', a: a, b: b};
+	});
+var $elm$bytes$Bytes$Encode$unsignedInt16 = $elm$bytes$Bytes$Encode$U16;
+var $MartinSStewart$elm_serialize$Serialize$variant = F5(
+	function (matchPiece, matchJsonPiece, decoderPiece, jsonDecoderPiece, _v0) {
+		var am = _v0.a;
+		var jsonEnc = function (v) {
+			return $MartinSStewart$elm_serialize$Serialize$VariantEncoder(
+				_Utils_Tuple2(
+					$elm$bytes$Bytes$Encode$sequence(_List_Nil),
+					A2(
+						$elm$json$Json$Encode$list,
+						$elm$core$Basics$identity,
+						A2(
+							$elm$core$List$cons,
+							$elm$json$Json$Encode$int(am.idCounter),
+							v))));
+		};
+		var jsonDecoder_ = F2(
+			function (tag, orElse) {
+				return _Utils_eq(tag, am.idCounter) ? jsonDecoderPiece : A2(am.jsonDecoder, tag, orElse);
+			});
+		var enc = function (v) {
+			return $MartinSStewart$elm_serialize$Serialize$VariantEncoder(
+				_Utils_Tuple2(
+					$elm$bytes$Bytes$Encode$sequence(
+						A2(
+							$elm$core$List$cons,
+							A2($elm$bytes$Bytes$Encode$unsignedInt16, $MartinSStewart$elm_serialize$Serialize$endian, am.idCounter),
+							v)),
+					$elm$json$Json$Encode$null));
+		};
+		var decoder_ = F2(
+			function (tag, orElse) {
+				return _Utils_eq(tag, am.idCounter) ? decoderPiece : A2(am.decoder, tag, orElse);
+			});
+		return $MartinSStewart$elm_serialize$Serialize$CustomTypeCodec(
+			{
+				decoder: decoder_,
+				idCounter: am.idCounter + 1,
+				jsonDecoder: jsonDecoder_,
+				jsonMatch: am.jsonMatch(
+					matchJsonPiece(jsonEnc)),
+				match: am.match(
+					matchPiece(enc))
+			});
+	});
+var $MartinSStewart$elm_serialize$Serialize$variant1 = F2(
+	function (ctor, m1) {
+		return A4(
+			$MartinSStewart$elm_serialize$Serialize$variant,
+			F2(
+				function (c, v) {
+					return c(
+						_List_fromArray(
+							[
+								A2($MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper, m1, v)
+							]));
+				}),
+			F2(
+				function (c, v) {
+					return c(
+						_List_fromArray(
+							[
+								A2($MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper, m1, v)
+							]));
+				}),
+			A2(
+				$elm$bytes$Bytes$Decode$map,
+				$MartinSStewart$elm_serialize$Serialize$result1(ctor),
+				$MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper(m1)),
+			A2(
+				$elm$json$Json$Decode$map,
+				$MartinSStewart$elm_serialize$Serialize$result1(ctor),
+				A2(
+					$elm$json$Json$Decode$index,
+					1,
+					$MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper(m1))));
+	});
+var $author$project$Units$Serialize$durationCodec = $MartinSStewart$elm_serialize$Serialize$finishCustomType(
+	A3(
+		$MartinSStewart$elm_serialize$Serialize$variant1,
+		$ianmackenzie$elm_units$Duration$seconds,
+		$MartinSStewart$elm_serialize$Serialize$float,
+		$MartinSStewart$elm_serialize$Serialize$customType(
+			F2(
+				function (encoder, value) {
+					return encoder(
+						$ianmackenzie$elm_units$Duration$inSeconds(value));
+				}))));
+var $MartinSStewart$elm_serialize$Serialize$RecordCodec = function (a) {
+	return {$: 'RecordCodec', a: a};
+};
+var $elm$bytes$Bytes$Decode$map2 = F3(
+	function (func, _v0, _v1) {
+		var decodeA = _v0.a;
+		var decodeB = _v1.a;
+		return $elm$bytes$Bytes$Decode$Decoder(
+			F2(
+				function (bites, offset) {
+					var _v2 = A2(decodeA, bites, offset);
+					var aOffset = _v2.a;
+					var a = _v2.b;
+					var _v3 = A2(decodeB, bites, aOffset);
+					var bOffset = _v3.a;
+					var b = _v3.b;
+					return _Utils_Tuple2(
+						bOffset,
+						A2(func, a, b));
+				}));
+	});
+var $MartinSStewart$elm_serialize$Serialize$field = F3(
+	function (getter, codec, _v0) {
+		var recordCodec = _v0.a;
+		return $MartinSStewart$elm_serialize$Serialize$RecordCodec(
+			{
+				decoder: A3(
+					$elm$bytes$Bytes$Decode$map2,
+					F2(
+						function (f, x) {
+							var _v1 = _Utils_Tuple2(f, x);
+							if (_v1.a.$ === 'Ok') {
+								if (_v1.b.$ === 'Ok') {
+									var fOk = _v1.a.a;
+									var xOk = _v1.b.a;
+									return $elm$core$Result$Ok(
+										fOk(xOk));
+								} else {
+									var err = _v1.b.a;
+									return $elm$core$Result$Err(err);
+								}
+							} else {
+								var err = _v1.a.a;
+								return $elm$core$Result$Err(err);
+							}
+						}),
+					recordCodec.decoder,
+					$MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper(codec)),
+				encoder: function (v) {
+					return A2(
+						$elm$core$List$cons,
+						A2(
+							$MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper,
+							codec,
+							getter(v)),
+						recordCodec.encoder(v));
+				},
+				fieldIndex: recordCodec.fieldIndex + 1,
+				jsonDecoder: A3(
+					$elm$json$Json$Decode$map2,
+					F2(
+						function (f, x) {
+							var _v2 = _Utils_Tuple2(f, x);
+							if (_v2.a.$ === 'Ok') {
+								if (_v2.b.$ === 'Ok') {
+									var fOk = _v2.a.a;
+									var xOk = _v2.b.a;
+									return $elm$core$Result$Ok(
+										fOk(xOk));
+								} else {
+									var err = _v2.b.a;
+									return $elm$core$Result$Err(err);
+								}
+							} else {
+								var err = _v2.a.a;
+								return $elm$core$Result$Err(err);
+							}
+						}),
+					recordCodec.jsonDecoder,
+					A2(
+						$elm$json$Json$Decode$index,
+						recordCodec.fieldIndex,
+						$MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper(codec))),
+				jsonEncoder: function (v) {
+					return A2(
+						$elm$core$List$cons,
+						A2(
+							$MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper,
+							codec,
+							getter(v)),
+						recordCodec.jsonEncoder(v));
+				}
+			});
+	});
+var $MartinSStewart$elm_serialize$Serialize$finishRecord = function (_v0) {
+	var codec = _v0.a;
+	return $MartinSStewart$elm_serialize$Serialize$Codec(
+		{
+			decoder: codec.decoder,
+			encoder: A2(
+				$elm$core$Basics$composeR,
+				codec.encoder,
+				A2($elm$core$Basics$composeR, $elm$core$List$reverse, $elm$bytes$Bytes$Encode$sequence)),
+			jsonDecoder: codec.jsonDecoder,
+			jsonEncoder: A2(
+				$elm$core$Basics$composeR,
+				codec.jsonEncoder,
+				A2(
+					$elm$core$Basics$composeR,
+					$elm$core$List$reverse,
+					$elm$json$Json$Encode$list($elm$core$Basics$identity)))
+		});
+};
+var $MartinSStewart$elm_serialize$Serialize$record = function (ctor) {
+	return $MartinSStewart$elm_serialize$Serialize$RecordCodec(
+		{
+			decoder: $elm$bytes$Bytes$Decode$succeed(
+				$elm$core$Result$Ok(ctor)),
+			encoder: function (_v0) {
+				return _List_Nil;
+			},
+			fieldIndex: 0,
+			jsonDecoder: $elm$json$Json$Decode$succeed(
+				$elm$core$Result$Ok(ctor)),
+			jsonEncoder: function (_v1) {
+				return _List_Nil;
+			}
+		});
+};
+var $author$project$Board$enemySpawnerDetailsCodec = $MartinSStewart$elm_serialize$Serialize$finishRecord(
+	A3(
+		$MartinSStewart$elm_serialize$Serialize$field,
+		function ($) {
+			return $.timeBetweenSpawns;
+		},
+		$author$project$Units$Serialize$durationCodec,
+		$MartinSStewart$elm_serialize$Serialize$record(
+			function (timeBetweenSpawns) {
+				return {timeBetweenSpawns: timeBetweenSpawns, timeTillSpawn: timeBetweenSpawns};
+			})));
+var $author$project$Board$NegativeX = {$: 'NegativeX'};
+var $author$project$Board$NegativeY = {$: 'NegativeY'};
+var $author$project$Board$NegativeZ = {$: 'NegativeZ'};
+var $author$project$Board$PositiveX = {$: 'PositiveX'};
+var $author$project$Board$PositiveY = {$: 'PositiveY'};
+var $author$project$Board$PositiveZ = {$: 'PositiveZ'};
+var $MartinSStewart$elm_serialize$Serialize$variant0 = function (ctor) {
+	return A4(
+		$MartinSStewart$elm_serialize$Serialize$variant,
+		function (c) {
+			return c(_List_Nil);
+		},
+		function (c) {
+			return c(_List_Nil);
+		},
+		$elm$bytes$Bytes$Decode$succeed(
+			$elm$core$Result$Ok(ctor)),
+		$elm$json$Json$Decode$succeed(
+			$elm$core$Result$Ok(ctor)));
+};
+var $author$project$Board$axisCodec = $MartinSStewart$elm_serialize$Serialize$finishCustomType(
+	A2(
+		$MartinSStewart$elm_serialize$Serialize$variant0,
+		$author$project$Board$NegativeZ,
+		A2(
+			$MartinSStewart$elm_serialize$Serialize$variant0,
+			$author$project$Board$PositiveZ,
+			A2(
+				$MartinSStewart$elm_serialize$Serialize$variant0,
+				$author$project$Board$NegativeY,
+				A2(
+					$MartinSStewart$elm_serialize$Serialize$variant0,
+					$author$project$Board$PositiveY,
+					A2(
+						$MartinSStewart$elm_serialize$Serialize$variant0,
+						$author$project$Board$NegativeX,
+						A2(
+							$MartinSStewart$elm_serialize$Serialize$variant0,
+							$author$project$Board$PositiveX,
+							$MartinSStewart$elm_serialize$Serialize$customType(
+								F7(
+									function (positiveXEncoder, negativeXEncoder, positiveYEncoder, negativeYEncoder, positiveZEncoder, negativeZEncoder, value) {
+										switch (value.$) {
+											case 'PositiveX':
+												return positiveXEncoder;
+											case 'NegativeX':
+												return negativeXEncoder;
+											case 'PositiveY':
+												return positiveYEncoder;
+											case 'NegativeY':
+												return negativeYEncoder;
+											case 'PositiveZ':
+												return positiveZEncoder;
+											default:
+												return negativeZEncoder;
+										}
+									})))))))));
+var $author$project$Board$playerSpawnDetailsCodec = $MartinSStewart$elm_serialize$Serialize$finishRecord(
+	A3(
+		$MartinSStewart$elm_serialize$Serialize$field,
+		function ($) {
+			return $.left;
+		},
+		$author$project$Board$axisCodec,
+		A3(
+			$MartinSStewart$elm_serialize$Serialize$field,
+			function ($) {
+				return $.forward;
+			},
+			$author$project$Board$axisCodec,
+			$MartinSStewart$elm_serialize$Serialize$record(
+				F2(
+					function (forward, left) {
+						return {forward: forward, left: left};
+					})))));
+var $author$project$Board$blockCodec = $MartinSStewart$elm_serialize$Serialize$finishCustomType(
+	A3(
+		$MartinSStewart$elm_serialize$Serialize$variant1,
+		$author$project$Board$EnemySpawner,
+		$author$project$Board$enemySpawnerDetailsCodec,
+		A3(
+			$MartinSStewart$elm_serialize$Serialize$variant1,
+			$author$project$Board$PlayerSpawn,
+			$author$project$Board$playerSpawnDetailsCodec,
+			A3(
+				$MartinSStewart$elm_serialize$Serialize$variant1,
+				$author$project$Board$PointPickup,
+				$MartinSStewart$elm_serialize$Serialize$bool,
+				A2(
+					$MartinSStewart$elm_serialize$Serialize$variant0,
+					$author$project$Board$Edge,
+					A2(
+						$MartinSStewart$elm_serialize$Serialize$variant0,
+						$author$project$Board$Wall,
+						A2(
+							$MartinSStewart$elm_serialize$Serialize$variant0,
+							$author$project$Board$Empty,
+							$MartinSStewart$elm_serialize$Serialize$customType(
+								F7(
+									function (emptyEncoder, wallEncoder, edgeEncoder, pointPickupEncoder, playerSpawnEncoder, enemySpawnerEncoder, value) {
+										switch (value.$) {
+											case 'Empty':
+												return emptyEncoder;
+											case 'Wall':
+												return wallEncoder;
+											case 'Edge':
+												return edgeEncoder;
+											case 'PointPickup':
+												var collected = value.a;
+												return pointPickupEncoder(collected);
+											case 'PlayerSpawn':
+												var details = value.a;
+												return playerSpawnEncoder(details);
+											default:
+												var details = value.a;
+												return enemySpawnerEncoder(details);
+										}
+									})))))))));
+var $elm$bytes$Bytes$Encode$U32 = F2(
+	function (a, b) {
+		return {$: 'U32', a: a, b: b};
+	});
+var $elm$bytes$Bytes$Encode$unsignedInt32 = $elm$bytes$Bytes$Encode$U32;
+var $MartinSStewart$elm_serialize$Serialize$listEncode = F2(
+	function (encoder_, list_) {
+		return $elm$bytes$Bytes$Encode$sequence(
+			A2(
+				$elm$core$List$cons,
+				A2(
+					$elm$bytes$Bytes$Encode$unsignedInt32,
+					$MartinSStewart$elm_serialize$Serialize$endian,
+					$elm$core$List$length(list_)),
+				A2($elm$core$List$map, encoder_, list_)));
+	});
+var $elm$bytes$Bytes$Decode$Done = function (a) {
+	return {$: 'Done', a: a};
+};
+var $elm$bytes$Bytes$Decode$Loop = function (a) {
+	return {$: 'Loop', a: a};
+};
+var $MartinSStewart$elm_serialize$Serialize$listStep = F2(
+	function (decoder_, _v0) {
+		var n = _v0.a;
+		var xs = _v0.b;
+		return (n <= 0) ? $elm$bytes$Bytes$Decode$succeed(
+			$elm$bytes$Bytes$Decode$Done(
+				$elm$core$Result$Ok(
+					$elm$core$List$reverse(xs)))) : A2(
+			$elm$bytes$Bytes$Decode$map,
+			function (x) {
+				if (x.$ === 'Ok') {
+					var ok = x.a;
+					return $elm$bytes$Bytes$Decode$Loop(
+						_Utils_Tuple2(
+							n - 1,
+							A2($elm$core$List$cons, ok, xs)));
+				} else {
+					var err = x.a;
+					return $elm$bytes$Bytes$Decode$Done(
+						$elm$core$Result$Err(err));
+				}
+			},
+			decoder_);
+	});
+var $elm$bytes$Bytes$Decode$loopHelp = F4(
+	function (state, callback, bites, offset) {
+		loopHelp:
+		while (true) {
+			var _v0 = callback(state);
+			var decoder = _v0.a;
+			var _v1 = A2(decoder, bites, offset);
+			var newOffset = _v1.a;
+			var step = _v1.b;
+			if (step.$ === 'Loop') {
+				var newState = step.a;
+				var $temp$state = newState,
+					$temp$callback = callback,
+					$temp$bites = bites,
+					$temp$offset = newOffset;
+				state = $temp$state;
+				callback = $temp$callback;
+				bites = $temp$bites;
+				offset = $temp$offset;
+				continue loopHelp;
+			} else {
+				var result = step.a;
+				return _Utils_Tuple2(newOffset, result);
+			}
+		}
+	});
+var $elm$bytes$Bytes$Decode$loop = F2(
+	function (state, callback) {
+		return $elm$bytes$Bytes$Decode$Decoder(
+			A2($elm$bytes$Bytes$Decode$loopHelp, state, callback));
+	});
+var $elm$bytes$Bytes$Decode$unsignedInt32 = function (endianness) {
+	return $elm$bytes$Bytes$Decode$Decoder(
+		_Bytes_read_u32(
+			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
+};
+var $MartinSStewart$elm_serialize$Serialize$list = function (codec) {
+	return A4(
+		$MartinSStewart$elm_serialize$Serialize$build,
+		$MartinSStewart$elm_serialize$Serialize$listEncode(
+			$MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper(codec)),
+		A2(
+			$elm$bytes$Bytes$Decode$andThen,
+			function (length) {
+				return A2(
+					$elm$bytes$Bytes$Decode$loop,
+					_Utils_Tuple2(length, _List_Nil),
+					$MartinSStewart$elm_serialize$Serialize$listStep(
+						$MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper(codec)));
+			},
+			$elm$bytes$Bytes$Decode$unsignedInt32($MartinSStewart$elm_serialize$Serialize$endian)),
+		$elm$json$Json$Encode$list(
+			$MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper(codec)),
+		A2(
+			$elm$json$Json$Decode$map,
+			A2(
+				$elm$core$List$foldr,
+				F2(
+					function (value, state) {
+						var _v0 = _Utils_Tuple2(value, state);
+						if (_v0.b.$ === 'Err') {
+							return state;
+						} else {
+							if (_v0.a.$ === 'Ok') {
+								var ok = _v0.a.a;
+								var okState = _v0.b.a;
+								return $elm$core$Result$Ok(
+									A2($elm$core$List$cons, ok, okState));
+							} else {
+								var error = _v0.a.a;
+								return $elm$core$Result$Err(error);
+							}
+						}
+					}),
+				$elm$core$Result$Ok(_List_Nil)),
+			$elm$json$Json$Decode$list(
+				$MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper(codec))));
+};
+var $elm$core$Result$map = F2(
+	function (func, ra) {
+		if (ra.$ === 'Ok') {
+			var a = ra.a;
+			return $elm$core$Result$Ok(
+				func(a));
+		} else {
+			var e = ra.a;
+			return $elm$core$Result$Err(e);
+		}
+	});
+var $MartinSStewart$elm_serialize$Serialize$mapHelper = F3(
+	function (fromBytes_, toBytes_, codec) {
+		return A4(
+			$MartinSStewart$elm_serialize$Serialize$build,
+			function (v) {
+				return A2(
+					$MartinSStewart$elm_serialize$Serialize$getBytesEncoderHelper,
+					codec,
+					toBytes_(v));
+			},
+			A2(
+				$elm$bytes$Bytes$Decode$map,
+				fromBytes_,
+				$MartinSStewart$elm_serialize$Serialize$getBytesDecoderHelper(codec)),
+			function (v) {
+				return A2(
+					$MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper,
+					codec,
+					toBytes_(v));
+			},
+			A2(
+				$elm$json$Json$Decode$map,
+				fromBytes_,
+				$MartinSStewart$elm_serialize$Serialize$getJsonDecoderHelper(codec)));
+	});
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $MartinSStewart$elm_serialize$Serialize$tuple = F2(
+	function (codecFirst, codecSecond) {
+		return $MartinSStewart$elm_serialize$Serialize$finishRecord(
+			A3(
+				$MartinSStewart$elm_serialize$Serialize$field,
+				$elm$core$Tuple$second,
+				codecSecond,
+				A3(
+					$MartinSStewart$elm_serialize$Serialize$field,
+					$elm$core$Tuple$first,
+					codecFirst,
+					$MartinSStewart$elm_serialize$Serialize$record($elm$core$Tuple$pair))));
+	});
+var $MartinSStewart$elm_serialize$Serialize$dict = F2(
+	function (keyCodec, valueCodec) {
+		return A3(
+			$MartinSStewart$elm_serialize$Serialize$mapHelper,
+			$elm$core$Result$map($elm$core$Dict$fromList),
+			$elm$core$Dict$toList,
+			$MartinSStewart$elm_serialize$Serialize$list(
+				A2($MartinSStewart$elm_serialize$Serialize$tuple, keyCodec, valueCodec)));
+	});
+var $elm$core$Basics$round = _Basics_round;
+var $MartinSStewart$elm_serialize$Serialize$int = A4(
+	$MartinSStewart$elm_serialize$Serialize$build,
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Basics$toFloat,
+		$elm$bytes$Bytes$Encode$float64($MartinSStewart$elm_serialize$Serialize$endian)),
+	A2(
+		$elm$bytes$Bytes$Decode$map,
+		A2($elm$core$Basics$composeR, $elm$core$Basics$round, $elm$core$Result$Ok),
+		$elm$bytes$Bytes$Decode$float64($MartinSStewart$elm_serialize$Serialize$endian)),
+	$elm$json$Json$Encode$int,
+	A2($elm$json$Json$Decode$map, $elm$core$Result$Ok, $elm$json$Json$Decode$int));
+var $MartinSStewart$elm_serialize$Serialize$triple = F3(
+	function (codecFirst, codecSecond, codecThird) {
+		return $MartinSStewart$elm_serialize$Serialize$finishRecord(
+			A3(
+				$MartinSStewart$elm_serialize$Serialize$field,
+				function (_v2) {
+					var c = _v2.c;
+					return c;
+				},
+				codecThird,
+				A3(
+					$MartinSStewart$elm_serialize$Serialize$field,
+					function (_v1) {
+						var b = _v1.b;
+						return b;
+					},
+					codecSecond,
+					A3(
+						$MartinSStewart$elm_serialize$Serialize$field,
+						function (_v0) {
+							var a = _v0.a;
+							return a;
+						},
+						codecFirst,
+						$MartinSStewart$elm_serialize$Serialize$record(
+							F3(
+								function (a, b, c) {
+									return _Utils_Tuple3(a, b, c);
+								}))))));
+	});
+var $author$project$Board$pointCodec = A3($MartinSStewart$elm_serialize$Serialize$triple, $MartinSStewart$elm_serialize$Serialize$int, $MartinSStewart$elm_serialize$Serialize$int, $MartinSStewart$elm_serialize$Serialize$int);
+var $author$project$Board$boardCodec = $MartinSStewart$elm_serialize$Serialize$finishRecord(
+	A3(
+		$MartinSStewart$elm_serialize$Serialize$field,
+		function ($) {
+			return $.blocks;
+		},
+		A2($MartinSStewart$elm_serialize$Serialize$dict, $author$project$Board$pointCodec, $author$project$Board$blockCodec),
+		A3(
+			$MartinSStewart$elm_serialize$Serialize$field,
+			function ($) {
+				return $.maxZ;
+			},
+			$MartinSStewart$elm_serialize$Serialize$int,
+			A3(
+				$MartinSStewart$elm_serialize$Serialize$field,
+				function ($) {
+					return $.maxY;
+				},
+				$MartinSStewart$elm_serialize$Serialize$int,
+				A3(
+					$MartinSStewart$elm_serialize$Serialize$field,
+					function ($) {
+						return $.maxX;
+					},
+					$MartinSStewart$elm_serialize$Serialize$int,
+					$MartinSStewart$elm_serialize$Serialize$record($author$project$Board$Board))))));
+var $elm$core$Basics$pi = _Basics_pi;
+var $ianmackenzie$elm_units$Angle$radians = function (numRadians) {
+	return $ianmackenzie$elm_units$Quantity$Quantity(numRadians);
+};
+var $ianmackenzie$elm_units$Angle$degrees = function (numDegrees) {
+	return $ianmackenzie$elm_units$Angle$radians($elm$core$Basics$pi * (numDegrees / 180));
+};
+var $elm$core$Set$Set_elm_builtin = function (a) {
+	return {$: 'Set_elm_builtin', a: a};
+};
+var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
+var $author$project$Board$Forward = {$: 'Forward'};
+var $author$project$Board$NoTarget = {$: 'NoTarget'};
+var $author$project$Board$empty = {blocks: $elm$core$Dict$empty, maxX: 0, maxY: 0, maxZ: 0};
+var $author$project$Board$emptyLevel = {
+	board: $author$project$Board$empty,
+	enemies: _List_Nil,
+	hearts: 6,
+	invincibleFrames: $ianmackenzie$elm_units$Duration$seconds(0),
+	playerFacing: $author$project$Board$Forward,
+	playerFrame: $ianmackenzie$elm_geometry$Frame3d$atOrigin,
+	playerTarget: $author$project$Board$NoTarget,
+	playerWantFacing: $author$project$Board$Forward,
+	score: 0
+};
+var $MartinSStewart$elm_serialize$Serialize$version = 1;
+var $MartinSStewart$elm_serialize$Serialize$encodeToJson = F2(
+	function (codec, value) {
+		return A2(
+			$elm$json$Json$Encode$list,
+			$elm$core$Basics$identity,
+			_List_fromArray(
+				[
+					$elm$json$Json$Encode$int($MartinSStewart$elm_serialize$Serialize$version),
+					A2($MartinSStewart$elm_serialize$Serialize$getJsonEncoderHelper, codec, value)
+				]));
+	});
+var $elm$browser$Browser$Dom$getViewportOf = _Browser_getViewportOf;
+var $author$project$Board$indexToPoint = F2(
+	function (_v0, index) {
+		var maxY = _v0.maxY;
+		var maxZ = _v0.maxZ;
+		var x = (index / (maxY * maxZ)) | 0;
+		var y = ((index - ((x * maxY) * maxZ)) / maxZ) | 0;
+		var z = (index - ((x * maxY) * maxZ)) - (y * maxZ);
+		return _Utils_Tuple3(x, y, z);
+	});
+var $author$project$Animation$Animating = function (a) {
+	return {$: 'Animating', a: a};
+};
+var $author$project$Animation$Animation = function (a) {
+	return {$: 'Animation', a: a};
+};
+var $author$project$Animation$Complete = function (a) {
+	return {$: 'Complete', a: a};
+};
+var $author$project$Animation$NoAnimation = {$: 'NoAnimation'};
+var $author$project$Animation$init = F2(
+	function (_default, frames) {
+		return $author$project$Animation$Animation(
+			{
+				_default: _default,
+				frames: frames,
+				loops: false,
+				state: function () {
+					if (!frames.b) {
+						return $author$project$Animation$NoAnimation;
+					} else {
+						if (!frames.b.b) {
+							var frame = frames.a;
+							return $author$project$Animation$Complete(frame.value);
+						} else {
+							return $author$project$Animation$Animating(0);
+						}
+					}
+				}(),
+				totalTime: A3(
+					$elm$core$List$foldl,
+					F2(
+						function (frame, total) {
+							return frame.offset + total;
+						}),
+					0,
+					frames)
+			});
+	});
+var $author$project$Undo$Stack = function (a) {
+	return {$: 'Stack', a: a};
+};
+var $author$project$Undo$init = function (v) {
+	return $author$project$Undo$Stack(
+		_Utils_Tuple3(_List_Nil, v, _List_Nil));
+};
+var $ianmackenzie$elm_geometry$Point3d$meters = F3(
+	function (x, y, z) {
+		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
+			{x: x, y: y, z: z});
+	});
+var $elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2($elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var $elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
+	});
+var $author$project$Animation$withLoop = function (_v0) {
+	var anim = _v0.a;
+	return $author$project$Animation$Animation(
+		_Utils_update(
+			anim,
+			{loops: true}));
+};
+var $author$project$Screen$Editor$init = function () {
+	var maxZ = 9;
+	var maxY = 9;
+	var maxX = 9;
+	var sizeHelper = {maxX: maxX, maxY: maxY, maxZ: maxZ};
+	var board = {
+		blocks: A3(
+			$elm$core$List$foldl,
+			F2(
+				function (block, _v0) {
+					var index = _v0.a;
+					var blocks = _v0.b;
+					return _Utils_Tuple2(
+						index + 1,
+						A3(
+							$elm$core$Dict$insert,
+							A2($author$project$Board$indexToPoint, sizeHelper, index),
+							block,
+							blocks));
+				}),
+			_Utils_Tuple2(0, $elm$core$Dict$empty),
+			A2($elm$core$List$repeat, (maxX * maxY) * maxZ, $author$project$Board$Wall)).b,
+		maxX: maxX,
+		maxY: maxY,
+		maxZ: maxZ
+	};
+	return _Utils_Tuple2(
+		{
+			blockEditMode: $author$project$Screen$Editor$Select,
+			boardEncoding: A2(
+				$elm$json$Json$Encode$encode,
+				0,
+				A2($MartinSStewart$elm_serialize$Serialize$encodeToJson, $author$project$Board$boardCodec, board)),
+			boardLoadError: $elm$core$Maybe$Nothing,
+			boardPlayError: $elm$core$Maybe$Nothing,
+			cameraDistance: $ianmackenzie$elm_units$Length$meters(30),
+			cameraElevation: $ianmackenzie$elm_units$Angle$degrees(25),
+			cameraFocalPoint: A3($ianmackenzie$elm_geometry$Point3d$meters, (maxX - 1) / 2, (maxY - 1) / 2, (maxZ - 1) / 2),
+			cameraMode: $author$project$Screen$Editor$Orbit,
+			cameraRotation: $ianmackenzie$elm_units$Angle$degrees(225),
+			cursorBounce: $author$project$Animation$withLoop(
+				A2(
+					$author$project$Animation$init,
+					0,
+					_List_fromArray(
+						[
+							{offset: 0, value: 0},
+							{offset: 500, value: 1},
+							{offset: 500, value: 0}
+						]))),
+			editorBoard: $author$project$Undo$init(board),
+			editorCursor: _Utils_Tuple3(0, 0, 0),
+			editorKeysDown: $elm$core$Set$empty,
+			editorMaxXRaw: $elm$core$String$fromInt(maxX),
+			editorMaxYRaw: $elm$core$String$fromInt(maxY),
+			editorMaxZRaw: $elm$core$String$fromInt(maxZ),
+			editorMode: $author$project$Screen$Editor$EditBoard,
+			level: $author$project$Board$emptyLevel,
+			mouseDragging: $author$project$Screen$Editor$NoInteraction,
+			screenSize: $elm$core$Maybe$Nothing,
+			selectedBlock: $elm$core$Maybe$Nothing,
+			selectedBlockType: $author$project$Board$Wall,
+			showBoardBounds: true,
+			showSettings: false,
+			xLowerVisible: 0,
+			xUpperVisible: maxX - 1,
+			yLowerVisible: 0,
+			yUpperVisible: maxY - 1,
+			zLowerVisible: 0,
+			zUpperVisible: maxZ - 1
+		},
+		A2(
+			$elm$core$Task$attempt,
+			$author$project$Screen$Editor$EditorViewportResized,
+			$elm$browser$Browser$Dom$getViewportOf('editor-viewport')));
+}();
+var $author$project$Screen$FreePlay$FreePlayBoardSelection = {$: 'FreePlayBoardSelection'};
+var $author$project$Shared$ViewportResized = function (a) {
+	return {$: 'ViewportResized', a: a};
+};
+var $author$project$Screen$FreePlay$init = function (_v0) {
+	var toSharedMsg = _v0.toSharedMsg;
+	return _Utils_Tuple2(
+		{boardLoadError: $elm$core$Maybe$Nothing, boardPlayError: $elm$core$Maybe$Nothing, freePlayMode: $author$project$Screen$FreePlay$FreePlayBoardSelection, level: $author$project$Board$emptyLevel, showFreePlayMenu: false},
+		A2(
+			$elm$core$Task$attempt,
+			A2($elm$core$Basics$composeR, $author$project$Shared$ViewportResized, toSharedMsg),
+			$elm$browser$Browser$Dom$getViewportOf('game-viewport')));
+};
+var $author$project$Board$MoveForward = function (a) {
+	return {$: 'MoveForward', a: a};
+};
+var $author$project$Board$TraverseEdge = function (a) {
+	return {$: 'TraverseEdge', a: a};
+};
+var $author$project$Board$durationForEdgeMovement = $ianmackenzie$elm_units$Duration$seconds(0.75);
+var $author$project$Board$durationForForwardMovement = $ianmackenzie$elm_units$Duration$seconds(0.25);
+var $ianmackenzie$elm_geometry$Frame3d$originPoint = function (_v0) {
+	var properties = _v0.a;
+	return properties.originPoint;
+};
+var $author$project$Board$point3dToPoint = function (point) {
+	var parts = $ianmackenzie$elm_geometry$Point3d$unwrap(point);
+	return _Utils_Tuple3(
+		$elm$core$Basics$round(parts.x),
+		$elm$core$Basics$round(parts.y),
+		$elm$core$Basics$round(parts.z));
+};
+var $author$project$Board$pointToPoint3d = function (_v0) {
+	var x = _v0.a;
+	var y = _v0.b;
+	var z = _v0.c;
+	return A3($ianmackenzie$elm_geometry$Point3d$meters, x, y, z);
+};
+var $ianmackenzie$elm_geometry$Direction3d$reverse = function (_v0) {
+	var d = _v0.a;
+	return $ianmackenzie$elm_geometry$Geometry$Types$Direction3d(
+		{x: -d.x, y: -d.y, z: -d.z});
+};
+var $ianmackenzie$elm_geometry$Point3d$translateBy = F2(
+	function (_v0, _v1) {
+		var v = _v0.a;
+		var p = _v1.a;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
+			{x: p.x + v.x, y: p.y + v.y, z: p.z + v.z});
+	});
+var $ianmackenzie$elm_geometry$Frame3d$unsafe = function (properties) {
+	return $ianmackenzie$elm_geometry$Geometry$Types$Frame3d(properties);
+};
+var $ianmackenzie$elm_geometry$Frame3d$xDirection = function (_v0) {
+	var properties = _v0.a;
+	return properties.xDirection;
+};
+var $ianmackenzie$elm_geometry$Frame3d$yDirection = function (_v0) {
+	var properties = _v0.a;
+	return properties.yDirection;
+};
+var $ianmackenzie$elm_geometry$Frame3d$zDirection = function (_v0) {
+	var properties = _v0.a;
+	return properties.zDirection;
+};
+var $ianmackenzie$elm_geometry$Frame3d$translateBy = F2(
+	function (vector, frame) {
+		return $ianmackenzie$elm_geometry$Frame3d$unsafe(
+			{
+				originPoint: A2(
+					$ianmackenzie$elm_geometry$Point3d$translateBy,
+					vector,
+					$ianmackenzie$elm_geometry$Frame3d$originPoint(frame)),
+				xDirection: $ianmackenzie$elm_geometry$Frame3d$xDirection(frame),
+				yDirection: $ianmackenzie$elm_geometry$Frame3d$yDirection(frame),
+				zDirection: $ianmackenzie$elm_geometry$Frame3d$zDirection(frame)
+			});
+	});
+var $ianmackenzie$elm_geometry$Vector3d$withLength = F2(
+	function (_v0, _v1) {
+		var a = _v0.a;
+		var d = _v1.a;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Vector3d(
+			{x: a * d.x, y: a * d.y, z: a * d.z});
+	});
+var $ianmackenzie$elm_geometry$Frame3d$translateIn = F3(
+	function (direction, distance, frame) {
+		return A2(
+			$ianmackenzie$elm_geometry$Frame3d$translateBy,
+			A2($ianmackenzie$elm_geometry$Vector3d$withLength, distance, direction),
+			frame);
+	});
+var $ianmackenzie$elm_geometry$Point3d$translateIn = F3(
+	function (_v0, _v1, _v2) {
+		var d = _v0.a;
+		var distance = _v1.a;
+		var p = _v2.a;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
+			{x: p.x + (distance * d.x), y: p.y + (distance * d.y), z: p.z + (distance * d.z)});
+	});
+var $author$project$Board$findNextTarget = F4(
+	function (board, playerFacing, fromPoint, playerFrame) {
+		var toPoint = $author$project$Board$point3dToPoint(
+			$ianmackenzie$elm_geometry$Frame3d$originPoint(
+				A3(
+					$ianmackenzie$elm_geometry$Frame3d$translateIn,
+					function () {
+						switch (playerFacing.$) {
+							case 'Forward':
+								return $ianmackenzie$elm_geometry$Frame3d$xDirection(playerFrame);
+							case 'Backward':
+								return $ianmackenzie$elm_geometry$Direction3d$reverse(
+									$ianmackenzie$elm_geometry$Frame3d$xDirection(playerFrame));
+							case 'Right':
+								return $ianmackenzie$elm_geometry$Direction3d$reverse(
+									$ianmackenzie$elm_geometry$Frame3d$yDirection(playerFrame));
+							default:
+								return $ianmackenzie$elm_geometry$Frame3d$yDirection(playerFrame);
+						}
+					}(),
+					$ianmackenzie$elm_units$Length$meters(1),
+					playerFrame)));
+		var _v0 = A2($elm$core$Dict$get, toPoint, board.blocks);
+		if (_v0.$ === 'Nothing') {
+			return $author$project$Board$NoTarget;
+		} else {
+			switch (_v0.a.$) {
+				case 'Wall':
+					var _v1 = _v0.a;
+					return $author$project$Board$NoTarget;
+				case 'EnemySpawner':
+					return $author$project$Board$NoTarget;
+				case 'Empty':
+					var _v2 = _v0.a;
+					return $author$project$Board$MoveForward(
+						{duration: $author$project$Board$durationForForwardMovement, from: fromPoint, to: toPoint});
+				case 'PlayerSpawn':
+					return $author$project$Board$MoveForward(
+						{duration: $author$project$Board$durationForForwardMovement, from: fromPoint, to: toPoint});
+				case 'PointPickup':
+					return $author$project$Board$MoveForward(
+						{duration: $author$project$Board$durationForForwardMovement, from: fromPoint, to: toPoint});
+				default:
+					var _v3 = _v0.a;
+					return $author$project$Board$TraverseEdge(
+						{
+							duration: $author$project$Board$durationForEdgeMovement,
+							from: fromPoint,
+							to: $author$project$Board$point3dToPoint(
+								A3(
+									$ianmackenzie$elm_geometry$Point3d$translateIn,
+									$ianmackenzie$elm_geometry$Frame3d$zDirection(playerFrame),
+									$ianmackenzie$elm_units$Length$meters(-1),
+									$author$project$Board$pointToPoint3d(toPoint)))
+						});
+			}
+		}
+	});
+var $author$project$Board$initTarget = F3(
+	function (board, facing, playerFrame) {
+		return A4(
+			$author$project$Board$findNextTarget,
+			board,
+			facing,
+			$author$project$Board$point3dToPoint(
+				$ianmackenzie$elm_geometry$Frame3d$originPoint(playerFrame)),
+			playerFrame);
+	});
+var $author$project$Screen$Game$init = _Utils_Tuple2(
+	{
+		board: $author$project$Board$empty,
+		playerFacing: $author$project$Board$Forward,
+		playerFrame: $ianmackenzie$elm_geometry$Frame3d$atOrigin,
+		playerTarget: A3($author$project$Board$initTarget, $author$project$Board$empty, $author$project$Board$Forward, $ianmackenzie$elm_geometry$Frame3d$atOrigin),
+		playerWantFacing: $author$project$Board$Forward,
+		score: 0
+	},
+	$elm$core$Platform$Cmd$none);
 var $author$project$Board$DataCorrupted = {$: 'DataCorrupted'};
 var $author$project$Screen$Editor$InteractionStart = function (a) {
 	return {$: 'InteractionStart', a: a};
@@ -21384,112 +21469,118 @@ var $ianmackenzie$elm_geometry$BoundingBox3d$withDimensions = F2(
 	});
 var $author$project$Screen$Editor$moveCursorByMouse = F2(
 	function (offset, model) {
-		var ray = A3(
-			$ianmackenzie$elm_3d_camera$Camera3d$ray,
-			$author$project$Screen$Editor$editorCamera(model),
-			A2(
-				$ianmackenzie$elm_geometry$Rectangle2d$from,
-				A2($ianmackenzie$elm_geometry$Point2d$pixels, 0, model.screenSize.height),
-				A2($ianmackenzie$elm_geometry$Point2d$pixels, model.screenSize.width, 0)),
-			offset);
-		var editorBoard = $author$project$Undo$value(model.editorBoard);
-		var maybeIntersection = A3(
-			$elm$core$Dict$foldl,
-			F3(
-				function (point, block, maybeInter) {
-					if (block.$ === 'Empty') {
-						return maybeInter;
-					} else {
-						var _v4 = point;
-						var x = _v4.a;
-						var y = _v4.b;
-						var z = _v4.c;
-						if ((_Utils_cmp(x, model.xLowerVisible) < 0) || ((_Utils_cmp(x, model.xUpperVisible) > 0) || ((_Utils_cmp(y, model.yLowerVisible) < 0) || ((_Utils_cmp(y, model.yUpperVisible) > 0) || ((_Utils_cmp(z, model.zLowerVisible) < 0) || (_Utils_cmp(z, model.zUpperVisible) > 0)))))) {
+		var _v0 = model.screenSize;
+		if (_v0.$ === 'Nothing') {
+			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		} else {
+			var screenSize = _v0.a;
+			var ray = A3(
+				$ianmackenzie$elm_3d_camera$Camera3d$ray,
+				$author$project$Screen$Editor$editorCamera(model),
+				A2(
+					$ianmackenzie$elm_geometry$Rectangle2d$from,
+					A2($ianmackenzie$elm_geometry$Point2d$pixels, 0, screenSize.height),
+					A2($ianmackenzie$elm_geometry$Point2d$pixels, screenSize.width, 0)),
+				offset);
+			var editorBoard = $author$project$Undo$value(model.editorBoard);
+			var maybeIntersection = A3(
+				$elm$core$Dict$foldl,
+				F3(
+					function (point, block, maybeInter) {
+						if (block.$ === 'Empty') {
 							return maybeInter;
 						} else {
-							var boundingBox = A2(
-								$ianmackenzie$elm_geometry$BoundingBox3d$withDimensions,
-								_Utils_Tuple3(
-									$ianmackenzie$elm_units$Length$meters(1),
-									$ianmackenzie$elm_units$Length$meters(1),
-									$ianmackenzie$elm_units$Length$meters(1)),
-								$author$project$Board$pointToPoint3d(point));
-							var _v5 = A2($author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d, ray, boundingBox);
-							if (_v5.$ === 'Nothing') {
+							var _v5 = point;
+							var x = _v5.a;
+							var y = _v5.b;
+							var z = _v5.c;
+							if ((_Utils_cmp(x, model.xLowerVisible) < 0) || ((_Utils_cmp(x, model.xUpperVisible) > 0) || ((_Utils_cmp(y, model.yLowerVisible) < 0) || ((_Utils_cmp(y, model.yUpperVisible) > 0) || ((_Utils_cmp(z, model.zLowerVisible) < 0) || (_Utils_cmp(z, model.zUpperVisible) > 0)))))) {
 								return maybeInter;
 							} else {
-								var intersection = _v5.a;
-								var newDist = A2(
-									$ianmackenzie$elm_geometry$Point3d$distanceFrom,
-									$ianmackenzie$elm_geometry$Axis3d$originPoint(ray),
-									$ianmackenzie$elm_geometry$Axis3d$originPoint(intersection));
-								if (maybeInter.$ === 'Nothing') {
-									return $elm$core$Maybe$Just(
-										_Utils_Tuple2(intersection, newDist));
+								var boundingBox = A2(
+									$ianmackenzie$elm_geometry$BoundingBox3d$withDimensions,
+									_Utils_Tuple3(
+										$ianmackenzie$elm_units$Length$meters(1),
+										$ianmackenzie$elm_units$Length$meters(1),
+										$ianmackenzie$elm_units$Length$meters(1)),
+									$author$project$Board$pointToPoint3d(point));
+								var _v6 = A2($author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d, ray, boundingBox);
+								if (_v6.$ === 'Nothing') {
+									return maybeInter;
 								} else {
-									var _v7 = maybeInter.a;
-									var prevDist = _v7.b;
-									return A2($ianmackenzie$elm_units$Quantity$lessThan, prevDist, newDist) ? $elm$core$Maybe$Just(
-										_Utils_Tuple2(intersection, newDist)) : maybeInter;
+									var intersection = _v6.a;
+									var newDist = A2(
+										$ianmackenzie$elm_geometry$Point3d$distanceFrom,
+										$ianmackenzie$elm_geometry$Axis3d$originPoint(ray),
+										$ianmackenzie$elm_geometry$Axis3d$originPoint(intersection));
+									if (maybeInter.$ === 'Nothing') {
+										return $elm$core$Maybe$Just(
+											_Utils_Tuple2(intersection, newDist));
+									} else {
+										var _v8 = maybeInter.a;
+										var prevDist = _v8.b;
+										return A2($ianmackenzie$elm_units$Quantity$lessThan, prevDist, newDist) ? $elm$core$Maybe$Just(
+											_Utils_Tuple2(intersection, newDist)) : maybeInter;
+									}
 								}
 							}
 						}
-					}
-				}),
-			$elm$core$Maybe$Nothing,
-			editorBoard.blocks);
-		if (maybeIntersection.$ === 'Nothing') {
-			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		} else {
-			var _v1 = maybeIntersection.a;
-			var intersection = _v1.a;
-			return _Utils_Tuple2(
-				_Utils_update(
-					model,
-					{
-						editorCursor: function () {
-							var _v2 = model.blockEditMode;
-							switch (_v2.$) {
-								case 'Remove':
-									return $author$project$Board$point3dToPoint(
-										A2(
-											$author$project$Point3d$Extra$constrain,
-											{
-												max: A3($ianmackenzie$elm_geometry$Point3d$meters, editorBoard.maxX - 1, editorBoard.maxY - 1, editorBoard.maxZ - 1),
-												min: $ianmackenzie$elm_geometry$Point3d$origin
-											},
-											A2(
-												$ianmackenzie$elm_geometry$Point3d$along,
-												$ianmackenzie$elm_geometry$Axis3d$reverse(intersection),
-												$ianmackenzie$elm_units$Length$meters(0.5))));
-								case 'Add':
-									return $author$project$Board$point3dToPoint(
-										A2(
-											$author$project$Point3d$Extra$constrain,
-											{
-												max: A3($ianmackenzie$elm_geometry$Point3d$meters, editorBoard.maxX - 1, editorBoard.maxY - 1, editorBoard.maxZ - 1),
-												min: $ianmackenzie$elm_geometry$Point3d$origin
-											},
-											A2(
-												$ianmackenzie$elm_geometry$Point3d$along,
-												intersection,
-												$ianmackenzie$elm_units$Length$meters(0.5))));
-								default:
-									return $author$project$Board$point3dToPoint(
-										A2(
-											$author$project$Point3d$Extra$constrain,
-											{
-												max: A3($ianmackenzie$elm_geometry$Point3d$meters, editorBoard.maxX - 1, editorBoard.maxY - 1, editorBoard.maxZ - 1),
-												min: $ianmackenzie$elm_geometry$Point3d$origin
-											},
-											A2(
-												$ianmackenzie$elm_geometry$Point3d$along,
-												$ianmackenzie$elm_geometry$Axis3d$reverse(intersection),
-												$ianmackenzie$elm_units$Length$meters(0.5))));
-							}
-						}()
 					}),
-				$elm$core$Platform$Cmd$none);
+				$elm$core$Maybe$Nothing,
+				editorBoard.blocks);
+			if (maybeIntersection.$ === 'Nothing') {
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			} else {
+				var _v2 = maybeIntersection.a;
+				var intersection = _v2.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							editorCursor: function () {
+								var _v3 = model.blockEditMode;
+								switch (_v3.$) {
+									case 'Remove':
+										return $author$project$Board$point3dToPoint(
+											A2(
+												$author$project$Point3d$Extra$constrain,
+												{
+													max: A3($ianmackenzie$elm_geometry$Point3d$meters, editorBoard.maxX - 1, editorBoard.maxY - 1, editorBoard.maxZ - 1),
+													min: $ianmackenzie$elm_geometry$Point3d$origin
+												},
+												A2(
+													$ianmackenzie$elm_geometry$Point3d$along,
+													$ianmackenzie$elm_geometry$Axis3d$reverse(intersection),
+													$ianmackenzie$elm_units$Length$meters(0.5))));
+									case 'Add':
+										return $author$project$Board$point3dToPoint(
+											A2(
+												$author$project$Point3d$Extra$constrain,
+												{
+													max: A3($ianmackenzie$elm_geometry$Point3d$meters, editorBoard.maxX - 1, editorBoard.maxY - 1, editorBoard.maxZ - 1),
+													min: $ianmackenzie$elm_geometry$Point3d$origin
+												},
+												A2(
+													$ianmackenzie$elm_geometry$Point3d$along,
+													intersection,
+													$ianmackenzie$elm_units$Length$meters(0.5))));
+									default:
+										return $author$project$Board$point3dToPoint(
+											A2(
+												$author$project$Point3d$Extra$constrain,
+												{
+													max: A3($ianmackenzie$elm_geometry$Point3d$meters, editorBoard.maxX - 1, editorBoard.maxY - 1, editorBoard.maxZ - 1),
+													min: $ianmackenzie$elm_geometry$Point3d$origin
+												},
+												A2(
+													$ianmackenzie$elm_geometry$Point3d$along,
+													$ianmackenzie$elm_geometry$Axis3d$reverse(intersection),
+													$ianmackenzie$elm_units$Length$meters(0.5))));
+								}
+							}()
+						}),
+					$elm$core$Platform$Cmd$none);
+			}
 		}
 	});
 var $elm$core$Set$remove = F2(
@@ -22665,14 +22756,20 @@ var $author$project$Screen$Editor$update = F5(
 							_Utils_update(
 								model,
 								{editorMode: $author$project$Screen$Editor$TestGame, level: level}),
-							$elm$core$Platform$Cmd$none);
+							A2(
+								$elm$core$Task$attempt,
+								A2($elm$core$Basics$composeR, $author$project$Screen$Editor$EditorViewportResized, toMsg),
+								$elm$browser$Browser$Dom$getViewportOf('editor-viewport')));
 					}
 				} else {
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
 							{editorMode: $author$project$Screen$Editor$EditBoard}),
-						$elm$core$Platform$Cmd$none);
+						A2(
+							$elm$core$Task$attempt,
+							A2($elm$core$Basics$composeR, $author$project$Screen$Editor$EditorViewportResized, toMsg),
+							$elm$browser$Browser$Dom$getViewportOf('editor-viewport')));
 				}
 			case 'SetBlockEditMode':
 				var blockEditMode = msg.a;
@@ -23154,9 +23251,34 @@ var $author$project$Screen$Editor$update = F5(
 						model,
 						{showBoardBounds: show}),
 					$elm$core$Platform$Cmd$none);
-			default:
+			case 'ShowSettings':
 				var show = msg.a;
 				return A2($author$project$Screen$Editor$showSettings, show, model);
+			case 'BrowserResized':
+				return _Utils_Tuple2(
+					model,
+					A2(
+						$elm$core$Task$attempt,
+						A2($elm$core$Basics$composeR, $author$project$Screen$Editor$EditorViewportResized, toMsg),
+						$elm$browser$Browser$Dom$getViewportOf('editor-viewport')));
+			default:
+				if (msg.a.$ === 'Err') {
+					var err = msg.a.a;
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				} else {
+					var viewport = msg.a.a.viewport;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								screenSize: $elm$core$Maybe$Just(
+									{
+										height: $elm$core$Basics$round(viewport.height),
+										width: $elm$core$Basics$round(viewport.width)
+									})
+							}),
+						$elm$core$Platform$Cmd$none);
+				}
 		}
 	});
 var $author$project$Screen$FreePlay$FreePlayBoardLoaded = {$: 'FreePlayBoardLoaded'};
@@ -23358,7 +23480,6 @@ var $author$project$Shared$update = F2(
 								{
 									blockPalette: $author$project$Board$SimpleBlocks,
 									inputMapping: $author$project$Input$defaultMapping,
-									screen: $author$project$Shared$Menu,
 									screenSize: {height: 600, width: 800}
 								}),
 							$elm$core$Platform$Cmd$none);
@@ -23385,16 +23506,7 @@ var $author$project$Shared$update = F2(
 										inputMapping: fn(mod.inputMapping)
 									})),
 							$elm$core$Platform$Cmd$none);
-					case 'SetScreen':
-						var mod = _v0.a.a;
-						var screen = _v0.b.a;
-						return _Utils_Tuple2(
-							$author$project$Shared$Loaded(
-								_Utils_update(
-									mod,
-									{screen: screen})),
-							$elm$core$Platform$Cmd$none);
-					default:
+					case 'SetBlockPalette':
 						var mod = _v0.a.a;
 						var blockPalette = _v0.b.a;
 						return _Utils_Tuple2(
@@ -23402,6 +23514,34 @@ var $author$project$Shared$update = F2(
 								_Utils_update(
 									mod,
 									{blockPalette: blockPalette})),
+							$elm$core$Platform$Cmd$none);
+					case 'ViewportResized':
+						if (_v0.b.a.$ === 'Err') {
+							var mod = _v0.a.a;
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var mod = _v0.a.a;
+							var viewport = _v0.b.a.a.viewport;
+							return _Utils_Tuple2(
+								$author$project$Shared$Loaded(
+									_Utils_update(
+										mod,
+										{
+											screenSize: {
+												height: $elm$core$Basics$round(viewport.height),
+												width: $elm$core$Basics$round(viewport.width)
+											}
+										})),
+								$elm$core$Platform$Cmd$none);
+						}
+					default:
+						var mod = _v0.a.a;
+						var screenSize = _v0.b.a;
+						return _Utils_Tuple2(
+							$author$project$Shared$Loaded(
+								_Utils_update(
+									mod,
+									{screenSize: screenSize})),
 							$elm$core$Platform$Cmd$none);
 				}
 		}
@@ -23419,72 +23559,176 @@ var $author$project$Main$update = F2(
 						model,
 						{sharedModel: sharedModel}),
 					A2($elm$core$Platform$Cmd$map, $author$project$Main$SharedMsg, sharedCmd));
+			case 'SetScreen':
+				var screen = msg.a;
+				switch (screen.$) {
+					case 'Menu':
+						var _v3 = model.screen;
+						if (_v3.$ === 'Menu') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var _v4 = $author$project$Screen$Menu$init;
+							var menuModel = _v4.a;
+							var menuCmd = _v4.b;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										screen: $author$project$Screen$Model$Menu(menuModel)
+									}),
+								A2($elm$core$Platform$Cmd$map, $author$project$Main$MenuMsg, menuCmd));
+						}
+					case 'Game':
+						var _v5 = model.screen;
+						if (_v5.$ === 'Game') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var _v6 = $author$project$Screen$Game$init;
+							var gameModel = _v6.a;
+							var gameCmd = _v6.b;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										screen: $author$project$Screen$Model$Game(gameModel)
+									}),
+								A2($elm$core$Platform$Cmd$map, $author$project$Main$GameMsg, gameCmd));
+						}
+					case 'Editor':
+						var _v7 = model.screen;
+						if (_v7.$ === 'Editor') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var _v8 = $author$project$Screen$Editor$init;
+							var editorModel = _v8.a;
+							var editorCmd = _v8.b;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										screen: $author$project$Screen$Model$Editor(editorModel)
+									}),
+								A2($elm$core$Platform$Cmd$map, $author$project$Main$EditorMsg, editorCmd));
+						}
+					default:
+						var _v9 = model.screen;
+						if (_v9.$ === 'FreePlay') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var _v10 = $author$project$Screen$FreePlay$init(
+								{toMsg: $author$project$Main$FreePlayMsg, toSharedMsg: $author$project$Main$SharedMsg});
+							var freePlayModel = _v10.a;
+							var freePlayCmd = _v10.b;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										screen: $author$project$Screen$Model$FreePlay(freePlayModel)
+									}),
+								freePlayCmd);
+						}
+				}
 			case 'MenuMsg':
 				var message = msg.a;
-				var _v2 = model.sharedModel;
-				if (_v2.$ === 'Loaded') {
-					var sharedModel = _v2.a;
-					var _v3 = A3($author$project$Screen$Menu$update, sharedModel, message, model.menuModel);
-					var menuModel = _v3.a;
-					var menuCmd = _v3.b;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{menuModel: menuModel}),
-						A2($elm$core$Platform$Cmd$map, $author$project$Main$MenuMsg, menuCmd));
+				var _v11 = model.sharedModel;
+				if (_v11.$ === 'Loaded') {
+					var sharedModel = _v11.a;
+					var _v12 = model.screen;
+					if (_v12.$ === 'Menu') {
+						var menuModel = _v12.a;
+						var _v13 = A3($author$project$Screen$Menu$update, sharedModel, message, menuModel);
+						var nextMenuModel = _v13.a;
+						var menuCmd = _v13.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									screen: $author$project$Screen$Model$Menu(nextMenuModel)
+								}),
+							A2($elm$core$Platform$Cmd$map, $author$project$Main$MenuMsg, menuCmd));
+					} else {
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					}
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
 			case 'GameMsg':
 				var message = msg.a;
-				var _v4 = model.sharedModel;
-				if (_v4.$ === 'Loaded') {
-					var sharedModel = _v4.a;
-					var _v5 = A3($author$project$Screen$Game$update, sharedModel, message, model.gameModel);
-					var gameModel = _v5.a;
-					var gameCmd = _v5.b;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{gameModel: gameModel}),
-						A2($elm$core$Platform$Cmd$map, $author$project$Main$GameMsg, gameCmd));
+				var _v14 = model.sharedModel;
+				if (_v14.$ === 'Loaded') {
+					var sharedModel = _v14.a;
+					var _v15 = model.screen;
+					if (_v15.$ === 'Game') {
+						var gameModel = _v15.a;
+						var _v16 = A3($author$project$Screen$Game$update, sharedModel, message, gameModel);
+						var nextGameModel = _v16.a;
+						var gameCmd = _v16.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									screen: $author$project$Screen$Model$Game(nextGameModel)
+								}),
+							A2($elm$core$Platform$Cmd$map, $author$project$Main$GameMsg, gameCmd));
+					} else {
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					}
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
 			case 'FreePlayMsg':
 				var message = msg.a;
-				var _v6 = model.sharedModel;
-				if (_v6.$ === 'Loaded') {
-					var sharedModel = _v6.a;
-					var _v7 = A3($author$project$Screen$FreePlay$update, sharedModel, message, model.freePlayModel);
-					var freePlayModel = _v7.a;
-					var freePlayCmd = _v7.b;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{freePlayModel: freePlayModel}),
-						A2($elm$core$Platform$Cmd$map, $author$project$Main$FreePlayMsg, freePlayCmd));
+				var _v17 = model.sharedModel;
+				if (_v17.$ === 'Loaded') {
+					var sharedModel = _v17.a;
+					var _v18 = model.screen;
+					if (_v18.$ === 'FreePlay') {
+						var freePlayModel = _v18.a;
+						var _v19 = A3($author$project$Screen$FreePlay$update, sharedModel, message, freePlayModel);
+						var nextFreePlayModel = _v19.a;
+						var freePlayCmd = _v19.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									screen: $author$project$Screen$Model$FreePlay(nextFreePlayModel)
+								}),
+							A2($elm$core$Platform$Cmd$map, $author$project$Main$FreePlayMsg, freePlayCmd));
+					} else {
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					}
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
 			default:
 				var message = msg.a;
-				var _v8 = model.sharedModel;
-				if (_v8.$ === 'Loaded') {
-					var sharedModel = _v8.a;
-					var _v9 = A5($author$project$Screen$Editor$update, $author$project$Main$SharedMsg, sharedModel, $author$project$Main$EditorMsg, message, model.editorModel);
-					var editorModel = _v9.a;
-					var editorCmd = _v9.b;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{editorModel: editorModel}),
-						editorCmd);
+				var _v20 = model.sharedModel;
+				if (_v20.$ === 'Loaded') {
+					var sharedModel = _v20.a;
+					var _v21 = model.screen;
+					if (_v21.$ === 'Editor') {
+						var editorModel = _v21.a;
+						var _v22 = A5($author$project$Screen$Editor$update, $author$project$Main$SharedMsg, sharedModel, $author$project$Main$EditorMsg, message, editorModel);
+						var nextEditorModel = _v22.a;
+						var editorCmd = _v22.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									screen: $author$project$Screen$Model$Editor(nextEditorModel)
+								}),
+							editorCmd);
+					} else {
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					}
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
 		}
 	});
+var $author$project$Main$SetScreen = function (a) {
+	return {$: 'SetScreen', a: a};
+};
 var $author$project$Board$BasicMiniBoard = {$: 'BasicMiniBoard'};
 var $author$project$Screen$Editor$ChangeMode = {$: 'ChangeMode'};
 var $author$project$Board$DefaultBoard = {$: 'DefaultBoard'};
@@ -30237,6 +30481,7 @@ var $author$project$Board$viewEnemy = function (enemy) {
 var $author$project$Screen$Editor$BlockTypeSelected = function (a) {
 	return {$: 'BlockTypeSelected', a: a};
 };
+var $author$project$Screen$Menu = {$: 'Menu'};
 var $author$project$Screen$Editor$Redo = {$: 'Redo'};
 var $author$project$Screen$Editor$ResetCamera = {$: 'ResetCamera'};
 var $author$project$Screen$Editor$SetBlockEditMode = function (a) {
@@ -30244,9 +30489,6 @@ var $author$project$Screen$Editor$SetBlockEditMode = function (a) {
 };
 var $author$project$Screen$Editor$SetCameraMode = function (a) {
 	return {$: 'SetCameraMode', a: a};
-};
-var $author$project$Shared$SetScreen = function (a) {
-	return {$: 'SetScreen', a: a};
 };
 var $author$project$Screen$Editor$ShowBoardBounds = function (a) {
 	return {$: 'ShowBoardBounds', a: a};
@@ -31307,8 +31549,8 @@ var $phosphor_icons$phosphor_elm$Phosphor$x = function (weight) {
 	}();
 	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
 };
-var $author$project$Screen$Editor$viewHeader = F4(
-	function (toSharedMsg, sharedModel, toMsg, model) {
+var $author$project$Screen$Editor$viewHeader = F5(
+	function (setScreen, toSharedMsg, sharedModel, toMsg, model) {
 		var _v0 = model.editorMode;
 		if (_v0.$ === 'TestGame') {
 			return $author$project$Board$viewStats(model.level);
@@ -31759,8 +32001,7 @@ var $author$project$Screen$Editor$viewHeader = F4(
 							[
 								$elm$html$Html$Attributes$type_('button'),
 								$elm$html$Html$Events$onClick(
-								toSharedMsg(
-									$author$project$Shared$SetScreen($author$project$Shared$Menu))),
+								setScreen($author$project$Screen$Menu)),
 								A2($elm$html$Html$Attributes$style, 'margin-left', 'auto')
 							]),
 						_List_fromArray(
@@ -33039,180 +33280,205 @@ var $author$project$Screen$Editor$viewSettings = F4(
 var $ianmackenzie$elm_geometry$Axis3d$x = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$x);
 var $ianmackenzie$elm_geometry$Axis3d$z = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$z);
 var $author$project$Board$zigZagBoard = '[1,[9,9,9,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[1]],[[0,0,3],[1]],[[0,0,4],[2]],[[0,0,5],[1]],[[0,0,6],[1]],[[0,0,7],[1]],[[0,0,8],[1]],[[0,1,0],[2]],[[0,1,1],[3,false]],[[0,1,2],[1]],[[0,1,3],[3,false]],[[0,1,4],[3,false]],[[0,1,5],[3,false]],[[0,1,6],[1]],[[0,1,7],[3,false]],[[0,1,8],[2]],[[0,2,0],[1]],[[0,2,1],[3,false]],[[0,2,2],[1]],[[0,2,3],[3,false]],[[0,2,4],[1]],[[0,2,5],[3,false]],[[0,2,6],[1]],[[0,2,7],[3,false]],[[0,2,8],[1]],[[0,3,0],[1]],[[0,3,1],[3,false]],[[0,3,2],[1]],[[0,3,3],[3,false]],[[0,3,4],[3,false]],[[0,3,5],[3,false]],[[0,3,6],[1]],[[0,3,7],[3,false]],[[0,3,8],[1]],[[0,4,0],[1]],[[0,4,1],[3,false]],[[0,4,2],[1]],[[0,4,3],[3,false]],[[0,4,4],[1]],[[0,4,5],[3,false]],[[0,4,6],[1]],[[0,4,7],[3,false]],[[0,4,8],[1]],[[0,5,0],[1]],[[0,5,1],[3,false]],[[0,5,2],[3,false]],[[0,5,3],[3,false]],[[0,5,4],[1]],[[0,5,5],[3,false]],[[0,5,6],[3,false]],[[0,5,7],[3,false]],[[0,5,8],[1]],[[0,6,0],[1]],[[0,6,1],[3,false]],[[0,6,2],[1]],[[0,6,3],[3,false]],[[0,6,4],[1]],[[0,6,5],[3,false]],[[0,6,6],[1]],[[0,6,7],[3,false]],[[0,6,8],[1]],[[0,7,0],[1]],[[0,7,1],[3,false]],[[0,7,2],[3,false]],[[0,7,3],[3,false]],[[0,7,4],[1]],[[0,7,5],[3,false]],[[0,7,6],[3,false]],[[0,7,7],[3,false]],[[0,7,8],[1]],[[0,8,0],[1]],[[0,8,1],[1]],[[0,8,2],[1]],[[0,8,3],[1]],[[0,8,4],[1]],[[0,8,5],[1]],[[0,8,6],[1]],[[0,8,7],[1]],[[0,8,8],[1]],[[1,0,0],[2]],[[1,0,1],[3,false]],[[1,0,2],[1]],[[1,0,3],[3,false]],[[1,0,4],[3,false]],[[1,0,5],[3,false]],[[1,0,6],[1]],[[1,0,7],[3,false]],[[1,0,8],[2]],[[1,1,0],[3,false]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,1,5],[1]],[[1,1,6],[1]],[[1,1,7],[1]],[[1,1,8],[3,false]],[[1,2,0],[1]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[1]],[[1,2,5],[1]],[[1,2,6],[1]],[[1,2,7],[1]],[[1,2,8],[3,false]],[[1,3,0],[3,false]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,3,5],[1]],[[1,3,6],[1]],[[1,3,7],[1]],[[1,3,8],[3,false]],[[1,4,0],[3,false]],[[1,4,1],[1]],[[1,4,2],[1]],[[1,4,3],[1]],[[1,4,4],[1]],[[1,4,5],[1]],[[1,4,6],[1]],[[1,4,7],[1]],[[1,4,8],[3,false]],[[1,5,0],[3,false]],[[1,5,1],[1]],[[1,5,2],[1]],[[1,5,3],[1]],[[1,5,4],[1]],[[1,5,5],[1]],[[1,5,6],[1]],[[1,5,7],[1]],[[1,5,8],[3,false]],[[1,6,0],[3,false]],[[1,6,1],[1]],[[1,6,2],[1]],[[1,6,3],[1]],[[1,6,4],[1]],[[1,6,5],[1]],[[1,6,6],[1]],[[1,6,7],[1]],[[1,6,8],[3,false]],[[1,7,0],[3,false]],[[1,7,1],[1]],[[1,7,2],[1]],[[1,7,3],[1]],[[1,7,4],[1]],[[1,7,5],[1]],[[1,7,6],[1]],[[1,7,7],[1]],[[1,7,8],[3,false]],[[1,8,0],[1]],[[1,8,1],[3,false]],[[1,8,2],[3,false]],[[1,8,3],[3,false]],[[1,8,4],[1]],[[1,8,5],[3,false]],[[1,8,6],[3,false]],[[1,8,7],[3,false]],[[1,8,8],[1]],[[2,0,0],[1]],[[2,0,1],[3,false]],[[2,0,2],[1]],[[2,0,3],[3,false]],[[2,0,4],[1]],[[2,0,5],[3,false]],[[2,0,6],[1]],[[2,0,7],[3,false]],[[2,0,8],[1]],[[2,1,0],[3,false]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[1]],[[2,1,5],[1]],[[2,1,6],[1]],[[2,1,7],[1]],[[2,1,8],[1]],[[2,2,0],[1]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[1]],[[2,2,5],[1]],[[2,2,6],[1]],[[2,2,7],[1]],[[2,2,8],[1]],[[2,3,0],[3,false]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[1]],[[2,3,5],[1]],[[2,3,6],[1]],[[2,3,7],[1]],[[2,3,8],[1]],[[2,4,0],[1]],[[2,4,1],[1]],[[2,4,2],[1]],[[2,4,3],[1]],[[2,4,4],[1]],[[2,4,5],[1]],[[2,4,6],[1]],[[2,4,7],[1]],[[2,4,8],[1]],[[2,5,0],[3,false]],[[2,5,1],[1]],[[2,5,2],[1]],[[2,5,3],[1]],[[2,5,4],[1]],[[2,5,5],[1]],[[2,5,6],[1]],[[2,5,7],[1]],[[2,5,8],[1]],[[2,6,0],[1]],[[2,6,1],[1]],[[2,6,2],[1]],[[2,6,3],[1]],[[2,6,4],[1]],[[2,6,5],[1]],[[2,6,6],[1]],[[2,6,7],[1]],[[2,6,8],[1]],[[2,7,0],[3,false]],[[2,7,1],[1]],[[2,7,2],[1]],[[2,7,3],[1]],[[2,7,4],[1]],[[2,7,5],[1]],[[2,7,6],[1]],[[2,7,7],[1]],[[2,7,8],[3,false]],[[2,8,0],[1]],[[2,8,1],[3,false]],[[2,8,2],[1]],[[2,8,3],[3,false]],[[2,8,4],[1]],[[2,8,5],[3,false]],[[2,8,6],[1]],[[2,8,7],[3,false]],[[2,8,8],[1]],[[3,0,0],[1]],[[3,0,1],[3,false]],[[3,0,2],[1]],[[3,0,3],[3,false]],[[3,0,4],[3,false]],[[3,0,5],[3,false]],[[3,0,6],[1]],[[3,0,7],[3,false]],[[3,0,8],[1]],[[3,1,0],[3,false]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,1,5],[1]],[[3,1,6],[1]],[[3,1,7],[1]],[[3,1,8],[3,false]],[[3,2,0],[1]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[1]],[[3,2,5],[1]],[[3,2,6],[1]],[[3,2,7],[1]],[[3,2,8],[3,false]],[[3,3,0],[0]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,3,5],[1]],[[3,3,6],[1]],[[3,3,7],[1]],[[3,3,8],[0]],[[3,4,0],[1]],[[3,4,1],[1]],[[3,4,2],[1]],[[3,4,3],[1]],[[3,4,4],[1]],[[3,4,5],[1]],[[3,4,6],[1]],[[3,4,7],[1]],[[3,4,8],[4,[[3],[0]]]],[[3,5,0],[0]],[[3,5,1],[1]],[[3,5,2],[1]],[[3,5,3],[1]],[[3,5,4],[1]],[[3,5,5],[1]],[[3,5,6],[1]],[[3,5,7],[1]],[[3,5,8],[0]],[[3,6,0],[1]],[[3,6,1],[1]],[[3,6,2],[1]],[[3,6,3],[1]],[[3,6,4],[1]],[[3,6,5],[1]],[[3,6,6],[1]],[[3,6,7],[1]],[[3,6,8],[3,false]],[[3,7,0],[3,false]],[[3,7,1],[1]],[[3,7,2],[1]],[[3,7,3],[1]],[[3,7,4],[1]],[[3,7,5],[1]],[[3,7,6],[1]],[[3,7,7],[1]],[[3,7,8],[3,false]],[[3,8,0],[1]],[[3,8,1],[3,false]],[[3,8,2],[3,false]],[[3,8,3],[3,false]],[[3,8,4],[1]],[[3,8,5],[3,false]],[[3,8,6],[3,false]],[[3,8,7],[3,false]],[[3,8,8],[1]],[[4,0,0],[1]],[[4,0,1],[3,false]],[[4,0,2],[1]],[[4,0,3],[3,false]],[[4,0,4],[1]],[[4,0,5],[3,false]],[[4,0,6],[1]],[[4,0,7],[3,false]],[[4,0,8],[1]],[[4,1,0],[3,false]],[[4,1,1],[1]],[[4,1,2],[1]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,1,5],[1]],[[4,1,6],[1]],[[4,1,7],[1]],[[4,1,8],[3,false]],[[4,2,0],[1]],[[4,2,1],[1]],[[4,2,2],[1]],[[4,2,3],[1]],[[4,2,4],[1]],[[4,2,5],[1]],[[4,2,6],[1]],[[4,2,7],[1]],[[4,2,8],[1]],[[4,3,0],[0]],[[4,3,1],[1]],[[4,3,2],[1]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,3,5],[1]],[[4,3,6],[1]],[[4,3,7],[1]],[[4,3,8],[1]],[[4,4,0],[5,[[0,3]]]],[[4,4,1],[1]],[[4,4,2],[1]],[[4,4,3],[1]],[[4,4,4],[1]],[[4,4,5],[1]],[[4,4,6],[1]],[[4,4,7],[1]],[[4,4,8],[1]],[[4,5,0],[0]],[[4,5,1],[1]],[[4,5,2],[1]],[[4,5,3],[1]],[[4,5,4],[1]],[[4,5,5],[1]],[[4,5,6],[1]],[[4,5,7],[1]],[[4,5,8],[1]],[[4,6,0],[1]],[[4,6,1],[1]],[[4,6,2],[1]],[[4,6,3],[1]],[[4,6,4],[1]],[[4,6,5],[1]],[[4,6,6],[1]],[[4,6,7],[1]],[[4,6,8],[1]],[[4,7,0],[3,false]],[[4,7,1],[1]],[[4,7,2],[1]],[[4,7,3],[1]],[[4,7,4],[1]],[[4,7,5],[1]],[[4,7,6],[1]],[[4,7,7],[1]],[[4,7,8],[3,false]],[[4,8,0],[1]],[[4,8,1],[3,false]],[[4,8,2],[1]],[[4,8,3],[3,false]],[[4,8,4],[1]],[[4,8,5],[3,false]],[[4,8,6],[1]],[[4,8,7],[3,false]],[[4,8,8],[1]],[[5,0,0],[1]],[[5,0,1],[3,false]],[[5,0,2],[3,false]],[[5,0,3],[3,false]],[[5,0,4],[1]],[[5,0,5],[3,false]],[[5,0,6],[3,false]],[[5,0,7],[3,false]],[[5,0,8],[1]],[[5,1,0],[3,false]],[[5,1,1],[1]],[[5,1,2],[1]],[[5,1,3],[1]],[[5,1,4],[1]],[[5,1,5],[1]],[[5,1,6],[1]],[[5,1,7],[1]],[[5,1,8],[3,false]],[[5,2,0],[1]],[[5,2,1],[1]],[[5,2,2],[1]],[[5,2,3],[1]],[[5,2,4],[1]],[[5,2,5],[1]],[[5,2,6],[1]],[[5,2,7],[1]],[[5,2,8],[3,false]],[[5,3,0],[0]],[[5,3,1],[1]],[[5,3,2],[1]],[[5,3,3],[1]],[[5,3,4],[1]],[[5,3,5],[1]],[[5,3,6],[1]],[[5,3,7],[1]],[[5,3,8],[3,false]],[[5,4,0],[1]],[[5,4,1],[1]],[[5,4,2],[1]],[[5,4,3],[1]],[[5,4,4],[1]],[[5,4,5],[1]],[[5,4,6],[1]],[[5,4,7],[1]],[[5,4,8],[3,false]],[[5,5,0],[0]],[[5,5,1],[1]],[[5,5,2],[1]],[[5,5,3],[1]],[[5,5,4],[1]],[[5,5,5],[1]],[[5,5,6],[1]],[[5,5,7],[1]],[[5,5,8],[3,false]],[[5,6,0],[1]],[[5,6,1],[1]],[[5,6,2],[1]],[[5,6,3],[1]],[[5,6,4],[1]],[[5,6,5],[1]],[[5,6,6],[1]],[[5,6,7],[1]],[[5,6,8],[3,false]],[[5,7,0],[3,false]],[[5,7,1],[1]],[[5,7,2],[1]],[[5,7,3],[1]],[[5,7,4],[1]],[[5,7,5],[1]],[[5,7,6],[1]],[[5,7,7],[1]],[[5,7,8],[3,false]],[[5,8,0],[1]],[[5,8,1],[3,false]],[[5,8,2],[1]],[[5,8,3],[3,false]],[[5,8,4],[3,false]],[[5,8,5],[3,false]],[[5,8,6],[1]],[[5,8,7],[3,false]],[[5,8,8],[1]],[[6,0,0],[1]],[[6,0,1],[3,false]],[[6,0,2],[1]],[[6,0,3],[3,false]],[[6,0,4],[1]],[[6,0,5],[3,false]],[[6,0,6],[1]],[[6,0,7],[3,false]],[[6,0,8],[1]],[[6,1,0],[3,false]],[[6,1,1],[1]],[[6,1,2],[1]],[[6,1,3],[1]],[[6,1,4],[1]],[[6,1,5],[1]],[[6,1,6],[1]],[[6,1,7],[1]],[[6,1,8],[3,false]],[[6,2,0],[1]],[[6,2,1],[1]],[[6,2,2],[1]],[[6,2,3],[1]],[[6,2,4],[1]],[[6,2,5],[1]],[[6,2,6],[1]],[[6,2,7],[1]],[[6,2,8],[1]],[[6,3,0],[3,false]],[[6,3,1],[1]],[[6,3,2],[1]],[[6,3,3],[1]],[[6,3,4],[1]],[[6,3,5],[1]],[[6,3,6],[1]],[[6,3,7],[1]],[[6,3,8],[1]],[[6,4,0],[1]],[[6,4,1],[1]],[[6,4,2],[1]],[[6,4,3],[1]],[[6,4,4],[1]],[[6,4,5],[1]],[[6,4,6],[1]],[[6,4,7],[1]],[[6,4,8],[1]],[[6,5,0],[3,false]],[[6,5,1],[1]],[[6,5,2],[1]],[[6,5,3],[1]],[[6,5,4],[1]],[[6,5,5],[1]],[[6,5,6],[1]],[[6,5,7],[1]],[[6,5,8],[1]],[[6,6,0],[1]],[[6,6,1],[1]],[[6,6,2],[1]],[[6,6,3],[1]],[[6,6,4],[1]],[[6,6,5],[1]],[[6,6,6],[1]],[[6,6,7],[1]],[[6,6,8],[1]],[[6,7,0],[3,false]],[[6,7,1],[1]],[[6,7,2],[1]],[[6,7,3],[1]],[[6,7,4],[1]],[[6,7,5],[1]],[[6,7,6],[1]],[[6,7,7],[1]],[[6,7,8],[1]],[[6,8,0],[1]],[[6,8,1],[3,false]],[[6,8,2],[1]],[[6,8,3],[3,false]],[[6,8,4],[1]],[[6,8,5],[3,false]],[[6,8,6],[1]],[[6,8,7],[3,false]],[[6,8,8],[1]],[[7,0,0],[1]],[[7,0,1],[3,false]],[[7,0,2],[3,false]],[[7,0,3],[3,false]],[[7,0,4],[1]],[[7,0,5],[3,false]],[[7,0,6],[3,false]],[[7,0,7],[3,false]],[[7,0,8],[1]],[[7,1,0],[3,false]],[[7,1,1],[1]],[[7,1,2],[1]],[[7,1,3],[1]],[[7,1,4],[1]],[[7,1,5],[1]],[[7,1,6],[1]],[[7,1,7],[1]],[[7,1,8],[3,false]],[[7,2,0],[3,false]],[[7,2,1],[1]],[[7,2,2],[1]],[[7,2,3],[1]],[[7,2,4],[1]],[[7,2,5],[1]],[[7,2,6],[1]],[[7,2,7],[1]],[[7,2,8],[3,false]],[[7,3,0],[3,false]],[[7,3,1],[1]],[[7,3,2],[1]],[[7,3,3],[1]],[[7,3,4],[1]],[[7,3,5],[1]],[[7,3,6],[1]],[[7,3,7],[1]],[[7,3,8],[3,false]],[[7,4,0],[3,false]],[[7,4,1],[1]],[[7,4,2],[1]],[[7,4,3],[1]],[[7,4,4],[1]],[[7,4,5],[1]],[[7,4,6],[1]],[[7,4,7],[1]],[[7,4,8],[3,false]],[[7,5,0],[3,false]],[[7,5,1],[1]],[[7,5,2],[1]],[[7,5,3],[1]],[[7,5,4],[1]],[[7,5,5],[1]],[[7,5,6],[1]],[[7,5,7],[1]],[[7,5,8],[3,false]],[[7,6,0],[1]],[[7,6,1],[1]],[[7,6,2],[1]],[[7,6,3],[1]],[[7,6,4],[1]],[[7,6,5],[1]],[[7,6,6],[1]],[[7,6,7],[1]],[[7,6,8],[3,false]],[[7,7,0],[3,false]],[[7,7,1],[1]],[[7,7,2],[1]],[[7,7,3],[1]],[[7,7,4],[1]],[[7,7,5],[1]],[[7,7,6],[1]],[[7,7,7],[1]],[[7,7,8],[3,false]],[[7,8,0],[2]],[[7,8,1],[3,false]],[[7,8,2],[1]],[[7,8,3],[3,false]],[[7,8,4],[3,false]],[[7,8,5],[3,false]],[[7,8,6],[1]],[[7,8,7],[3,false]],[[7,8,8],[2]],[[8,0,0],[1]],[[8,0,1],[1]],[[8,0,2],[1]],[[8,0,3],[1]],[[8,0,4],[1]],[[8,0,5],[1]],[[8,0,6],[1]],[[8,0,7],[1]],[[8,0,8],[1]],[[8,1,0],[1]],[[8,1,1],[3,false]],[[8,1,2],[3,false]],[[8,1,3],[3,false]],[[8,1,4],[1]],[[8,1,5],[3,false]],[[8,1,6],[3,false]],[[8,1,7],[3,false]],[[8,1,8],[1]],[[8,2,0],[1]],[[8,2,1],[3,false]],[[8,2,2],[1]],[[8,2,3],[3,false]],[[8,2,4],[1]],[[8,2,5],[3,false]],[[8,2,6],[1]],[[8,2,7],[3,false]],[[8,2,8],[1]],[[8,3,0],[1]],[[8,3,1],[3,false]],[[8,3,2],[3,false]],[[8,3,3],[3,false]],[[8,3,4],[1]],[[8,3,5],[3,false]],[[8,3,6],[3,false]],[[8,3,7],[3,false]],[[8,3,8],[1]],[[8,4,0],[1]],[[8,4,1],[3,false]],[[8,4,2],[1]],[[8,4,3],[3,false]],[[8,4,4],[1]],[[8,4,5],[3,false]],[[8,4,6],[1]],[[8,4,7],[3,false]],[[8,4,8],[1]],[[8,5,0],[1]],[[8,5,1],[3,false]],[[8,5,2],[1]],[[8,5,3],[3,false]],[[8,5,4],[3,false]],[[8,5,5],[3,false]],[[8,5,6],[1]],[[8,5,7],[3,false]],[[8,5,8],[1]],[[8,6,0],[1]],[[8,6,1],[3,false]],[[8,6,2],[1]],[[8,6,3],[3,false]],[[8,6,4],[1]],[[8,6,5],[3,false]],[[8,6,6],[1]],[[8,6,7],[3,false]],[[8,6,8],[1]],[[8,7,0],[2]],[[8,7,1],[3,false]],[[8,7,2],[1]],[[8,7,3],[3,false]],[[8,7,4],[3,false]],[[8,7,5],[3,false]],[[8,7,6],[1]],[[8,7,7],[3,false]],[[8,7,8],[2]],[[8,8,0],[1]],[[8,8,1],[1]],[[8,8,2],[1]],[[8,8,3],[1]],[[8,8,4],[2]],[[8,8,5],[1]],[[8,8,6],[1]],[[8,8,7],[1]],[[8,8,8],[1]]]]]';
-var $author$project$Screen$Editor$view = F4(
-	function (toSharedMsg, sharedModel, toMsg, model) {
-		return _List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						A2($elm$html$Html$Attributes$style, 'display', 'grid'),
-						A2(
-						$elm$html$Html$Attributes$style,
-						'grid-template-columns',
-						function () {
-							var _v0 = model.editorMode;
-							if (_v0.$ === 'EditBoard') {
-								return 'auto auto';
-							} else {
-								return 'auto 10rem';
-							}
-						}()),
-						A2(
-						$elm$html$Html$Attributes$style,
-						'grid-template-rows',
-						function () {
-							var _v1 = model.editorMode;
-							if (_v1.$ === 'EditBoard') {
-								return 'auto auto';
-							} else {
-								return 'auto';
-							}
-						}())
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_Utils_ap(
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$Attributes$style,
-									'grid-column',
-									function () {
-										var _v2 = model.editorMode;
-										if (_v2.$ === 'EditBoard') {
-											return '1';
-										} else {
-											return '1 / 2';
-										}
-									}()),
-									A2(
-									$elm$html$Html$Attributes$style,
-									'grid-row',
-									function () {
-										var _v3 = model.editorMode;
-										if (_v3.$ === 'EditBoard') {
-											return '2';
-										} else {
-											return '1';
-										}
-									}())
-								]),
-							function () {
-								var _v4 = model.mouseDragging;
-								switch (_v4.$) {
-									case 'NoInteraction':
-										return _List_fromArray(
-											[
-												A2(
-												$elm$html$Html$Events$on,
-												'pointerdown',
-												$author$project$Screen$Editor$decodeMouseDown(toMsg)),
-												A2(
-												$elm$html$Html$Events$on,
-												'pointermove',
-												A2($author$project$Screen$Editor$decodePointerMove, toMsg, $elm$json$Json$Encode$null)),
-												A2($elm$html$Html$Attributes$property, '___setPointerCapture', $elm$json$Json$Encode$null)
-											]);
-									case 'InteractionStart':
-										var pointer = _v4.a;
-										return _List_fromArray(
-											[
-												A2(
-												$elm$html$Html$Events$on,
-												'pointerup',
-												$author$project$Screen$Editor$decodeMouseUp(toMsg)),
-												A2(
-												$elm$html$Html$Events$on,
-												'pointermove',
-												A2($author$project$Screen$Editor$decodePointerMove, toMsg, pointer)),
-												A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
-											]);
-									default:
-										var pointer = _v4.a;
-										return _List_fromArray(
-											[
-												A2(
-												$elm$html$Html$Events$on,
-												'pointerup',
-												$author$project$Screen$Editor$decodeMouseUp(toMsg)),
-												A2(
-												$elm$html$Html$Events$on,
-												'pointermove',
-												A2($author$project$Screen$Editor$decodePointerMove, toMsg, pointer)),
-												A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
-											]);
-								}
-							}()),
+var $author$project$Screen$Editor$view = function (_v0) {
+	var setScreen = _v0.setScreen;
+	var toSharedMsg = _v0.toSharedMsg;
+	var sharedModel = _v0.sharedModel;
+	var toMsg = _v0.toMsg;
+	var model = _v0.model;
+	return _List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'display', 'grid'),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'grid-template-columns',
+					function () {
+						var _v1 = model.editorMode;
+						if (_v1.$ === 'EditBoard') {
+							return 'calc(100vw - 25rem) 25rem';
+						} else {
+							return 'calc(100vw - 10rem) 10rem';
+						}
+					}()),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'grid-template-rows',
+					function () {
+						var _v2 = model.editorMode;
+						if (_v2.$ === 'EditBoard') {
+							return 'auto auto';
+						} else {
+							return 'auto';
+						}
+					}()),
+					A2($elm$html$Html$Attributes$style, 'width', '100vw')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_Utils_ap(
 						_List_fromArray(
 							[
+								$elm$html$Html$Attributes$id('editor-viewport'),
 								function () {
-								var lights = function () {
-									var _v10 = model.editorMode;
-									if (_v10.$ === 'TestGame') {
-										return A2(
-											$author$project$Board$gameLights,
-											model.level.board,
-											$ianmackenzie$elm_geometry$Frame3d$originPoint(model.level.playerFrame));
+								var _v3 = model.editorMode;
+								if (_v3.$ === 'EditBoard') {
+									return $elm$html$Html$Attributes$class('');
+								} else {
+									return A2($elm$html$Html$Attributes$style, 'width', '100vw');
+								}
+							}(),
+								A2(
+								$elm$html$Html$Attributes$style,
+								'grid-column',
+								function () {
+									var _v4 = model.editorMode;
+									if (_v4.$ === 'EditBoard') {
+										return '1';
 									} else {
-										var upsideDownSky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$negativeZ
-											});
-										var sun = A2(
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
-												direction: A3(
-													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-													$ianmackenzie$elm_geometry$Axis3d$z,
-													A2(
-														$ianmackenzie$elm_units$Quantity$plus,
-														$ianmackenzie$elm_units$Angle$degrees(90),
-														model.cameraRotation),
-													A3(
-														$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-														$ianmackenzie$elm_geometry$Axis3d$x,
-														$ianmackenzie$elm_units$Angle$degrees(70),
-														$ianmackenzie$elm_geometry$Direction3d$negativeZ)),
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
-											});
-										var sky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
-											});
-										var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
-											});
-										return A4($ianmackenzie$elm_3d_scene$Scene3d$fourLights, sun, sky, environment, upsideDownSky);
+										return '1 / 2';
 									}
-								}();
+								}()),
+								A2(
+								$elm$html$Html$Attributes$style,
+								'grid-row',
+								function () {
+									var _v5 = model.editorMode;
+									if (_v5.$ === 'EditBoard') {
+										return '2';
+									} else {
+										return '1';
+									}
+								}())
+							]),
+						function () {
+							var _v6 = model.mouseDragging;
+							switch (_v6.$) {
+								case 'NoInteraction':
+									return _List_fromArray(
+										[
+											A2(
+											$elm$html$Html$Events$on,
+											'pointerdown',
+											$author$project$Screen$Editor$decodeMouseDown(toMsg)),
+											A2(
+											$elm$html$Html$Events$on,
+											'pointermove',
+											A2($author$project$Screen$Editor$decodePointerMove, toMsg, $elm$json$Json$Encode$null)),
+											A2($elm$html$Html$Attributes$property, '___setPointerCapture', $elm$json$Json$Encode$null)
+										]);
+								case 'InteractionStart':
+									var pointer = _v6.a;
+									return _List_fromArray(
+										[
+											A2(
+											$elm$html$Html$Events$on,
+											'pointerup',
+											$author$project$Screen$Editor$decodeMouseUp(toMsg)),
+											A2(
+											$elm$html$Html$Events$on,
+											'pointermove',
+											A2($author$project$Screen$Editor$decodePointerMove, toMsg, pointer)),
+											A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
+										]);
+								default:
+									var pointer = _v6.a;
+									return _List_fromArray(
+										[
+											A2(
+											$elm$html$Html$Events$on,
+											'pointerup',
+											$author$project$Screen$Editor$decodeMouseUp(toMsg)),
+											A2(
+											$elm$html$Html$Events$on,
+											'pointermove',
+											A2($author$project$Screen$Editor$decodePointerMove, toMsg, pointer)),
+											A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
+										]);
+							}
+						}()),
+					_List_fromArray(
+						[
+							function () {
+							var lights = function () {
+								var _v13 = model.editorMode;
+								if (_v13.$ === 'TestGame') {
+									return A2(
+										$author$project$Board$gameLights,
+										model.level.board,
+										$ianmackenzie$elm_geometry$Frame3d$originPoint(model.level.playerFrame));
+								} else {
+									var upsideDownSky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+										{
+											chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+											intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
+											upDirection: $ianmackenzie$elm_geometry$Direction3d$negativeZ
+										});
+									var sun = A2(
+										$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
+										$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
+										{
+											chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
+											direction: A3(
+												$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+												$ianmackenzie$elm_geometry$Axis3d$z,
+												A2(
+													$ianmackenzie$elm_units$Quantity$plus,
+													$ianmackenzie$elm_units$Angle$degrees(90),
+													model.cameraRotation),
+												A3(
+													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+													$ianmackenzie$elm_geometry$Axis3d$x,
+													$ianmackenzie$elm_units$Angle$degrees(70),
+													$ianmackenzie$elm_geometry$Direction3d$negativeZ)),
+											intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
+										});
+									var sky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+										{
+											chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+											intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
+											upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
+										});
+									var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+										{
+											chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
+											intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
+											upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
+										});
+									return A4($ianmackenzie$elm_3d_scene$Scene3d$fourLights, sun, sky, environment, upsideDownSky);
+								}
+							}();
+							var _v7 = model.screenSize;
+							if (_v7.$ === 'Nothing') {
+								return A2(
+									$elm$html$Html$div,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Loading...')
+										]));
+							} else {
+								var screenSize = _v7.a;
 								return A4(
 									$author$project$Board$view3dScene,
 									lights,
-									model.screenSize,
+									screenSize,
 									function () {
-										var _v5 = model.editorMode;
-										if (_v5.$ === 'TestGame') {
+										var _v8 = model.editorMode;
+										if (_v8.$ === 'TestGame') {
 											return $author$project$Board$gamePlayCamera(model.level.playerFrame);
 										} else {
 											return $author$project$Screen$Editor$editorCamera(model);
 										}
 									}(),
 									function () {
-										var _v6 = model.editorMode;
-										if (_v6.$ === 'EditBoard') {
+										var _v9 = model.editorMode;
+										if (_v9.$ === 'EditBoard') {
 											var editorBoard = $author$project$Undo$value(model.editorBoard);
 											return $elm$core$List$concat(
 												_List_fromArray(
@@ -33226,8 +33492,8 @@ var $author$project$Screen$Editor$view = F4(
 															A3(
 															$author$project$Screen$Editor$viewCursor,
 															function () {
-																var _v7 = model.blockEditMode;
-																switch (_v7.$) {
+																var _v10 = model.blockEditMode;
+																switch (_v10.$) {
 																	case 'Select':
 																		return $avh4$elm_color$Color$white;
 																	case 'Remove':
@@ -33240,12 +33506,12 @@ var $author$project$Screen$Editor$view = F4(
 															model.editorCursor),
 															$author$project$Screen$Editor$viewOrientationArrows,
 															function () {
-															var _v8 = model.selectedBlock;
-															if (_v8.$ === 'Nothing') {
+															var _v11 = model.selectedBlock;
+															if (_v11.$ === 'Nothing') {
 																return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 															} else {
-																var _v9 = _v8.a;
-																var point = _v9.a;
+																var _v12 = _v11.a;
+																var point = _v12.a;
 																return A3($author$project$Screen$Editor$viewCursor, $avh4$elm_color$Color$yellow, model.cursorBounce, point);
 															}
 														}(),
@@ -33268,634 +33534,636 @@ var $author$project$Screen$Editor$view = F4(
 													]));
 										}
 									}());
-							}()
-							])),
-						A4($author$project$Screen$Editor$viewHeader, toSharedMsg, sharedModel, toMsg, model),
-						A4($author$project$Screen$Editor$viewSettings, toSharedMsg, sharedModel, toMsg, model),
-						function () {
-						var _v11 = model.editorMode;
-						if (_v11.$ === 'TestGame') {
-							return A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
-										A2($elm$html$Html$Attributes$style, 'grid-row', '1'),
-										A2($elm$html$Html$Attributes$style, 'padding', '0.5rem')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-												A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
-												A2($elm$html$Html$Attributes$style, 'align-items', 'flex-start')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$type_('button'),
-														$elm$html$Html$Events$onClick(
-														toMsg(
-															$author$project$Screen$Editor$ShowSettings(true))),
-														$elm$html$Html$Attributes$title(
-														'Settings - ' + $author$project$Input$viewInputKeyHoverText(sharedModel.inputMapping.toggleSettings))
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$phosphor_icons$phosphor_elm$Phosphor$toHtml,
-														_List_Nil,
-														$phosphor_icons$phosphor_elm$Phosphor$gear($phosphor_icons$phosphor_elm$Phosphor$Regular))
-													])),
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$type_('button'),
-														$elm$html$Html$Events$onClick(
-														toMsg($author$project$Screen$Editor$ChangeMode))
-													]),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Edit Level')
-													]))
-											]))
-									]));
-						} else {
-							var editorBoard = $author$project$Undo$value(model.editorBoard);
-							return A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
-										A2($elm$html$Html$Attributes$style, 'grid-row', '2'),
-										A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
-										A2($elm$html$Html$Attributes$style, 'height', '80vh'),
-										A2($elm$html$Html$Attributes$style, 'overflow', 'auto')
-									]),
-								_List_fromArray(
-									[
-										function () {
-										var _v12 = model.selectedBlock;
-										if (_v12.$ === 'Nothing') {
-											return A2(
-												$elm$html$Html$span,
-												_List_Nil,
-												_List_fromArray(
-													[
-														$elm$html$Html$text('No block selected')
-													]));
-										} else {
-											var _v13 = _v12.a;
-											var point = _v13.a;
-											var block = _v13.b;
-											switch (block.$) {
-												case 'Empty':
-													return A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Empty block')
-															]));
-												case 'Edge':
-													return A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Edge')
-															]));
-												case 'Wall':
-													return A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Wall')
-															]));
-												case 'PointPickup':
-													return A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Point Pickup')
-															]));
-												case 'EnemySpawner':
-													var details = block.a;
-													return A2(
-														$elm$html$Html$form,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Enemy Spawner')
-																	])),
-																A2($elm$html$Html$br, _List_Nil, _List_Nil),
-																A2(
-																$elm$html$Html$label,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		A2(
-																		$elm$html$Html$span,
-																		_List_Nil,
-																		_List_fromArray(
-																			[
-																				$elm$html$Html$text('Seconds betwwen spawns ')
-																			])),
-																		A2(
-																		$elm$html$Html$input,
-																		_List_fromArray(
-																			[
-																				$elm$html$Html$Attributes$type_('number'),
-																				$elm$html$Html$Attributes$min('0.5'),
-																				$elm$html$Html$Attributes$max('10'),
-																				$elm$html$Html$Attributes$step('0.5'),
-																				$elm$html$Html$Attributes$value(
-																				$elm$core$String$fromFloat(
-																					$ianmackenzie$elm_units$Duration$inSeconds(details.timeBetweenSpawns)))
-																			]),
-																		_List_Nil)
-																	]))
-															]));
-												default:
-													var details = block.a;
-													return A2(
-														$elm$html$Html$form,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Player Spawn')
-																	])),
-																A2($elm$html$Html$br, _List_Nil, _List_Nil),
-																A2(
-																$elm$html$Html$label,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		A2(
-																		$elm$html$Html$span,
-																		_List_Nil,
-																		_List_fromArray(
-																			[
-																				$elm$html$Html$text('Forward Direction ')
-																			])),
-																		A2(
-																		$author$project$Html$Extra$select,
-																		_List_Nil,
-																		{
-																			onSelect: function (value) {
-																				return toMsg(
-																					function () {
-																						if (value.$ === 'Nothing') {
-																							return A2(
-																								$author$project$Screen$Editor$SetBlock,
-																								point,
-																								$author$project$Board$PlayerSpawn(details));
-																						} else {
-																							var axis = value.a;
-																							return A2(
-																								$author$project$Screen$Editor$SetBlock,
-																								point,
-																								$author$project$Board$PlayerSpawn(
-																									_Utils_update(
-																										details,
-																										{forward: axis})));
-																						}
-																					}());
-																			},
-																			options: _List_fromArray(
-																				[$author$project$Board$PositiveX, $author$project$Board$NegativeX, $author$project$Board$PositiveY, $author$project$Board$NegativeY, $author$project$Board$PositiveZ, $author$project$Board$NegativeZ]),
-																			toKey: $author$project$Board$axisToLabel,
-																			toLabel: $author$project$Board$axisToLabel,
-																			value: $elm$core$Maybe$Just(details.forward)
-																		})
-																	])),
-																A2($elm$html$Html$br, _List_Nil, _List_Nil),
-																A2(
-																$elm$html$Html$label,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		A2(
-																		$elm$html$Html$span,
-																		_List_Nil,
-																		_List_fromArray(
-																			[
-																				$elm$html$Html$text('Left Direction ')
-																			])),
-																		A2(
-																		$author$project$Html$Extra$select,
-																		_List_Nil,
-																		{
-																			onSelect: function (value) {
-																				return toMsg(
-																					function () {
-																						if (value.$ === 'Nothing') {
-																							return A2(
-																								$author$project$Screen$Editor$SetBlock,
-																								point,
-																								$author$project$Board$PlayerSpawn(details));
-																						} else {
-																							var axis = value.a;
-																							return A2(
-																								$author$project$Screen$Editor$SetBlock,
-																								point,
-																								$author$project$Board$PlayerSpawn(
-																									_Utils_update(
-																										details,
-																										{left: axis})));
-																						}
-																					}());
-																			},
-																			options: _List_fromArray(
-																				[$author$project$Board$PositiveX, $author$project$Board$NegativeX, $author$project$Board$PositiveY, $author$project$Board$NegativeY, $author$project$Board$PositiveZ, $author$project$Board$NegativeZ]),
-																			toKey: $author$project$Board$axisToLabel,
-																			toLabel: $author$project$Board$axisToLabel,
-																			value: $elm$core$Maybe$Just(details.left)
-																		})
-																	]))
-															]));
-											}
+							}
+						}()
+						])),
+					A5($author$project$Screen$Editor$viewHeader, setScreen, toSharedMsg, sharedModel, toMsg, model),
+					A4($author$project$Screen$Editor$viewSettings, toSharedMsg, sharedModel, toMsg, model),
+					function () {
+					var _v14 = model.editorMode;
+					if (_v14.$ === 'TestGame') {
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
+									A2($elm$html$Html$Attributes$style, 'grid-row', '1'),
+									A2($elm$html$Html$Attributes$style, 'padding', '0.5rem')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+											A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
+											A2($elm$html$Html$Attributes$style, 'align-items', 'flex-start')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$button,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$type_('button'),
+													$elm$html$Html$Events$onClick(
+													toMsg(
+														$author$project$Screen$Editor$ShowSettings(true))),
+													$elm$html$Html$Attributes$title(
+													'Settings - ' + $author$project$Input$viewInputKeyHoverText(sharedModel.inputMapping.toggleSettings))
+												]),
+											_List_fromArray(
+												[
+													A2(
+													$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+													_List_Nil,
+													$phosphor_icons$phosphor_elm$Phosphor$gear($phosphor_icons$phosphor_elm$Phosphor$Regular))
+												])),
+											A2(
+											$elm$html$Html$button,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$type_('button'),
+													$elm$html$Html$Events$onClick(
+													toMsg($author$project$Screen$Editor$ChangeMode))
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Edit Level')
+												]))
+										]))
+								]));
+					} else {
+						var editorBoard = $author$project$Undo$value(model.editorBoard);
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
+									A2($elm$html$Html$Attributes$style, 'grid-row', '2'),
+									A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
+									A2($elm$html$Html$Attributes$style, 'height', '80vh'),
+									A2($elm$html$Html$Attributes$style, 'width', '25rem'),
+									A2($elm$html$Html$Attributes$style, 'overflow', 'auto')
+								]),
+							_List_fromArray(
+								[
+									function () {
+									var _v15 = model.selectedBlock;
+									if (_v15.$ === 'Nothing') {
+										return A2(
+											$elm$html$Html$span,
+											_List_Nil,
+											_List_fromArray(
+												[
+													$elm$html$Html$text('No block selected')
+												]));
+									} else {
+										var _v16 = _v15.a;
+										var point = _v16.a;
+										var block = _v16.b;
+										switch (block.$) {
+											case 'Empty':
+												return A2(
+													$elm$html$Html$span,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Empty block')
+														]));
+											case 'Edge':
+												return A2(
+													$elm$html$Html$span,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Edge')
+														]));
+											case 'Wall':
+												return A2(
+													$elm$html$Html$span,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Wall')
+														]));
+											case 'PointPickup':
+												return A2(
+													$elm$html$Html$span,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Point Pickup')
+														]));
+											case 'EnemySpawner':
+												var details = block.a;
+												return A2(
+													$elm$html$Html$form,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('Enemy Spawner')
+																])),
+															A2($elm$html$Html$br, _List_Nil, _List_Nil),
+															A2(
+															$elm$html$Html$label,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$span,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Seconds betwwen spawns ')
+																		])),
+																	A2(
+																	$elm$html$Html$input,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$type_('number'),
+																			$elm$html$Html$Attributes$min('0.5'),
+																			$elm$html$Html$Attributes$max('10'),
+																			$elm$html$Html$Attributes$step('0.5'),
+																			$elm$html$Html$Attributes$value(
+																			$elm$core$String$fromFloat(
+																				$ianmackenzie$elm_units$Duration$inSeconds(details.timeBetweenSpawns)))
+																		]),
+																	_List_Nil)
+																]))
+														]));
+											default:
+												var details = block.a;
+												return A2(
+													$elm$html$Html$form,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('Player Spawn')
+																])),
+															A2($elm$html$Html$br, _List_Nil, _List_Nil),
+															A2(
+															$elm$html$Html$label,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$span,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Forward Direction ')
+																		])),
+																	A2(
+																	$author$project$Html$Extra$select,
+																	_List_Nil,
+																	{
+																		onSelect: function (value) {
+																			return toMsg(
+																				function () {
+																					if (value.$ === 'Nothing') {
+																						return A2(
+																							$author$project$Screen$Editor$SetBlock,
+																							point,
+																							$author$project$Board$PlayerSpawn(details));
+																					} else {
+																						var axis = value.a;
+																						return A2(
+																							$author$project$Screen$Editor$SetBlock,
+																							point,
+																							$author$project$Board$PlayerSpawn(
+																								_Utils_update(
+																									details,
+																									{forward: axis})));
+																					}
+																				}());
+																		},
+																		options: _List_fromArray(
+																			[$author$project$Board$PositiveX, $author$project$Board$NegativeX, $author$project$Board$PositiveY, $author$project$Board$NegativeY, $author$project$Board$PositiveZ, $author$project$Board$NegativeZ]),
+																		toKey: $author$project$Board$axisToLabel,
+																		toLabel: $author$project$Board$axisToLabel,
+																		value: $elm$core$Maybe$Just(details.forward)
+																	})
+																])),
+															A2($elm$html$Html$br, _List_Nil, _List_Nil),
+															A2(
+															$elm$html$Html$label,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$span,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Left Direction ')
+																		])),
+																	A2(
+																	$author$project$Html$Extra$select,
+																	_List_Nil,
+																	{
+																		onSelect: function (value) {
+																			return toMsg(
+																				function () {
+																					if (value.$ === 'Nothing') {
+																						return A2(
+																							$author$project$Screen$Editor$SetBlock,
+																							point,
+																							$author$project$Board$PlayerSpawn(details));
+																					} else {
+																						var axis = value.a;
+																						return A2(
+																							$author$project$Screen$Editor$SetBlock,
+																							point,
+																							$author$project$Board$PlayerSpawn(
+																								_Utils_update(
+																									details,
+																									{left: axis})));
+																					}
+																				}());
+																		},
+																		options: _List_fromArray(
+																			[$author$project$Board$PositiveX, $author$project$Board$NegativeX, $author$project$Board$PositiveY, $author$project$Board$NegativeY, $author$project$Board$PositiveZ, $author$project$Board$NegativeZ]),
+																		toKey: $author$project$Board$axisToLabel,
+																		toLabel: $author$project$Board$axisToLabel,
+																		value: $elm$core$Maybe$Just(details.left)
+																	})
+																]))
+														]));
 										}
-									}(),
-										A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-										A2(
-										$elm$html$Html$form,
-										_List_Nil,
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$fieldset,
-												_List_Nil,
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('X Size ')
-																	])),
-																A2(
-																$elm$html$Html$input,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Attributes$type_('number'),
-																		$elm$html$Html$Attributes$value(model.editorMaxXRaw),
-																		$elm$html$Html$Attributes$min('1'),
-																		$elm$html$Html$Attributes$max('20'),
-																		$elm$html$Html$Attributes$step('1'),
-																		$elm$html$Html$Events$onInput(
-																		A2($elm$core$Basics$composeR, $author$project$Screen$Editor$MaxXChanged, toMsg))
-																	]),
-																_List_Nil)
-															])),
-														A2($elm$html$Html$br, _List_Nil, _List_Nil),
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('X Visibility')
-																	])),
-																A2(
-																$author$project$Html$Extra$dualRange,
-																_List_Nil,
-																{
-																	colorMax: $elm$core$Maybe$Nothing,
-																	colorMid: $elm$core$Maybe$Nothing,
-																	colorMin: $elm$core$Maybe$Nothing,
-																	max: editorBoard.maxX - 1,
-																	min: 0,
-																	onInputHigh: A2(
-																		$elm$core$Basics$composeR,
-																		$elm$core$Basics$round,
-																		A2($elm$core$Basics$composeR, $author$project$Screen$Editor$XUpperVisibleChanged, toMsg)),
-																	onInputLow: A2(
-																		$elm$core$Basics$composeR,
-																		$elm$core$Basics$round,
-																		A2($elm$core$Basics$composeR, $author$project$Screen$Editor$XLowerVisibleChanged, toMsg)),
-																	step: 1,
-																	thumb1Image: $elm$core$Maybe$Nothing,
-																	thumb2Image: $elm$core$Maybe$Nothing,
-																	valueHigh: model.xUpperVisible,
-																	valueLow: model.xLowerVisible
-																})
-															]))
-													])),
-												A2($elm$html$Html$br, _List_Nil, _List_Nil),
-												A2(
-												$elm$html$Html$fieldset,
-												_List_Nil,
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Y Size ')
-																	])),
-																A2(
-																$elm$html$Html$input,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Attributes$type_('number'),
-																		$elm$html$Html$Attributes$value(model.editorMaxYRaw),
-																		$elm$html$Html$Attributes$min('1'),
-																		$elm$html$Html$Attributes$max('20'),
-																		$elm$html$Html$Attributes$step('1'),
-																		$elm$html$Html$Events$onInput(
-																		A2($elm$core$Basics$composeR, $author$project$Screen$Editor$MaxYChanged, toMsg))
-																	]),
-																_List_Nil)
-															])),
-														A2($elm$html$Html$br, _List_Nil, _List_Nil),
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Y Visibility')
-																	])),
-																A2(
-																$author$project$Html$Extra$dualRange,
-																_List_Nil,
-																{
-																	colorMax: $elm$core$Maybe$Nothing,
-																	colorMid: $elm$core$Maybe$Nothing,
-																	colorMin: $elm$core$Maybe$Nothing,
-																	max: editorBoard.maxY - 1,
-																	min: 0,
-																	onInputHigh: A2(
-																		$elm$core$Basics$composeR,
-																		$elm$core$Basics$round,
-																		A2($elm$core$Basics$composeR, $author$project$Screen$Editor$YUpperVisibleChanged, toMsg)),
-																	onInputLow: A2(
-																		$elm$core$Basics$composeR,
-																		$elm$core$Basics$round,
-																		A2($elm$core$Basics$composeR, $author$project$Screen$Editor$YLowerVisibleChanged, toMsg)),
-																	step: 1,
-																	thumb1Image: $elm$core$Maybe$Nothing,
-																	thumb2Image: $elm$core$Maybe$Nothing,
-																	valueHigh: model.yUpperVisible,
-																	valueLow: model.yLowerVisible
-																})
-															]))
-													])),
-												A2($elm$html$Html$br, _List_Nil, _List_Nil),
-												A2(
-												$elm$html$Html$fieldset,
-												_List_Nil,
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Z Size ')
-																	])),
-																A2(
-																$elm$html$Html$input,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Attributes$type_('number'),
-																		$elm$html$Html$Attributes$value(model.editorMaxZRaw),
-																		$elm$html$Html$Attributes$min('1'),
-																		$elm$html$Html$Attributes$max('20'),
-																		$elm$html$Html$Attributes$step('1'),
-																		$elm$html$Html$Events$onInput(
-																		A2($elm$core$Basics$composeR, $author$project$Screen$Editor$MaxZChanged, toMsg))
-																	]),
-																_List_Nil)
-															])),
-														A2($elm$html$Html$br, _List_Nil, _List_Nil),
-														A2(
-														$elm$html$Html$label,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$span,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Z Visibility')
-																	])),
-																A2(
-																$author$project$Html$Extra$dualRange,
-																_List_Nil,
-																{
-																	colorMax: $elm$core$Maybe$Nothing,
-																	colorMid: $elm$core$Maybe$Nothing,
-																	colorMin: $elm$core$Maybe$Nothing,
-																	max: editorBoard.maxZ - 1,
-																	min: 0,
-																	onInputHigh: A2(
-																		$elm$core$Basics$composeR,
-																		$elm$core$Basics$round,
-																		A2($elm$core$Basics$composeR, $author$project$Screen$Editor$ZUpperVisibleChanged, toMsg)),
-																	onInputLow: A2(
-																		$elm$core$Basics$composeR,
-																		$elm$core$Basics$round,
-																		A2($elm$core$Basics$composeR, $author$project$Screen$Editor$ZLowerVisibleChanged, toMsg)),
-																	step: 1,
-																	thumb1Image: $elm$core$Maybe$Nothing,
-																	thumb2Image: $elm$core$Maybe$Nothing,
-																	valueHigh: model.zUpperVisible,
-																	valueLow: model.zLowerVisible
-																})
-															]))
-													]))
-											])),
-										A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-										A2(
-										$elm$html$Html$form,
-										_List_fromArray(
-											[
-												$elm$html$Html$Events$onSubmit(
-												toMsg(
-													$author$project$Screen$Editor$LoadEditorBoard(model.boardEncoding))),
-												A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-												A2($elm$html$Html$Attributes$style, 'gap', '1rem')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$label,
-												_List_fromArray(
-													[
-														A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-														A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
-														A2($elm$html$Html$Attributes$style, 'align-items', 'center')
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$span,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Encoded Level:')
-															])),
-														A2(
-														$elm$html$Html$input,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$value(model.boardEncoding),
-																$elm$html$Html$Events$onInput(
-																A2($elm$core$Basics$composeR, $author$project$Screen$Editor$EncodingChanged, toMsg))
-															]),
-														_List_Nil)
-													])),
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$type_('submit')
-													]),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Load')
-													])),
-												function () {
-												var _v17 = model.boardLoadError;
-												if (_v17.$ === 'Nothing') {
-													return $elm$html$Html$text('');
-												} else {
-													var error = _v17.a;
-													return A2(
-														$elm$html$Html$small,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text(
-																function () {
-																	switch (error.$) {
-																		case 'DataCorrupted':
-																			return 'Board data is corrupted';
-																		case 'SerializerOutOfDate':
-																			return 'Board data is from a different version of the game';
-																		default:
-																			return 'Unexpected error';
-																	}
-																}())
-															]));
-												}
-											}()
-											])),
-										A2($elm$html$Html$br, _List_Nil, _List_Nil),
-										A2(
-										$elm$html$Html$label,
-										_List_Nil,
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$span,
-												_List_Nil,
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Load an example board ')
-													])),
-												A2(
-												$author$project$Html$Extra$select,
-												_List_Nil,
-												{
-													onSelect: function (value) {
-														return toMsg(
+									}
+								}(),
+									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+									A2(
+									$elm$html$Html$form,
+									_List_Nil,
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$fieldset,
+											_List_Nil,
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$label,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('X Size ')
+																])),
+															A2(
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('number'),
+																	$elm$html$Html$Attributes$value(model.editorMaxXRaw),
+																	$elm$html$Html$Attributes$min('1'),
+																	$elm$html$Html$Attributes$max('20'),
+																	$elm$html$Html$Attributes$step('1'),
+																	$elm$html$Html$Events$onInput(
+																	A2($elm$core$Basics$composeR, $author$project$Screen$Editor$MaxXChanged, toMsg))
+																]),
+															_List_Nil)
+														])),
+													A2($elm$html$Html$br, _List_Nil, _List_Nil),
+													A2(
+													$elm$html$Html$label,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('X Visibility')
+																])),
+															A2(
+															$author$project$Html$Extra$dualRange,
+															_List_Nil,
+															{
+																colorMax: $elm$core$Maybe$Nothing,
+																colorMid: $elm$core$Maybe$Nothing,
+																colorMin: $elm$core$Maybe$Nothing,
+																max: editorBoard.maxX - 1,
+																min: 0,
+																onInputHigh: A2(
+																	$elm$core$Basics$composeR,
+																	$elm$core$Basics$round,
+																	A2($elm$core$Basics$composeR, $author$project$Screen$Editor$XUpperVisibleChanged, toMsg)),
+																onInputLow: A2(
+																	$elm$core$Basics$composeR,
+																	$elm$core$Basics$round,
+																	A2($elm$core$Basics$composeR, $author$project$Screen$Editor$XLowerVisibleChanged, toMsg)),
+																step: 1,
+																thumb1Image: $elm$core$Maybe$Nothing,
+																thumb2Image: $elm$core$Maybe$Nothing,
+																valueHigh: model.xUpperVisible,
+																valueLow: model.xLowerVisible
+															})
+														]))
+												])),
+											A2($elm$html$Html$br, _List_Nil, _List_Nil),
+											A2(
+											$elm$html$Html$fieldset,
+											_List_Nil,
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$label,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('Y Size ')
+																])),
+															A2(
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('number'),
+																	$elm$html$Html$Attributes$value(model.editorMaxYRaw),
+																	$elm$html$Html$Attributes$min('1'),
+																	$elm$html$Html$Attributes$max('20'),
+																	$elm$html$Html$Attributes$step('1'),
+																	$elm$html$Html$Events$onInput(
+																	A2($elm$core$Basics$composeR, $author$project$Screen$Editor$MaxYChanged, toMsg))
+																]),
+															_List_Nil)
+														])),
+													A2($elm$html$Html$br, _List_Nil, _List_Nil),
+													A2(
+													$elm$html$Html$label,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('Y Visibility')
+																])),
+															A2(
+															$author$project$Html$Extra$dualRange,
+															_List_Nil,
+															{
+																colorMax: $elm$core$Maybe$Nothing,
+																colorMid: $elm$core$Maybe$Nothing,
+																colorMin: $elm$core$Maybe$Nothing,
+																max: editorBoard.maxY - 1,
+																min: 0,
+																onInputHigh: A2(
+																	$elm$core$Basics$composeR,
+																	$elm$core$Basics$round,
+																	A2($elm$core$Basics$composeR, $author$project$Screen$Editor$YUpperVisibleChanged, toMsg)),
+																onInputLow: A2(
+																	$elm$core$Basics$composeR,
+																	$elm$core$Basics$round,
+																	A2($elm$core$Basics$composeR, $author$project$Screen$Editor$YLowerVisibleChanged, toMsg)),
+																step: 1,
+																thumb1Image: $elm$core$Maybe$Nothing,
+																thumb2Image: $elm$core$Maybe$Nothing,
+																valueHigh: model.yUpperVisible,
+																valueLow: model.yLowerVisible
+															})
+														]))
+												])),
+											A2($elm$html$Html$br, _List_Nil, _List_Nil),
+											A2(
+											$elm$html$Html$fieldset,
+											_List_Nil,
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$label,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('Z Size ')
+																])),
+															A2(
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('number'),
+																	$elm$html$Html$Attributes$value(model.editorMaxZRaw),
+																	$elm$html$Html$Attributes$min('1'),
+																	$elm$html$Html$Attributes$max('20'),
+																	$elm$html$Html$Attributes$step('1'),
+																	$elm$html$Html$Events$onInput(
+																	A2($elm$core$Basics$composeR, $author$project$Screen$Editor$MaxZChanged, toMsg))
+																]),
+															_List_Nil)
+														])),
+													A2($elm$html$Html$br, _List_Nil, _List_Nil),
+													A2(
+													$elm$html$Html$label,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$span,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('Z Visibility')
+																])),
+															A2(
+															$author$project$Html$Extra$dualRange,
+															_List_Nil,
+															{
+																colorMax: $elm$core$Maybe$Nothing,
+																colorMid: $elm$core$Maybe$Nothing,
+																colorMin: $elm$core$Maybe$Nothing,
+																max: editorBoard.maxZ - 1,
+																min: 0,
+																onInputHigh: A2(
+																	$elm$core$Basics$composeR,
+																	$elm$core$Basics$round,
+																	A2($elm$core$Basics$composeR, $author$project$Screen$Editor$ZUpperVisibleChanged, toMsg)),
+																onInputLow: A2(
+																	$elm$core$Basics$composeR,
+																	$elm$core$Basics$round,
+																	A2($elm$core$Basics$composeR, $author$project$Screen$Editor$ZLowerVisibleChanged, toMsg)),
+																step: 1,
+																thumb1Image: $elm$core$Maybe$Nothing,
+																thumb2Image: $elm$core$Maybe$Nothing,
+																valueHigh: model.zUpperVisible,
+																valueLow: model.zLowerVisible
+															})
+														]))
+												]))
+										])),
+									A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+									A2(
+									$elm$html$Html$form,
+									_List_fromArray(
+										[
+											$elm$html$Html$Events$onSubmit(
+											toMsg(
+												$author$project$Screen$Editor$LoadEditorBoard(model.boardEncoding))),
+											A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+											A2($elm$html$Html$Attributes$style, 'gap', '1rem')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$label,
+											_List_fromArray(
+												[
+													A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+													A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
+													A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$span,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Encoded Level:')
+														])),
+													A2(
+													$elm$html$Html$input,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$value(model.boardEncoding),
+															$elm$html$Html$Events$onInput(
+															A2($elm$core$Basics$composeR, $author$project$Screen$Editor$EncodingChanged, toMsg))
+														]),
+													_List_Nil)
+												])),
+											A2(
+											$elm$html$Html$button,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$type_('submit')
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Load')
+												])),
+											function () {
+											var _v20 = model.boardLoadError;
+											if (_v20.$ === 'Nothing') {
+												return $elm$html$Html$text('');
+											} else {
+												var error = _v20.a;
+												return A2(
+													$elm$html$Html$small,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text(
 															function () {
-																if (value.$ === 'Nothing') {
-																	return $author$project$Screen$Editor$NoOp;
-																} else {
-																	switch (value.a.$) {
-																		case 'DefaultBoard':
-																			var _v20 = value.a;
-																			return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$defaultBoard);
-																		case 'BasicMiniBoard':
-																			var _v21 = value.a;
-																			return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$basicMiniBoard);
-																		default:
-																			var _v22 = value.a;
-																			return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$zigZagBoard);
-																	}
+																switch (error.$) {
+																	case 'DataCorrupted':
+																		return 'Board data is corrupted';
+																	case 'SerializerOutOfDate':
+																		return 'Board data is from a different version of the game';
+																	default:
+																		return 'Unexpected error';
 																}
-															}());
-													},
-													options: _List_fromArray(
-														[$author$project$Board$DefaultBoard, $author$project$Board$BasicMiniBoard, $author$project$Board$ZigZagBoard]),
-													toKey: function (value) {
-														switch (value.$) {
-															case 'DefaultBoard':
-																return 'DefaultBoard';
-															case 'BasicMiniBoard':
-																return 'BasicMiniBoard';
-															default:
-																return 'ZigZagBoard';
-														}
-													},
-													toLabel: function (value) {
-														switch (value.$) {
-															case 'DefaultBoard':
-																return '9 x 9 blank slate';
-															case 'BasicMiniBoard':
-																return 'Basic mini';
-															default:
-																return 'Zig zag';
-														}
-													},
-													value: $elm$core$Maybe$Nothing
-												})
-											]))
-									]));
-						}
-					}()
-					]))
-			]);
-	});
+															}())
+														]));
+											}
+										}()
+										])),
+									A2($elm$html$Html$br, _List_Nil, _List_Nil),
+									A2(
+									$elm$html$Html$label,
+									_List_Nil,
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$span,
+											_List_Nil,
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Load an example board ')
+												])),
+											A2(
+											$author$project$Html$Extra$select,
+											_List_Nil,
+											{
+												onSelect: function (value) {
+													return toMsg(
+														function () {
+															if (value.$ === 'Nothing') {
+																return $author$project$Screen$Editor$NoOp;
+															} else {
+																switch (value.a.$) {
+																	case 'DefaultBoard':
+																		var _v23 = value.a;
+																		return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$defaultBoard);
+																	case 'BasicMiniBoard':
+																		var _v24 = value.a;
+																		return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$basicMiniBoard);
+																	default:
+																		var _v25 = value.a;
+																		return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$zigZagBoard);
+																}
+															}
+														}());
+												},
+												options: _List_fromArray(
+													[$author$project$Board$DefaultBoard, $author$project$Board$BasicMiniBoard, $author$project$Board$ZigZagBoard]),
+												toKey: function (value) {
+													switch (value.$) {
+														case 'DefaultBoard':
+															return 'DefaultBoard';
+														case 'BasicMiniBoard':
+															return 'BasicMiniBoard';
+														default:
+															return 'ZigZagBoard';
+													}
+												},
+												toLabel: function (value) {
+													switch (value.$) {
+														case 'DefaultBoard':
+															return '9 x 9 blank slate';
+														case 'BasicMiniBoard':
+															return 'Basic mini';
+														default:
+															return 'Zig zag';
+													}
+												},
+												value: $elm$core$Maybe$Nothing
+											})
+										]))
+								]));
+					}
+				}()
+				]))
+		]);
+};
 var $author$project$Screen$FreePlay$ExitFreePlayBoard = {$: 'ExitFreePlayBoard'};
 var $author$project$Screen$FreePlay$ShowFreePlayMenu = function (a) {
 	return {$: 'ShowFreePlayMenu', a: a};
@@ -33922,24 +34190,530 @@ var $author$project$Screen$FreePlay$viewBoardPreviewTile = F2(
 					$elm$html$Html$text(board.name)
 				]));
 	});
-var $author$project$Screen$FreePlay$view = F4(
-	function (toSharedMsg, sharedModel, toMsg, model) {
-		var _v0 = model.freePlayMode;
-		if (_v0.$ === 'FreePlayBoardSelection') {
-			return _List_fromArray(
+var $author$project$Screen$FreePlay$view = function (_v0) {
+	var setScreen = _v0.setScreen;
+	var toSharedMsg = _v0.toSharedMsg;
+	var sharedModel = _v0.sharedModel;
+	var toMsg = _v0.toMsg;
+	var model = _v0.model;
+	return _List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$id('game-viewport'),
+					A2($elm$html$Html$Attributes$style, 'width', '100vw'),
+					A2($elm$html$Html$Attributes$style, 'height', '100vh')
+				]),
+			function () {
+				var _v1 = model.freePlayMode;
+				if (_v1.$ === 'FreePlayBoardSelection') {
+					return _List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'width', '100vw'),
+									A2($elm$html$Html$Attributes$style, 'height', '100vh'),
+									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+									A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+									A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'margin-top', '5rem'),
+											A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+											A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+											A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
+											A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$h1,
+											_List_fromArray(
+												[
+													A2($elm$html$Html$Attributes$style, 'text-align', 'center')
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Pick a Board')
+												])),
+											A2(
+											$elm$html$Html$button,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$type_('button'),
+													A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+													A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
+													$elm$html$Html$Events$onClick(
+													setScreen($author$project$Screen$Menu))
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Main Menu')
+												]))
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'width', '100vw'),
+											A2($elm$html$Html$Attributes$style, 'display', 'grid'),
+											A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'repeat(5, 1fr)'),
+											A2($elm$html$Html$Attributes$style, 'gap', '2rem'),
+											A2($elm$html$Html$Attributes$style, 'padding', '2rem')
+										]),
+									_Utils_ap(
+										A2(
+											$elm$core$List$map,
+											$author$project$Screen$FreePlay$viewBoardPreviewTile(toMsg),
+											_List_fromArray(
+												[
+													{boardEncoding: $author$project$Board$basicMiniBoard, name: 'Mini'},
+													{boardEncoding: $author$project$Board$zigZagBoard, name: 'Zig-Zag'}
+												])),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$div,
+												_List_fromArray(
+													[
+														A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+														A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+														A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+														A2($elm$html$Html$Attributes$style, 'height', '8rem')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('More coming soon...')
+													]))
+											])))
+								]))
+						]);
+				} else {
+					return _List_fromArray(
+						[
+							A4(
+							$author$project$Board$view3dScene,
+							A2(
+								$author$project$Board$gameLights,
+								model.level.board,
+								$ianmackenzie$elm_geometry$Frame3d$originPoint(model.level.playerFrame)),
+							sharedModel.screenSize,
+							$author$project$Board$gamePlayCamera(model.level.playerFrame),
+							$elm$core$List$concat(
+								_List_fromArray(
+									[
+										A2(
+										$elm$core$List$map,
+										$author$project$Board$viewBlock,
+										$elm$core$Dict$toList(model.level.board.blocks)),
+										_List_fromArray(
+										[
+											$author$project$Board$viewPlayer(model.level)
+										]),
+										A2($elm$core$List$map, $author$project$Board$viewEnemy, model.level.enemies)
+									]))),
+							$author$project$Board$viewStats(model.level),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+									A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
+									A2($elm$html$Html$Attributes$style, 'top', '0'),
+									A2($elm$html$Html$Attributes$style, 'right', '0')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$button,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$type_('button'),
+											$elm$html$Html$Events$onClick(
+											toMsg(
+												$author$project$Screen$FreePlay$ShowFreePlayMenu(true)))
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Menu')
+										]))
+								])),
+							A3(
+							$author$project$Html$Extra$modal,
+							{
+								onClose: toMsg(
+									$author$project$Screen$FreePlay$ShowFreePlayMenu(false)),
+								open: model.showFreePlayMenu
+							},
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$h2,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'width', '100%'),
+											A2($elm$html$Html$Attributes$style, 'margin-top', '0')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Free Play'),
+											A2(
+											$elm$html$Html$button,
+											_List_fromArray(
+												[
+													A2($elm$html$Html$Attributes$style, 'float', 'right'),
+													A2($elm$html$Html$Attributes$style, 'background', 'none'),
+													$elm$html$Html$Attributes$type_('button'),
+													$elm$html$Html$Attributes$title('Close'),
+													$elm$html$Html$Events$onClick(
+													toMsg(
+														$author$project$Screen$FreePlay$ShowFreePlayMenu(false)))
+												]),
+											_List_fromArray(
+												[
+													A2(
+													$phosphor_icons$phosphor_elm$Phosphor$toHtml,
+													_List_Nil,
+													$phosphor_icons$phosphor_elm$Phosphor$xCircle($phosphor_icons$phosphor_elm$Phosphor$Regular))
+												]))
+										])),
+									A2(
+									$elm$html$Html$button,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$type_('button'),
+											$elm$html$Html$Events$onClick(
+											toMsg($author$project$Screen$FreePlay$ExitFreePlayBoard))
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Select another board')
+										])),
+									A2($elm$html$Html$br, _List_Nil, _List_Nil),
+									A2($elm$html$Html$br, _List_Nil, _List_Nil),
+									function () {
+									var viewMapping = $author$project$Input$viewMapping(
+										A2($elm$core$Basics$composeR, $author$project$Shared$SetMapping, toSharedMsg));
+									return A2(
+										$elm$html$Html$table,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$thead,
+												_List_Nil,
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$tr,
+														_List_Nil,
+														_List_fromArray(
+															[
+																A2(
+																$elm$html$Html$th,
+																_List_fromArray(
+																	[
+																		A2($elm$html$Html$Attributes$attribute, 'align', 'left')
+																	]),
+																_List_fromArray(
+																	[
+																		$elm$html$Html$text('Input')
+																	])),
+																A2(
+																$elm$html$Html$th,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$text('Primary Key')
+																	])),
+																A2(
+																$elm$html$Html$th,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$text('Secondary Key')
+																	]))
+															]))
+													])),
+												A2(
+												$elm$html$Html$tbody,
+												_List_Nil,
+												A2(
+													$elm$core$List$cons,
+													A2(
+														$elm$html$Html$tr,
+														_List_Nil,
+														_List_fromArray(
+															[
+																A2(
+																$elm$html$Html$th,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		A2(
+																		$elm$html$Html$h3,
+																		_List_Nil,
+																		_List_fromArray(
+																			[
+																				$elm$html$Html$text('Character Movement')
+																			]))
+																	]))
+															])),
+													A2(
+														$elm$core$List$map,
+														viewMapping,
+														_List_fromArray(
+															[
+																{
+																keys: sharedModel.inputMapping.moveUp,
+																label: 'Face up',
+																setPrimary: F2(
+																	function (key, inputMapping) {
+																		var _v2 = inputMapping.moveUp;
+																		var secondary = _v2.b;
+																		return _Utils_update(
+																			inputMapping,
+																			{
+																				moveUp: _Utils_Tuple2(key, secondary)
+																			});
+																	}),
+																setSecondary: F2(
+																	function (key, inputMapping) {
+																		var _v3 = inputMapping.moveUp;
+																		var primary = _v3.a;
+																		return _Utils_update(
+																			inputMapping,
+																			{
+																				moveUp: _Utils_Tuple2(primary, key)
+																			});
+																	})
+															},
+																{
+																keys: sharedModel.inputMapping.moveDown,
+																label: 'Face down',
+																setPrimary: F2(
+																	function (key, inputMapping) {
+																		var _v4 = inputMapping.moveDown;
+																		var secondary = _v4.b;
+																		return _Utils_update(
+																			inputMapping,
+																			{
+																				moveDown: _Utils_Tuple2(key, secondary)
+																			});
+																	}),
+																setSecondary: F2(
+																	function (key, inputMapping) {
+																		var _v5 = inputMapping.moveDown;
+																		var primary = _v5.a;
+																		return _Utils_update(
+																			inputMapping,
+																			{
+																				moveDown: _Utils_Tuple2(primary, key)
+																			});
+																	})
+															},
+																{
+																keys: sharedModel.inputMapping.moveLeft,
+																label: 'Face left',
+																setPrimary: F2(
+																	function (key, inputMapping) {
+																		var _v6 = inputMapping.moveLeft;
+																		var secondary = _v6.b;
+																		return _Utils_update(
+																			inputMapping,
+																			{
+																				moveLeft: _Utils_Tuple2(key, secondary)
+																			});
+																	}),
+																setSecondary: F2(
+																	function (key, inputMapping) {
+																		var _v7 = inputMapping.moveLeft;
+																		var primary = _v7.a;
+																		return _Utils_update(
+																			inputMapping,
+																			{
+																				moveLeft: _Utils_Tuple2(primary, key)
+																			});
+																	})
+															},
+																{
+																keys: sharedModel.inputMapping.moveRight,
+																label: 'Face right',
+																setPrimary: F2(
+																	function (key, inputMapping) {
+																		var _v8 = inputMapping.moveRight;
+																		var secondary = _v8.b;
+																		return _Utils_update(
+																			inputMapping,
+																			{
+																				moveRight: _Utils_Tuple2(key, secondary)
+																			});
+																	}),
+																setSecondary: F2(
+																	function (key, inputMapping) {
+																		var _v9 = inputMapping.moveRight;
+																		var primary = _v9.a;
+																		return _Utils_update(
+																			inputMapping,
+																			{
+																				moveRight: _Utils_Tuple2(primary, key)
+																			});
+																	})
+															}
+															]))))
+											]));
+								}()
+								]))
+						]);
+				}
+			}())
+		]);
+};
+var $elm$html$Html$summary = _VirtualDom_node('summary');
+var $author$project$Screen$Game$view = function (_v0) {
+	var setScreen = _v0.setScreen;
+	var toSharedMsg = _v0.toSharedMsg;
+	return _List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'width', '100vw'),
+					A2($elm$html$Html$Attributes$style, 'height', '100vh'),
+					A2($elm$html$Html$Attributes$style, 'display', 'grid'),
+					A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'auto auto auto')
+				]),
+			_List_fromArray(
 				[
 					A2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							A2($elm$html$Html$Attributes$style, 'width', '100vw'),
-							A2($elm$html$Html$Attributes$style, 'height', '100vh'),
+							A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
+							A2($elm$html$Html$Attributes$style, 'margin-top', '5rem'),
 							A2($elm$html$Html$Attributes$style, 'display', 'flex'),
 							A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+							A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
 							A2($elm$html$Html$Attributes$style, 'align-items', 'center')
 						]),
 					_List_fromArray(
 						[
+							A2(
+							$elm$html$Html$h1,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+									A2($elm$html$Html$Attributes$style, 'color', 'white'),
+									A2($elm$html$Html$Attributes$style, 'font-size', '3rem')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('⠉⠥⠃⠑⠤⠙⠥⠙⠑'),
+									A2(
+									$elm$html$Html$summary,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'font-size', '2rem')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Cube-Dude')
+										]))
+								])),
+							A2(
+							$elm$html$Html$h2,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'text-align', 'center')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Full game coming soon...')
+								])),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$type_('button'),
+									A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+									A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
+									$elm$html$Html$Events$onClick(
+									setScreen($author$project$Screen$Menu))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Main Menu')
+								]))
+						]))
+				]))
+		]);
+};
+var $author$project$Screen$Editor = {$: 'Editor'};
+var $author$project$Screen$FreePlay = {$: 'FreePlay'};
+var $author$project$Screen$Game = {$: 'Game'};
+var $author$project$Screen$Menu$view = function (_v0) {
+	var setScreen = _v0.setScreen;
+	var toSharedMsg = _v0.toSharedMsg;
+	var sharedModel = _v0.sharedModel;
+	return _List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'width', '100vw'),
+					A2($elm$html$Html$Attributes$style, 'height', '100vh'),
+					A2($elm$html$Html$Attributes$style, 'display', 'grid'),
+					A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'auto auto auto')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
+							A2($elm$html$Html$Attributes$style, 'margin-top', '5rem'),
+							A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+							A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+							A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
+							A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$h1,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+									A2($elm$html$Html$Attributes$style, 'color', 'white'),
+									A2($elm$html$Html$Attributes$style, 'font-size', '3rem')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('⠉⠥⠃⠑⠤⠙⠥⠙⠑'),
+									A2(
+									$elm$html$Html$summary,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'font-size', '2rem')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Cube-Dude')
+										]))
+								])),
 							A2(
 							$elm$html$Html$div,
 							_List_fromArray(
@@ -33947,20 +34721,40 @@ var $author$project$Screen$FreePlay$view = F4(
 									A2($elm$html$Html$Attributes$style, 'margin-top', '5rem'),
 									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
 									A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
-									A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
-									A2($elm$html$Html$Attributes$style, 'align-items', 'center')
+									A2($elm$html$Html$Attributes$style, 'gap', '1rem')
 								]),
 							_List_fromArray(
 								[
 									A2(
-									$elm$html$Html$h1,
+									$elm$html$Html$button,
 									_List_fromArray(
 										[
-											A2($elm$html$Html$Attributes$style, 'text-align', 'center')
+											$elm$html$Html$Attributes$type_('button'),
+											A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+											A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
+											$elm$html$Html$Events$onClick(
+											setScreen($author$project$Screen$Game))
 										]),
 									_List_fromArray(
 										[
-											$elm$html$Html$text('Pick a Board')
+											A2(
+											$elm$html$Html$span,
+											_List_fromArray(
+												[
+													A2($elm$html$Html$Attributes$style, 'text-decoration', 'line-through')
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Play')
+												])),
+											A2($elm$html$Html$br, _List_Nil, _List_Nil),
+											A2(
+											$elm$html$Html$small,
+											_List_Nil,
+											_List_fromArray(
+												[
+													$elm$html$Html$text(' Coming soon...')
+												]))
 										])),
 									A2(
 									$elm$html$Html$button,
@@ -33970,542 +34764,31 @@ var $author$project$Screen$FreePlay$view = F4(
 											A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
 											A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
 											$elm$html$Html$Events$onClick(
-											toSharedMsg(
-												$author$project$Shared$SetScreen($author$project$Shared$Menu)))
+											setScreen($author$project$Screen$FreePlay))
 										]),
 									_List_fromArray(
 										[
-											$elm$html$Html$text('Main Menu')
-										]))
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									A2($elm$html$Html$Attributes$style, 'width', '100vw'),
-									A2($elm$html$Html$Attributes$style, 'display', 'grid'),
-									A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'repeat(5, 1fr)'),
-									A2($elm$html$Html$Attributes$style, 'gap', '2rem'),
-									A2($elm$html$Html$Attributes$style, 'padding', '2rem')
-								]),
-							_Utils_ap(
-								A2(
-									$elm$core$List$map,
-									$author$project$Screen$FreePlay$viewBoardPreviewTile(toMsg),
-									_List_fromArray(
-										[
-											{boardEncoding: $author$project$Board$basicMiniBoard, name: 'Mini'},
-											{boardEncoding: $author$project$Board$zigZagBoard, name: 'Zig-Zag'}
+											$elm$html$Html$text('Free Play')
 										])),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-												A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-												A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-												A2($elm$html$Html$Attributes$style, 'height', '8rem')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('More coming soon...')
-											]))
-									])))
-						]))
-				]);
-		} else {
-			return _List_fromArray(
-				[
-					A4(
-					$author$project$Board$view3dScene,
-					A2(
-						$author$project$Board$gameLights,
-						model.level.board,
-						$ianmackenzie$elm_geometry$Frame3d$originPoint(model.level.playerFrame)),
-					sharedModel.screenSize,
-					$author$project$Board$gamePlayCamera(model.level.playerFrame),
-					$elm$core$List$concat(
-						_List_fromArray(
-							[
-								A2(
-								$elm$core$List$map,
-								$author$project$Board$viewBlock,
-								$elm$core$Dict$toList(model.level.board.blocks)),
-								_List_fromArray(
-								[
-									$author$project$Board$viewPlayer(model.level)
-								]),
-								A2($elm$core$List$map, $author$project$Board$viewEnemy, model.level.enemies)
-							]))),
-					$author$project$Board$viewStats(model.level),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-							A2($elm$html$Html$Attributes$style, 'padding', '0.5rem'),
-							A2($elm$html$Html$Attributes$style, 'top', '0'),
-							A2($elm$html$Html$Attributes$style, 'right', '0')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$button,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$type_('button'),
-									$elm$html$Html$Events$onClick(
-									toMsg(
-										$author$project$Screen$FreePlay$ShowFreePlayMenu(true)))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('Menu')
-								]))
-						])),
-					A3(
-					$author$project$Html$Extra$modal,
-					{
-						onClose: toMsg(
-							$author$project$Screen$FreePlay$ShowFreePlayMenu(false)),
-						open: model.showFreePlayMenu
-					},
-					_List_Nil,
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$h2,
-							_List_fromArray(
-								[
-									A2($elm$html$Html$Attributes$style, 'width', '100%'),
-									A2($elm$html$Html$Attributes$style, 'margin-top', '0')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('Free Play'),
 									A2(
 									$elm$html$Html$button,
 									_List_fromArray(
 										[
-											A2($elm$html$Html$Attributes$style, 'float', 'right'),
-											A2($elm$html$Html$Attributes$style, 'background', 'none'),
 											$elm$html$Html$Attributes$type_('button'),
-											$elm$html$Html$Attributes$title('Close'),
+											A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+											A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
 											$elm$html$Html$Events$onClick(
-											toMsg(
-												$author$project$Screen$FreePlay$ShowFreePlayMenu(false)))
+											setScreen($author$project$Screen$Editor))
 										]),
 									_List_fromArray(
 										[
-											A2(
-											$phosphor_icons$phosphor_elm$Phosphor$toHtml,
-											_List_Nil,
-											$phosphor_icons$phosphor_elm$Phosphor$xCircle($phosphor_icons$phosphor_elm$Phosphor$Regular))
+											$elm$html$Html$text('Level Editor')
 										]))
-								])),
-							A2(
-							$elm$html$Html$button,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$type_('button'),
-									$elm$html$Html$Events$onClick(
-									toMsg($author$project$Screen$FreePlay$ExitFreePlayBoard))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('Select another board')
-								])),
-							A2($elm$html$Html$br, _List_Nil, _List_Nil),
-							A2($elm$html$Html$br, _List_Nil, _List_Nil),
-							function () {
-							var viewMapping = $author$project$Input$viewMapping(
-								A2($elm$core$Basics$composeR, $author$project$Shared$SetMapping, toSharedMsg));
-							return A2(
-								$elm$html$Html$table,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$thead,
-										_List_Nil,
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$tr,
-												_List_Nil,
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$th,
-														_List_fromArray(
-															[
-																A2($elm$html$Html$Attributes$attribute, 'align', 'left')
-															]),
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Input')
-															])),
-														A2(
-														$elm$html$Html$th,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Primary Key')
-															])),
-														A2(
-														$elm$html$Html$th,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Secondary Key')
-															]))
-													]))
-											])),
-										A2(
-										$elm$html$Html$tbody,
-										_List_Nil,
-										A2(
-											$elm$core$List$cons,
-											A2(
-												$elm$html$Html$tr,
-												_List_Nil,
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$th,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$h3,
-																_List_Nil,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text('Character Movement')
-																	]))
-															]))
-													])),
-											A2(
-												$elm$core$List$map,
-												viewMapping,
-												_List_fromArray(
-													[
-														{
-														keys: sharedModel.inputMapping.moveUp,
-														label: 'Face up',
-														setPrimary: F2(
-															function (key, inputMapping) {
-																var _v1 = inputMapping.moveUp;
-																var secondary = _v1.b;
-																return _Utils_update(
-																	inputMapping,
-																	{
-																		moveUp: _Utils_Tuple2(key, secondary)
-																	});
-															}),
-														setSecondary: F2(
-															function (key, inputMapping) {
-																var _v2 = inputMapping.moveUp;
-																var primary = _v2.a;
-																return _Utils_update(
-																	inputMapping,
-																	{
-																		moveUp: _Utils_Tuple2(primary, key)
-																	});
-															})
-													},
-														{
-														keys: sharedModel.inputMapping.moveDown,
-														label: 'Face down',
-														setPrimary: F2(
-															function (key, inputMapping) {
-																var _v3 = inputMapping.moveDown;
-																var secondary = _v3.b;
-																return _Utils_update(
-																	inputMapping,
-																	{
-																		moveDown: _Utils_Tuple2(key, secondary)
-																	});
-															}),
-														setSecondary: F2(
-															function (key, inputMapping) {
-																var _v4 = inputMapping.moveDown;
-																var primary = _v4.a;
-																return _Utils_update(
-																	inputMapping,
-																	{
-																		moveDown: _Utils_Tuple2(primary, key)
-																	});
-															})
-													},
-														{
-														keys: sharedModel.inputMapping.moveLeft,
-														label: 'Face left',
-														setPrimary: F2(
-															function (key, inputMapping) {
-																var _v5 = inputMapping.moveLeft;
-																var secondary = _v5.b;
-																return _Utils_update(
-																	inputMapping,
-																	{
-																		moveLeft: _Utils_Tuple2(key, secondary)
-																	});
-															}),
-														setSecondary: F2(
-															function (key, inputMapping) {
-																var _v6 = inputMapping.moveLeft;
-																var primary = _v6.a;
-																return _Utils_update(
-																	inputMapping,
-																	{
-																		moveLeft: _Utils_Tuple2(primary, key)
-																	});
-															})
-													},
-														{
-														keys: sharedModel.inputMapping.moveRight,
-														label: 'Face right',
-														setPrimary: F2(
-															function (key, inputMapping) {
-																var _v7 = inputMapping.moveRight;
-																var secondary = _v7.b;
-																return _Utils_update(
-																	inputMapping,
-																	{
-																		moveRight: _Utils_Tuple2(key, secondary)
-																	});
-															}),
-														setSecondary: F2(
-															function (key, inputMapping) {
-																var _v8 = inputMapping.moveRight;
-																var primary = _v8.a;
-																return _Utils_update(
-																	inputMapping,
-																	{
-																		moveRight: _Utils_Tuple2(primary, key)
-																	});
-															})
-													}
-													]))))
-									]));
-						}()
+								]))
 						]))
-				]);
-		}
-	});
-var $elm$html$Html$summary = _VirtualDom_node('summary');
-var $author$project$Screen$Game$view = F4(
-	function (toSharedMsg, _v0, _v1, _v2) {
-		return _List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						A2($elm$html$Html$Attributes$style, 'width', '100vw'),
-						A2($elm$html$Html$Attributes$style, 'height', '100vh'),
-						A2($elm$html$Html$Attributes$style, 'display', 'grid'),
-						A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'auto auto auto')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
-								A2($elm$html$Html$Attributes$style, 'margin-top', '5rem'),
-								A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-								A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
-								A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
-								A2($elm$html$Html$Attributes$style, 'align-items', 'center')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$h1,
-								_List_fromArray(
-									[
-										A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-										A2($elm$html$Html$Attributes$style, 'color', 'white'),
-										A2($elm$html$Html$Attributes$style, 'font-size', '3rem')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('⠉⠥⠃⠑⠤⠙⠥⠙⠑'),
-										A2(
-										$elm$html$Html$summary,
-										_List_fromArray(
-											[
-												A2($elm$html$Html$Attributes$style, 'font-size', '2rem')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Cube-Dude')
-											]))
-									])),
-								A2(
-								$elm$html$Html$h2,
-								_List_fromArray(
-									[
-										A2($elm$html$Html$Attributes$style, 'text-align', 'center')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Full game coming soon...')
-									])),
-								A2(
-								$elm$html$Html$button,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$type_('button'),
-										A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-										A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
-										$elm$html$Html$Events$onClick(
-										toSharedMsg(
-											$author$project$Shared$SetScreen($author$project$Shared$Menu)))
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Main Menu')
-									]))
-							]))
-					]))
-			]);
-	});
-var $author$project$Shared$Editor = {$: 'Editor'};
-var $author$project$Shared$FreePlay = {$: 'FreePlay'};
-var $author$project$Shared$Game = {$: 'Game'};
-var $author$project$Screen$Menu$view = F4(
-	function (toSharedMsg, sharedModel, _v0, _v1) {
-		return _List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						A2($elm$html$Html$Attributes$style, 'width', '100vw'),
-						A2($elm$html$Html$Attributes$style, 'height', '100vh'),
-						A2($elm$html$Html$Attributes$style, 'display', 'grid'),
-						A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'auto auto auto')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								A2($elm$html$Html$Attributes$style, 'grid-column', '2'),
-								A2($elm$html$Html$Attributes$style, 'margin-top', '5rem'),
-								A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-								A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
-								A2($elm$html$Html$Attributes$style, 'gap', '1rem'),
-								A2($elm$html$Html$Attributes$style, 'align-items', 'center')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$h1,
-								_List_fromArray(
-									[
-										A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-										A2($elm$html$Html$Attributes$style, 'color', 'white'),
-										A2($elm$html$Html$Attributes$style, 'font-size', '3rem')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('⠉⠥⠃⠑⠤⠙⠥⠙⠑'),
-										A2(
-										$elm$html$Html$summary,
-										_List_fromArray(
-											[
-												A2($elm$html$Html$Attributes$style, 'font-size', '2rem')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Cube-Dude')
-											]))
-									])),
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										A2($elm$html$Html$Attributes$style, 'margin-top', '5rem'),
-										A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-										A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
-										A2($elm$html$Html$Attributes$style, 'gap', '1rem')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$button,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$type_('button'),
-												A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-												A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
-												$elm$html$Html$Events$onClick(
-												toSharedMsg(
-													$author$project$Shared$SetScreen($author$project$Shared$Game)))
-											]),
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$span,
-												_List_fromArray(
-													[
-														A2($elm$html$Html$Attributes$style, 'text-decoration', 'line-through')
-													]),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Play')
-													])),
-												A2($elm$html$Html$br, _List_Nil, _List_Nil),
-												A2(
-												$elm$html$Html$small,
-												_List_Nil,
-												_List_fromArray(
-													[
-														$elm$html$Html$text(' Coming soon...')
-													]))
-											])),
-										A2(
-										$elm$html$Html$button,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$type_('button'),
-												A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-												A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
-												$elm$html$Html$Events$onClick(
-												toSharedMsg(
-													$author$project$Shared$SetScreen($author$project$Shared$FreePlay)))
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Free Play')
-											])),
-										A2(
-										$elm$html$Html$button,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$type_('button'),
-												A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-												A2($elm$html$Html$Attributes$style, 'padding', '0.5rem 2rem'),
-												$elm$html$Html$Events$onClick(
-												toSharedMsg(
-													$author$project$Shared$SetScreen($author$project$Shared$Editor)))
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Level Editor')
-											]))
-									]))
-							]))
-					]))
-			]);
-	});
+				]))
+		]);
+};
 var $author$project$Main$view = function (model) {
 	return {
 		body: function () {
@@ -34523,16 +34806,24 @@ var $author$project$Main$view = function (model) {
 						]);
 				default:
 					var sharedModel = _v0.a;
-					var _v1 = sharedModel.screen;
+					var _v1 = model.screen;
 					switch (_v1.$) {
 						case 'Menu':
-							return A4($author$project$Screen$Menu$view, $author$project$Main$SharedMsg, sharedModel, $author$project$Main$MenuMsg, model.menuModel);
+							var menuModel = _v1.a;
+							return $author$project$Screen$Menu$view(
+								{model: menuModel, setScreen: $author$project$Main$SetScreen, sharedModel: sharedModel, toMsg: $author$project$Main$MenuMsg, toSharedMsg: $author$project$Main$SharedMsg});
 						case 'Game':
-							return A4($author$project$Screen$Game$view, $author$project$Main$SharedMsg, sharedModel, $author$project$Main$GameMsg, model.gameModel);
+							var gameModel = _v1.a;
+							return $author$project$Screen$Game$view(
+								{model: gameModel, setScreen: $author$project$Main$SetScreen, sharedModel: sharedModel, toMsg: $author$project$Main$GameMsg, toSharedMsg: $author$project$Main$SharedMsg});
 						case 'FreePlay':
-							return A4($author$project$Screen$FreePlay$view, $author$project$Main$SharedMsg, sharedModel, $author$project$Main$FreePlayMsg, model.freePlayModel);
+							var freePlayModel = _v1.a;
+							return $author$project$Screen$FreePlay$view(
+								{model: freePlayModel, setScreen: $author$project$Main$SetScreen, sharedModel: sharedModel, toMsg: $author$project$Main$FreePlayMsg, toSharedMsg: $author$project$Main$SharedMsg});
 						default:
-							return A4($author$project$Screen$Editor$view, $author$project$Main$SharedMsg, sharedModel, $author$project$Main$EditorMsg, model.editorModel);
+							var editorModel = _v1.a;
+							return $author$project$Screen$Editor$view(
+								{model: editorModel, setScreen: $author$project$Main$SetScreen, sharedModel: sharedModel, toMsg: $author$project$Main$EditorMsg, toSharedMsg: $author$project$Main$SharedMsg});
 					}
 			}
 		}(),
@@ -34542,4 +34833,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$document(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Duration.Duration":{"args":[],"type":"Quantity.Quantity Basics.Float Duration.Seconds"},"Input.Mapping":{"args":[],"type":"{ moveUp : ( String.String, String.String ), moveDown : ( String.String, String.String ), moveLeft : ( String.String, String.String ), moveRight : ( String.String, String.String ), cameraOrbit : ( String.String, String.String ), cameraPan : ( String.String, String.String ), cameraZoom : ( String.String, String.String ), cameraReset : ( String.String, String.String ), blockSelect : ( String.String, String.String ), blockAdd : ( String.String, String.String ), blockRemove : ( String.String, String.String ), blockTypeWall : ( String.String, String.String ), blockTypeEdge : ( String.String, String.String ), blockTypePointPickup : ( String.String, String.String ), blockTypePlayerSpawn : ( String.String, String.String ), blockTypeEnemySpawner : ( String.String, String.String ), undo : ( String.String, String.String ), redo : ( String.String, String.String ), toggleSettings : ( String.String, String.String ) }"},"Scene3d.Mesh.Mesh":{"args":["coordinates","attributes"],"type":"Scene3d.Types.Mesh coordinates attributes"},"Board.Point":{"args":[],"type":"( Basics.Int, Basics.Int, Basics.Int )"},"Point2d.Point2d":{"args":["units","coordinates"],"type":"Geometry.Types.Point2d units coordinates"},"Scene3d.Material.Texture":{"args":["value"],"type":"Scene3d.Types.Texture value"},"Scene3d.Mesh.Textured":{"args":["coordinates"],"type":"Scene3d.Mesh.Mesh coordinates { normals : (), uvs : () }"},"Shared.TexturedMesh":{"args":[],"type":"( Scene3d.Mesh.Textured Board.WorldCoordinates, Scene3d.Material.Texture Color.Color )"},"Json.Decode.Value":{"args":[],"type":"Json.Encode.Value"},"BoundingBox3d.BoundingBox3d":{"args":["units","coordinates"],"type":"Geometry.Types.BoundingBox3d units coordinates"},"Board.EnemySpawnerDetails":{"args":[],"type":"{ timeTillSpawn : Duration.Duration, timeBetweenSpawns : Duration.Duration }"},"LineSegment3d.LineSegment3d":{"args":["units","coordinates"],"type":"Geometry.Types.LineSegment3d units coordinates"},"WebGL.Texture.Options":{"args":[],"type":"{ magnify : WebGL.Texture.Resize WebGL.Texture.Bigger, minify : WebGL.Texture.Resize WebGL.Texture.Smaller, horizontalWrap : WebGL.Texture.Wrap, verticalWrap : WebGL.Texture.Wrap, flipY : Basics.Bool }"},"Scene3d.Types.PlainVertex":{"args":[],"type":"{ position : Math.Vector3.Vec3 }"},"Point3d.Point3d":{"args":["units","coordinates"],"type":"Geometry.Types.Point3d units coordinates"},"Polyline3d.Polyline3d":{"args":["units","coordinates"],"type":"Geometry.Types.Polyline3d units coordinates"},"Triangle3d.Triangle3d":{"args":["units","coordinates"],"type":"Geometry.Types.Triangle3d units coordinates"},"Vector3d.Vector3d":{"args":["units","coordinates"],"type":"Geometry.Types.Vector3d units coordinates"},"Scene3d.Types.VertexWithNormal":{"args":[],"type":"{ position : Math.Vector3.Vec3, normal : Math.Vector3.Vec3 }"},"Scene3d.Types.VertexWithNormalAndUv":{"args":[],"type":"{ position : Math.Vector3.Vec3, normal : Math.Vector3.Vec3, uv : Math.Vector2.Vec2 }"},"Scene3d.Types.VertexWithTangent":{"args":[],"type":"{ position : Math.Vector3.Vec3, normal : Math.Vector3.Vec3, uv : Math.Vector2.Vec2, tangent : Math.Vector3.Vec3 }"},"Scene3d.Types.VertexWithUv":{"args":[],"type":"{ position : Math.Vector3.Vec3, uv : Math.Vector2.Vec2 }"},"WebGL.RenderInfo":{"args":[],"type":"{ mode : Basics.Int, elemSize : Basics.Int, indexSize : Basics.Int }"},"Array.Tree":{"args":["a"],"type":"Elm.JsArray.JsArray (Array.Node a)"}},"unions":{"Main.Msg":{"args":[],"tags":{"SharedMsg":["Shared.Msg"],"MenuMsg":["Screen.Menu.Msg"],"GameMsg":["Screen.Game.Msg"],"FreePlayMsg":["Screen.FreePlay.Msg"],"EditorMsg":["Screen.Editor.Msg"]}},"Screen.Editor.Msg":{"args":[],"tags":{"NoOp":[],"Tick":["Duration.Duration"],"KeyDown":["String.String"],"KeyUp":["String.String"],"MouseDown":["Json.Decode.Value"],"MouseUp":[],"MouseMove":["Json.Decode.Value","Point2d.Point2d Pixels.Pixels Board.ScreenCoordinates","Point2d.Point2d Pixels.Pixels Board.ScreenCoordinates"],"EncodingChanged":["String.String"],"LoadEditorBoard":["String.String"],"ChangeMode":[],"SetBlockEditMode":["Screen.Editor.BlockEditMode"],"SetCameraMode":["Screen.Editor.CameraMode"],"ResetCamera":[],"Undo":[],"Redo":[],"XLowerVisibleChanged":["Basics.Int"],"XUpperVisibleChanged":["Basics.Int"],"YLowerVisibleChanged":["Basics.Int"],"YUpperVisibleChanged":["Basics.Int"],"ZLowerVisibleChanged":["Basics.Int"],"ZUpperVisibleChanged":["Basics.Int"],"BlockTypeSelected":["Board.Block"],"SetBlock":["Board.Point","Board.Block"],"MaxXChanged":["String.String"],"MaxYChanged":["String.String"],"MaxZChanged":["String.String"],"ShowBoardBounds":["Basics.Bool"],"ShowSettings":["Basics.Bool"]}},"Screen.FreePlay.Msg":{"args":[],"tags":{"Tick":["Duration.Duration"],"KeyDown":["String.String"],"LoadFreePlayBoard":["String.String"],"ExitFreePlayBoard":[],"ShowFreePlayMenu":["Basics.Bool"]}},"Screen.Game.Msg":{"args":[],"tags":{"NoOp":[]}},"Screen.Menu.Msg":{"args":[],"tags":{"NoOp":[]}},"Shared.Msg":{"args":[],"tags":{"SetMapping":["Input.Mapping -> Input.Mapping"],"SetScreen":["Shared.Screen"],"SetBlockPalette":["Board.BlockPalette"],"TaskStateUpdated":["Task.Parallel.Msg2 Shared.TexturedMesh Shared.TexturedMesh"],"OneTaskFailed":["Shared.Error"],"AllTasksCompleted":["Shared.TexturedMesh","Shared.TexturedMesh"]}},"Board.Block":{"args":[],"tags":{"Empty":[],"Wall":[],"Edge":[],"PointPickup":["Basics.Bool"],"PlayerSpawn":["{ forward : Board.Axis, left : Board.Axis }"],"EnemySpawner":["Board.EnemySpawnerDetails"]}},"Screen.Editor.BlockEditMode":{"args":[],"tags":{"Add":[],"Remove":[],"Select":[]}},"Board.BlockPalette":{"args":[],"tags":{"SimpleBlocks":[],"RainbowBlocks":[]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Screen.Editor.CameraMode":{"args":[],"tags":{"Orbit":[],"Pan":[],"Zoom":[]}},"Color.Color":{"args":[],"tags":{"RgbaSpace":["Basics.Float","Basics.Float","Basics.Float","Basics.Float"]}},"Shared.Error":{"args":[],"tags":{"MeshLoadError":["String.String"],"TextureLoadError":["String.String"]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Scene3d.Types.Mesh":{"args":["coordinates","attributes"],"tags":{"EmptyMesh":[],"Triangles":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","List.List (Triangle3d.Triangle3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex","Scene3d.Types.BackFaceSetting"],"Facets":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","List.List (Triangle3d.Triangle3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.VertexWithNormal","Scene3d.Types.BackFaceSetting"],"Indexed":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh (Point3d.Point3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex","Scene3d.Types.BackFaceSetting"],"MeshWithNormals":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, normal : Vector3d.Vector3d Quantity.Unitless coordinates }","WebGL.Mesh Scene3d.Types.VertexWithNormal","Scene3d.Types.BackFaceSetting"],"MeshWithUvs":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, uv : ( Basics.Float, Basics.Float ) }","WebGL.Mesh Scene3d.Types.VertexWithUv","Scene3d.Types.BackFaceSetting"],"MeshWithNormalsAndUvs":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, normal : Vector3d.Vector3d Quantity.Unitless coordinates, uv : ( Basics.Float, Basics.Float ) }","WebGL.Mesh Scene3d.Types.VertexWithNormalAndUv","Scene3d.Types.BackFaceSetting"],"MeshWithTangents":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, normal : Vector3d.Vector3d Quantity.Unitless coordinates, uv : ( Basics.Float, Basics.Float ), tangent : Vector3d.Vector3d Quantity.Unitless coordinates }","WebGL.Mesh Scene3d.Types.VertexWithTangent","Scene3d.Types.BackFaceSetting"],"LineSegments":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","List.List (LineSegment3d.LineSegment3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex"],"Polyline":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","Polyline3d.Polyline3d Length.Meters coordinates","WebGL.Mesh Scene3d.Types.PlainVertex"],"Points":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","Basics.Float","List.List (Point3d.Point3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex"]}},"Task.Parallel.Msg2":{"args":["a","b"],"tags":{"LoadedA2":["a"],"LoadedB2":["b"]}},"Pixels.Pixels":{"args":[],"tags":{"Pixels":[]}},"Geometry.Types.Point2d":{"args":["units","coordinates"],"tags":{"Point2d":["{ x : Basics.Float, y : Basics.Float }"]}},"Quantity.Quantity":{"args":["number","units"],"tags":{"Quantity":["number"]}},"Shared.Screen":{"args":[],"tags":{"Editor":[],"Game":[],"FreePlay":[],"Menu":[]}},"Board.ScreenCoordinates":{"args":[],"tags":{"ScreenCoordinates":["Basics.Never"]}},"Duration.Seconds":{"args":[],"tags":{"Seconds":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Scene3d.Types.Texture":{"args":["value"],"tags":{"Constant":["value"],"Texture":["{ url : String.String, options : WebGL.Texture.Options, data : WebGL.Texture.Texture }"]}},"Json.Encode.Value":{"args":[],"tags":{"Value":[]}},"Board.WorldCoordinates":{"args":[],"tags":{"WorldCoordinates":["Basics.Never"]}},"Board.Axis":{"args":[],"tags":{"PositiveX":[],"NegativeX":[],"PositiveY":[],"NegativeY":[],"PositiveZ":[],"NegativeZ":[]}},"Scene3d.Types.BackFaceSetting":{"args":[],"tags":{"KeepBackFaces":[],"CullBackFaces":[]}},"WebGL.Texture.Bigger":{"args":[],"tags":{"Bigger":[]}},"Geometry.Types.BoundingBox3d":{"args":["units","coordinates"],"tags":{"BoundingBox3d":["{ minX : Basics.Float, maxX : Basics.Float, minY : Basics.Float, maxY : Basics.Float, minZ : Basics.Float, maxZ : Basics.Float }"]}},"Geometry.Types.LineSegment3d":{"args":["units","coordinates"],"tags":{"LineSegment3d":["( Geometry.Types.Point3d units coordinates, Geometry.Types.Point3d units coordinates )"]}},"List.List":{"args":["a"],"tags":{}},"WebGL.Mesh":{"args":["attributes"],"tags":{"Mesh1":["WebGL.RenderInfo","List.List attributes"],"Mesh2":["WebGL.RenderInfo","List.List ( attributes, attributes )"],"Mesh3":["WebGL.RenderInfo","List.List ( attributes, attributes, attributes )"],"MeshIndexed3":["WebGL.RenderInfo","List.List attributes","List.List ( Basics.Int, Basics.Int, Basics.Int )"]}},"Length.Meters":{"args":[],"tags":{"Meters":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}},"Geometry.Types.Point3d":{"args":["units","coordinates"],"tags":{"Point3d":["{ x : Basics.Float, y : Basics.Float, z : Basics.Float }"]}},"Geometry.Types.Polyline3d":{"args":["units","coordinates"],"tags":{"Polyline3d":["List.List (Geometry.Types.Point3d units coordinates)"]}},"WebGL.Texture.Resize":{"args":["a"],"tags":{"Resize":["Basics.Int"]}},"WebGL.Texture.Smaller":{"args":[],"tags":{"Smaller":[]}},"WebGL.Texture.Texture":{"args":[],"tags":{"Texture":[]}},"Geometry.Types.Triangle3d":{"args":["units","coordinates"],"tags":{"Triangle3d":["( Geometry.Types.Point3d units coordinates, Geometry.Types.Point3d units coordinates, Geometry.Types.Point3d units coordinates )"]}},"TriangularMesh.TriangularMesh":{"args":["vertex"],"tags":{"TriangularMesh":["{ vertices : Array.Array vertex, faceIndices : List.List ( Basics.Int, Basics.Int, Basics.Int ) }"]}},"Quantity.Unitless":{"args":[],"tags":{"Unitless":[]}},"Math.Vector2.Vec2":{"args":[],"tags":{"Vec2":[]}},"Math.Vector3.Vec3":{"args":[],"tags":{"Vec3":[]}},"Geometry.Types.Vector3d":{"args":["units","coordinates"],"tags":{"Vector3d":["{ x : Basics.Float, y : Basics.Float, z : Basics.Float }"]}},"WebGL.Texture.Wrap":{"args":[],"tags":{"Wrap":["Basics.Int"]}},"Array.Array":{"args":["a"],"tags":{"Array_elm_builtin":["Basics.Int","Basics.Int","Array.Tree a","Elm.JsArray.JsArray a"]}},"Elm.JsArray.JsArray":{"args":["a"],"tags":{"JsArray":["a"]}},"Array.Node":{"args":["a"],"tags":{"SubTree":["Array.Tree a"],"Leaf":["Elm.JsArray.JsArray a"]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Duration.Duration":{"args":[],"type":"Quantity.Quantity Basics.Float Duration.Seconds"},"Input.Mapping":{"args":[],"type":"{ moveUp : ( String.String, String.String ), moveDown : ( String.String, String.String ), moveLeft : ( String.String, String.String ), moveRight : ( String.String, String.String ), cameraOrbit : ( String.String, String.String ), cameraPan : ( String.String, String.String ), cameraZoom : ( String.String, String.String ), cameraReset : ( String.String, String.String ), blockSelect : ( String.String, String.String ), blockAdd : ( String.String, String.String ), blockRemove : ( String.String, String.String ), blockTypeWall : ( String.String, String.String ), blockTypeEdge : ( String.String, String.String ), blockTypePointPickup : ( String.String, String.String ), blockTypePlayerSpawn : ( String.String, String.String ), blockTypeEnemySpawner : ( String.String, String.String ), undo : ( String.String, String.String ), redo : ( String.String, String.String ), toggleSettings : ( String.String, String.String ) }"},"Scene3d.Mesh.Mesh":{"args":["coordinates","attributes"],"type":"Scene3d.Types.Mesh coordinates attributes"},"Board.Point":{"args":[],"type":"( Basics.Int, Basics.Int, Basics.Int )"},"Point2d.Point2d":{"args":["units","coordinates"],"type":"Geometry.Types.Point2d units coordinates"},"Shared.ScreenSize":{"args":[],"type":"{ width : Basics.Int, height : Basics.Int }"},"Scene3d.Material.Texture":{"args":["value"],"type":"Scene3d.Types.Texture value"},"Scene3d.Mesh.Textured":{"args":["coordinates"],"type":"Scene3d.Mesh.Mesh coordinates { normals : (), uvs : () }"},"Shared.TexturedMesh":{"args":[],"type":"( Scene3d.Mesh.Textured Board.WorldCoordinates, Scene3d.Material.Texture Color.Color )"},"Json.Decode.Value":{"args":[],"type":"Json.Encode.Value"},"Browser.Dom.Viewport":{"args":[],"type":"{ scene : { width : Basics.Float, height : Basics.Float }, viewport : { x : Basics.Float, y : Basics.Float, width : Basics.Float, height : Basics.Float } }"},"BoundingBox3d.BoundingBox3d":{"args":["units","coordinates"],"type":"Geometry.Types.BoundingBox3d units coordinates"},"Board.EnemySpawnerDetails":{"args":[],"type":"{ timeTillSpawn : Duration.Duration, timeBetweenSpawns : Duration.Duration }"},"LineSegment3d.LineSegment3d":{"args":["units","coordinates"],"type":"Geometry.Types.LineSegment3d units coordinates"},"WebGL.Texture.Options":{"args":[],"type":"{ magnify : WebGL.Texture.Resize WebGL.Texture.Bigger, minify : WebGL.Texture.Resize WebGL.Texture.Smaller, horizontalWrap : WebGL.Texture.Wrap, verticalWrap : WebGL.Texture.Wrap, flipY : Basics.Bool }"},"Scene3d.Types.PlainVertex":{"args":[],"type":"{ position : Math.Vector3.Vec3 }"},"Point3d.Point3d":{"args":["units","coordinates"],"type":"Geometry.Types.Point3d units coordinates"},"Polyline3d.Polyline3d":{"args":["units","coordinates"],"type":"Geometry.Types.Polyline3d units coordinates"},"Triangle3d.Triangle3d":{"args":["units","coordinates"],"type":"Geometry.Types.Triangle3d units coordinates"},"Vector3d.Vector3d":{"args":["units","coordinates"],"type":"Geometry.Types.Vector3d units coordinates"},"Scene3d.Types.VertexWithNormal":{"args":[],"type":"{ position : Math.Vector3.Vec3, normal : Math.Vector3.Vec3 }"},"Scene3d.Types.VertexWithNormalAndUv":{"args":[],"type":"{ position : Math.Vector3.Vec3, normal : Math.Vector3.Vec3, uv : Math.Vector2.Vec2 }"},"Scene3d.Types.VertexWithTangent":{"args":[],"type":"{ position : Math.Vector3.Vec3, normal : Math.Vector3.Vec3, uv : Math.Vector2.Vec2, tangent : Math.Vector3.Vec3 }"},"Scene3d.Types.VertexWithUv":{"args":[],"type":"{ position : Math.Vector3.Vec3, uv : Math.Vector2.Vec2 }"},"WebGL.RenderInfo":{"args":[],"type":"{ mode : Basics.Int, elemSize : Basics.Int, indexSize : Basics.Int }"},"Array.Tree":{"args":["a"],"type":"Elm.JsArray.JsArray (Array.Node a)"}},"unions":{"Main.Msg":{"args":[],"tags":{"SharedMsg":["Shared.Msg"],"SetScreen":["Screen.Screen"],"MenuMsg":["Screen.Menu.Msg"],"GameMsg":["Screen.Game.Msg"],"FreePlayMsg":["Screen.FreePlay.Msg"],"EditorMsg":["Screen.Editor.Msg"]}},"Screen.Editor.Msg":{"args":[],"tags":{"NoOp":[],"Tick":["Duration.Duration"],"KeyDown":["String.String"],"KeyUp":["String.String"],"MouseDown":["Json.Decode.Value"],"MouseUp":[],"MouseMove":["Json.Decode.Value","Point2d.Point2d Pixels.Pixels Board.ScreenCoordinates","Point2d.Point2d Pixels.Pixels Board.ScreenCoordinates"],"EncodingChanged":["String.String"],"LoadEditorBoard":["String.String"],"ChangeMode":[],"SetBlockEditMode":["Screen.Editor.BlockEditMode"],"SetCameraMode":["Screen.Editor.CameraMode"],"ResetCamera":[],"Undo":[],"Redo":[],"XLowerVisibleChanged":["Basics.Int"],"XUpperVisibleChanged":["Basics.Int"],"YLowerVisibleChanged":["Basics.Int"],"YUpperVisibleChanged":["Basics.Int"],"ZLowerVisibleChanged":["Basics.Int"],"ZUpperVisibleChanged":["Basics.Int"],"BlockTypeSelected":["Board.Block"],"SetBlock":["Board.Point","Board.Block"],"MaxXChanged":["String.String"],"MaxYChanged":["String.String"],"MaxZChanged":["String.String"],"ShowBoardBounds":["Basics.Bool"],"ShowSettings":["Basics.Bool"],"EditorViewportResized":["Result.Result Browser.Dom.Error Browser.Dom.Viewport"],"BrowserResized":[]}},"Screen.FreePlay.Msg":{"args":[],"tags":{"Tick":["Duration.Duration"],"KeyDown":["String.String"],"LoadFreePlayBoard":["String.String"],"ExitFreePlayBoard":[],"ShowFreePlayMenu":["Basics.Bool"]}},"Screen.Game.Msg":{"args":[],"tags":{"NoOp":[]}},"Screen.Menu.Msg":{"args":[],"tags":{"NoOp":[]}},"Shared.Msg":{"args":[],"tags":{"SetMapping":["Input.Mapping -> Input.Mapping"],"SetBlockPalette":["Board.BlockPalette"],"TaskStateUpdated":["Task.Parallel.Msg2 Shared.TexturedMesh Shared.TexturedMesh"],"OneTaskFailed":["Shared.Error"],"AllTasksCompleted":["Shared.TexturedMesh","Shared.TexturedMesh"],"ViewportResized":["Result.Result Browser.Dom.Error Browser.Dom.Viewport"],"SetScreenSize":["Shared.ScreenSize"]}},"Screen.Screen":{"args":[],"tags":{"Menu":[],"Game":[],"FreePlay":[],"Editor":[]}},"Board.Block":{"args":[],"tags":{"Empty":[],"Wall":[],"Edge":[],"PointPickup":["Basics.Bool"],"PlayerSpawn":["{ forward : Board.Axis, left : Board.Axis }"],"EnemySpawner":["Board.EnemySpawnerDetails"]}},"Screen.Editor.BlockEditMode":{"args":[],"tags":{"Add":[],"Remove":[],"Select":[]}},"Board.BlockPalette":{"args":[],"tags":{"SimpleBlocks":[],"RainbowBlocks":[]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Screen.Editor.CameraMode":{"args":[],"tags":{"Orbit":[],"Pan":[],"Zoom":[]}},"Color.Color":{"args":[],"tags":{"RgbaSpace":["Basics.Float","Basics.Float","Basics.Float","Basics.Float"]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Shared.Error":{"args":[],"tags":{"MeshLoadError":["String.String"],"TextureLoadError":["String.String"]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Scene3d.Types.Mesh":{"args":["coordinates","attributes"],"tags":{"EmptyMesh":[],"Triangles":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","List.List (Triangle3d.Triangle3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex","Scene3d.Types.BackFaceSetting"],"Facets":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","List.List (Triangle3d.Triangle3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.VertexWithNormal","Scene3d.Types.BackFaceSetting"],"Indexed":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh (Point3d.Point3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex","Scene3d.Types.BackFaceSetting"],"MeshWithNormals":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, normal : Vector3d.Vector3d Quantity.Unitless coordinates }","WebGL.Mesh Scene3d.Types.VertexWithNormal","Scene3d.Types.BackFaceSetting"],"MeshWithUvs":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, uv : ( Basics.Float, Basics.Float ) }","WebGL.Mesh Scene3d.Types.VertexWithUv","Scene3d.Types.BackFaceSetting"],"MeshWithNormalsAndUvs":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, normal : Vector3d.Vector3d Quantity.Unitless coordinates, uv : ( Basics.Float, Basics.Float ) }","WebGL.Mesh Scene3d.Types.VertexWithNormalAndUv","Scene3d.Types.BackFaceSetting"],"MeshWithTangents":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","TriangularMesh.TriangularMesh { position : Point3d.Point3d Length.Meters coordinates, normal : Vector3d.Vector3d Quantity.Unitless coordinates, uv : ( Basics.Float, Basics.Float ), tangent : Vector3d.Vector3d Quantity.Unitless coordinates }","WebGL.Mesh Scene3d.Types.VertexWithTangent","Scene3d.Types.BackFaceSetting"],"LineSegments":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","List.List (LineSegment3d.LineSegment3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex"],"Polyline":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","Polyline3d.Polyline3d Length.Meters coordinates","WebGL.Mesh Scene3d.Types.PlainVertex"],"Points":["BoundingBox3d.BoundingBox3d Length.Meters coordinates","Basics.Float","List.List (Point3d.Point3d Length.Meters coordinates)","WebGL.Mesh Scene3d.Types.PlainVertex"]}},"Task.Parallel.Msg2":{"args":["a","b"],"tags":{"LoadedA2":["a"],"LoadedB2":["b"]}},"Pixels.Pixels":{"args":[],"tags":{"Pixels":[]}},"Geometry.Types.Point2d":{"args":["units","coordinates"],"tags":{"Point2d":["{ x : Basics.Float, y : Basics.Float }"]}},"Quantity.Quantity":{"args":["number","units"],"tags":{"Quantity":["number"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"Board.ScreenCoordinates":{"args":[],"tags":{"ScreenCoordinates":["Basics.Never"]}},"Duration.Seconds":{"args":[],"tags":{"Seconds":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Scene3d.Types.Texture":{"args":["value"],"tags":{"Constant":["value"],"Texture":["{ url : String.String, options : WebGL.Texture.Options, data : WebGL.Texture.Texture }"]}},"Json.Encode.Value":{"args":[],"tags":{"Value":[]}},"Board.WorldCoordinates":{"args":[],"tags":{"WorldCoordinates":["Basics.Never"]}},"Board.Axis":{"args":[],"tags":{"PositiveX":[],"NegativeX":[],"PositiveY":[],"NegativeY":[],"PositiveZ":[],"NegativeZ":[]}},"Scene3d.Types.BackFaceSetting":{"args":[],"tags":{"KeepBackFaces":[],"CullBackFaces":[]}},"WebGL.Texture.Bigger":{"args":[],"tags":{"Bigger":[]}},"Geometry.Types.BoundingBox3d":{"args":["units","coordinates"],"tags":{"BoundingBox3d":["{ minX : Basics.Float, maxX : Basics.Float, minY : Basics.Float, maxY : Basics.Float, minZ : Basics.Float, maxZ : Basics.Float }"]}},"Geometry.Types.LineSegment3d":{"args":["units","coordinates"],"tags":{"LineSegment3d":["( Geometry.Types.Point3d units coordinates, Geometry.Types.Point3d units coordinates )"]}},"List.List":{"args":["a"],"tags":{}},"WebGL.Mesh":{"args":["attributes"],"tags":{"Mesh1":["WebGL.RenderInfo","List.List attributes"],"Mesh2":["WebGL.RenderInfo","List.List ( attributes, attributes )"],"Mesh3":["WebGL.RenderInfo","List.List ( attributes, attributes, attributes )"],"MeshIndexed3":["WebGL.RenderInfo","List.List attributes","List.List ( Basics.Int, Basics.Int, Basics.Int )"]}},"Length.Meters":{"args":[],"tags":{"Meters":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}},"Geometry.Types.Point3d":{"args":["units","coordinates"],"tags":{"Point3d":["{ x : Basics.Float, y : Basics.Float, z : Basics.Float }"]}},"Geometry.Types.Polyline3d":{"args":["units","coordinates"],"tags":{"Polyline3d":["List.List (Geometry.Types.Point3d units coordinates)"]}},"WebGL.Texture.Resize":{"args":["a"],"tags":{"Resize":["Basics.Int"]}},"WebGL.Texture.Smaller":{"args":[],"tags":{"Smaller":[]}},"WebGL.Texture.Texture":{"args":[],"tags":{"Texture":[]}},"Geometry.Types.Triangle3d":{"args":["units","coordinates"],"tags":{"Triangle3d":["( Geometry.Types.Point3d units coordinates, Geometry.Types.Point3d units coordinates, Geometry.Types.Point3d units coordinates )"]}},"TriangularMesh.TriangularMesh":{"args":["vertex"],"tags":{"TriangularMesh":["{ vertices : Array.Array vertex, faceIndices : List.List ( Basics.Int, Basics.Int, Basics.Int ) }"]}},"Quantity.Unitless":{"args":[],"tags":{"Unitless":[]}},"Math.Vector2.Vec2":{"args":[],"tags":{"Vec2":[]}},"Math.Vector3.Vec3":{"args":[],"tags":{"Vec3":[]}},"Geometry.Types.Vector3d":{"args":["units","coordinates"],"tags":{"Vector3d":["{ x : Basics.Float, y : Basics.Float, z : Basics.Float }"]}},"WebGL.Texture.Wrap":{"args":[],"tags":{"Wrap":["Basics.Int"]}},"Array.Array":{"args":["a"],"tags":{"Array_elm_builtin":["Basics.Int","Basics.Int","Array.Tree a","Elm.JsArray.JsArray a"]}},"Elm.JsArray.JsArray":{"args":["a"],"tags":{"JsArray":["a"]}},"Array.Node":{"args":["a"],"tags":{"SubTree":["Array.Tree a"],"Leaf":["Elm.JsArray.JsArray a"]}}}}})}});}(this));
