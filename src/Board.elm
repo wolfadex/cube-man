@@ -1457,6 +1457,8 @@ type alias Level =
     , enemies : List Enemy
     , hearts : Int
     , invincibleFrames : Duration
+    , totalCapturePoints : Int
+    , capturedPoints : Int
     }
 
 
@@ -1484,6 +1486,8 @@ emptyLevel =
     , enemies = []
     , hearts = 6
     , invincibleFrames = Duration.seconds 0
+    , totalCapturePoints = 0
+    , capturedPoints = 0
     }
 
 
@@ -1494,11 +1498,27 @@ init board =
             Nothing
 
         Just spawnFrame ->
+            let
+                optimizedBoard =
+                    optimize board
+            in
             Just
                 { emptyLevel
-                    | board = optimize board
+                    | board = optimizedBoard
                     , playerFrame = spawnFrame
-                    , playerTarget = initTarget board Forward spawnFrame
+                    , playerTarget = initTarget optimizedBoard Forward spawnFrame
+                    , totalCapturePoints =
+                        Dict.foldl
+                            (\_ block total ->
+                                case block of
+                                    PointPickup _ ->
+                                        total + 1
+
+                                    _ ->
+                                        total
+                            )
+                            0
+                            optimizedBoard.blocks
                 }
 
 
@@ -1789,56 +1809,86 @@ viewStats level =
         , Html.Attributes.style "top" "0"
         , Html.Attributes.style "left" "0"
         , Html.Attributes.style "display" "flex"
-        , Html.Attributes.style "gap" "1rem"
-        , Html.Attributes.style "color" "white"
+        , Html.Attributes.style "flex-direction" "column"
+        , Html.Attributes.style "align-items" "flex-start"
+        , Html.Attributes.style "gap" "0.5rem"
         ]
-        [ Html.h3
-            [ Html.Attributes.style "margin" "0"
+        [ Html.div
+            [ Html.Attributes.style "display" "flex"
+            , Html.Attributes.style "justify-content" "center"
+            , Html.Attributes.style "gap" "1rem"
+            , Html.Attributes.style "color" "white"
+            , Html.Attributes.style "font-size" "1.5rem"
             ]
-            [ Html.text ("Score: " ++ String.fromInt level.score) ]
-        , let
-            fullHearts =
-                level.hearts // 2
-
-            brokenHearts =
-                level.hearts |> remainderBy 2
-          in
-          List.range 0 (fullHearts - 1)
-            |> List.map
-                (\_ ->
-                    Phosphor.heart Phosphor.Fill
-                        |> Phosphor.toHtml []
-                )
-            |> (\hearts ->
-                    if brokenHearts == 1 then
-                        (Phosphor.heartBreak Phosphor.Fill
-                            |> Phosphor.toHtml []
-                        )
-                            :: hearts
-
-                    else
-                        hearts
-               )
-            |> Html.div
-                [ Html.Attributes.style "color" "red"
+            [ Html.h3
+                [ Html.Attributes.style "margin" "0"
                 , Html.Attributes.style "display" "flex"
-                , Html.Attributes.style "flex-direction" "row-reverse"
-                , Html.Attributes.style "gap" "0.5rem"
+                , Html.Attributes.style "align-items" "center"
                 ]
+                [ Html.text ("Score: " ++ String.fromInt level.score) ]
+            , let
+                fullHearts =
+                    level.hearts // 2
+
+                brokenHearts =
+                    level.hearts |> remainderBy 2
+              in
+              List.range 0 (fullHearts - 1)
+                |> List.map
+                    (\_ ->
+                        Phosphor.heart Phosphor.Fill
+                            |> Phosphor.toHtml []
+                    )
+                |> (\hearts ->
+                        if brokenHearts == 1 then
+                            (Phosphor.heartBreak Phosphor.Fill
+                                |> Phosphor.toHtml []
+                            )
+                                :: hearts
+
+                        else
+                            hearts
+                   )
+                |> Html.div
+                    [ Html.Attributes.style "color" "red"
+                    , Html.Attributes.style "display" "flex"
+                    , Html.Attributes.style "flex-direction" "row-reverse"
+                    , Html.Attributes.style "gap" "0.5rem"
+                    , Html.Attributes.style "font-size" "2rem"
+                    ]
+            ]
+        , let
+            pointsCapturedPercent =
+                toFloat level.capturedPoints / toFloat level.totalCapturePoints * 100
+          in
+          Html.div
+            [ Html.Attributes.style "background"
+                ("linear-gradient(to right, yellow, yellow "
+                    ++ String.fromFloat pointsCapturedPercent
+                    ++ "%, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) "
+                    ++ String.fromFloat (min 100 (pointsCapturedPercent + 7))
+                    ++ "%)"
+                )
+            , Html.Attributes.style "height" "1rem"
+            , Html.Attributes.style "width" "20rem"
+            , Html.Attributes.style "border-radius" "2rem"
+            , Html.Attributes.style "border" "3px solid yellow"
+            ]
+            []
         ]
 
 
 scorePoints : Level -> Level
-scorePoints boardLike =
+scorePoints level =
     let
         playerActualPoint =
-            Frame3d.originPoint boardLike.playerFrame
+            Frame3d.originPoint level.playerFrame
 
         playerBoardPoint =
             point3dToPoint playerActualPoint
 
         blockAtPoint =
-            Dict.get playerBoardPoint boardLike.board.blocks
+            Dict.get playerBoardPoint level.board.blocks
     in
     if blockAtPoint == Just (PointPickup False) then
         let
@@ -1851,9 +1901,9 @@ scorePoints boardLike =
         if Quantity.equalWithin (Length.meters 0.25) distFromBoardPointCenter (Length.meters 0) then
             let
                 board =
-                    boardLike.board
+                    level.board
             in
-            { boardLike
+            { level
                 | board =
                     { board
                         | blocks =
@@ -1861,14 +1911,15 @@ scorePoints boardLike =
                                 (PointPickup True)
                                 board.blocks
                     }
-                , score = boardLike.score + 50
+                , score = level.score + 50
+                , capturedPoints = level.capturedPoints + 1
             }
 
         else
-            boardLike
+            level
 
     else
-        boardLike
+        level
 
 
 correctPlayerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates } -> Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
