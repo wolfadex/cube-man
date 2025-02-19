@@ -1,4 +1,15 @@
-module Screen.Editor exposing (BlockEditMode(..), CameraMode(..), EditorMode(..), EditorMouseInteraction(..), Model, Msg(..), init, subscriptions, update, view)
+module Screen.Editor exposing
+    ( BlockEditMode
+    , CameraMode
+    , EditorMode
+    , EditorMouseInteraction
+    , Model
+    , Msg
+    , init
+    , subscriptions
+    , update
+    , view
+    )
 
 import Angle exposing (Angle)
 import Animation exposing (Animation)
@@ -7,13 +18,16 @@ import Axis3d.Extra
 import Block3d
 import Board exposing (Board)
 import BoundingBox3d
+import Browser.Dom
 import Browser.Events
 import Camera3d exposing (Camera3d)
 import Color exposing (Color)
 import Cone3d
+import Cylinder3d
 import Dict
 import Direction3d
-import Frame3d exposing (Frame3d)
+import Duration exposing (Duration)
+import Frame3d
 import Html exposing (Html)
 import Html.Attributes
 import Html.Attributes.Extra
@@ -37,7 +51,7 @@ import Rectangle2d
 import Scene3d
 import Scene3d.Light
 import Scene3d.Material
-import Scene3d.Mesh
+import Screen exposing (Screen)
 import Serialize
 import Set exposing (Set)
 import Shared
@@ -49,12 +63,7 @@ import Viewpoint3d exposing (Viewpoint3d)
 
 
 type alias Model =
-    { board : Board
-    , score : Int
-    , playerFrame : Frame3d Length.Meters Board.WorldCoordinates { defines : Board.WorldCoordinates }
-    , playerFacing : Board.Facing
-    , playerWantFacing : Board.Facing
-    , playerMovingAcrossEdge : Maybe Angle
+    { level : Board.Level
 
     --
     , editorBoard : Undo.Stack Board
@@ -85,7 +94,7 @@ type alias Model =
     , editorMaxYRaw : String
     , editorMaxZRaw : String
     , showSettings : Bool
-    , screenSize : { width : Int, height : Int }
+    , screenSize : Maybe Shared.ScreenSize
     }
 
 
@@ -150,12 +159,11 @@ init =
       , zLowerVisible = 0
       , zUpperVisible = maxZ - 1
       , selectedBlockType = Board.Wall
-      , board = board
-      , score = 0
+      , level = Board.emptyLevel
       , editorBoard = Undo.init board
       , boardLoadError = Nothing
       , boardPlayError = Nothing
-      , screenSize = { width = 800, height = 600 }
+      , screenSize = Nothing
       , editorCursor = ( 0, 0, 0 )
       , editorKeysDown = Set.empty
       , cameraRotation = Angle.degrees 225
@@ -189,10 +197,6 @@ init =
             board
                 |> Serialize.encodeToJson Board.boardCodec
                 |> Json.Encode.encode 0
-      , playerFrame = Frame3d.atPoint (Point3d.meters 1 4 7)
-      , playerFacing = Board.Forward
-      , playerWantFacing = Board.Forward
-      , playerMovingAcrossEdge = Nothing
       , editorMaxXRaw = String.fromInt maxX
       , editorMaxYRaw = String.fromInt maxY
       , editorMaxZRaw = String.fromInt maxZ
@@ -200,46 +204,43 @@ init =
       -- , blockPalette = SimpleBlocks
       , showSettings = False
       }
-    , Cmd.none
+    , Browser.Dom.getViewportOf "editor-viewport"
+        |> Task.attempt EditorViewportResized
     )
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    if model.showSettings then
-        Sub.none
+subscriptions : { toSharedMsg : Shared.Msg -> msg, toMsg : Msg -> msg } -> Model -> Sub msg
+subscriptions { toSharedMsg, toMsg } model =
+    Sub.batch
+        [ Browser.Events.onResize (\width height -> Shared.SetScreenSize { width = width, height = height } |> toSharedMsg)
+        , if model.showSettings then
+            Sub.none
 
-    else
-        Sub.batch
-            [ Browser.Events.onAnimationFrameDelta Tick
-            , Browser.Events.onKeyPress decodeKeyPressed
-            , Browser.Events.onKeyDown decodeKeyDown
-            , Browser.Events.onKeyUp decodeKeyUp
-            ]
+          else
+            Sub.batch
+                [ Browser.Events.onKeyDown (decodeKeyDown toMsg)
+                , Browser.Events.onKeyUp (decodeKeyUp toMsg)
+                , Browser.Events.onAnimationFrameDelta (Duration.milliseconds >> Tick >> toMsg)
+                , Browser.Events.onResize (\_ _ -> toMsg BrowserResized)
+                ]
+        ]
 
 
-decodeKeyPressed : Json.Decode.Decoder Msg
-decodeKeyPressed =
-    Json.Decode.map KeyPressed
+decodeKeyDown : (Msg -> msg) -> Json.Decode.Decoder msg
+decodeKeyDown toMsg =
+    Json.Decode.map (KeyDown >> toMsg)
         (Json.Decode.field "key" Json.Decode.string)
 
 
-decodeKeyDown : Json.Decode.Decoder Msg
-decodeKeyDown =
-    Json.Decode.map KeyDown
-        (Json.Decode.field "key" Json.Decode.string)
-
-
-decodeKeyUp : Json.Decode.Decoder Msg
-decodeKeyUp =
-    Json.Decode.map KeyUp
+decodeKeyUp : (Msg -> msg) -> Json.Decode.Decoder msg
+decodeKeyUp toMsg =
+    Json.Decode.map (KeyUp >> toMsg)
         (Json.Decode.field "key" Json.Decode.string)
 
 
 type Msg
     = NoOp
-    | Tick Float
-    | KeyPressed String
+    | Tick Duration
     | KeyDown String
     | KeyUp String
     | MouseDown Json.Decode.Value
@@ -248,6 +249,7 @@ type Msg
     | EncodingChanged String
     | LoadEditorBoard String
     | ChangeMode
+    | RestartLevel
     | SetBlockEditMode BlockEditMode
     | SetCameraMode CameraMode
     | ResetCamera
@@ -266,6 +268,8 @@ type Msg
     | MaxZChanged String
     | ShowBoardBounds Bool
     | ShowSettings Bool
+    | EditorViewportResized (Result Browser.Dom.Error Browser.Dom.Viewport)
+    | BrowserResized
 
 
 update : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Msg -> Model -> ( Model, Cmd msg )
@@ -276,7 +280,7 @@ update toSharedMsg sharedModel toMsg msg model =
 
         Tick deltaMs ->
             ( model
-                |> tickPlayer deltaMs
+                |> tick deltaMs
             , Cmd.none
             )
 
@@ -325,6 +329,23 @@ update toSharedMsg sharedModel toMsg msg model =
                     , Cmd.none
                     )
 
+        RestartLevel ->
+            let
+                board =
+                    Undo.value model.editorBoard
+            in
+            case Board.init board of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just level ->
+                    ( { model
+                        | level = level
+                      }
+                    , Browser.Dom.getViewportOf "editor-viewport"
+                        |> Task.attempt (EditorViewportResized >> toMsg)
+                    )
+
         ChangeMode ->
             case model.editorMode of
                 EditBoard ->
@@ -332,29 +353,25 @@ update toSharedMsg sharedModel toMsg msg model =
                         board =
                             Undo.value model.editorBoard
                     in
-                    case Board.findSpawn board of
+                    case Board.init board of
                         Nothing ->
                             ( { model | boardPlayError = Just Board.MissingPlayerSpawn }, Cmd.none )
 
-                        Just spawnFrame ->
+                        Just level ->
                             ( { model
                                 | editorMode = TestGame
-                                , board = board
-                                , playerFrame = spawnFrame
-                                , score = 0
-                                , playerMovingAcrossEdge = Nothing
-                                , playerFacing = Board.Forward
-                                , playerWantFacing = Board.Forward
-                                , boardPlayError = Nothing
+                                , level = level
                               }
-                            , Cmd.none
+                            , Browser.Dom.getViewportOf "editor-viewport"
+                                |> Task.attempt (EditorViewportResized >> toMsg)
                             )
 
                 TestGame ->
                     ( { model
                         | editorMode = EditBoard
                       }
-                    , Cmd.none
+                    , Browser.Dom.getViewportOf "editor-viewport"
+                        |> Task.attempt (EditorViewportResized >> toMsg)
                     )
 
         SetBlockEditMode blockEditMode ->
@@ -376,7 +393,18 @@ update toSharedMsg sharedModel toMsg msg model =
             ( { model | mouseDragging = InteractionStart pointerId }, Cmd.none )
 
         KeyDown key ->
-            ( { model | editorKeysDown = Set.insert key model.editorKeysDown }, Cmd.none )
+            case model.editorMode of
+                EditBoard ->
+                    handleEditorKeyPressed toSharedMsg sharedModel toMsg key { model | editorKeysDown = Set.insert key model.editorKeysDown }
+
+                TestGame ->
+                    ( Board.handleGameKeyPressed
+                        (\m -> { m | showSettings = True })
+                        sharedModel.inputMapping
+                        key
+                        { model | editorKeysDown = Set.insert key model.editorKeysDown }
+                    , Cmd.none
+                    )
 
         KeyUp key ->
             ( { model | editorKeysDown = Set.remove key model.editorKeysDown }, Cmd.none )
@@ -429,6 +457,20 @@ update toSharedMsg sharedModel toMsg msg model =
                                                                     case block of
                                                                         Board.PlayerSpawn _ ->
                                                                             Board.Empty
+
+                                                                        _ ->
+                                                                            block
+                                                                )
+                                                            |> Dict.insert model.editorCursor
+                                                                model.selectedBlockType
+
+                                                    Board.EnemySpawner _ ->
+                                                        board.blocks
+                                                            |> Dict.map
+                                                                (\_ block ->
+                                                                    case block of
+                                                                        Board.EnemySpawner _ ->
+                                                                            Board.Wall
 
                                                                         _ ->
                                                                             block
@@ -733,13 +775,25 @@ update toSharedMsg sharedModel toMsg msg model =
         ShowSettings show ->
             showSettings show model
 
-        KeyPressed key ->
-            case model.editorMode of
-                EditBoard ->
-                    handleEditorKeyPressed toSharedMsg sharedModel toMsg key model
+        BrowserResized ->
+            ( model
+            , Browser.Dom.getViewportOf "editor-viewport"
+                |> Task.attempt (EditorViewportResized >> toMsg)
+            )
 
-                TestGame ->
-                    handleGameKeyPressed sharedModel key model
+        EditorViewportResized (Err _) ->
+            ( model, Cmd.none )
+
+        EditorViewportResized (Ok { viewport }) ->
+            ( { model
+                | screenSize =
+                    Just
+                        { width = round viewport.width
+                        , height = round viewport.height
+                        }
+              }
+            , Cmd.none
+            )
 
 
 moveCameraByMouse : Json.Encode.Value -> Point2d Pixels Board.ScreenCoordinates -> Model -> ( Model, Cmd msg )
@@ -821,123 +875,130 @@ moveCameraByMouse pointerId movement model =
 
 moveCursorByMouse : Point2d Pixels Board.ScreenCoordinates -> Model -> ( Model, Cmd msg )
 moveCursorByMouse offset model =
-    let
-        ray : Axis3d Length.Meters Board.WorldCoordinates
-        ray =
-            Camera3d.ray
-                (editorCamera model)
-                (Rectangle2d.from
-                    (Point2d.pixels 0 (toFloat model.screenSize.height))
-                    (Point2d.pixels (toFloat model.screenSize.width) 0)
-                )
-                offset
-
-        editorBoard =
-            Undo.value model.editorBoard
-
-        maybeIntersection =
-            Dict.foldl
-                (\point block maybeInter ->
-                    case block of
-                        Board.Empty ->
-                            maybeInter
-
-                        _ ->
-                            let
-                                ( x, y, z ) =
-                                    point
-                            in
-                            if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
-                                maybeInter
-
-                            else
-                                let
-                                    boundingBox =
-                                        BoundingBox3d.withDimensions
-                                            ( Length.meters 1, Length.meters 1, Length.meters 1 )
-                                            (Board.pointToPoint3d point)
-                                in
-                                case Axis3d.Extra.intersectionAxisAlignedBoundingBox3d ray boundingBox of
-                                    Nothing ->
-                                        maybeInter
-
-                                    Just intersection ->
-                                        let
-                                            newDist =
-                                                Point3d.distanceFrom (Axis3d.originPoint ray) (Axis3d.originPoint intersection)
-                                        in
-                                        case maybeInter of
-                                            Nothing ->
-                                                Just ( intersection, newDist )
-
-                                            Just ( _, prevDist ) ->
-                                                if newDist |> Quantity.lessThan prevDist then
-                                                    Just ( intersection, newDist )
-
-                                                else
-                                                    maybeInter
-                )
-                Nothing
-                editorBoard.blocks
-    in
-    case maybeIntersection of
+    case model.screenSize of
         Nothing ->
             ( model, Cmd.none )
 
-        Just ( intersection, _ ) ->
-            ( { model
-                | editorCursor =
-                    case model.blockEditMode of
-                        Remove ->
-                            Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
-                                |> Point3d.Extra.constrain
-                                    { min = Point3d.origin
-                                    , max =
-                                        Point3d.meters
-                                            (toFloat editorBoard.maxX - 1)
-                                            (toFloat editorBoard.maxY - 1)
-                                            (toFloat editorBoard.maxZ - 1)
-                                    }
-                                |> Board.point3dToPoint
+        Just screenSize ->
+            let
+                ray : Axis3d Length.Meters Board.WorldCoordinates
+                ray =
+                    Camera3d.ray
+                        (editorCamera model)
+                        (Rectangle2d.from
+                            (Point2d.pixels 0 (toFloat screenSize.height))
+                            (Point2d.pixels (toFloat screenSize.width) 0)
+                        )
+                        offset
 
-                        Add ->
-                            Point3d.along intersection (Length.meters 0.5)
-                                |> Point3d.Extra.constrain
-                                    { min = Point3d.origin
-                                    , max =
-                                        Point3d.meters
-                                            (toFloat editorBoard.maxX - 1)
-                                            (toFloat editorBoard.maxY - 1)
-                                            (toFloat editorBoard.maxZ - 1)
-                                    }
-                                |> Board.point3dToPoint
+                editorBoard =
+                    Undo.value model.editorBoard
 
-                        Select ->
-                            Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
-                                |> Point3d.Extra.constrain
-                                    { min = Point3d.origin
-                                    , max =
-                                        Point3d.meters
-                                            (toFloat editorBoard.maxX - 1)
-                                            (toFloat editorBoard.maxY - 1)
-                                            (toFloat editorBoard.maxZ - 1)
-                                    }
-                                |> Board.point3dToPoint
-              }
-            , Cmd.none
-            )
+                maybeIntersection =
+                    Dict.foldl
+                        (\point block maybeInter ->
+                            case block of
+                                Board.Empty ->
+                                    maybeInter
+
+                                _ ->
+                                    let
+                                        ( x, y, z ) =
+                                            point
+                                    in
+                                    if x < model.xLowerVisible || x > model.xUpperVisible || y < model.yLowerVisible || y > model.yUpperVisible || z < model.zLowerVisible || z > model.zUpperVisible then
+                                        maybeInter
+
+                                    else
+                                        let
+                                            boundingBox =
+                                                BoundingBox3d.withDimensions
+                                                    ( Length.meters 1, Length.meters 1, Length.meters 1 )
+                                                    (Board.pointToPoint3d point)
+                                        in
+                                        case Axis3d.Extra.intersectionAxisAlignedBoundingBox3d ray boundingBox of
+                                            Nothing ->
+                                                maybeInter
+
+                                            Just intersection ->
+                                                let
+                                                    newDist =
+                                                        Point3d.distanceFrom (Axis3d.originPoint ray) (Axis3d.originPoint intersection)
+                                                in
+                                                case maybeInter of
+                                                    Nothing ->
+                                                        Just ( intersection, newDist )
+
+                                                    Just ( _, prevDist ) ->
+                                                        if newDist |> Quantity.lessThan prevDist then
+                                                            Just ( intersection, newDist )
+
+                                                        else
+                                                            maybeInter
+                        )
+                        Nothing
+                        editorBoard.blocks
+            in
+            case maybeIntersection of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just ( intersection, _ ) ->
+                    ( { model
+                        | editorCursor =
+                            case model.blockEditMode of
+                                Remove ->
+                                    Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
+                                        |> Point3d.Extra.constrain
+                                            { min = Point3d.origin
+                                            , max =
+                                                Point3d.meters
+                                                    (toFloat editorBoard.maxX - 1)
+                                                    (toFloat editorBoard.maxY - 1)
+                                                    (toFloat editorBoard.maxZ - 1)
+                                            }
+                                        |> Board.point3dToPoint
+
+                                Add ->
+                                    Point3d.along intersection (Length.meters 0.5)
+                                        |> Point3d.Extra.constrain
+                                            { min = Point3d.origin
+                                            , max =
+                                                Point3d.meters
+                                                    (toFloat editorBoard.maxX - 1)
+                                                    (toFloat editorBoard.maxY - 1)
+                                                    (toFloat editorBoard.maxZ - 1)
+                                            }
+                                        |> Board.point3dToPoint
+
+                                Select ->
+                                    Point3d.along (Axis3d.reverse intersection) (Length.meters 0.5)
+                                        |> Point3d.Extra.constrain
+                                            { min = Point3d.origin
+                                            , max =
+                                                Point3d.meters
+                                                    (toFloat editorBoard.maxX - 1)
+                                                    (toFloat editorBoard.maxY - 1)
+                                                    (toFloat editorBoard.maxZ - 1)
+                                            }
+                                        |> Board.point3dToPoint
+                      }
+                    , Cmd.none
+                    )
 
 
-tickPlayer : Float -> Model -> Model
-tickPlayer deltaMs model =
+tick : Duration -> Model -> Model
+tick deltaMs model =
     case model.editorMode of
         EditBoard ->
             model
 
         TestGame ->
-            model
-                |> Board.setPlayerFacing
-                |> Board.movePlayer deltaMs
+            { model
+                | level =
+                    model.level
+                        |> Board.tick deltaMs
+            }
 
 
 handleEditorKeyPressed : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> String -> Model -> ( Model, Cmd msg )
@@ -972,6 +1033,9 @@ handleEditorKeyPressed toSharedMsg sharedModel _ key model =
     else if Input.isInputKey sharedModel.inputMapping.blockTypePointPickup key then
         ( { model | selectedBlockType = Board.PointPickup False }, Cmd.none )
 
+    else if Input.isInputKey sharedModel.inputMapping.blockTypeEnemySpawner key then
+        ( { model | selectedBlockType = Board.EnemySpawner Board.defaultEnemySpawnerDetails }, Cmd.none )
+
     else if Input.isInputKey sharedModel.inputMapping.blockTypePlayerSpawn key then
         ( { model | selectedBlockType = Board.PlayerSpawn { forward = Board.PositiveX, left = Board.PositiveY } }, Cmd.none )
 
@@ -985,16 +1049,6 @@ handleEditorKeyPressed toSharedMsg sharedModel _ key model =
         showSettings (not model.showSettings) model
 
     else if key == "p" then
-        -- ( { model
-        --     | blockPalette =
-        --         case model.blockPalette of
-        --             Board.SimpleBlocks ->
-        --                 Board.RainbowBlocks
-        --             Board.RainbowBlocks ->
-        --                 Board.SimpleBlocks
-        --   }
-        -- , Cmd.none
-        -- )
         ( model
         , (Shared.SetBlockPalette <|
             case sharedModel.blockPalette of
@@ -1006,6 +1060,11 @@ handleEditorKeyPressed toSharedMsg sharedModel _ key model =
           )
             |> Task.succeed
             |> Task.perform toSharedMsg
+        )
+
+    else if key == "Escape" then
+        ( { model | showSettings = True }
+        , Cmd.none
         )
 
     else
@@ -1057,35 +1116,17 @@ redo model =
     )
 
 
-handleGameKeyPressed : Shared.LoadedModel -> String -> Model -> ( Model, Cmd msg )
-handleGameKeyPressed sharedModel key model =
-    if Input.isInputKey sharedModel.inputMapping.moveUp key then
-        ( { model | playerWantFacing = Board.Forward }, Cmd.none )
-
-    else if Input.isInputKey sharedModel.inputMapping.moveDown key then
-        ( { model | playerWantFacing = Board.Backward }, Cmd.none )
-
-    else if Input.isInputKey sharedModel.inputMapping.moveLeft key then
-        ( { model | playerWantFacing = Board.Left }, Cmd.none )
-
-    else if Input.isInputKey sharedModel.inputMapping.moveRight key then
-        ( { model | playerWantFacing = Board.Right }, Cmd.none )
-
-    else
-        ( model, Cmd.none )
-
-
-view : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> List (Html msg)
-view toSharedMsg sharedModel toMsg model =
+view : { setScreen : Screen -> msg, toSharedMsg : Shared.Msg -> msg, sharedModel : Shared.LoadedModel, toMsg : Msg -> msg, model : Model } -> List (Html msg)
+view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
     [ Html.div
         [ Html.Attributes.style "display" "grid"
         , Html.Attributes.style "grid-template-columns" <|
             case model.editorMode of
                 EditBoard ->
-                    "auto auto"
+                    "calc(100vw - 25rem) 25rem"
 
                 TestGame ->
-                    "auto 8rem"
+                    "calc(100vw - 10rem) 10rem"
         , Html.Attributes.style "grid-template-rows" <|
             case model.editorMode of
                 EditBoard ->
@@ -1093,9 +1134,19 @@ view toSharedMsg sharedModel toMsg model =
 
                 TestGame ->
                     "auto"
+        , Html.Attributes.style "width" "100vw"
         ]
         [ Html.div
-            ([ Html.Attributes.style "grid-column" <|
+            ([ Html.Attributes.id "editor-viewport"
+             , case model.editorMode of
+                EditBoard ->
+                    Html.Attributes.class ""
+
+                TestGame ->
+                    Html.Attributes.style "width" <|
+                        -- "calc(100vw - 25rem)"
+                        "100vw"
+             , Html.Attributes.style "grid-column" <|
                 case model.editorMode of
                     EditBoard ->
                         "1"
@@ -1130,109 +1181,122 @@ view toSharedMsg sharedModel toMsg model =
                             ]
                    )
             )
-            [ let
-                lights =
-                    case model.editorMode of
-                        TestGame ->
-                            Board.gameLights
+            [ case model.screenSize of
+                Nothing ->
+                    Html.div [] [ Html.text "Loading..." ]
 
-                        EditBoard ->
-                            let
-                                sun =
-                                    Scene3d.Light.directional (Scene3d.Light.castsShadows True)
-                                        { direction =
-                                            Direction3d.negativeZ
-                                                |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
-                                                |> Direction3d.rotateAround Axis3d.z
-                                                    (model.cameraRotation
-                                                        |> Quantity.plus (Angle.degrees 90)
-                                                    )
-                                        , intensity = Illuminance.lux 80000
-                                        , chromaticity = Scene3d.Light.sunlight
-                                        }
+                Just screenSize ->
+                    let
+                        lights =
+                            case model.editorMode of
+                                TestGame ->
+                                    Board.gameLights model.level.board (Frame3d.originPoint model.level.playerFrame)
 
-                                sky =
-                                    Scene3d.Light.overhead
-                                        { upDirection = Direction3d.positiveZ
-                                        , chromaticity = Scene3d.Light.skylight
-                                        , intensity = Illuminance.lux 20000
-                                        }
+                                EditBoard ->
+                                    let
+                                        sun =
+                                            Scene3d.Light.directional (Scene3d.Light.castsShadows True)
+                                                { direction =
+                                                    Direction3d.negativeZ
+                                                        |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
+                                                        |> Direction3d.rotateAround Axis3d.z
+                                                            (model.cameraRotation
+                                                                |> Quantity.plus (Angle.degrees 90)
+                                                            )
+                                                , intensity = Illuminance.lux 80000
+                                                , chromaticity = Scene3d.Light.sunlight
+                                                }
 
-                                upsideDownSky =
-                                    Scene3d.Light.overhead
-                                        { upDirection = Direction3d.negativeZ
-                                        , chromaticity = Scene3d.Light.skylight
-                                        , intensity = Illuminance.lux 40000
-                                        }
+                                        sky =
+                                            Scene3d.Light.overhead
+                                                { upDirection = Direction3d.positiveZ
+                                                , chromaticity = Scene3d.Light.skylight
+                                                , intensity = Illuminance.lux 20000
+                                                }
 
-                                environment =
-                                    Scene3d.Light.overhead
-                                        { upDirection = Direction3d.reverse Direction3d.positiveZ
-                                        , chromaticity = Scene3d.Light.daylight
-                                        , intensity = Illuminance.lux 15000
-                                        }
-                            in
-                            Scene3d.fourLights sun sky environment upsideDownSky
-              in
-              Board.view3dScene
-                lights
-                model.screenSize
-                (case model.editorMode of
-                    TestGame ->
-                        Board.gamePlayCamera model.playerFrame
+                                        upsideDownSky =
+                                            Scene3d.Light.overhead
+                                                { upDirection = Direction3d.negativeZ
+                                                , chromaticity = Scene3d.Light.skylight
+                                                , intensity = Illuminance.lux 40000
+                                                }
 
-                    EditBoard ->
-                        editorCamera model
-                )
-                (case model.editorMode of
-                    EditBoard ->
-                        let
-                            editorBoard =
-                                model.editorBoard
-                                    |> Undo.value
-                        in
-                        List.concat
-                            [ editorBoard.blocks
-                                |> Dict.toList
-                                |> List.map (viewBlock sharedModel editorBoard model)
-                            , [ viewCursor
-                                    (case model.blockEditMode of
-                                        Select ->
-                                            Color.white
+                                        environment =
+                                            Scene3d.Light.overhead
+                                                { upDirection = Direction3d.reverse Direction3d.positiveZ
+                                                , chromaticity = Scene3d.Light.daylight
+                                                , intensity = Illuminance.lux 15000
+                                                }
+                                    in
+                                    Scene3d.fourLights sun sky environment upsideDownSky
+                    in
+                    Board.view3dScene
+                        lights
+                        (case model.editorMode of
+                            TestGame ->
+                                sharedModel.screenSize
 
-                                        Remove ->
-                                            Color.red
+                            EditBoard ->
+                                screenSize
+                        )
+                        (case model.editorMode of
+                            TestGame ->
+                                Board.gamePlayCamera model.level.playerFrame
 
-                                        Add ->
-                                            Color.green
-                                    )
-                                    model.cursorBounce
-                                    model.editorCursor
-                              , viewOrientationArrows
-                              , case model.selectedBlock of
-                                    Nothing ->
-                                        Scene3d.nothing
+                            EditBoard ->
+                                editorCamera model
+                        )
+                        (case model.editorMode of
+                            EditBoard ->
+                                let
+                                    editorBoard =
+                                        model.editorBoard
+                                            |> Undo.value
+                                in
+                                List.concat
+                                    [ editorBoard.blocks
+                                        |> Dict.toList
+                                        |> List.map (viewBlock sharedModel editorBoard model)
+                                    , [ viewCursor
+                                            (case model.blockEditMode of
+                                                Select ->
+                                                    Color.white
 
-                                    Just ( point, _ ) ->
-                                        viewCursor Color.yellow model.cursorBounce point
-                              , if model.showBoardBounds then
-                                    viewBounds editorBoard
+                                                Remove ->
+                                                    Color.red
 
-                                else
-                                    Scene3d.nothing
-                              ]
-                            ]
+                                                Add ->
+                                                    Color.green
+                                            )
+                                            model.cursorBounce
+                                            model.editorCursor
+                                      , viewOrientationArrows
+                                      , case model.selectedBlock of
+                                            Nothing ->
+                                                Scene3d.nothing
 
-                    TestGame ->
-                        List.concat
-                            [ model.board.blocks
-                                |> Dict.toList
-                                |> List.map (viewBlock sharedModel model.board model)
-                            , [ Board.viewPlayer model.playerFacing model.playerFrame ]
-                            ]
-                )
+                                            Just ( point, _ ) ->
+                                                viewCursor Color.yellow model.cursorBounce point
+                                      , if model.showBoardBounds then
+                                            viewBounds editorBoard
+
+                                        else
+                                            Scene3d.nothing
+                                      ]
+                                    ]
+
+                            TestGame ->
+                                List.concat
+                                    [ model.level.board.blocks
+                                        |> Dict.toList
+                                        |> List.map Board.viewBlock
+                                    , [ Board.viewPlayer model.level ]
+                                    , List.map Board.viewEnemy model.level.enemies
+                                    ]
+                        )
             ]
-        , viewHeader toSharedMsg sharedModel toMsg model
+        , viewHeader setScreen toSharedMsg sharedModel toMsg model
+        , viewSettings toSharedMsg sharedModel toMsg model
         , case model.editorMode of
             TestGame ->
                 Html.div
@@ -1240,12 +1304,44 @@ view toSharedMsg sharedModel toMsg model =
                     , Html.Attributes.style "grid-row" "1"
                     , Html.Attributes.style "padding" "0.5rem"
                     ]
-                    [ Html.button
-                        [ Html.Attributes.type_ "button"
-                        , Html.Events.onClick (toMsg ChangeMode)
+                    [ Html.div
+                        [ Html.Attributes.style "display" "flex"
+                        , Html.Attributes.style "gap" "1rem"
+                        , Html.Attributes.style "align-items" "flex-start"
                         ]
-                        [ Html.text "Edit Level"
+                        [ Html.button
+                            [ Html.Attributes.type_ "button"
+                            , Html.Events.onClick (toMsg (ShowSettings True))
+                            , Html.Attributes.title ("Settings - " ++ Input.viewInputKeyHoverText sharedModel.inputMapping.toggleSettings)
+                            ]
+                            [ Phosphor.gear Phosphor.Regular
+                                |> Phosphor.toHtml []
+                            ]
+                        , Html.button
+                            [ Html.Attributes.type_ "button"
+                            , Html.Events.onClick (toMsg ChangeMode)
+                            ]
+                            [ Html.text "Edit Level"
+                            ]
                         ]
+                    , Board.viewGameOver model.level
+                        (Html.div
+                            [ Html.Attributes.style "display" "flex"
+                            , Html.Attributes.style "flex-direction" "column"
+                            , Html.Attributes.style "gap" "0.5rem"
+                            ]
+                            [ Html.button
+                                [ Html.Attributes.type_ "button"
+                                , Html.Events.onClick (toMsg RestartLevel)
+                                ]
+                                [ Html.text "Restart" ]
+                            , Html.button
+                                [ Html.Attributes.type_ "button"
+                                , Html.Events.onClick (toMsg ChangeMode)
+                                ]
+                                [ Html.text "Edit" ]
+                            ]
+                        )
                     ]
 
             EditBoard ->
@@ -1259,6 +1355,7 @@ view toSharedMsg sharedModel toMsg model =
                     , Html.Attributes.style "grid-row" "2"
                     , Html.Attributes.style "padding" "0.5rem"
                     , Html.Attributes.style "height" "80vh"
+                    , Html.Attributes.style "width" "25rem"
                     , Html.Attributes.style "overflow" "auto"
                     ]
                     [ case model.selectedBlock of
@@ -1278,6 +1375,27 @@ view toSharedMsg sharedModel toMsg model =
 
                                 Board.PointPickup _ ->
                                     Html.span [] [ Html.text "Point Pickup" ]
+
+                                Board.EnemySpawner details ->
+                                    Html.form
+                                        []
+                                        [ Html.span [] [ Html.text "Enemy Spawner" ]
+                                        , Html.br [] []
+                                        , Html.label []
+                                            [ Html.span [] [ Html.text "Seconds betwwen spawns " ]
+                                            , Html.input
+                                                [ Html.Attributes.type_ "number"
+                                                , Html.Attributes.min "0.5"
+                                                , Html.Attributes.max "10"
+                                                , Html.Attributes.step "0.5"
+                                                , details.timeBetweenSpawns
+                                                    |> Duration.inSeconds
+                                                    |> String.fromFloat
+                                                    |> Html.Attributes.value
+                                                ]
+                                                []
+                                            ]
+                                        ]
 
                                 Board.PlayerSpawn details ->
                                     Html.form
@@ -1536,6 +1654,391 @@ view toSharedMsg sharedModel toMsg model =
     ]
 
 
+viewSettings : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> Html msg
+viewSettings toSharedMsg sharedModel toMsg model =
+    Html.Extra.modal { open = model.showSettings, onClose = toMsg (ShowSettings False) }
+        []
+        [ Html.h2
+            [ Html.Attributes.style "width" "100%"
+            , Html.Attributes.style "margin-top" "0"
+            ]
+            [ Html.text "Settings"
+            , Html.button
+                [ Html.Attributes.style "float" "right"
+                , Html.Attributes.style "background" "none"
+                , Html.Attributes.type_ "button"
+                , Html.Attributes.title "Close"
+                , Html.Events.onClick (toMsg (ShowSettings False))
+                ]
+                [ Phosphor.xCircle Phosphor.Regular
+                    |> Phosphor.toHtml []
+                ]
+            ]
+        , Html.span [] [ Html.text "Hold 'Shift' and move mouse to use camera actions (orbit, pan, zoom)" ]
+        , Html.br [] []
+        , Html.br [] []
+        , let
+            viewMapping =
+                Input.viewMapping (Shared.SetMapping >> toSharedMsg)
+          in
+          Html.table
+            []
+            [ Html.thead []
+                [ Html.tr []
+                    [ Html.th [ Html.Attributes.attribute "align" "left" ] [ Html.text "Input" ]
+                    , Html.th [] [ Html.text "Primary Key" ]
+                    , Html.th [] [ Html.text "Secondary Key" ]
+                    ]
+                ]
+            , Html.tbody []
+                (Html.tr []
+                    [ Html.th [] [ Html.h3 [] [ Html.text "Character Movement" ] ]
+                    ]
+                    :: List.map viewMapping
+                        [ { label = "Face up"
+                          , keys = sharedModel.inputMapping.moveUp
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.moveUp
+                                    in
+                                    { inputMapping | moveUp = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.moveUp
+                                    in
+                                    { inputMapping | moveUp = ( primary, key ) }
+                          }
+                        , { label = "Face down"
+                          , keys = sharedModel.inputMapping.moveDown
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.moveDown
+                                    in
+                                    { inputMapping | moveDown = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.moveDown
+                                    in
+                                    { inputMapping | moveDown = ( primary, key ) }
+                          }
+                        , { label = "Face left"
+                          , keys = sharedModel.inputMapping.moveLeft
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.moveLeft
+                                    in
+                                    { inputMapping | moveLeft = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.moveLeft
+                                    in
+                                    { inputMapping | moveLeft = ( primary, key ) }
+                          }
+                        , { label = "Face right"
+                          , keys = sharedModel.inputMapping.moveRight
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.moveRight
+                                    in
+                                    { inputMapping | moveRight = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.moveRight
+                                    in
+                                    { inputMapping | moveRight = ( primary, key ) }
+                          }
+                        ]
+                    ++ [ Html.tr []
+                            [ Html.th [] [ Html.h3 [] [ Html.text "Editor" ] ]
+                            ]
+                       , Html.tr []
+                            [ Html.th [] [ Html.text "Camera" ]
+                            ]
+                       ]
+                    ++ List.map viewMapping
+                        [ { label = "Orbit"
+                          , keys = sharedModel.inputMapping.cameraOrbit
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.cameraOrbit
+                                    in
+                                    { inputMapping | cameraOrbit = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.cameraOrbit
+                                    in
+                                    { inputMapping | cameraOrbit = ( primary, key ) }
+                          }
+                        , { label = "Pan"
+                          , keys = sharedModel.inputMapping.cameraPan
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.cameraPan
+                                    in
+                                    { inputMapping | cameraPan = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.cameraPan
+                                    in
+                                    { inputMapping | cameraPan = ( primary, key ) }
+                          }
+                        , { label = "Zoom"
+                          , keys = sharedModel.inputMapping.cameraZoom
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.cameraZoom
+                                    in
+                                    { inputMapping | cameraZoom = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.cameraZoom
+                                    in
+                                    { inputMapping | cameraZoom = ( primary, key ) }
+                          }
+                        , { label = "Reset"
+                          , keys = sharedModel.inputMapping.cameraReset
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.cameraReset
+                                    in
+                                    { inputMapping | cameraReset = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.cameraReset
+                                    in
+                                    { inputMapping | cameraReset = ( primary, key ) }
+                          }
+                        ]
+                    ++ [ Html.tr []
+                            [ Html.th [] [ Html.text "Block Edit" ]
+                            ]
+                       ]
+                    ++ List.map viewMapping
+                        [ { label = "Select"
+                          , keys = sharedModel.inputMapping.blockSelect
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.blockSelect
+                                    in
+                                    { inputMapping | blockSelect = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.blockSelect
+                                    in
+                                    { inputMapping | blockSelect = ( primary, key ) }
+                          }
+                        , { label = "Add"
+                          , keys = sharedModel.inputMapping.blockAdd
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.blockAdd
+                                    in
+                                    { inputMapping | blockAdd = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.blockAdd
+                                    in
+                                    { inputMapping | blockAdd = ( primary, key ) }
+                          }
+                        , { label = "Remove"
+                          , keys = sharedModel.inputMapping.blockRemove
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.blockRemove
+                                    in
+                                    { inputMapping | blockRemove = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.blockRemove
+                                    in
+                                    { inputMapping | blockRemove = ( primary, key ) }
+                          }
+                        ]
+                    ++ [ Html.tr []
+                            [ Html.th [] [ Html.text "Block Type" ]
+                            ]
+                       ]
+                    ++ List.map viewMapping
+                        [ { label = "Wall"
+                          , keys = sharedModel.inputMapping.blockTypeWall
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.blockTypeWall
+                                    in
+                                    { inputMapping | blockTypeWall = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.blockTypeWall
+                                    in
+                                    { inputMapping | blockTypeWall = ( primary, key ) }
+                          }
+                        , { label = "Edge"
+                          , keys = sharedModel.inputMapping.blockTypeEdge
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.blockTypeEdge
+                                    in
+                                    { inputMapping | blockTypeEdge = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.blockTypeEdge
+                                    in
+                                    { inputMapping | blockTypeEdge = ( primary, key ) }
+                          }
+                        , { label = "Point Pickup"
+                          , keys = sharedModel.inputMapping.blockTypePointPickup
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.blockTypePointPickup
+                                    in
+                                    { inputMapping | blockTypePointPickup = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.blockTypePointPickup
+                                    in
+                                    { inputMapping | blockTypePointPickup = ( primary, key ) }
+                          }
+                        , { label = "Player Spawn"
+                          , keys = sharedModel.inputMapping.blockTypePlayerSpawn
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.blockTypePlayerSpawn
+                                    in
+                                    { inputMapping | blockTypePlayerSpawn = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.blockTypePlayerSpawn
+                                    in
+                                    { inputMapping | blockTypePlayerSpawn = ( primary, key ) }
+                          }
+                        ]
+                    ++ [ Html.tr []
+                            [ Html.th [] [ Html.text "Undo / Redo" ]
+                            ]
+                       ]
+                    ++ List.map viewMapping
+                        [ { label = "Undo"
+                          , keys = sharedModel.inputMapping.undo
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.undo
+                                    in
+                                    { inputMapping | undo = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.undo
+                                    in
+                                    { inputMapping | undo = ( primary, key ) }
+                          }
+                        , { label = "Redo"
+                          , keys = sharedModel.inputMapping.redo
+                          , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.redo
+                                    in
+                                    { inputMapping | redo = ( key, secondary ) }
+                          , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.redo
+                                    in
+                                    { inputMapping | redo = ( primary, key ) }
+                          }
+                        ]
+                    ++ [ Html.tr []
+                            [ Html.th [] [ Html.text "Other" ]
+                            ]
+                       , viewMapping
+                            { label = "Open Settings"
+                            , keys = sharedModel.inputMapping.toggleSettings
+                            , setPrimary =
+                                \key inputMapping ->
+                                    let
+                                        ( _, secondary ) =
+                                            inputMapping.toggleSettings
+                                    in
+                                    { inputMapping | toggleSettings = ( key, secondary ) }
+                            , setSecondary =
+                                \key inputMapping ->
+                                    let
+                                        ( primary, _ ) =
+                                            inputMapping.toggleSettings
+                                    in
+                                    { inputMapping | toggleSettings = ( primary, key ) }
+                            }
+                       ]
+                )
+            ]
+        ]
+
+
 editorCamera : Model -> Camera3d Length.Meters Board.WorldCoordinates
 editorCamera model =
     Camera3d.perspective
@@ -1646,7 +2149,7 @@ viewBlock sharedModel board model ( point, block ) =
                     Scene3d.nothing
 
                 else
-                    Scene3d.sphereWithShadow
+                    Scene3d.sphere
                         (Scene3d.Material.emissive
                             (Scene3d.Light.color Color.yellow)
                             (Luminance.nits 30000)
@@ -1660,94 +2163,294 @@ viewBlock sharedModel board model ( point, block ) =
                             (Length.meters 0.125)
                         )
 
+            Board.EnemySpawner _ ->
+                let
+                    center =
+                        Point3d.meters
+                            (toFloat x)
+                            (toFloat y)
+                            (toFloat z)
+
+                    length =
+                        Length.meters 1
+                in
+                Scene3d.group
+                    [ Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveX
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters 0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters -0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveX
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters 0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters 0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveX
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters -0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters 0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveX
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters -0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters -0.4)
+                                )
+                        )
+
+                    --
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveY
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters -0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters -0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveY
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters 0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters -0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveY
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters -0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters 0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveY
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters 0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.zAxis
+                                        (Length.meters 0.4)
+                                )
+                        )
+
+                    --
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveZ
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters 0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters 0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveZ
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters -0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters 0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveZ
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters 0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters -0.4)
+                                )
+                        )
+                    , Scene3d.cylinderWithShadow
+                        (Scene3d.Material.color Color.red)
+                        (Cylinder3d.centeredOn Point3d.origin
+                            Direction3d.positiveZ
+                            { radius = Length.meters 0.05
+                            , length = length
+                            }
+                            |> Cylinder3d.placeIn
+                                (center
+                                    |> Frame3d.atPoint
+                                    |> Frame3d.translateAlongOwn Frame3d.xAxis
+                                        (Length.meters -0.4)
+                                    |> Frame3d.translateAlongOwn Frame3d.yAxis
+                                        (Length.meters -0.4)
+                                )
+                        )
+                    ]
+
             Board.PlayerSpawn { forward, left } ->
-                case model.editorMode of
-                    TestGame ->
-                        Scene3d.nothing
+                let
+                    center =
+                        Point3d.meters
+                            (toFloat x)
+                            (toFloat y)
+                            (toFloat z)
 
-                    EditBoard ->
-                        let
-                            center =
-                                Point3d.meters
-                                    (toFloat x)
-                                    (toFloat y)
-                                    (toFloat z)
-
-                            carl =
-                                SketchPlane3d.unsafe
-                                    { originPoint = Board.pointToPoint3d point
-                                    , xDirection = Board.axisToDirection3d forward
-                                    , yDirection = Board.axisToDirection3d left
-                                    }
-                                    |> SketchPlane3d.toFrame
-                        in
-                        Scene3d.group
-                            [ Scene3d.sphereWithShadow
-                                (Scene3d.Material.emissive
-                                    (Scene3d.Light.color Color.white)
-                                    (Luminance.nits 100000)
-                                )
-                                (Sphere3d.atPoint
-                                    center
-                                    (Length.meters 0.25)
-                                )
-                            , Scene3d.coneWithShadow
-                                (Scene3d.Material.emissive (Scene3d.Light.color Color.red)
-                                    (Luminance.nits 10000)
-                                )
-                                (Cone3d.startingAt center
-                                    (Frame3d.xDirection carl)
-                                    { radius = Length.meters 0.125
-                                    , length = Length.meters 0.75
-                                    }
-                                )
-                            , Scene3d.coneWithShadow
-                                (Scene3d.Material.emissive (Scene3d.Light.color Color.green)
-                                    (Luminance.nits 10000)
-                                )
-                                (Cone3d.startingAt center
-                                    (Frame3d.yDirection carl)
-                                    { radius = Length.meters 0.125
-                                    , length = Length.meters 0.75
-                                    }
-                                )
-                            , Scene3d.coneWithShadow
-                                (Scene3d.Material.emissive (Scene3d.Light.color Color.blue)
-                                    (Luminance.nits 10000)
-                                )
-                                (Cone3d.startingAt center
-                                    (Frame3d.zDirection carl)
-                                    { radius = Length.meters 0.125
-                                    , length = Length.meters 0.75
-                                    }
-                                )
-                            ]
+                    frame =
+                        SketchPlane3d.unsafe
+                            { originPoint = Board.pointToPoint3d point
+                            , xDirection = Board.axisToDirection3d forward
+                            , yDirection = Board.axisToDirection3d left
+                            }
+                            |> SketchPlane3d.toFrame
+                in
+                Scene3d.group
+                    [ Scene3d.sphereWithShadow
+                        (Scene3d.Material.emissive
+                            (Scene3d.Light.color Color.white)
+                            (Luminance.nits 100000)
+                        )
+                        (Sphere3d.atPoint
+                            center
+                            (Length.meters 0.25)
+                        )
+                    , Scene3d.coneWithShadow
+                        (Scene3d.Material.emissive (Scene3d.Light.color Color.red)
+                            (Luminance.nits 10000)
+                        )
+                        (Cone3d.startingAt center
+                            (Frame3d.xDirection frame)
+                            { radius = Length.meters 0.125
+                            , length = Length.meters 0.75
+                            }
+                        )
+                    , Scene3d.coneWithShadow
+                        (Scene3d.Material.emissive (Scene3d.Light.color Color.green)
+                            (Luminance.nits 10000)
+                        )
+                        (Cone3d.startingAt center
+                            (Frame3d.yDirection frame)
+                            { radius = Length.meters 0.125
+                            , length = Length.meters 0.75
+                            }
+                        )
+                    , Scene3d.coneWithShadow
+                        (Scene3d.Material.emissive (Scene3d.Light.color Color.blue)
+                            (Luminance.nits 10000)
+                        )
+                        (Cone3d.startingAt center
+                            (Frame3d.zDirection frame)
+                            { radius = Length.meters 0.125
+                            , length = Length.meters 0.75
+                            }
+                        )
+                    ]
 
             Board.Empty ->
                 Scene3d.nothing
 
             Board.Edge ->
-                case model.editorMode of
-                    TestGame ->
-                        Scene3d.nothing
-
-                    EditBoard ->
-                        Scene3d.blockWithShadow
-                            (Scene3d.Material.metal
-                                { baseColor = Color.orange
-                                , roughness = 1
-                                }
+                Scene3d.blockWithShadow
+                    (Scene3d.Material.metal
+                        { baseColor = Color.orange
+                        , roughness = 1
+                        }
+                    )
+                    (Block3d.centeredOn
+                        (Frame3d.atPoint
+                            (Point3d.meters
+                                (toFloat x)
+                                (toFloat y)
+                                (toFloat z)
                             )
-                            (Block3d.centeredOn
-                                (Frame3d.atPoint
-                                    (Point3d.meters
-                                        (toFloat x)
-                                        (toFloat y)
-                                        (toFloat z)
-                                    )
-                                )
-                                ( Length.meters 0.5, Length.meters 0.5, Length.meters 0.5 )
-                            )
+                        )
+                        ( Length.meters 0.5, Length.meters 0.5, Length.meters 0.5 )
+                    )
 
 
 viewCursor : Color -> Animation Float -> Board.Point -> Scene3d.Entity Board.WorldCoordinates
@@ -2033,19 +2736,20 @@ viewBounds board =
         )
 
 
-viewHeader : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> Html msg
-viewHeader toSharedMsg sharedModel toMsg model =
+viewHeader : (Screen -> msg) -> (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> Html msg
+viewHeader setScreen _ sharedModel toMsg model =
     case model.editorMode of
         TestGame ->
-            Html.div
-                [ Html.Attributes.style "grid-column" "1 /3"
-                , Html.Attributes.style "grid-row" "1"
-                , Html.Attributes.style "display" "flex"
-                , Html.Attributes.style "padding" "0.5rem"
-                , Html.Attributes.style "gap" "1rem"
-                ]
-                [ Html.h3 [] [ Html.text ("Score: " ++ String.fromInt model.score) ]
-                ]
+            -- Html.div
+            --     [ Html.Attributes.style "grid-column" "1 /3"
+            --     , Html.Attributes.style "grid-row" "1"
+            --     , Html.Attributes.style "display" "flex"
+            --     , Html.Attributes.style "padding" "0.5rem"
+            --     , Html.Attributes.style "gap" "1rem"
+            --     ]
+            --     [ Html.h3 [] [ Html.text ("Score: " ++ String.fromInt model.level.score) ]
+            --     ]
+            Board.viewStats model.level
 
         EditBoard ->
             Html.div
@@ -2062,17 +2766,23 @@ viewHeader toSharedMsg sharedModel toMsg model =
                     ]
                     [ Html.text "Play Level"
                     ]
-                , Html.span
-                    [ Html.Attributes.style "width" "12rem"
-                    , Html.Attributes.style "color" "red"
-                    ]
-                    [ case model.boardPlayError of
-                        Nothing ->
-                            Html.text ""
+                , case model.boardPlayError of
+                    Nothing ->
+                        Html.span
+                            [ Html.Attributes.style "width" "12rem"
+                            ]
+                            [ Html.text ""
+                            ]
 
-                        Just Board.MissingPlayerSpawn ->
-                            Html.text "Missing Player Spawn"
-                    ]
+                    Just Board.MissingPlayerSpawn ->
+                        Html.span
+                            [ Html.Attributes.style "width" "12rem"
+                            , Html.Attributes.style "color" "red"
+                            , Html.Attributes.style "background" "white"
+                            , Html.Attributes.style "padding" "0.25rem 0.5rem"
+                            ]
+                            [ Html.text "Missing Player Spawn"
+                            ]
                 , Html.div
                     [ Html.Attributes.attribute "role" "group" ]
                     [ Html.button
@@ -2202,6 +2912,15 @@ viewHeader toSharedMsg sharedModel toMsg model =
                         ]
                     , Html.button
                         [ Html.Attributes.Extra.aria "current" <|
+                            Html.Attributes.Extra.bool (model.selectedBlockType == Board.EnemySpawner Board.defaultEnemySpawnerDetails)
+                        , Html.Attributes.type_ "button"
+                        , Html.Events.onClick (toMsg (BlockTypeSelected (Board.EnemySpawner Board.defaultEnemySpawnerDetails)))
+                        , Html.Attributes.title ("Enemy Spawner - " ++ Input.viewInputKeyHoverText sharedModel.inputMapping.blockTypeEnemySpawner)
+                        ]
+                        [ Html.text "Enemy Spawner"
+                        ]
+                    , Html.button
+                        [ Html.Attributes.Extra.aria "current" <|
                             Html.Attributes.Extra.bool (model.selectedBlockType == Board.PlayerSpawn { forward = Board.PositiveX, left = Board.PositiveY })
                         , Html.Attributes.type_ "button"
                         , Html.Events.onClick (toMsg (BlockTypeSelected (Board.PlayerSpawn { forward = Board.PositiveX, left = Board.PositiveY })))
@@ -2230,413 +2949,8 @@ viewHeader toSharedMsg sharedModel toMsg model =
                     ]
                 , Html.button
                     [ Html.Attributes.type_ "button"
-                    , Html.Events.onClick (toSharedMsg (Shared.SetScreen Shared.Menu))
+                    , Html.Events.onClick (setScreen Screen.Menu)
                     , Html.Attributes.style "margin-left" "auto"
                     ]
                     [ Html.text "Exit" ]
-                , Html.Extra.modal { open = model.showSettings, onClose = toMsg (ShowSettings False) }
-                    []
-                    [ Html.h2
-                        [ Html.Attributes.style "width" "100%"
-                        , Html.Attributes.style "margin-top" "0"
-                        ]
-                        [ Html.text "Settings"
-                        , Html.button
-                            [ Html.Attributes.style "float" "right"
-                            , Html.Attributes.style "background" "none"
-                            , Html.Attributes.type_ "button"
-                            , Html.Attributes.title "Close"
-                            , Html.Events.onClick (toMsg (ShowSettings False))
-                            ]
-                            [ Phosphor.xCircle Phosphor.Regular
-                                |> Phosphor.toHtml []
-                            ]
-                        ]
-                    , Html.span [] [ Html.text "Hold 'Shift' and move mouse to use camera actions (orbit, pan, zoom)" ]
-                    , Html.br [] []
-                    , Html.br [] []
-                    , let
-                        viewMapping mapping =
-                            let
-                                ( primary, secondary ) =
-                                    mapping.keys
-                            in
-                            Html.tr []
-                                [ Html.th [ Html.Attributes.attribute "align" "left" ] [ Html.text mapping.label ]
-                                , Html.td [ Html.Attributes.attribute "align" "center" ]
-                                    [ Html.input
-                                        [ Html.Attributes.value primary
-                                        , Html.Attributes.placeholder "Must be set"
-                                        , Html.Events.custom "input" (Input.decodeMappingChange (Shared.SetMapping >> toSharedMsg) mapping.setPrimary)
-                                        , Html.Attributes.style "text-align" "center"
-                                        ]
-                                        []
-                                    ]
-                                , Html.td [ Html.Attributes.attribute "align" "center" ]
-                                    [ Html.input
-                                        [ Html.Attributes.value secondary
-                                        , Html.Attributes.placeholder "Not set"
-                                        , Html.Events.custom "input" (Input.decodeMappingChange (Shared.SetMapping >> toSharedMsg) mapping.setSecondary)
-                                        , Html.Attributes.style "text-align" "center"
-                                        ]
-                                        []
-                                    ]
-                                ]
-                      in
-                      Html.table
-                        []
-                        [ Html.thead []
-                            [ Html.tr []
-                                [ Html.th [ Html.Attributes.attribute "align" "left" ] [ Html.text "Input" ]
-                                , Html.th [] [ Html.text "Primary Key" ]
-                                , Html.th [] [ Html.text "Secondary Key" ]
-                                ]
-                            ]
-                        , Html.tbody []
-                            (Html.tr []
-                                [ Html.th [] [ Html.h3 [] [ Html.text "Character Movement" ] ]
-                                ]
-                                :: List.map viewMapping
-                                    [ { label = "Face up"
-                                      , keys = sharedModel.inputMapping.moveUp
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.moveUp
-                                                in
-                                                { inputMapping | moveUp = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.moveUp
-                                                in
-                                                { inputMapping | moveUp = ( primary, key ) }
-                                      }
-                                    , { label = "Face down"
-                                      , keys = sharedModel.inputMapping.moveDown
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.moveDown
-                                                in
-                                                { inputMapping | moveDown = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.moveDown
-                                                in
-                                                { inputMapping | moveDown = ( primary, key ) }
-                                      }
-                                    , { label = "Face left"
-                                      , keys = sharedModel.inputMapping.moveLeft
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.moveLeft
-                                                in
-                                                { inputMapping | moveLeft = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.moveLeft
-                                                in
-                                                { inputMapping | moveLeft = ( primary, key ) }
-                                      }
-                                    , { label = "Face right"
-                                      , keys = sharedModel.inputMapping.moveRight
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.moveRight
-                                                in
-                                                { inputMapping | moveRight = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.moveRight
-                                                in
-                                                { inputMapping | moveRight = ( primary, key ) }
-                                      }
-                                    ]
-                                ++ [ Html.tr []
-                                        [ Html.th [] [ Html.h3 [] [ Html.text "Editor" ] ]
-                                        ]
-                                   , Html.tr []
-                                        [ Html.th [] [ Html.text "Camera" ]
-                                        ]
-                                   ]
-                                ++ List.map viewMapping
-                                    [ { label = "Orbit"
-                                      , keys = sharedModel.inputMapping.cameraOrbit
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.cameraOrbit
-                                                in
-                                                { inputMapping | cameraOrbit = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.cameraOrbit
-                                                in
-                                                { inputMapping | cameraOrbit = ( primary, key ) }
-                                      }
-                                    , { label = "Pan"
-                                      , keys = sharedModel.inputMapping.cameraPan
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.cameraPan
-                                                in
-                                                { inputMapping | cameraPan = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.cameraPan
-                                                in
-                                                { inputMapping | cameraPan = ( primary, key ) }
-                                      }
-                                    , { label = "Zoom"
-                                      , keys = sharedModel.inputMapping.cameraZoom
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.cameraZoom
-                                                in
-                                                { inputMapping | cameraZoom = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.cameraZoom
-                                                in
-                                                { inputMapping | cameraZoom = ( primary, key ) }
-                                      }
-                                    , { label = "Reset"
-                                      , keys = sharedModel.inputMapping.cameraReset
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.cameraReset
-                                                in
-                                                { inputMapping | cameraReset = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.cameraReset
-                                                in
-                                                { inputMapping | cameraReset = ( primary, key ) }
-                                      }
-                                    ]
-                                ++ [ Html.tr []
-                                        [ Html.th [] [ Html.text "Block Edit" ]
-                                        ]
-                                   ]
-                                ++ List.map viewMapping
-                                    [ { label = "Select"
-                                      , keys = sharedModel.inputMapping.blockSelect
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.blockSelect
-                                                in
-                                                { inputMapping | blockSelect = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.blockSelect
-                                                in
-                                                { inputMapping | blockSelect = ( primary, key ) }
-                                      }
-                                    , { label = "Add"
-                                      , keys = sharedModel.inputMapping.blockAdd
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.blockAdd
-                                                in
-                                                { inputMapping | blockAdd = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.blockAdd
-                                                in
-                                                { inputMapping | blockAdd = ( primary, key ) }
-                                      }
-                                    , { label = "Remove"
-                                      , keys = sharedModel.inputMapping.blockRemove
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.blockRemove
-                                                in
-                                                { inputMapping | blockRemove = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.blockRemove
-                                                in
-                                                { inputMapping | blockRemove = ( primary, key ) }
-                                      }
-                                    ]
-                                ++ [ Html.tr []
-                                        [ Html.th [] [ Html.text "Block Type" ]
-                                        ]
-                                   ]
-                                ++ List.map viewMapping
-                                    [ { label = "Wall"
-                                      , keys = sharedModel.inputMapping.blockTypeWall
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.blockTypeWall
-                                                in
-                                                { inputMapping | blockTypeWall = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.blockTypeWall
-                                                in
-                                                { inputMapping | blockTypeWall = ( primary, key ) }
-                                      }
-                                    , { label = "Edge"
-                                      , keys = sharedModel.inputMapping.blockTypeEdge
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.blockTypeEdge
-                                                in
-                                                { inputMapping | blockTypeEdge = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.blockTypeEdge
-                                                in
-                                                { inputMapping | blockTypeEdge = ( primary, key ) }
-                                      }
-                                    , { label = "Point Pickup"
-                                      , keys = sharedModel.inputMapping.blockTypePointPickup
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.blockTypePointPickup
-                                                in
-                                                { inputMapping | blockTypePointPickup = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.blockTypePointPickup
-                                                in
-                                                { inputMapping | blockTypePointPickup = ( primary, key ) }
-                                      }
-                                    , { label = "Player Spawn"
-                                      , keys = sharedModel.inputMapping.blockTypePlayerSpawn
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.blockTypePlayerSpawn
-                                                in
-                                                { inputMapping | blockTypePlayerSpawn = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.blockTypePlayerSpawn
-                                                in
-                                                { inputMapping | blockTypePlayerSpawn = ( primary, key ) }
-                                      }
-                                    ]
-                                ++ [ Html.tr []
-                                        [ Html.th [] [ Html.text "Undo / Redo" ]
-                                        ]
-                                   ]
-                                ++ List.map viewMapping
-                                    [ { label = "Undo"
-                                      , keys = sharedModel.inputMapping.undo
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.undo
-                                                in
-                                                { inputMapping | undo = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.undo
-                                                in
-                                                { inputMapping | undo = ( primary, key ) }
-                                      }
-                                    , { label = "Redo"
-                                      , keys = sharedModel.inputMapping.redo
-                                      , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.redo
-                                                in
-                                                { inputMapping | redo = ( key, secondary ) }
-                                      , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.redo
-                                                in
-                                                { inputMapping | redo = ( primary, key ) }
-                                      }
-                                    ]
-                                ++ [ Html.tr []
-                                        [ Html.th [] [ Html.text "Other" ]
-                                        ]
-                                   , viewMapping
-                                        { label = "Open Settings"
-                                        , keys = sharedModel.inputMapping.toggleSettings
-                                        , setPrimary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( _, secondary ) =
-                                                        inputMapping.toggleSettings
-                                                in
-                                                { inputMapping | toggleSettings = ( key, secondary ) }
-                                        , setSecondary =
-                                            \key inputMapping ->
-                                                let
-                                                    ( primary, _ ) =
-                                                        inputMapping.toggleSettings
-                                                in
-                                                { inputMapping | toggleSettings = ( primary, key ) }
-                                        }
-                                   ]
-                            )
-                        ]
-                    ]
                 ]

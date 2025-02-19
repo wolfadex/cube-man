@@ -3,13 +3,14 @@ module Shared exposing
     , LoadedModel
     , Model(..)
     , Msg(..)
-    , Screen(..)
+    , ScreenSize
     , TexturedMesh
     , init
     , update
     )
 
 import Board
+import Browser.Dom
 import Color exposing (Color)
 import Frame3d
 import Http
@@ -29,22 +30,14 @@ type Model
 
 
 type alias LoadedModel =
-    { screenSize : { width : Int, height : Int }
+    { screenSize : ScreenSize
     , blockPalette : Board.BlockPalette
     , inputMapping : Input.Mapping
-    , screen : Screen
 
     --
     -- , playerMesh : TexturedMesh
     -- , wallMesh : TexturedMesh
     }
-
-
-type Screen
-    = Editor
-    | Game
-    | FreePlay
-    | Menu
 
 
 init : ( Model, Cmd Msg )
@@ -58,12 +51,12 @@ init =
         { screenSize = { width = 800, height = 600 }
         , blockPalette = Board.SimpleBlocks
         , inputMapping = Input.defaultMapping
-        , screen = Menu
         }
     , loadingCmd
     )
 
 
+loadMeshes : ( Task.Parallel.State2 Msg TexturedMesh TexturedMesh, Cmd Msg )
 loadMeshes =
     Task.Parallel.attempt2
         { task1 = loadMesh "wall_3"
@@ -138,11 +131,12 @@ loadMesh name =
 
 type Msg
     = SetMapping (Input.Mapping -> Input.Mapping)
-    | SetScreen Screen
     | SetBlockPalette Board.BlockPalette
     | TaskStateUpdated (Task.Parallel.Msg2 TexturedMesh TexturedMesh)
     | OneTaskFailed Error
     | AllTasksCompleted TexturedMesh TexturedMesh
+    | ViewportResized (Result Browser.Dom.Error Browser.Dom.Viewport)
+    | SetScreenSize ScreenSize
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -166,7 +160,6 @@ update msg model =
                 { screenSize = { width = 800, height = 600 }
                 , blockPalette = Board.SimpleBlocks
                 , inputMapping = Input.defaultMapping
-                , screen = Menu
 
                 -- , playerMesh = playerMesh
                 -- , wallMesh = wallMesh
@@ -189,8 +182,28 @@ update msg model =
         ( Loaded mod, SetMapping fn ) ->
             ( Loaded { mod | inputMapping = fn mod.inputMapping }, Cmd.none )
 
-        ( Loaded mod, SetScreen screen ) ->
-            ( Loaded { mod | screen = screen }, Cmd.none )
-
         ( Loaded mod, SetBlockPalette blockPalette ) ->
             ( Loaded { mod | blockPalette = blockPalette }, Cmd.none )
+
+        ( Loaded _, ViewportResized (Err _) ) ->
+            ( model, Cmd.none )
+
+        ( Loaded mod, ViewportResized (Ok { viewport }) ) ->
+            ( Loaded
+                { mod
+                    | screenSize =
+                        { width = round viewport.width
+                        , height = round viewport.height
+                        }
+                }
+            , Cmd.none
+            )
+
+        ( Loaded mod, SetScreenSize screenSize ) ->
+            ( Loaded { mod | screenSize = screenSize }, Cmd.none )
+
+
+type alias ScreenSize =
+    { width : Int
+    , height : Int
+    }

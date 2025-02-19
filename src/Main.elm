@@ -2,10 +2,12 @@ module Main exposing (main)
 
 import Browser
 import Html
+import Screen exposing (Screen)
 import Screen.Editor
 import Screen.FreePlay
 import Screen.Game
 import Screen.Menu
+import Screen.Model
 import Shared
 
 
@@ -21,10 +23,7 @@ main =
 
 type alias Model =
     { sharedModel : Shared.Model
-    , menuModel : Screen.Menu.Model
-    , gameModel : Screen.Game.Model
-    , freePlayModel : Screen.FreePlay.Model
-    , editorModel : Screen.Editor.Model
+    , screen : Screen.Model.Screen
     }
 
 
@@ -36,28 +35,13 @@ init () =
 
         ( menuModel, menuCmd ) =
             Screen.Menu.init
-
-        ( gameModel, gameCmd ) =
-            Screen.Game.init
-
-        ( freePlayModel, freePlayCmd ) =
-            Screen.FreePlay.init
-
-        ( editorModel, editorCmd ) =
-            Screen.Editor.init
     in
     ( { sharedModel = sharedModel
-      , menuModel = menuModel
-      , gameModel = gameModel
-      , freePlayModel = freePlayModel
-      , editorModel = editorModel
+      , screen = Screen.Model.Menu menuModel
       }
     , Cmd.batch
         [ Cmd.map SharedMsg sharedCmd
         , Cmd.map MenuMsg menuCmd
-        , Cmd.map GameMsg gameCmd
-        , Cmd.map FreePlayMsg freePlayCmd
-        , Cmd.map EditorMsg editorCmd
         ]
     )
 
@@ -65,23 +49,29 @@ init () =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model.sharedModel of
-        Shared.Loaded sharedModel ->
-            case sharedModel.screen of
-                Shared.Menu ->
-                    Screen.Menu.subscriptions model.menuModel
+        Shared.Loaded _ ->
+            case model.screen of
+                Screen.Model.Menu menuModel ->
+                    Screen.Menu.subscriptions menuModel
                         |> Sub.map MenuMsg
 
-                Shared.Game ->
-                    Screen.Game.subscriptions model.gameModel
+                Screen.Model.Game gameModel ->
+                    Screen.Game.subscriptions gameModel
                         |> Sub.map GameMsg
 
-                Shared.FreePlay ->
-                    Screen.FreePlay.subscriptions model.freePlayModel
-                        |> Sub.map FreePlayMsg
+                Screen.Model.FreePlay freePlayModel ->
+                    Screen.FreePlay.subscriptions
+                        { toSharedMsg = SharedMsg
+                        , toMsg = FreePlayMsg
+                        }
+                        freePlayModel
 
-                Shared.Editor ->
-                    Screen.Editor.subscriptions model.editorModel
-                        |> Sub.map EditorMsg
+                Screen.Model.Editor editorModel ->
+                    Screen.Editor.subscriptions
+                        { toSharedMsg = SharedMsg
+                        , toMsg = EditorMsg
+                        }
+                        editorModel
 
         _ ->
             Sub.none
@@ -89,6 +79,7 @@ subscriptions model =
 
 type Msg
     = SharedMsg Shared.Msg
+    | SetScreen Screen
     | MenuMsg Screen.Menu.Msg
     | GameMsg Screen.Game.Msg
     | FreePlayMsg Screen.FreePlay.Msg
@@ -105,14 +96,69 @@ update msg model =
             in
             ( { model | sharedModel = sharedModel }, Cmd.map SharedMsg sharedCmd )
 
+        SetScreen screen ->
+            case screen of
+                Screen.Menu ->
+                    case model.screen of
+                        Screen.Model.Menu _ ->
+                            ( model, Cmd.none )
+
+                        _ ->
+                            let
+                                ( menuModel, menuCmd ) =
+                                    Screen.Menu.init
+                            in
+                            ( { model | screen = Screen.Model.Menu menuModel }, Cmd.map MenuMsg menuCmd )
+
+                Screen.Game ->
+                    case model.screen of
+                        Screen.Model.Game _ ->
+                            ( model, Cmd.none )
+
+                        _ ->
+                            let
+                                ( gameModel, gameCmd ) =
+                                    Screen.Game.init
+                            in
+                            ( { model | screen = Screen.Model.Game gameModel }, Cmd.map GameMsg gameCmd )
+
+                Screen.Editor ->
+                    case model.screen of
+                        Screen.Model.Editor _ ->
+                            ( model, Cmd.none )
+
+                        _ ->
+                            let
+                                ( editorModel, editorCmd ) =
+                                    Screen.Editor.init
+                            in
+                            ( { model | screen = Screen.Model.Editor editorModel }, Cmd.map EditorMsg editorCmd )
+
+                Screen.FreePlay ->
+                    case model.screen of
+                        Screen.Model.FreePlay _ ->
+                            ( model, Cmd.none )
+
+                        _ ->
+                            let
+                                ( freePlayModel, freePlayCmd ) =
+                                    Screen.FreePlay.init { toSharedMsg = SharedMsg, toMsg = FreePlayMsg }
+                            in
+                            ( { model | screen = Screen.Model.FreePlay freePlayModel }, freePlayCmd )
+
         MenuMsg message ->
             case model.sharedModel of
                 Shared.Loaded sharedModel ->
-                    let
-                        ( menuModel, menuCmd ) =
-                            Screen.Menu.update sharedModel message model.menuModel
-                    in
-                    ( { model | menuModel = menuModel }, Cmd.map MenuMsg menuCmd )
+                    case model.screen of
+                        Screen.Model.Menu menuModel ->
+                            let
+                                ( nextMenuModel, menuCmd ) =
+                                    Screen.Menu.update sharedModel message menuModel
+                            in
+                            ( { model | screen = Screen.Model.Menu nextMenuModel }, Cmd.map MenuMsg menuCmd )
+
+                        _ ->
+                            ( model, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -120,11 +166,16 @@ update msg model =
         GameMsg message ->
             case model.sharedModel of
                 Shared.Loaded sharedModel ->
-                    let
-                        ( gameModel, gameCmd ) =
-                            Screen.Game.update sharedModel message model.gameModel
-                    in
-                    ( { model | gameModel = gameModel }, Cmd.map GameMsg gameCmd )
+                    case model.screen of
+                        Screen.Model.Game gameModel ->
+                            let
+                                ( nextGameModel, gameCmd ) =
+                                    Screen.Game.update sharedModel message gameModel
+                            in
+                            ( { model | screen = Screen.Model.Game nextGameModel }, Cmd.map GameMsg gameCmd )
+
+                        _ ->
+                            ( model, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -132,11 +183,16 @@ update msg model =
         FreePlayMsg message ->
             case model.sharedModel of
                 Shared.Loaded sharedModel ->
-                    let
-                        ( freePlayModel, freePlayCmd ) =
-                            Screen.FreePlay.update sharedModel message model.freePlayModel
-                    in
-                    ( { model | freePlayModel = freePlayModel }, Cmd.map FreePlayMsg freePlayCmd )
+                    case model.screen of
+                        Screen.Model.FreePlay freePlayModel ->
+                            let
+                                ( nextFreePlayModel, freePlayCmd ) =
+                                    Screen.FreePlay.update sharedModel message freePlayModel
+                            in
+                            ( { model | screen = Screen.Model.FreePlay nextFreePlayModel }, Cmd.map FreePlayMsg freePlayCmd )
+
+                        _ ->
+                            ( model, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -144,16 +200,21 @@ update msg model =
         EditorMsg message ->
             case model.sharedModel of
                 Shared.Loaded sharedModel ->
-                    let
-                        ( editorModel, editorCmd ) =
-                            Screen.Editor.update
-                                SharedMsg
-                                sharedModel
-                                EditorMsg
-                                message
-                                model.editorModel
-                    in
-                    ( { model | editorModel = editorModel }, editorCmd )
+                    case model.screen of
+                        Screen.Model.Editor editorModel ->
+                            let
+                                ( nextEditorModel, editorCmd ) =
+                                    Screen.Editor.update
+                                        SharedMsg
+                                        sharedModel
+                                        EditorMsg
+                                        message
+                                        editorModel
+                            in
+                            ( { model | screen = Screen.Model.Editor nextEditorModel }, editorCmd )
+
+                        _ ->
+                            ( model, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -161,7 +222,7 @@ update msg model =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Cube-Man"
+    { title = "Cube-Dude"
     , body =
         case model.sharedModel of
             Shared.Loading _ ->
@@ -171,16 +232,40 @@ view model =
                 [ Html.text "Failed to load" ]
 
             Shared.Loaded sharedModel ->
-                case sharedModel.screen of
-                    Shared.Menu ->
-                        Screen.Menu.view SharedMsg sharedModel MenuMsg model.menuModel
+                case model.screen of
+                    Screen.Model.Menu menuModel ->
+                        Screen.Menu.view
+                            { setScreen = SetScreen
+                            , toSharedMsg = SharedMsg
+                            , sharedModel = sharedModel
+                            , toMsg = MenuMsg
+                            , model = menuModel
+                            }
 
-                    Shared.Game ->
-                        Screen.Game.view SharedMsg sharedModel GameMsg model.gameModel
+                    Screen.Model.Game gameModel ->
+                        Screen.Game.view
+                            { setScreen = SetScreen
+                            , toSharedMsg = SharedMsg
+                            , sharedModel = sharedModel
+                            , toMsg = GameMsg
+                            , model = gameModel
+                            }
 
-                    Shared.FreePlay ->
-                        Screen.FreePlay.view SharedMsg sharedModel FreePlayMsg model.freePlayModel
+                    Screen.Model.FreePlay freePlayModel ->
+                        Screen.FreePlay.view
+                            { setScreen = SetScreen
+                            , toSharedMsg = SharedMsg
+                            , sharedModel = sharedModel
+                            , toMsg = FreePlayMsg
+                            , model = freePlayModel
+                            }
 
-                    Shared.Editor ->
-                        Screen.Editor.view SharedMsg sharedModel EditorMsg model.editorModel
+                    Screen.Model.Editor editorModel ->
+                        Screen.Editor.view
+                            { setScreen = SetScreen
+                            , toSharedMsg = SharedMsg
+                            , sharedModel = sharedModel
+                            , toMsg = EditorMsg
+                            , model = editorModel
+                            }
     }

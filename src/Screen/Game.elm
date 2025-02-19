@@ -1,12 +1,19 @@
-module Screen.Game exposing (Model, Msg(..), init, subscriptions, update, view)
+module Screen.Game exposing
+    ( Model
+    , Msg
+    , init
+    , subscriptions
+    , update
+    , view
+    )
 
-import Angle exposing (Angle)
 import Board exposing (Board)
 import Frame3d exposing (Frame3d)
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Length
+import Screen exposing (Screen)
 import Shared
 
 
@@ -16,7 +23,7 @@ type alias Model =
     , playerFrame : Frame3d Length.Meters Board.WorldCoordinates { defines : Board.WorldCoordinates }
     , playerFacing : Board.Facing
     , playerWantFacing : Board.Facing
-    , playerMovingAcrossEdge : Maybe Angle
+    , playerTarget : Board.Target
     }
 
 
@@ -27,7 +34,7 @@ init =
       , playerFrame = Frame3d.atOrigin
       , playerFacing = Board.Forward
       , playerWantFacing = Board.Forward
-      , playerMovingAcrossEdge = Nothing
+      , playerTarget = Board.initTarget Board.empty Board.Forward Frame3d.atOrigin
       }
     , Cmd.none
     )
@@ -47,8 +54,8 @@ update _ _ model =
     ( model, Cmd.none )
 
 
-view : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> List (Html msg)
-view toSharedMsg _ _ _ =
+view : { setScreen : Screen -> msg, toSharedMsg : Shared.Msg -> msg, sharedModel : Shared.LoadedModel, toMsg : Msg -> msg, model : Model } -> List (Html msg)
+view { setScreen } =
     [ Html.div
         [ Html.Attributes.style "width" "100vw"
         , Html.Attributes.style "height" "100vh"
@@ -65,8 +72,15 @@ view toSharedMsg _ _ _ =
             ]
             [ Html.h1
                 [ Html.Attributes.style "text-align" "center"
+                , Html.Attributes.style "color" "white"
+                , Html.Attributes.style "font-size" "3rem"
                 ]
-                [ Html.text "Cube-Man" ]
+                [ Html.text "⠉⠥⠃⠑⠤⠙⠥⠙⠑"
+                , Html.summary
+                    [ Html.Attributes.style "font-size" "2rem"
+                    ]
+                    [ Html.text "Cube-Dude" ]
+                ]
             , Html.h2
                 [ Html.Attributes.style "text-align" "center"
                 ]
@@ -75,7 +89,7 @@ view toSharedMsg _ _ _ =
                 [ Html.Attributes.type_ "button"
                 , Html.Attributes.style "text-align" "center"
                 , Html.Attributes.style "padding" "0.5rem 2rem"
-                , Html.Events.onClick (toSharedMsg (Shared.SetScreen Shared.Menu))
+                , Html.Events.onClick (setScreen Screen.Menu)
                 ]
                 [ Html.text "Main Menu" ]
             ]

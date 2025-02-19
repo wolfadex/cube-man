@@ -1,22 +1,10 @@
 module Screen.Menu exposing (Model, Msg(..), init, subscriptions, update, view)
 
-import Angle
-import Board
-import Camera3d
-import Color
-import Direction3d
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events
-import Length
-import LineSegment3d
-import Pixels
-import Point3d
-import Scene3d
-import Scene3d.Material
-import Scene3d.Mesh
+import Screen exposing (Screen)
 import Shared
-import Viewpoint3d
 
 
 type alias Model =
@@ -42,8 +30,8 @@ update _ _ model =
     ( model, Cmd.none )
 
 
-view : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> List (Html msg)
-view toSharedMsg sharedModel _ _ =
+view : { setScreen : Screen -> msg, toSharedMsg : Shared.Msg -> msg, sharedModel : Shared.LoadedModel, toMsg : Msg -> msg, model : Model } -> List (Html msg)
+view { setScreen, toSharedMsg } =
     [ Html.div
         [ Html.Attributes.style "width" "100vw"
         , Html.Attributes.style "height" "100vh"
@@ -60,8 +48,15 @@ view toSharedMsg sharedModel _ _ =
             ]
             [ Html.h1
                 [ Html.Attributes.style "text-align" "center"
+                , Html.Attributes.style "color" "white"
+                , Html.Attributes.style "font-size" "3rem"
                 ]
-                [ Html.text "Cube-Man" ]
+                [ Html.text "⠉⠥⠃⠑⠤⠙⠥⠙⠑"
+                , Html.summary
+                    [ Html.Attributes.style "font-size" "2rem"
+                    ]
+                    [ Html.text "Cube-Dude" ]
+                ]
             , Html.div
                 [ Html.Attributes.style "margin-top" "5rem"
                 , Html.Attributes.style "display" "flex"
@@ -72,7 +67,7 @@ view toSharedMsg sharedModel _ _ =
                     [ Html.Attributes.type_ "button"
                     , Html.Attributes.style "text-align" "center"
                     , Html.Attributes.style "padding" "0.5rem 2rem"
-                    , Html.Events.onClick (toSharedMsg (Shared.SetScreen Shared.Game))
+                    , Html.Events.onClick (setScreen Screen.Game)
                     ]
                     [ Html.span [ Html.Attributes.style "text-decoration" "line-through" ] [ Html.text "Play" ]
                     , Html.br [] []
@@ -82,14 +77,14 @@ view toSharedMsg sharedModel _ _ =
                     [ Html.Attributes.type_ "button"
                     , Html.Attributes.style "text-align" "center"
                     , Html.Attributes.style "padding" "0.5rem 2rem"
-                    , Html.Events.onClick (toSharedMsg (Shared.SetScreen Shared.FreePlay))
+                    , Html.Events.onClick (setScreen Screen.FreePlay)
                     ]
                     [ Html.text "Free Play" ]
                 , Html.button
                     [ Html.Attributes.type_ "button"
                     , Html.Attributes.style "text-align" "center"
                     , Html.Attributes.style "padding" "0.5rem 2rem"
-                    , Html.Events.onClick (toSharedMsg (Shared.SetScreen Shared.Editor))
+                    , Html.Events.onClick (setScreen Screen.Editor)
                     ]
                     [ Html.text "Level Editor" ]
                 ]
@@ -154,27 +149,3 @@ view toSharedMsg sharedModel _ _ =
         --     }
         ]
     ]
-
-
-viewOrientationArrows : Scene3d.Entity Board.WorldCoordinates
-viewOrientationArrows =
-    Scene3d.group
-        [ Scene3d.lineSegment
-            (Scene3d.Material.color Color.red)
-            (LineSegment3d.from
-                Point3d.origin
-                (Point3d.meters 1 0 0)
-            )
-        , Scene3d.lineSegment
-            (Scene3d.Material.color Color.green)
-            (LineSegment3d.from
-                Point3d.origin
-                (Point3d.meters 0 1 0)
-            )
-        , Scene3d.lineSegment
-            (Scene3d.Material.color Color.blue)
-            (LineSegment3d.from
-                Point3d.origin
-                (Point3d.meters 0 0 1)
-            )
-        ]
