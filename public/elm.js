@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1739935760232"
+    "1739937515182"
   );
   var ORIGINAL_COMPILATION_MODE = "debug";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -20081,12 +20081,16 @@ var $ianmackenzie$elm_geometry$Frame3d$originPoint = function (_v0) {
 	var properties = _v0.a;
 	return properties.originPoint;
 };
+var $author$project$Math$betterRound = function (n) {
+	return (n > 0) ? $elm$core$Basics$round(n) : (-$elm$core$Basics$round(
+		$elm$core$Basics$abs(n)));
+};
 var $author$project$Board$point3dToPoint = function (point) {
 	var parts = $ianmackenzie$elm_geometry$Point3d$unwrap(point);
 	return _Utils_Tuple3(
-		$elm$core$Basics$round(parts.x),
-		$elm$core$Basics$round(parts.y),
-		$elm$core$Basics$round(parts.z));
+		$author$project$Math$betterRound(parts.x),
+		$author$project$Math$betterRound(parts.y),
+		$author$project$Math$betterRound(parts.z));
 };
 var $author$project$Board$pointToPoint3d = function (_v0) {
 	var x = _v0.a;
@@ -21667,103 +21671,14 @@ var $ianmackenzie$elm_units$Quantity$compare = F2(
 		var y = _v1.a;
 		return A2($elm$core$Basics$compare, x, y);
 	});
-var $author$project$Board$moveEnemy = F3(
-	function (deltaDuration, level, enemy) {
-		var _v0 = level.playerTarget;
-		if (_v0.$ === 'TraverseEdge') {
-			return enemy;
-		} else {
-			var _v1 = enemy.movingTo;
-			if (!_v1.b) {
-				return enemy;
-			} else {
-				var movingTo = _v1.a;
-				var movingToRest = _v1.b;
-				var remainingDuration = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, enemy.durationBetweenMoves);
-				return _Utils_eq(
-					A2(
-						$ianmackenzie$elm_units$Quantity$compare,
-						remainingDuration,
-						$ianmackenzie$elm_units$Quantity$Quantity(0)),
-					$elm$core$Basics$EQ) ? _Utils_update(
-					enemy,
-					{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest}) : (A2(
-					$ianmackenzie$elm_units$Quantity$lessThan,
-					$ianmackenzie$elm_units$Quantity$Quantity(0),
-					remainingDuration) ? A3(
-					$author$project$Board$moveEnemy,
-					A2(
-						$ianmackenzie$elm_units$Quantity$minus,
-						remainingDuration,
-						$ianmackenzie$elm_units$Quantity$Quantity(0)),
-					level,
-					_Utils_update(
-						enemy,
-						{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest})) : _Utils_update(
-					enemy,
-					{durationBetweenMoves: remainingDuration}));
-			}
-		}
-	});
-var $author$project$Board$moveEnemiesHelper = F4(
-	function (deltaDuration, movedEnemies, toMoveEnemies, level) {
-		moveEnemiesHelper:
-		while (true) {
-			if (!toMoveEnemies.b) {
-				return _Utils_update(
-					level,
-					{enemies: movedEnemies});
-			} else {
-				var nextEnemy = toMoveEnemies.a;
-				var restEnemies = toMoveEnemies.b;
-				var movedEnemy = A3($author$project$Board$moveEnemy, deltaDuration, level, nextEnemy);
-				if (A2(
-					$ianmackenzie$elm_units$Quantity$greaterThan,
-					$ianmackenzie$elm_units$Quantity$Quantity(0),
-					level.invincibleFrames)) {
-					var $temp$deltaDuration = deltaDuration,
-						$temp$movedEnemies = A2($elm$core$List$cons, movedEnemy, movedEnemies),
-						$temp$toMoveEnemies = restEnemies,
-						$temp$level = level;
-					deltaDuration = $temp$deltaDuration;
-					movedEnemies = $temp$movedEnemies;
-					toMoveEnemies = $temp$toMoveEnemies;
-					level = $temp$level;
-					continue moveEnemiesHelper;
-				} else {
-					if (A2(
-						$author$project$Board$enemyPlayerCollision,
-						$author$project$Board$enemyToVisualPoint(movedEnemy),
-						level)) {
-						var $temp$deltaDuration = deltaDuration,
-							$temp$movedEnemies = movedEnemies,
-							$temp$toMoveEnemies = restEnemies,
-							$temp$level = _Utils_update(
-							level,
-							{hearts: level.hearts - 1, invincibleFrames: $author$project$Board$initialInvincibleFrames});
-						deltaDuration = $temp$deltaDuration;
-						movedEnemies = $temp$movedEnemies;
-						toMoveEnemies = $temp$toMoveEnemies;
-						level = $temp$level;
-						continue moveEnemiesHelper;
-					} else {
-						var $temp$deltaDuration = deltaDuration,
-							$temp$movedEnemies = A2($elm$core$List$cons, movedEnemy, movedEnemies),
-							$temp$toMoveEnemies = restEnemies,
-							$temp$level = level;
-						deltaDuration = $temp$deltaDuration;
-						movedEnemies = $temp$movedEnemies;
-						toMoveEnemies = $temp$toMoveEnemies;
-						level = $temp$level;
-						continue moveEnemiesHelper;
-					}
-				}
-			}
-		}
-	});
-var $author$project$Board$moveEnemies = F2(
-	function (deltaDuration, level) {
-		return A4($author$project$Board$moveEnemiesHelper, deltaDuration, _List_Nil, level.enemies, level);
+var $ianmackenzie$elm_units$Quantity$equalWithin = F3(
+	function (_v0, _v1, _v2) {
+		var tolerance = _v0.a;
+		var x = _v1.a;
+		var y = _v2.a;
+		return _Utils_cmp(
+			$elm$core$Basics$abs(x - y),
+			tolerance) < 1;
 	});
 var $author$project$Board$aStarCost = F2(
 	function (_v0, _v1) {
@@ -21986,6 +21901,133 @@ var $author$project$Board$findEnemyPath = function (blocks) {
 		$author$project$Board$aStarCost,
 		$author$project$Board$enemyMovementNeighbors(blocks));
 };
+var $author$project$Board$moveEnemy = F3(
+	function (deltaDuration, level, enemy) {
+		var _v0 = level.playerTarget;
+		if (_v0.$ === 'TraverseEdge') {
+			return enemy;
+		} else {
+			var enemyWithUpdatedPath = A3(
+				$ianmackenzie$elm_units$Quantity$equalWithin,
+				$ianmackenzie$elm_units$Quantity$Quantity(0.1),
+				enemy.durationBetweenMoves,
+				$author$project$Board$durationEnemyMovement) ? _Utils_update(
+				enemy,
+				{
+					movingTo: A2(
+						$elm$core$Maybe$withDefault,
+						_List_Nil,
+						A3(
+							$author$project$Board$findEnemyPath,
+							level.board.blocks,
+							enemy.movingFrom,
+							$author$project$Board$point3dToPoint(
+								$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame))))
+				}) : enemy;
+			var _v1 = enemyWithUpdatedPath.movingTo;
+			if (!_v1.b) {
+				return _Utils_update(
+					enemyWithUpdatedPath,
+					{
+						movingTo: A2(
+							$elm$core$Maybe$withDefault,
+							_List_Nil,
+							A3(
+								$author$project$Board$findEnemyPath,
+								level.board.blocks,
+								enemyWithUpdatedPath.movingFrom,
+								$author$project$Board$point3dToPoint(
+									$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame))))
+					});
+			} else {
+				var movingTo = _v1.a;
+				var movingToRest = _v1.b;
+				var remainingDuration = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, enemyWithUpdatedPath.durationBetweenMoves);
+				return _Utils_eq(
+					A2(
+						$ianmackenzie$elm_units$Quantity$compare,
+						remainingDuration,
+						$ianmackenzie$elm_units$Quantity$Quantity(0)),
+					$elm$core$Basics$EQ) ? _Utils_update(
+					enemyWithUpdatedPath,
+					{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest}) : (A2(
+					$ianmackenzie$elm_units$Quantity$lessThan,
+					$ianmackenzie$elm_units$Quantity$Quantity(0),
+					remainingDuration) ? A3(
+					$author$project$Board$moveEnemy,
+					A2(
+						$ianmackenzie$elm_units$Quantity$minus,
+						remainingDuration,
+						$ianmackenzie$elm_units$Quantity$Quantity(0)),
+					level,
+					_Utils_update(
+						enemyWithUpdatedPath,
+						{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: movingTo, movingTo: movingToRest})) : _Utils_update(
+					enemyWithUpdatedPath,
+					{durationBetweenMoves: remainingDuration}));
+			}
+		}
+	});
+var $author$project$Board$moveEnemiesHelper = F4(
+	function (deltaDuration, movedEnemies, toMoveEnemies, level) {
+		moveEnemiesHelper:
+		while (true) {
+			if (!toMoveEnemies.b) {
+				return _Utils_update(
+					level,
+					{enemies: movedEnemies});
+			} else {
+				var nextEnemy = toMoveEnemies.a;
+				var restEnemies = toMoveEnemies.b;
+				var movedEnemy = A3($author$project$Board$moveEnemy, deltaDuration, level, nextEnemy);
+				if (A2(
+					$ianmackenzie$elm_units$Quantity$greaterThan,
+					$ianmackenzie$elm_units$Quantity$Quantity(0),
+					level.invincibleFrames)) {
+					var $temp$deltaDuration = deltaDuration,
+						$temp$movedEnemies = A2($elm$core$List$cons, movedEnemy, movedEnemies),
+						$temp$toMoveEnemies = restEnemies,
+						$temp$level = level;
+					deltaDuration = $temp$deltaDuration;
+					movedEnemies = $temp$movedEnemies;
+					toMoveEnemies = $temp$toMoveEnemies;
+					level = $temp$level;
+					continue moveEnemiesHelper;
+				} else {
+					if (A2(
+						$author$project$Board$enemyPlayerCollision,
+						$author$project$Board$enemyToVisualPoint(movedEnemy),
+						level)) {
+						var $temp$deltaDuration = deltaDuration,
+							$temp$movedEnemies = movedEnemies,
+							$temp$toMoveEnemies = restEnemies,
+							$temp$level = _Utils_update(
+							level,
+							{hearts: level.hearts - 1, invincibleFrames: $author$project$Board$initialInvincibleFrames});
+						deltaDuration = $temp$deltaDuration;
+						movedEnemies = $temp$movedEnemies;
+						toMoveEnemies = $temp$toMoveEnemies;
+						level = $temp$level;
+						continue moveEnemiesHelper;
+					} else {
+						var $temp$deltaDuration = deltaDuration,
+							$temp$movedEnemies = A2($elm$core$List$cons, movedEnemy, movedEnemies),
+							$temp$toMoveEnemies = restEnemies,
+							$temp$level = level;
+						deltaDuration = $temp$deltaDuration;
+						movedEnemies = $temp$movedEnemies;
+						toMoveEnemies = $temp$toMoveEnemies;
+						level = $temp$level;
+						continue moveEnemiesHelper;
+					}
+				}
+			}
+		}
+	});
+var $author$project$Board$moveEnemies = F2(
+	function (deltaDuration, level) {
+		return A4($author$project$Board$moveEnemiesHelper, deltaDuration, _List_Nil, level.enemies, level);
+	});
 var $author$project$Board$tickEnemySpawners = F2(
 	function (deltaDuration, level) {
 		var board = level.board;
@@ -22182,15 +22224,6 @@ var $ianmackenzie$elm_geometry$Frame3d$moveTo = F2(
 				yDirection: $ianmackenzie$elm_geometry$Frame3d$yDirection(frame),
 				zDirection: $ianmackenzie$elm_geometry$Frame3d$zDirection(frame)
 			});
-	});
-var $ianmackenzie$elm_units$Quantity$equalWithin = F3(
-	function (_v0, _v1, _v2) {
-		var tolerance = _v0.a;
-		var x = _v1.a;
-		var y = _v2.a;
-		return _Utils_cmp(
-			$elm$core$Basics$abs(x - y),
-			tolerance) < 1;
 	});
 var $author$project$Board$scorePoints = function (boardLike) {
 	var playerActualPoint = $ianmackenzie$elm_geometry$Frame3d$originPoint(boardLike.playerFrame);
@@ -33484,8 +33517,8 @@ var $author$project$Screen$Editor$view = function (_v0) {
 							} else {
 								var screenSize = _v7.a;
 								var lights = function () {
-									var _v13 = model.editorMode;
-									if (_v13.$ === 'TestGame') {
+									var _v14 = model.editorMode;
+									if (_v14.$ === 'TestGame') {
 										return A2(
 											$author$project$Board$gameLights,
 											model.level.board,
@@ -33534,18 +33567,25 @@ var $author$project$Screen$Editor$view = function (_v0) {
 								return A4(
 									$author$project$Board$view3dScene,
 									lights,
-									screenSize,
 									function () {
 										var _v8 = model.editorMode;
 										if (_v8.$ === 'TestGame') {
+											return sharedModel.screenSize;
+										} else {
+											return screenSize;
+										}
+									}(),
+									function () {
+										var _v9 = model.editorMode;
+										if (_v9.$ === 'TestGame') {
 											return $author$project$Board$gamePlayCamera(model.level.playerFrame);
 										} else {
 											return $author$project$Screen$Editor$editorCamera(model);
 										}
 									}(),
 									function () {
-										var _v9 = model.editorMode;
-										if (_v9.$ === 'EditBoard') {
+										var _v10 = model.editorMode;
+										if (_v10.$ === 'EditBoard') {
 											var editorBoard = $author$project$Undo$value(model.editorBoard);
 											return $elm$core$List$concat(
 												_List_fromArray(
@@ -33559,8 +33599,8 @@ var $author$project$Screen$Editor$view = function (_v0) {
 															A3(
 															$author$project$Screen$Editor$viewCursor,
 															function () {
-																var _v10 = model.blockEditMode;
-																switch (_v10.$) {
+																var _v11 = model.blockEditMode;
+																switch (_v11.$) {
 																	case 'Select':
 																		return $avh4$elm_color$Color$white;
 																	case 'Remove':
@@ -33573,12 +33613,12 @@ var $author$project$Screen$Editor$view = function (_v0) {
 															model.editorCursor),
 															$author$project$Screen$Editor$viewOrientationArrows,
 															function () {
-															var _v11 = model.selectedBlock;
-															if (_v11.$ === 'Nothing') {
+															var _v12 = model.selectedBlock;
+															if (_v12.$ === 'Nothing') {
 																return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 															} else {
-																var _v12 = _v11.a;
-																var point = _v12.a;
+																var _v13 = _v12.a;
+																var point = _v13.a;
 																return A3($author$project$Screen$Editor$viewCursor, $avh4$elm_color$Color$yellow, model.cursorBounce, point);
 															}
 														}(),
@@ -33607,8 +33647,8 @@ var $author$project$Screen$Editor$view = function (_v0) {
 					A5($author$project$Screen$Editor$viewHeader, setScreen, toSharedMsg, sharedModel, toMsg, model),
 					A4($author$project$Screen$Editor$viewSettings, toSharedMsg, sharedModel, toMsg, model),
 					function () {
-					var _v14 = model.editorMode;
-					if (_v14.$ === 'TestGame') {
+					var _v15 = model.editorMode;
+					if (_v15.$ === 'TestGame') {
 						return A2(
 							$elm$html$Html$div,
 							_List_fromArray(
@@ -33715,8 +33755,8 @@ var $author$project$Screen$Editor$view = function (_v0) {
 							_List_fromArray(
 								[
 									function () {
-									var _v15 = model.selectedBlock;
-									if (_v15.$ === 'Nothing') {
+									var _v16 = model.selectedBlock;
+									if (_v16.$ === 'Nothing') {
 										return A2(
 											$elm$html$Html$span,
 											_List_Nil,
@@ -33725,9 +33765,9 @@ var $author$project$Screen$Editor$view = function (_v0) {
 													$elm$html$Html$text('No block selected')
 												]));
 									} else {
-										var _v16 = _v15.a;
-										var point = _v16.a;
-										var block = _v16.b;
+										var _v17 = _v16.a;
+										var point = _v17.a;
+										var block = _v17.b;
 										switch (block.$) {
 											case 'Empty':
 												return A2(
@@ -34176,11 +34216,11 @@ var $author$project$Screen$Editor$view = function (_v0) {
 													$elm$html$Html$text('Load')
 												])),
 											function () {
-											var _v20 = model.boardLoadError;
-											if (_v20.$ === 'Nothing') {
+											var _v21 = model.boardLoadError;
+											if (_v21.$ === 'Nothing') {
 												return $elm$html$Html$text('');
 											} else {
-												var error = _v20.a;
+												var error = _v21.a;
 												return A2(
 													$elm$html$Html$small,
 													_List_Nil,
@@ -34226,13 +34266,13 @@ var $author$project$Screen$Editor$view = function (_v0) {
 															} else {
 																switch (value.a.$) {
 																	case 'DefaultBoard':
-																		var _v23 = value.a;
+																		var _v24 = value.a;
 																		return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$defaultBoard);
 																	case 'BasicMiniBoard':
-																		var _v24 = value.a;
+																		var _v25 = value.a;
 																		return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$basicMiniBoard);
 																	default:
-																		var _v25 = value.a;
+																		var _v26 = value.a;
 																		return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$zigZagBoard);
 																}
 															}

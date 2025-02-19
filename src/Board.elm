@@ -61,6 +61,7 @@ import Input
 import Length exposing (Length)
 import Luminance
 import LuminousFlux
+import Math
 import Phosphor
 import Pixels
 import Point3d exposing (Point3d)
@@ -266,7 +267,10 @@ point3dToPoint point =
         parts =
             Point3d.unwrap point
     in
-    ( round parts.x, round parts.y, round parts.z )
+    ( Math.betterRound parts.x
+    , Math.betterRound parts.y
+    , Math.betterRound parts.z
+    )
 
 
 type Axis
@@ -1233,7 +1237,6 @@ moveEnemiesHelper deltaDuration movedEnemies toMoveEnemies level =
                     movedEnemies
                     restEnemies
                     { level
-                      -- TODO: handle 0 hearts
                         | hearts = level.hearts - 1
                         , invincibleFrames = initialInvincibleFrames
                     }
@@ -1249,26 +1252,52 @@ moveEnemy deltaDuration level enemy =
             enemy
 
         _ ->
-            case enemy.movingTo of
+            let
+                enemyWithUpdatedPath =
+                    if
+                        Quantity.equalWithin
+                            (Quantity 0.1)
+                            enemy.durationBetweenMoves
+                            durationEnemyMovement
+                    then
+                        { enemy
+                            | movingTo =
+                                level.playerFrame
+                                    |> Frame3d.originPoint
+                                    |> point3dToPoint
+                                    |> findEnemyPath level.board.blocks enemy.movingFrom
+                                    |> Maybe.withDefault []
+                        }
+
+                    else
+                        enemy
+            in
+            case enemyWithUpdatedPath.movingTo of
                 [] ->
-                    -- TODO: find path?
-                    enemy
+                    { enemyWithUpdatedPath
+                        | movingTo =
+                            level.playerFrame
+                                |> Frame3d.originPoint
+                                |> point3dToPoint
+                                |> findEnemyPath level.board.blocks enemyWithUpdatedPath.movingFrom
+                                |> Maybe.withDefault []
+                    }
 
                 movingTo :: movingToRest ->
                     let
                         remainingDuration =
-                            enemy.durationBetweenMoves
+                            enemyWithUpdatedPath.durationBetweenMoves
                                 |> Quantity.minus deltaDuration
                     in
                     if Quantity.compare remainingDuration (Quantity 0) == EQ then
-                        { enemy
+                        { enemyWithUpdatedPath
                             | movingTo = movingToRest
                             , movingFrom = movingTo
                             , durationBetweenMoves = durationEnemyMovement
                         }
 
                     else if remainingDuration |> Quantity.lessThan (Quantity 0) then
-                        { enemy
+                        { enemyWithUpdatedPath
                             | movingTo = movingToRest
                             , movingFrom = movingTo
                             , durationBetweenMoves = durationEnemyMovement
@@ -1276,7 +1305,7 @@ moveEnemy deltaDuration level enemy =
                             |> moveEnemy (Quantity 0 |> Quantity.minus remainingDuration) level
 
                     else
-                        { enemy
+                        { enemyWithUpdatedPath
                             | durationBetweenMoves = remainingDuration
                         }
 
@@ -1555,7 +1584,6 @@ movePlayer deltaDuration level =
                             |> handlePlayerCollisions
                 in
                 if nextLevel.hearts < 1 then
-                    -- TODO: handle 0 hearts
                     nextLevel
 
                 else
@@ -1661,7 +1689,6 @@ movePlayer deltaDuration level =
                             |> handlePlayerCollisions
                 in
                 if nextLevel.hearts < 1 then
-                    -- TODO: handle 0 hearts
                     nextLevel
 
                 else

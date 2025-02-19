@@ -1232,7 +1232,13 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                     in
                     Board.view3dScene
                         lights
-                        screenSize
+                        (case model.editorMode of
+                            TestGame ->
+                                sharedModel.screenSize
+
+                            EditBoard ->
+                                screenSize
+                        )
                         (case model.editorMode of
                             TestGame ->
                                 Board.gamePlayCamera model.level.playerFrame
