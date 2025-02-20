@@ -33,6 +33,7 @@ module Board exposing
     , pointToPoint3d
     , tick
     , view3dScene
+    , viewAllPointsCollected
     , viewBlock
     , viewEnemy
     , viewGameOver
@@ -1197,7 +1198,7 @@ durationEnemyMovement =
 
 tick : Duration -> Level -> Level
 tick deltaDuration level =
-    if level.hearts > 0 then
+    if level.hearts > 0 && level.capturedPoints /= level.totalCapturePoints then
         level
             |> tickPlayer deltaDuration
             |> tickEnemies deltaDuration
@@ -2098,6 +2099,33 @@ viewGameOver level nextActions =
             [ Html.span [ Html.Attributes.style "color" "white" ] [ Html.text "Game Over" ]
             , nextActions
             ]
+
+
+viewAllPointsCollected : Level -> Html msg -> Html msg
+viewAllPointsCollected level nextActions =
+    if level.capturedPoints == level.totalCapturePoints then
+        Html.div
+            [ Html.Attributes.style "position" "fixed"
+            , Html.Attributes.style "top" "50%"
+            , Html.Attributes.style "left" "50%"
+            , Html.Attributes.style "transform" "translate(-50%, -50%)"
+            , Html.Attributes.style "background-color" "rgba(0, 255, 125, 0.5)"
+            , Html.Attributes.style "font-size" "4rem"
+            , Html.Attributes.style "backdrop-filter" "blur(5px)"
+            , Html.Attributes.style "padding" "4rem 8rem"
+            , Html.Attributes.style "border-radius" "1rem"
+            , Html.Attributes.style "display" "flex"
+            , Html.Attributes.style "flex-direction" "column"
+            , Html.Attributes.style "gap" "1rem"
+            ]
+            [ Html.span
+                [ Html.Attributes.style "white-space" "nowrap" ]
+                [ Html.text "Board Complete!" ]
+            , nextActions
+            ]
+
+    else
+        Html.text ""
 
 
 

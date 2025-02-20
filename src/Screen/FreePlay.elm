@@ -271,6 +271,13 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                         ]
                         [ Html.text "Select another board" ]
                     )
+                , Board.viewAllPointsCollected model.level
+                    (Html.button
+                        [ Html.Attributes.type_ "button"
+                        , Html.Events.onClick (toMsg ExitFreePlayBoard)
+                        ]
+                        [ Html.text "Select another board" ]
+                    )
                 , Html.div
                     [ Html.Attributes.style "position" "absolute"
                     , Html.Attributes.style "padding" "0.5rem"

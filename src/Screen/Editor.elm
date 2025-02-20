@@ -1342,6 +1342,24 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                                 [ Html.text "Edit" ]
                             ]
                         )
+                    , Board.viewAllPointsCollected model.level
+                        (Html.div
+                            [ Html.Attributes.style "display" "flex"
+                            , Html.Attributes.style "flex-direction" "column"
+                            , Html.Attributes.style "gap" "0.5rem"
+                            ]
+                            [ Html.button
+                                [ Html.Attributes.type_ "button"
+                                , Html.Events.onClick (toMsg RestartLevel)
+                                ]
+                                [ Html.text "Restart" ]
+                            , Html.button
+                                [ Html.Attributes.type_ "button"
+                                , Html.Events.onClick (toMsg ChangeMode)
+                                ]
+                                [ Html.text "Edit" ]
+                            ]
+                        )
                     ]
 
             EditBoard ->

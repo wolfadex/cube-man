@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1740008795566"
+    "1740009563422"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -17076,6 +17076,7 @@ var $elm$core$Set$remove = F2(
 		return $elm$core$Set$Set_elm_builtin(
 			A2($elm$core$Dict$remove, key, dict));
 	});
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $author$project$Board$enemyRadius = $ianmackenzie$elm_units$Length$meters(0.1);
 var $ianmackenzie$elm_units$Quantity$greaterThan = F2(
 	function (_v0, _v1) {
@@ -18237,7 +18238,7 @@ var $author$project$Board$tickPlayer = F2(
 	});
 var $author$project$Board$tick = F2(
 	function (deltaDuration, level) {
-		return (level.hearts > 0) ? A2(
+		return ((level.hearts > 0) && (!_Utils_eq(level.capturedPoints, level.totalCapturePoints))) ? A2(
 			$author$project$Board$tickEnemies,
 			deltaDuration,
 			A2($author$project$Board$tickPlayer, deltaDuration, level)) : level;
@@ -21914,6 +21915,40 @@ var $author$project$Board$view3dScene = F4(
 				toneMapping: $ianmackenzie$elm_3d_scene$Scene3d$noToneMapping,
 				whiteBalance: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight
 			});
+	});
+var $author$project$Board$viewAllPointsCollected = F2(
+	function (level, nextActions) {
+		return _Utils_eq(level.capturedPoints, level.totalCapturePoints) ? A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'position', 'fixed'),
+					A2($elm$html$Html$Attributes$style, 'top', '50%'),
+					A2($elm$html$Html$Attributes$style, 'left', '50%'),
+					A2($elm$html$Html$Attributes$style, 'transform', 'translate(-50%, -50%)'),
+					A2($elm$html$Html$Attributes$style, 'background-color', 'rgba(0, 255, 125, 0.5)'),
+					A2($elm$html$Html$Attributes$style, 'font-size', '4rem'),
+					A2($elm$html$Html$Attributes$style, 'backdrop-filter', 'blur(5px)'),
+					A2($elm$html$Html$Attributes$style, 'padding', '4rem 8rem'),
+					A2($elm$html$Html$Attributes$style, 'border-radius', '1rem'),
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+					A2($elm$html$Html$Attributes$style, 'gap', '1rem')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Board Complete!')
+						])),
+					nextActions
+				])) : $elm$html$Html$text('');
 	});
 var $ianmackenzie$elm_geometry$Frame3d$atPoint = function (point) {
 	return $ianmackenzie$elm_geometry$Frame3d$unsafe(
@@ -26639,7 +26674,6 @@ var $phosphor_icons$phosphor_elm$Phosphor$arrowsVertical = function (weight) {
 var $author$project$Html$Attributes$Extra$bool = function (b) {
 	return b ? 'true' : 'false';
 };
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $author$project$Undo$canRedo = function (_v0) {
 	var _v1 = _v0.a;
 	var after = _v1.c;
@@ -29411,6 +29445,44 @@ var $author$project$Screen$Editor$view = function (_v0) {
 													[
 														$elm$html$Html$text('Edit')
 													]))
+											]))),
+									A2(
+									$author$project$Board$viewAllPointsCollected,
+									model.level,
+									A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+												A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+												A2($elm$html$Html$Attributes$style, 'gap', '0.5rem')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$button,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$type_('button'),
+														$elm$html$Html$Events$onClick(
+														toMsg($author$project$Screen$Editor$RestartLevel))
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Restart')
+													])),
+												A2(
+												$elm$html$Html$button,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$type_('button'),
+														$elm$html$Html$Events$onClick(
+														toMsg($author$project$Screen$Editor$ChangeMode))
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Edit')
+													]))
 											])))
 								]));
 					} else {
@@ -30143,6 +30215,21 @@ var $author$project$Screen$FreePlay$view = function (_v0) {
 							$author$project$Board$viewStats(model.level),
 							A2(
 							$author$project$Board$viewGameOver,
+							model.level,
+							A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$type_('button'),
+										$elm$html$Html$Events$onClick(
+										toMsg($author$project$Screen$FreePlay$ExitFreePlayBoard))
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Select another board')
+									]))),
+							A2(
+							$author$project$Board$viewAllPointsCollected,
 							model.level,
 							A2(
 								$elm$html$Html$button,
