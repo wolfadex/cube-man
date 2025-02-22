@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1740009563422"
+    "1740249820327"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -16436,7 +16436,7 @@ var $ianmackenzie$elm_geometry$Point2d$yCoordinate = function (_v0) {
 	return $ianmackenzie$elm_units$Quantity$Quantity(p.y);
 };
 var $author$project$Screen$Editor$moveCameraByMouse = F3(
-	function (pointerId, movement, model) {
+	function (details, movement, model) {
 		var _v0 = model.cameraMode;
 		switch (_v0.$) {
 			case 'Orbit':
@@ -16456,7 +16456,7 @@ var $author$project$Screen$Editor$moveCameraByMouse = F3(
 									$ianmackenzie$elm_units$Pixels$toFloat(
 										$ianmackenzie$elm_geometry$Point2d$xCoordinate(movement))),
 								model.cameraRotation),
-							mouseDragging: $author$project$Screen$Editor$InteractionMoving(pointerId)
+							mouseDragging: $author$project$Screen$Editor$InteractionMoving(details)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Pan':
@@ -16527,6 +16527,30 @@ var $ianmackenzie$elm_geometry$Point3d$along = F2(
 		return $ianmackenzie$elm_geometry$Geometry$Types$Point3d(
 			{x: p0.x + (distance * d.x), y: p0.y + (distance * d.y), z: p0.z + (distance * d.z)});
 	});
+var $ianmackenzie$elm_geometry$Geometry$Types$Rectangle3d = function (a) {
+	return {$: 'Rectangle3d', a: a};
+};
+var $ianmackenzie$elm_units$Quantity$abs = function (_v0) {
+	var value = _v0.a;
+	return $ianmackenzie$elm_units$Quantity$Quantity(
+		$elm$core$Basics$abs(value));
+};
+var $ianmackenzie$elm_geometry$SketchPlane3d$copy = function (_v0) {
+	var properties = _v0.a;
+	return $ianmackenzie$elm_geometry$Geometry$Types$SketchPlane3d(properties);
+};
+var $ianmackenzie$elm_geometry$Rectangle3d$centeredOn = F2(
+	function (givenAxes, _v0) {
+		var givenWidth = _v0.a;
+		var givenHeight = _v0.b;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Rectangle3d(
+			{
+				axes: $ianmackenzie$elm_geometry$SketchPlane3d$copy(givenAxes),
+				dimensions: _Utils_Tuple2(
+					$ianmackenzie$elm_units$Quantity$abs(givenWidth),
+					$ianmackenzie$elm_units$Quantity$abs(givenHeight))
+			});
+	});
 var $ianmackenzie$elm_units$Quantity$zero = $ianmackenzie$elm_units$Quantity$Quantity(0);
 var $ianmackenzie$elm_geometry$Point3d$distanceFrom = F2(
 	function (_v0, _v1) {
@@ -16557,11 +16581,6 @@ var $ianmackenzie$elm_3d_camera$Camera3d$Types$Camera3d = function (a) {
 };
 var $ianmackenzie$elm_3d_camera$Camera3d$Types$Perspective = function (a) {
 	return {$: 'Perspective', a: a};
-};
-var $ianmackenzie$elm_units$Quantity$abs = function (_v0) {
-	var value = _v0.a;
-	return $ianmackenzie$elm_units$Quantity$Quantity(
-		$elm$core$Basics$abs(value));
 };
 var $ianmackenzie$elm_units$Quantity$half = function (_v0) {
 	var value = _v0.a;
@@ -16658,6 +16677,12 @@ var $ianmackenzie$elm_geometry$Rectangle2d$from = F2(
 			$ianmackenzie$elm_geometry$Point2d$xCoordinate(p2),
 			$ianmackenzie$elm_geometry$Point2d$yCoordinate(p2));
 	});
+var $ianmackenzie$elm_units$Quantity$greaterThan = F2(
+	function (_v0, _v1) {
+		var y = _v0.a;
+		var x = _v1.a;
+		return _Utils_cmp(x, y) > 0;
+	});
 var $ianmackenzie$elm_geometry$BoundingBox3d$extrema = function (boundingBox) {
 	var _v0 = boundingBox;
 	var b = _v0.a;
@@ -16747,11 +16772,104 @@ var $author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d = F2(
 			}
 		}
 	});
+var $ianmackenzie$elm_geometry$Geometry$Types$Plane3d = function (a) {
+	return {$: 'Plane3d', a: a};
+};
+var $ianmackenzie$elm_geometry$Direction3d$componentIn = F2(
+	function (_v0, _v1) {
+		var d2 = _v0.a;
+		var d1 = _v1.a;
+		return ((d1.x * d2.x) + (d1.y * d2.y)) + (d1.z * d2.z);
+	});
+var $ianmackenzie$elm_units$Quantity$multiplyBy = F2(
+	function (scale, _v0) {
+		var value = _v0.a;
+		return $ianmackenzie$elm_units$Quantity$Quantity(scale * value);
+	});
+var $ianmackenzie$elm_geometry$Point3d$signedDistanceFrom = F2(
+	function (_v0, _v1) {
+		var plane = _v0.a;
+		var p = _v1.a;
+		var _v2 = plane.originPoint;
+		var p0 = _v2.a;
+		var _v3 = plane.normalDirection;
+		var n = _v3.a;
+		return $ianmackenzie$elm_units$Quantity$Quantity((((p.x - p0.x) * n.x) + ((p.y - p0.y) * n.y)) + ((p.z - p0.z) * n.z));
+	});
+var $ianmackenzie$elm_geometry$Axis3d$intersectionWithPlane = F2(
+	function (plane, axis) {
+		var axisDirection = $ianmackenzie$elm_geometry$Axis3d$direction(axis);
+		var _v0 = plane;
+		var normalDirection = _v0.a.normalDirection;
+		var normalComponent = A2($ianmackenzie$elm_geometry$Direction3d$componentIn, normalDirection, axisDirection);
+		if (!normalComponent) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var axisOrigin = $ianmackenzie$elm_geometry$Axis3d$originPoint(axis);
+			var normalDistance = A2($ianmackenzie$elm_geometry$Point3d$signedDistanceFrom, plane, axisOrigin);
+			var axialDistance = A2($ianmackenzie$elm_units$Quantity$multiplyBy, (-1) / normalComponent, normalDistance);
+			return $elm$core$Maybe$Just(
+				A3($ianmackenzie$elm_geometry$Point3d$translateIn, axisDirection, axialDistance, axisOrigin));
+		}
+	});
+var $ianmackenzie$elm_geometry$Point3d$projectInto = F2(
+	function (_v0, _v1) {
+		var sketchPlane = _v0.a;
+		var p = _v1.a;
+		var _v2 = sketchPlane.originPoint;
+		var p0 = _v2.a;
+		var deltaX = p.x - p0.x;
+		var deltaY = p.y - p0.y;
+		var deltaZ = p.z - p0.z;
+		var _v3 = sketchPlane.yDirection;
+		var j = _v3.a;
+		var _v4 = sketchPlane.xDirection;
+		var i = _v4.a;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Point2d(
+			{x: ((deltaX * i.x) + (deltaY * i.y)) + (deltaZ * i.z), y: ((deltaX * j.x) + (deltaY * j.y)) + (deltaZ * j.z)});
+	});
+var $ianmackenzie$elm_geometry$Axis3d$intersectionWithRectangle = F2(
+	function (_v0, axis) {
+		var axes = _v0.a.axes;
+		var dimensions = _v0.a.dimensions;
+		var _v1 = axes;
+		var sketchPlane = _v1.a;
+		var plane = $ianmackenzie$elm_geometry$Geometry$Types$Plane3d(
+			{
+				normalDirection: A2($ianmackenzie$elm_geometry$Unsafe$Direction3d$unsafeCrossProduct, sketchPlane.xDirection, sketchPlane.yDirection),
+				originPoint: sketchPlane.originPoint
+			});
+		var _v2 = A2($ianmackenzie$elm_geometry$Axis3d$intersectionWithPlane, plane, axis);
+		if (_v2.$ === 'Just') {
+			var result = _v2;
+			var point = result.a;
+			var _v3 = A2(
+				$ianmackenzie$elm_geometry$Point3d$projectInto,
+				$ianmackenzie$elm_geometry$Geometry$Types$SketchPlane3d(sketchPlane),
+				point);
+			var p = _v3.a;
+			var _v4 = dimensions;
+			var width = _v4.a.a;
+			var height = _v4.b.a;
+			return ((($elm$core$Basics$abs(p.x) / width) <= 0.5) && (($elm$core$Basics$abs(p.y) / height) <= 0.5)) ? result : $elm$core$Maybe$Nothing;
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $ianmackenzie$elm_units$Quantity$lessThan = F2(
 	function (_v0, _v1) {
 		var y = _v0.a;
 		var x = _v1.a;
 		return _Utils_cmp(x, y) < 0;
+	});
+var $ianmackenzie$elm_geometry$SketchPlane3d$moveTo = F2(
+	function (newOrigin, sketchPlane) {
+		return $ianmackenzie$elm_geometry$SketchPlane3d$unsafe(
+			{
+				originPoint: newOrigin,
+				xDirection: $ianmackenzie$elm_geometry$SketchPlane3d$xDirection(sketchPlane),
+				yDirection: $ianmackenzie$elm_geometry$SketchPlane3d$yDirection(sketchPlane)
+			});
 	});
 var $ianmackenzie$elm_geometry$Point2d$pixels = F2(
 	function (x, y) {
@@ -16806,11 +16924,6 @@ var $ianmackenzie$elm_3d_camera$Viewpoint3d$eyePoint = function (_v0) {
 	var frame = _v0.a;
 	return $ianmackenzie$elm_geometry$Frame3d$originPoint(frame);
 };
-var $ianmackenzie$elm_units$Quantity$multiplyBy = F2(
-	function (scale, _v0) {
-		var value = _v0.a;
-		return $ianmackenzie$elm_units$Quantity$Quantity(scale * value);
-	});
 var $ianmackenzie$elm_units$Quantity$per = F2(
 	function (_v0, _v1) {
 		var independentValue = _v0.a;
@@ -16977,10 +17090,10 @@ var $author$project$Screen$Editor$moveCursorByMouse = F2(
 						if (block.$ === 'Empty') {
 							return maybeInter;
 						} else {
-							var _v5 = point;
-							var x = _v5.a;
-							var y = _v5.b;
-							var z = _v5.c;
+							var _v7 = point;
+							var x = _v7.a;
+							var y = _v7.b;
+							var z = _v7.c;
 							if ((_Utils_cmp(x, model.xLowerVisible) < 0) || ((_Utils_cmp(x, model.xUpperVisible) > 0) || ((_Utils_cmp(y, model.yLowerVisible) < 0) || ((_Utils_cmp(y, model.yUpperVisible) > 0) || ((_Utils_cmp(z, model.zLowerVisible) < 0) || (_Utils_cmp(z, model.zUpperVisible) > 0)))))) {
 								return maybeInter;
 							} else {
@@ -16991,11 +17104,11 @@ var $author$project$Screen$Editor$moveCursorByMouse = F2(
 										$ianmackenzie$elm_units$Length$meters(1),
 										$ianmackenzie$elm_units$Length$meters(1)),
 									$author$project$Board$pointToPoint3d(point));
-								var _v6 = A2($author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d, ray, boundingBox);
-								if (_v6.$ === 'Nothing') {
+								var _v8 = A2($author$project$Axis3d$Extra$intersectionAxisAlignedBoundingBox3d, ray, boundingBox);
+								if (_v8.$ === 'Nothing') {
 									return maybeInter;
 								} else {
-									var intersection = _v6.a;
+									var intersection = _v8.a;
 									var newDist = A2(
 										$ianmackenzie$elm_geometry$Point3d$distanceFrom,
 										$ianmackenzie$elm_geometry$Axis3d$originPoint(ray),
@@ -17004,8 +17117,8 @@ var $author$project$Screen$Editor$moveCursorByMouse = F2(
 										return $elm$core$Maybe$Just(
 											_Utils_Tuple2(intersection, newDist));
 									} else {
-										var _v8 = maybeInter.a;
-										var prevDist = _v8.b;
+										var _v10 = maybeInter.a;
+										var prevDist = _v10.b;
 										return A2($ianmackenzie$elm_units$Quantity$lessThan, prevDist, newDist) ? $elm$core$Maybe$Just(
 											_Utils_Tuple2(intersection, newDist)) : maybeInter;
 									}
@@ -17016,17 +17129,60 @@ var $author$project$Screen$Editor$moveCursorByMouse = F2(
 				$elm$core$Maybe$Nothing,
 				editorBoard.blocks);
 			if (maybeIntersection.$ === 'Nothing') {
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				var _v2 = model.blockEditMode;
+				switch (_v2.$) {
+					case 'Remove':
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					case 'Select':
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					default:
+						if (A2(
+							$ianmackenzie$elm_units$Quantity$greaterThan,
+							$ianmackenzie$elm_units$Quantity$Quantity(0),
+							model.cameraElevation)) {
+							var _v3 = A2(
+								$ianmackenzie$elm_geometry$Axis3d$intersectionWithRectangle,
+								A2(
+									$ianmackenzie$elm_geometry$Rectangle3d$centeredOn,
+									A2(
+										$ianmackenzie$elm_geometry$SketchPlane3d$moveTo,
+										A3($ianmackenzie$elm_geometry$Point3d$meters, (editorBoard.maxX / 2) - 0.5, (editorBoard.maxY / 2) - 0.5, -0.5),
+										$ianmackenzie$elm_geometry$SketchPlane3d$xy),
+									_Utils_Tuple2(
+										$ianmackenzie$elm_units$Length$meters(editorBoard.maxX),
+										$ianmackenzie$elm_units$Length$meters(editorBoard.maxY))),
+								ray);
+							if (_v3.$ === 'Nothing') {
+								return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+							} else {
+								var intersectionPoint = _v3.a;
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{
+											editorCursor: $author$project$Board$point3dToPoint(
+												A3(
+													$ianmackenzie$elm_geometry$Point3d$translateIn,
+													$ianmackenzie$elm_geometry$Direction3d$positiveZ,
+													$ianmackenzie$elm_units$Length$meters(0.5),
+													intersectionPoint))
+										}),
+									$elm$core$Platform$Cmd$none);
+							}
+						} else {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						}
+				}
 			} else {
-				var _v2 = maybeIntersection.a;
-				var intersection = _v2.a;
+				var _v4 = maybeIntersection.a;
+				var intersection = _v4.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
 							editorCursor: function () {
-								var _v3 = model.blockEditMode;
-								switch (_v3.$) {
+								var _v5 = model.blockEditMode;
+								switch (_v5.$) {
 									case 'Remove':
 										return $author$project$Board$point3dToPoint(
 											A2(
@@ -17078,12 +17234,6 @@ var $elm$core$Set$remove = F2(
 	});
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $author$project$Board$enemyRadius = $ianmackenzie$elm_units$Length$meters(0.1);
-var $ianmackenzie$elm_units$Quantity$greaterThan = F2(
-	function (_v0, _v1) {
-		var y = _v0.a;
-		var x = _v1.a;
-		return _Utils_cmp(x, y) > 0;
-	});
 var $author$project$Board$playerRadius = $ianmackenzie$elm_units$Length$meters(0.5);
 var $author$project$Board$enemyPlayerCollision = F2(
 	function (enemyPoint, level) {
@@ -18400,15 +18550,6 @@ var $author$project$Screen$Editor$update = F5(
 				return $author$project$Screen$Editor$undo(model);
 			case 'Redo':
 				return $author$project$Screen$Editor$redo(model);
-			case 'MouseDown':
-				var pointerId = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							mouseDragging: $author$project$Screen$Editor$InteractionStart(pointerId)
-						}),
-					$elm$core$Platform$Cmd$none);
 			case 'KeyDown':
 				var key = msg.a;
 				var _v6 = model.editorMode;
@@ -18449,6 +18590,19 @@ var $author$project$Screen$Editor$update = F5(
 						model,
 						{
 							editorKeysDown: A2($elm$core$Set$remove, key, model.editorKeysDown)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'MouseDown':
+				var pointerId = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							mouseDragging: $author$project$Screen$Editor$InteractionStart(
+								{
+									modifyingMany: A2($elm$core$Set$member, 'Alt', model.editorKeysDown),
+									pointerId: pointerId
+								})
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MouseUp':
@@ -18596,10 +18750,10 @@ var $author$project$Screen$Editor$update = F5(
 					}
 				}
 			case 'MouseMove':
-				var pointerId = msg.a;
+				var details = msg.a;
 				var offset = msg.b;
 				var movement = msg.c;
-				return A2($elm$core$Set$member, 'Shift', model.editorKeysDown) ? A3($author$project$Screen$Editor$moveCameraByMouse, pointerId, movement, model) : A2($author$project$Screen$Editor$moveCursorByMouse, offset, model);
+				return A2($elm$core$Set$member, 'Shift', model.editorKeysDown) ? A3($author$project$Screen$Editor$moveCameraByMouse, details, movement, model) : A2($author$project$Screen$Editor$moveCursorByMouse, offset, model);
 			case 'XLowerVisibleChanged':
 				var value = msg.a;
 				return _Utils_Tuple2(
@@ -19404,130 +19558,7 @@ var $author$project$Board$axisToLabel = function (axis) {
 var $author$project$Board$basicMiniBoard = '[1,[5,5,5,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[2]],[[0,0,3],[1]],[[0,0,4],[1]],[[0,1,0],[1]],[[0,1,1],[1]],[[0,1,2],[3,false]],[[0,1,3],[1]],[[0,1,4],[1]],[[0,2,0],[2]],[[0,2,1],[3,false]],[[0,2,2],[3,false]],[[0,2,3],[3,false]],[[0,2,4],[2]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[3,false]],[[0,3,3],[1]],[[0,3,4],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[2]],[[0,4,3],[1]],[[0,4,4],[1]],[[1,0,0],[1]],[[1,0,1],[1]],[[1,0,2],[3,false]],[[1,0,3],[1]],[[1,0,4],[1]],[[1,1,0],[1]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,2,0],[3,false]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[3,false]],[[1,3,0],[1]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,4,0],[1]],[[1,4,1],[1]],[[1,4,2],[3,false]],[[1,4,3],[1]],[[1,4,4],[1]],[[2,0,0],[2]],[[2,0,1],[3,false]],[[2,0,2],[3,false]],[[2,0,3],[3,false]],[[2,0,4],[2]],[[2,1,0],[3,false]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[3,false]],[[2,2,0],[5,[[0,3]]]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[4,[[0],[2]]]],[[2,3,0],[3,false]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[3,false]],[[2,4,0],[2]],[[2,4,1],[3,false]],[[2,4,2],[3,false]],[[2,4,3],[3,false]],[[2,4,4],[2]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[3,false]],[[3,0,3],[1]],[[3,0,4],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,2,0],[3,false]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[3,false]],[[3,3,0],[1]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,4,0],[1]],[[3,4,1],[1]],[[3,4,2],[3,false]],[[3,4,3],[1]],[[3,4,4],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[2]],[[4,0,3],[1]],[[4,0,4],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[3,false]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,2,0],[2]],[[4,2,1],[3,false]],[[4,2,2],[3,false]],[[4,2,3],[3,false]],[[4,2,4],[2]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[3,false]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,4,0],[1]],[[4,4,1],[1]],[[4,4,2],[2]],[[4,4,3],[1]],[[4,4,4],[1]]]]]';
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$CastsShadows = function (a) {
-	return {$: 'CastsShadows', a: a};
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows = function (flag) {
-	return $ianmackenzie$elm_3d_scene$Scene3d$Light$CastsShadows(flag);
-};
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
-var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$Chromaticity = function (a) {
-	return {$: 'Chromaticity', a: a};
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$chromaticity = function (xy) {
-	return $ianmackenzie$elm_3d_scene$Scene3d$Types$Chromaticity(xy);
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight = $ianmackenzie$elm_3d_scene$Scene3d$Light$chromaticity(
-	{x: 0.31271, y: 0.32902});
-var $author$project$Screen$Editor$MouseDown = function (a) {
-	return {$: 'MouseDown', a: a};
-};
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $author$project$Screen$Editor$decodeMouseDown = function (toMsg) {
-	return A2(
-		$elm$json$Json$Decode$andThen,
-		function (button) {
-			return (!button) ? A2(
-				$elm$json$Json$Decode$map,
-				A2($elm$core$Basics$composeR, $author$project$Screen$Editor$MouseDown, toMsg),
-				A2($elm$json$Json$Decode$field, 'pointerId', $elm$json$Json$Decode$value)) : $elm$json$Json$Decode$fail('Non-primary mouse button');
-		},
-		A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
-};
-var $author$project$Screen$Editor$MouseUp = {$: 'MouseUp'};
-var $author$project$Screen$Editor$decodeMouseUp = function (toMsg) {
-	return A2(
-		$elm$json$Json$Decode$andThen,
-		function (button) {
-			return (!button) ? $elm$json$Json$Decode$succeed(
-				toMsg($author$project$Screen$Editor$MouseUp)) : $elm$json$Json$Decode$fail('Non-primary mouse button');
-		},
-		A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
-};
-var $author$project$Screen$Editor$MouseMove = F3(
-	function (a, b, c) {
-		return {$: 'MouseMove', a: a, b: b, c: c};
-	});
-var $elm$json$Json$Decode$map4 = _Json_map4;
-var $author$project$Screen$Editor$decodePointerMove = F2(
-	function (toMsg, pointer) {
-		return A5(
-			$elm$json$Json$Decode$map4,
-			F4(
-				function (ox, oy, mx, my) {
-					return toMsg(
-						A3(
-							$author$project$Screen$Editor$MouseMove,
-							pointer,
-							A2($ianmackenzie$elm_geometry$Point2d$pixels, ox, oy),
-							A2($ianmackenzie$elm_geometry$Point2d$pixels, mx, my)));
-				}),
-			A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float),
-			A2($elm$json$Json$Decode$field, 'offsetY', $elm$json$Json$Decode$float),
-			A2($elm$json$Json$Decode$field, 'movementX', $elm$json$Json$Decode$float),
-			A2($elm$json$Json$Decode$field, 'movementY', $elm$json$Json$Decode$float));
-	});
 var $author$project$Board$defaultBoard = '[1,[9,9,9,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[1]],[[0,0,3],[1]],[[0,0,4],[1]],[[0,0,5],[1]],[[0,0,6],[1]],[[0,0,7],[1]],[[0,0,8],[1]],[[0,1,0],[1]],[[0,1,1],[1]],[[0,1,2],[1]],[[0,1,3],[1]],[[0,1,4],[1]],[[0,1,5],[1]],[[0,1,6],[1]],[[0,1,7],[1]],[[0,1,8],[1]],[[0,2,0],[1]],[[0,2,1],[1]],[[0,2,2],[1]],[[0,2,3],[1]],[[0,2,4],[1]],[[0,2,5],[1]],[[0,2,6],[1]],[[0,2,7],[1]],[[0,2,8],[1]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[1]],[[0,3,3],[1]],[[0,3,4],[1]],[[0,3,5],[1]],[[0,3,6],[1]],[[0,3,7],[1]],[[0,3,8],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[1]],[[0,4,3],[1]],[[0,4,4],[1]],[[0,4,5],[1]],[[0,4,6],[1]],[[0,4,7],[1]],[[0,4,8],[1]],[[0,5,0],[1]],[[0,5,1],[1]],[[0,5,2],[1]],[[0,5,3],[1]],[[0,5,4],[1]],[[0,5,5],[1]],[[0,5,6],[1]],[[0,5,7],[1]],[[0,5,8],[1]],[[0,6,0],[1]],[[0,6,1],[1]],[[0,6,2],[1]],[[0,6,3],[1]],[[0,6,4],[1]],[[0,6,5],[1]],[[0,6,6],[1]],[[0,6,7],[1]],[[0,6,8],[1]],[[0,7,0],[1]],[[0,7,1],[1]],[[0,7,2],[1]],[[0,7,3],[1]],[[0,7,4],[1]],[[0,7,5],[1]],[[0,7,6],[1]],[[0,7,7],[1]],[[0,7,8],[1]],[[0,8,0],[1]],[[0,8,1],[1]],[[0,8,2],[1]],[[0,8,3],[1]],[[0,8,4],[1]],[[0,8,5],[1]],[[0,8,6],[1]],[[0,8,7],[1]],[[0,8,8],[1]],[[1,0,0],[1]],[[1,0,1],[1]],[[1,0,2],[1]],[[1,0,3],[1]],[[1,0,4],[1]],[[1,0,5],[1]],[[1,0,6],[1]],[[1,0,7],[1]],[[1,0,8],[1]],[[1,1,0],[1]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,1,5],[1]],[[1,1,6],[1]],[[1,1,7],[1]],[[1,1,8],[1]],[[1,2,0],[1]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[1]],[[1,2,5],[1]],[[1,2,6],[1]],[[1,2,7],[1]],[[1,2,8],[1]],[[1,3,0],[1]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,3,5],[1]],[[1,3,6],[1]],[[1,3,7],[1]],[[1,3,8],[1]],[[1,4,0],[1]],[[1,4,1],[1]],[[1,4,2],[1]],[[1,4,3],[1]],[[1,4,4],[1]],[[1,4,5],[1]],[[1,4,6],[1]],[[1,4,7],[1]],[[1,4,8],[1]],[[1,5,0],[1]],[[1,5,1],[1]],[[1,5,2],[1]],[[1,5,3],[1]],[[1,5,4],[1]],[[1,5,5],[1]],[[1,5,6],[1]],[[1,5,7],[1]],[[1,5,8],[1]],[[1,6,0],[1]],[[1,6,1],[1]],[[1,6,2],[1]],[[1,6,3],[1]],[[1,6,4],[1]],[[1,6,5],[1]],[[1,6,6],[1]],[[1,6,7],[1]],[[1,6,8],[1]],[[1,7,0],[1]],[[1,7,1],[1]],[[1,7,2],[1]],[[1,7,3],[1]],[[1,7,4],[1]],[[1,7,5],[1]],[[1,7,6],[1]],[[1,7,7],[1]],[[1,7,8],[1]],[[1,8,0],[1]],[[1,8,1],[1]],[[1,8,2],[1]],[[1,8,3],[1]],[[1,8,4],[1]],[[1,8,5],[1]],[[1,8,6],[1]],[[1,8,7],[1]],[[1,8,8],[1]],[[2,0,0],[1]],[[2,0,1],[1]],[[2,0,2],[1]],[[2,0,3],[1]],[[2,0,4],[1]],[[2,0,5],[1]],[[2,0,6],[1]],[[2,0,7],[1]],[[2,0,8],[1]],[[2,1,0],[1]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[1]],[[2,1,5],[1]],[[2,1,6],[1]],[[2,1,7],[1]],[[2,1,8],[1]],[[2,2,0],[1]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[1]],[[2,2,5],[1]],[[2,2,6],[1]],[[2,2,7],[1]],[[2,2,8],[1]],[[2,3,0],[1]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[1]],[[2,3,5],[1]],[[2,3,6],[1]],[[2,3,7],[1]],[[2,3,8],[1]],[[2,4,0],[1]],[[2,4,1],[1]],[[2,4,2],[1]],[[2,4,3],[1]],[[2,4,4],[1]],[[2,4,5],[1]],[[2,4,6],[1]],[[2,4,7],[1]],[[2,4,8],[1]],[[2,5,0],[1]],[[2,5,1],[1]],[[2,5,2],[1]],[[2,5,3],[1]],[[2,5,4],[1]],[[2,5,5],[1]],[[2,5,6],[1]],[[2,5,7],[1]],[[2,5,8],[1]],[[2,6,0],[1]],[[2,6,1],[1]],[[2,6,2],[1]],[[2,6,3],[1]],[[2,6,4],[1]],[[2,6,5],[1]],[[2,6,6],[1]],[[2,6,7],[1]],[[2,6,8],[1]],[[2,7,0],[1]],[[2,7,1],[1]],[[2,7,2],[1]],[[2,7,3],[1]],[[2,7,4],[1]],[[2,7,5],[1]],[[2,7,6],[1]],[[2,7,7],[1]],[[2,7,8],[1]],[[2,8,0],[1]],[[2,8,1],[1]],[[2,8,2],[1]],[[2,8,3],[1]],[[2,8,4],[1]],[[2,8,5],[1]],[[2,8,6],[1]],[[2,8,7],[1]],[[2,8,8],[1]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[1]],[[3,0,3],[1]],[[3,0,4],[1]],[[3,0,5],[1]],[[3,0,6],[1]],[[3,0,7],[1]],[[3,0,8],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,1,5],[1]],[[3,1,6],[1]],[[3,1,7],[1]],[[3,1,8],[1]],[[3,2,0],[1]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[1]],[[3,2,5],[1]],[[3,2,6],[1]],[[3,2,7],[1]],[[3,2,8],[1]],[[3,3,0],[1]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,3,5],[1]],[[3,3,6],[1]],[[3,3,7],[1]],[[3,3,8],[1]],[[3,4,0],[1]],[[3,4,1],[1]],[[3,4,2],[1]],[[3,4,3],[1]],[[3,4,4],[1]],[[3,4,5],[1]],[[3,4,6],[1]],[[3,4,7],[1]],[[3,4,8],[1]],[[3,5,0],[1]],[[3,5,1],[1]],[[3,5,2],[1]],[[3,5,3],[1]],[[3,5,4],[1]],[[3,5,5],[1]],[[3,5,6],[1]],[[3,5,7],[1]],[[3,5,8],[1]],[[3,6,0],[1]],[[3,6,1],[1]],[[3,6,2],[1]],[[3,6,3],[1]],[[3,6,4],[1]],[[3,6,5],[1]],[[3,6,6],[1]],[[3,6,7],[1]],[[3,6,8],[1]],[[3,7,0],[1]],[[3,7,1],[1]],[[3,7,2],[1]],[[3,7,3],[1]],[[3,7,4],[1]],[[3,7,5],[1]],[[3,7,6],[1]],[[3,7,7],[1]],[[3,7,8],[1]],[[3,8,0],[1]],[[3,8,1],[1]],[[3,8,2],[1]],[[3,8,3],[1]],[[3,8,4],[1]],[[3,8,5],[1]],[[3,8,6],[1]],[[3,8,7],[1]],[[3,8,8],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[1]],[[4,0,3],[1]],[[4,0,4],[1]],[[4,0,5],[1]],[[4,0,6],[1]],[[4,0,7],[1]],[[4,0,8],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[1]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,1,5],[1]],[[4,1,6],[1]],[[4,1,7],[1]],[[4,1,8],[1]],[[4,2,0],[1]],[[4,2,1],[1]],[[4,2,2],[1]],[[4,2,3],[1]],[[4,2,4],[1]],[[4,2,5],[1]],[[4,2,6],[1]],[[4,2,7],[1]],[[4,2,8],[1]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[1]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,3,5],[1]],[[4,3,6],[1]],[[4,3,7],[1]],[[4,3,8],[1]],[[4,4,0],[1]],[[4,4,1],[1]],[[4,4,2],[1]],[[4,4,3],[1]],[[4,4,4],[1]],[[4,4,5],[1]],[[4,4,6],[1]],[[4,4,7],[1]],[[4,4,8],[1]],[[4,5,0],[1]],[[4,5,1],[1]],[[4,5,2],[1]],[[4,5,3],[1]],[[4,5,4],[1]],[[4,5,5],[1]],[[4,5,6],[1]],[[4,5,7],[1]],[[4,5,8],[1]],[[4,6,0],[1]],[[4,6,1],[1]],[[4,6,2],[1]],[[4,6,3],[1]],[[4,6,4],[1]],[[4,6,5],[1]],[[4,6,6],[1]],[[4,6,7],[1]],[[4,6,8],[1]],[[4,7,0],[1]],[[4,7,1],[1]],[[4,7,2],[1]],[[4,7,3],[1]],[[4,7,4],[1]],[[4,7,5],[1]],[[4,7,6],[1]],[[4,7,7],[1]],[[4,7,8],[1]],[[4,8,0],[1]],[[4,8,1],[1]],[[4,8,2],[1]],[[4,8,3],[1]],[[4,8,4],[1]],[[4,8,5],[1]],[[4,8,6],[1]],[[4,8,7],[1]],[[4,8,8],[1]],[[5,0,0],[1]],[[5,0,1],[1]],[[5,0,2],[1]],[[5,0,3],[1]],[[5,0,4],[1]],[[5,0,5],[1]],[[5,0,6],[1]],[[5,0,7],[1]],[[5,0,8],[1]],[[5,1,0],[1]],[[5,1,1],[1]],[[5,1,2],[1]],[[5,1,3],[1]],[[5,1,4],[1]],[[5,1,5],[1]],[[5,1,6],[1]],[[5,1,7],[1]],[[5,1,8],[1]],[[5,2,0],[1]],[[5,2,1],[1]],[[5,2,2],[1]],[[5,2,3],[1]],[[5,2,4],[1]],[[5,2,5],[1]],[[5,2,6],[1]],[[5,2,7],[1]],[[5,2,8],[1]],[[5,3,0],[1]],[[5,3,1],[1]],[[5,3,2],[1]],[[5,3,3],[1]],[[5,3,4],[1]],[[5,3,5],[1]],[[5,3,6],[1]],[[5,3,7],[1]],[[5,3,8],[1]],[[5,4,0],[1]],[[5,4,1],[1]],[[5,4,2],[1]],[[5,4,3],[1]],[[5,4,4],[1]],[[5,4,5],[1]],[[5,4,6],[1]],[[5,4,7],[1]],[[5,4,8],[1]],[[5,5,0],[1]],[[5,5,1],[1]],[[5,5,2],[1]],[[5,5,3],[1]],[[5,5,4],[1]],[[5,5,5],[1]],[[5,5,6],[1]],[[5,5,7],[1]],[[5,5,8],[1]],[[5,6,0],[1]],[[5,6,1],[1]],[[5,6,2],[1]],[[5,6,3],[1]],[[5,6,4],[1]],[[5,6,5],[1]],[[5,6,6],[1]],[[5,6,7],[1]],[[5,6,8],[1]],[[5,7,0],[1]],[[5,7,1],[1]],[[5,7,2],[1]],[[5,7,3],[1]],[[5,7,4],[1]],[[5,7,5],[1]],[[5,7,6],[1]],[[5,7,7],[1]],[[5,7,8],[1]],[[5,8,0],[1]],[[5,8,1],[1]],[[5,8,2],[1]],[[5,8,3],[1]],[[5,8,4],[1]],[[5,8,5],[1]],[[5,8,6],[1]],[[5,8,7],[1]],[[5,8,8],[1]],[[6,0,0],[1]],[[6,0,1],[1]],[[6,0,2],[1]],[[6,0,3],[1]],[[6,0,4],[1]],[[6,0,5],[1]],[[6,0,6],[1]],[[6,0,7],[1]],[[6,0,8],[1]],[[6,1,0],[1]],[[6,1,1],[1]],[[6,1,2],[1]],[[6,1,3],[1]],[[6,1,4],[1]],[[6,1,5],[1]],[[6,1,6],[1]],[[6,1,7],[1]],[[6,1,8],[1]],[[6,2,0],[1]],[[6,2,1],[1]],[[6,2,2],[1]],[[6,2,3],[1]],[[6,2,4],[1]],[[6,2,5],[1]],[[6,2,6],[1]],[[6,2,7],[1]],[[6,2,8],[1]],[[6,3,0],[1]],[[6,3,1],[1]],[[6,3,2],[1]],[[6,3,3],[1]],[[6,3,4],[1]],[[6,3,5],[1]],[[6,3,6],[1]],[[6,3,7],[1]],[[6,3,8],[1]],[[6,4,0],[1]],[[6,4,1],[1]],[[6,4,2],[1]],[[6,4,3],[1]],[[6,4,4],[1]],[[6,4,5],[1]],[[6,4,6],[1]],[[6,4,7],[1]],[[6,4,8],[1]],[[6,5,0],[1]],[[6,5,1],[1]],[[6,5,2],[1]],[[6,5,3],[1]],[[6,5,4],[1]],[[6,5,5],[1]],[[6,5,6],[1]],[[6,5,7],[1]],[[6,5,8],[1]],[[6,6,0],[1]],[[6,6,1],[1]],[[6,6,2],[1]],[[6,6,3],[1]],[[6,6,4],[1]],[[6,6,5],[1]],[[6,6,6],[1]],[[6,6,7],[1]],[[6,6,8],[1]],[[6,7,0],[1]],[[6,7,1],[1]],[[6,7,2],[1]],[[6,7,3],[1]],[[6,7,4],[1]],[[6,7,5],[1]],[[6,7,6],[1]],[[6,7,7],[1]],[[6,7,8],[1]],[[6,8,0],[1]],[[6,8,1],[1]],[[6,8,2],[1]],[[6,8,3],[1]],[[6,8,4],[1]],[[6,8,5],[1]],[[6,8,6],[1]],[[6,8,7],[1]],[[6,8,8],[1]],[[7,0,0],[1]],[[7,0,1],[1]],[[7,0,2],[1]],[[7,0,3],[1]],[[7,0,4],[1]],[[7,0,5],[1]],[[7,0,6],[1]],[[7,0,7],[1]],[[7,0,8],[1]],[[7,1,0],[1]],[[7,1,1],[1]],[[7,1,2],[1]],[[7,1,3],[1]],[[7,1,4],[1]],[[7,1,5],[1]],[[7,1,6],[1]],[[7,1,7],[1]],[[7,1,8],[1]],[[7,2,0],[1]],[[7,2,1],[1]],[[7,2,2],[1]],[[7,2,3],[1]],[[7,2,4],[1]],[[7,2,5],[1]],[[7,2,6],[1]],[[7,2,7],[1]],[[7,2,8],[1]],[[7,3,0],[1]],[[7,3,1],[1]],[[7,3,2],[1]],[[7,3,3],[1]],[[7,3,4],[1]],[[7,3,5],[1]],[[7,3,6],[1]],[[7,3,7],[1]],[[7,3,8],[1]],[[7,4,0],[1]],[[7,4,1],[1]],[[7,4,2],[1]],[[7,4,3],[1]],[[7,4,4],[1]],[[7,4,5],[1]],[[7,4,6],[1]],[[7,4,7],[1]],[[7,4,8],[1]],[[7,5,0],[1]],[[7,5,1],[1]],[[7,5,2],[1]],[[7,5,3],[1]],[[7,5,4],[1]],[[7,5,5],[1]],[[7,5,6],[1]],[[7,5,7],[1]],[[7,5,8],[1]],[[7,6,0],[1]],[[7,6,1],[1]],[[7,6,2],[1]],[[7,6,3],[1]],[[7,6,4],[1]],[[7,6,5],[1]],[[7,6,6],[1]],[[7,6,7],[1]],[[7,6,8],[1]],[[7,7,0],[1]],[[7,7,1],[1]],[[7,7,2],[1]],[[7,7,3],[1]],[[7,7,4],[1]],[[7,7,5],[1]],[[7,7,6],[1]],[[7,7,7],[1]],[[7,7,8],[1]],[[7,8,0],[1]],[[7,8,1],[1]],[[7,8,2],[1]],[[7,8,3],[1]],[[7,8,4],[1]],[[7,8,5],[1]],[[7,8,6],[1]],[[7,8,7],[1]],[[7,8,8],[1]],[[8,0,0],[1]],[[8,0,1],[1]],[[8,0,2],[1]],[[8,0,3],[1]],[[8,0,4],[1]],[[8,0,5],[1]],[[8,0,6],[1]],[[8,0,7],[1]],[[8,0,8],[1]],[[8,1,0],[1]],[[8,1,1],[1]],[[8,1,2],[1]],[[8,1,3],[1]],[[8,1,4],[1]],[[8,1,5],[1]],[[8,1,6],[1]],[[8,1,7],[1]],[[8,1,8],[1]],[[8,2,0],[1]],[[8,2,1],[1]],[[8,2,2],[1]],[[8,2,3],[1]],[[8,2,4],[1]],[[8,2,5],[1]],[[8,2,6],[1]],[[8,2,7],[1]],[[8,2,8],[1]],[[8,3,0],[1]],[[8,3,1],[1]],[[8,3,2],[1]],[[8,3,3],[1]],[[8,3,4],[1]],[[8,3,5],[1]],[[8,3,6],[1]],[[8,3,7],[1]],[[8,3,8],[1]],[[8,4,0],[1]],[[8,4,1],[1]],[[8,4,2],[1]],[[8,4,3],[1]],[[8,4,4],[1]],[[8,4,5],[1]],[[8,4,6],[1]],[[8,4,7],[1]],[[8,4,8],[1]],[[8,5,0],[1]],[[8,5,1],[1]],[[8,5,2],[1]],[[8,5,3],[1]],[[8,5,4],[1]],[[8,5,5],[1]],[[8,5,6],[1]],[[8,5,7],[1]],[[8,5,8],[1]],[[8,6,0],[1]],[[8,6,1],[1]],[[8,6,2],[1]],[[8,6,3],[1]],[[8,6,4],[1]],[[8,6,5],[1]],[[8,6,6],[1]],[[8,6,7],[1]],[[8,6,8],[1]],[[8,7,0],[1]],[[8,7,1],[1]],[[8,7,2],[1]],[[8,7,3],[1]],[[8,7,4],[1]],[[8,7,5],[1]],[[8,7,6],[1]],[[8,7,7],[1]],[[8,7,8],[1]],[[8,8,0],[1]],[[8,8,1],[1]],[[8,8,2],[1]],[[8,8,3],[1]],[[8,8,4],[1]],[[8,8,5],[1]],[[8,8,6],[1]],[[8,8,7],[1]],[[8,8,8],[1]]]]]';
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$Light = function (a) {
-	return {$: 'Light', a: a};
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$CieXyz = F3(
-	function (a, b, c) {
-		return {$: 'CieXyz', a: a, b: b, c: c};
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToCieXyz = F2(
-	function (_v0, _v1) {
-		var intensity = _v0.a;
-		var x = _v1.a.x;
-		var y = _v1.a.y;
-		return A3($ianmackenzie$elm_3d_scene$Scene3d$Types$CieXyz, (intensity * x) / y, intensity, (intensity * ((1 - x) - y)) / y);
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$Types$LinearRgb = function (a) {
-	return {$: 'LinearRgb', a: a};
-};
-var $elm_explorations$linear_algebra$Math$Vector3$vec3 = _MJS_v3;
-var $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$cieXyzToLinearRgb = function (_v0) {
-	var bigX = _v0.a;
-	var bigY = _v0.b;
-	var bigZ = _v0.c;
-	return $ianmackenzie$elm_3d_scene$Scene3d$Types$LinearRgb(
-		A3($elm_explorations$linear_algebra$Math$Vector3$vec3, ((3.2406 * bigX) - (1.5372 * bigY)) - (0.4986 * bigZ), (((-0.9689) * bigX) + (1.8758 * bigY)) + (0.0415 * bigZ), ((0.0557 * bigX) - (0.204 * bigY)) + (1.057 * bigZ)));
-};
-var $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToLinearRgb = F2(
-	function (intensity, chromaticity) {
-		return $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$cieXyzToLinearRgb(
-			A2($ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToCieXyz, intensity, chromaticity));
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$Light$directional = F2(
-	function (_v0, light) {
-		var shadowFlag = _v0.a;
-		var _v1 = $ianmackenzie$elm_geometry$Direction3d$unwrap(light.direction);
-		var x = _v1.x;
-		var y = _v1.y;
-		var z = _v1.z;
-		var _v2 = A2($ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToLinearRgb, light.intensity, light.chromaticity);
-		var rgb = _v2.a;
-		return $ianmackenzie$elm_3d_scene$Scene3d$Types$Light(
-			{
-				b: $elm_explorations$linear_algebra$Math$Vector3$getZ(rgb),
-				castsShadows: shadowFlag,
-				g: $elm_explorations$linear_algebra$Math$Vector3$getY(rgb),
-				parameter: 0,
-				r: $elm_explorations$linear_algebra$Math$Vector3$getX(rgb),
-				type_: 1,
-				x: -x,
-				y: -y,
-				z: -z
-			});
-	});
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$virtual_dom$VirtualDom$attribute = F2(
 	function (key, value) {
@@ -19537,6 +19568,15 @@ var $elm$virtual_dom$VirtualDom$attribute = F2(
 			_VirtualDom_noJavaScriptOrHtmlUri(value));
 	});
 var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
@@ -19676,6 +19716,429 @@ var $author$project$Html$Extra$dualRange = F2(
 	});
 var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var $elm$html$Html$form = _VirtualDom_node('form');
+var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
+var $phosphor_icons$phosphor_elm$Phosphor$IconVariant = function (a) {
+	return {$: 'IconVariant', a: a};
+};
+var $phosphor_icons$phosphor_elm$Phosphor$defaultAttributes = {
+	_class: $elm$core$Maybe$Just('ph-icon'),
+	size: 1,
+	sizeUnit: 'em'
+};
+var $phosphor_icons$phosphor_elm$Phosphor$makeBuilder = function (src) {
+	return $phosphor_icons$phosphor_elm$Phosphor$IconVariant(
+		{attrs: $phosphor_icons$phosphor_elm$Phosphor$defaultAttributes, src: src});
+};
+var $elm$svg$Svg$Attributes$opacity = _VirtualDom_attribute('opacity');
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$path = $elm$svg$Svg$trustedNode('path');
+var $phosphor_icons$phosphor_elm$Phosphor$gear = function (weight) {
+	var elements = function () {
+		switch (weight.$) {
+			case 'Bold':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M128,76a52,52,0,1,0,52,52A52.06,52.06,0,0,0,128,76Zm0,80a28,28,0,1,1,28-28A28,28,0,0,1,128,156Zm92-27.21v-1.58l14-17.51a12,12,0,0,0,2.23-10.59A111.75,111.75,0,0,0,225,71.89,12,12,0,0,0,215.89,66L193.61,63.5l-1.11-1.11L190,40.1A12,12,0,0,0,184.11,31a111.67,111.67,0,0,0-27.23-11.27A12,12,0,0,0,146.3,22L128.79,36h-1.58L109.7,22a12,12,0,0,0-10.59-2.23A111.75,111.75,0,0,0,71.89,31.05,12,12,0,0,0,66,40.11L63.5,62.39,62.39,63.5,40.1,66A12,12,0,0,0,31,71.89,111.67,111.67,0,0,0,19.77,99.12,12,12,0,0,0,22,109.7l14,17.51v1.58L22,146.3a12,12,0,0,0-2.23,10.59,111.75,111.75,0,0,0,11.29,27.22A12,12,0,0,0,40.11,190l22.28,2.48,1.11,1.11L66,215.9A12,12,0,0,0,71.89,225a111.67,111.67,0,0,0,27.23,11.27A12,12,0,0,0,109.7,234l17.51-14h1.58l17.51,14a12,12,0,0,0,10.59,2.23A111.75,111.75,0,0,0,184.11,225a12,12,0,0,0,5.91-9.06l2.48-22.28,1.11-1.11L215.9,190a12,12,0,0,0,9.06-5.91,111.67,111.67,0,0,0,11.27-27.23A12,12,0,0,0,234,146.3Zm-24.12-4.89a70.1,70.1,0,0,1,0,8.2,12,12,0,0,0,2.61,8.22l12.84,16.05A86.47,86.47,0,0,1,207,166.86l-20.43,2.27a12,12,0,0,0-7.65,4,69,69,0,0,1-5.8,5.8,12,12,0,0,0-4,7.65L166.86,207a86.47,86.47,0,0,1-10.49,4.35l-16.05-12.85a12,12,0,0,0-7.5-2.62c-.24,0-.48,0-.72,0a70.1,70.1,0,0,1-8.2,0,12.06,12.06,0,0,0-8.22,2.6L99.63,211.33A86.47,86.47,0,0,1,89.14,207l-2.27-20.43a12,12,0,0,0-4-7.65,69,69,0,0,1-5.8-5.8,12,12,0,0,0-7.65-4L49,166.86a86.47,86.47,0,0,1-4.35-10.49l12.84-16.05a12,12,0,0,0,2.61-8.22,70.1,70.1,0,0,1,0-8.2,12,12,0,0,0-2.61-8.22L44.67,99.63A86.47,86.47,0,0,1,49,89.14l20.43-2.27a12,12,0,0,0,7.65-4,69,69,0,0,1,5.8-5.8,12,12,0,0,0,4-7.65L89.14,49a86.47,86.47,0,0,1,10.49-4.35l16.05,12.85a12.06,12.06,0,0,0,8.22,2.6,70.1,70.1,0,0,1,8.2,0,12,12,0,0,0,8.22-2.6l16.05-12.85A86.47,86.47,0,0,1,166.86,49l2.27,20.43a12,12,0,0,0,4,7.65,69,69,0,0,1,5.8,5.8,12,12,0,0,0,7.65,4L207,89.14a86.47,86.47,0,0,1,4.35,10.49l-12.84,16.05A12,12,0,0,0,195.88,123.9Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Duotone':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M207.86,123.18l16.78-21a99.14,99.14,0,0,0-10.07-24.29l-26.7-3a81,81,0,0,0-6.81-6.81l-3-26.71a99.43,99.43,0,0,0-24.3-10l-21,16.77a81.59,81.59,0,0,0-9.64,0l-21-16.78A99.14,99.14,0,0,0,77.91,41.43l-3,26.7a81,81,0,0,0-6.81,6.81l-26.71,3a99.43,99.43,0,0,0-10,24.3l16.77,21a81.59,81.59,0,0,0,0,9.64l-16.78,21a99.14,99.14,0,0,0,10.07,24.29l26.7,3a81,81,0,0,0,6.81,6.81l3,26.71a99.43,99.43,0,0,0,24.3,10l21-16.77a81.59,81.59,0,0,0,9.64,0l21,16.78a99.14,99.14,0,0,0,24.29-10.07l3-26.7a81,81,0,0,0,6.81-6.81l26.71-3a99.43,99.43,0,0,0,10-24.3l-16.77-21A81.59,81.59,0,0,0,207.86,123.18ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z'),
+								$elm$svg$Svg$Attributes$opacity('0.2')
+							]),
+						_List_Nil),
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.6,107.6,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.29,107.29,0,0,0-26.25-10.86,8,8,0,0,0-7.06,1.48L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.6,107.6,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8.06,8.06,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8.06,8.06,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Fill':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M216,130.16q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.6,107.6,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.29,107.29,0,0,0-26.25-10.86,8,8,0,0,0-7.06,1.48L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.6,107.6,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Light':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M128,82a46,46,0,1,0,46,46A46.06,46.06,0,0,0,128,82Zm0,80a34,34,0,1,1,34-34A34,34,0,0,1,128,162ZM214,130.84c.06-1.89.06-3.79,0-5.68L229.33,106a6,6,0,0,0,1.11-5.29A105.34,105.34,0,0,0,219.76,74.9a6,6,0,0,0-4.53-3l-24.45-2.71q-1.93-2.07-4-4l-2.72-24.46a6,6,0,0,0-3-4.53,105.65,105.65,0,0,0-25.77-10.66A6,6,0,0,0,150,26.68l-19.2,15.37c-1.89-.06-3.79-.06-5.68,0L106,26.67a6,6,0,0,0-5.29-1.11A105.34,105.34,0,0,0,74.9,36.24a6,6,0,0,0-3,4.53L69.23,65.22q-2.07,1.94-4,4L40.76,72a6,6,0,0,0-4.53,3,105.65,105.65,0,0,0-10.66,25.77A6,6,0,0,0,26.68,106l15.37,19.2c-.06,1.89-.06,3.79,0,5.68L26.67,150.05a6,6,0,0,0-1.11,5.29A105.34,105.34,0,0,0,36.24,181.1a6,6,0,0,0,4.53,3l24.45,2.71q1.94,2.07,4,4L72,215.24a6,6,0,0,0,3,4.53,105.65,105.65,0,0,0,25.77,10.66,6,6,0,0,0,5.29-1.11L125.16,214c1.89.06,3.79.06,5.68,0l19.21,15.38a6,6,0,0,0,3.75,1.31,6.2,6.2,0,0,0,1.54-.2,105.34,105.34,0,0,0,25.76-10.68,6,6,0,0,0,3-4.53l2.71-24.45q2.07-1.93,4-4l24.46-2.72a6,6,0,0,0,4.53-3,105.49,105.49,0,0,0,10.66-25.77,6,6,0,0,0-1.11-5.29Zm-3.1,41.63-23.64,2.63a6,6,0,0,0-3.82,2,75.14,75.14,0,0,1-6.31,6.31,6,6,0,0,0-2,3.82l-2.63,23.63A94.28,94.28,0,0,1,155.14,218l-18.57-14.86a6,6,0,0,0-3.75-1.31h-.36a78.07,78.07,0,0,1-8.92,0,6,6,0,0,0-4.11,1.3L100.87,218a94.13,94.13,0,0,1-17.34-7.17L80.9,187.21a6,6,0,0,0-2-3.82,75.14,75.14,0,0,1-6.31-6.31,6,6,0,0,0-3.82-2l-23.63-2.63A94.28,94.28,0,0,1,38,155.14l14.86-18.57a6,6,0,0,0,1.3-4.11,78.07,78.07,0,0,1,0-8.92,6,6,0,0,0-1.3-4.11L38,100.87a94.13,94.13,0,0,1,7.17-17.34L68.79,80.9a6,6,0,0,0,3.82-2,75.14,75.14,0,0,1,6.31-6.31,6,6,0,0,0,2-3.82l2.63-23.63A94.28,94.28,0,0,1,100.86,38l18.57,14.86a6,6,0,0,0,4.11,1.3,78.07,78.07,0,0,1,8.92,0,6,6,0,0,0,4.11-1.3L155.13,38a94.13,94.13,0,0,1,17.34,7.17l2.63,23.64a6,6,0,0,0,2,3.82,75.14,75.14,0,0,1,6.31,6.31,6,6,0,0,0,3.82,2l23.63,2.63A94.28,94.28,0,0,1,218,100.86l-14.86,18.57a6,6,0,0,0-1.3,4.11,78.07,78.07,0,0,1,0,8.92,6,6,0,0,0,1.3,4.11L218,155.13A94.13,94.13,0,0,1,210.85,172.47Z')
+							]),
+						_List_Nil)
+					]);
+			case 'Regular':
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.71,107.71,0,0,0-26.25-10.87,8,8,0,0,0-7.06,1.49L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8,8,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8,8,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z')
+							]),
+						_List_Nil)
+					]);
+			default:
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$path,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$d('M128,84a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,84Zm0,80a36,36,0,1,1,36-36A36,36,0,0,1,128,164Zm83.93-32.49q.13-3.51,0-7l15.83-19.79a4,4,0,0,0,.75-3.53A103.64,103.64,0,0,0,218,75.9a4,4,0,0,0-3-2l-25.19-2.8c-1.58-1.71-3.24-3.37-4.95-4.95L182.07,41a4,4,0,0,0-2-3A104,104,0,0,0,154.82,27.5a4,4,0,0,0-3.53.74L131.51,44.07q-3.51-.14-7,0L104.7,28.24a4,4,0,0,0-3.53-.75A103.64,103.64,0,0,0,75.9,38a4,4,0,0,0-2,3l-2.8,25.19c-1.71,1.58-3.37,3.24-4.95,4.95L41,73.93a4,4,0,0,0-3,2A104,104,0,0,0,27.5,101.18a4,4,0,0,0,.74,3.53l15.83,19.78q-.14,3.51,0,7L28.24,151.3a4,4,0,0,0-.75,3.53A103.64,103.64,0,0,0,38,180.1a4,4,0,0,0,3,2l25.19,2.8c1.58,1.71,3.24,3.37,4.95,4.95l2.8,25.2a4,4,0,0,0,2,3,104,104,0,0,0,25.28,10.46,4,4,0,0,0,3.53-.74l19.78-15.83q3.51.13,7,0l19.79,15.83a4,4,0,0,0,2.5.88,4,4,0,0,0,1-.13A103.64,103.64,0,0,0,180.1,218a4,4,0,0,0,2-3l2.8-25.19c1.71-1.58,3.37-3.24,4.95-4.95l25.2-2.8a4,4,0,0,0,3-2,104,104,0,0,0,10.46-25.28,4,4,0,0,0-.74-3.53Zm.17,42.83-24.67,2.74a4,4,0,0,0-2.55,1.32,76.2,76.2,0,0,1-6.48,6.48,4,4,0,0,0-1.32,2.55l-2.74,24.66a95.45,95.45,0,0,1-19.64,8.15l-19.38-15.51a4,4,0,0,0-2.5-.87h-.24a73.67,73.67,0,0,1-9.16,0,4,4,0,0,0-2.74.87l-19.37,15.5a95.33,95.33,0,0,1-19.65-8.13l-2.74-24.67a4,4,0,0,0-1.32-2.55,76.2,76.2,0,0,1-6.48-6.48,4,4,0,0,0-2.55-1.32l-24.66-2.74a95.45,95.45,0,0,1-8.15-19.64l15.51-19.38a4,4,0,0,0,.87-2.74,77.76,77.76,0,0,1,0-9.16,4,4,0,0,0-.87-2.74l-15.5-19.37A95.33,95.33,0,0,1,43.9,81.66l24.67-2.74a4,4,0,0,0,2.55-1.32,76.2,76.2,0,0,1,6.48-6.48,4,4,0,0,0,1.32-2.55l2.74-24.66a95.45,95.45,0,0,1,19.64-8.15l19.38,15.51a4,4,0,0,0,2.74.87,73.67,73.67,0,0,1,9.16,0,4,4,0,0,0,2.74-.87l19.37-15.5a95.33,95.33,0,0,1,19.65,8.13l2.74,24.67a4,4,0,0,0,1.32,2.55,76.2,76.2,0,0,1,6.48,6.48,4,4,0,0,0,2.55,1.32l24.66,2.74a95.45,95.45,0,0,1,8.15,19.64l-15.51,19.38a4,4,0,0,0-.87,2.74,77.76,77.76,0,0,1,0,9.16,4,4,0,0,0,.87,2.74l15.5,19.37A95.33,95.33,0,0,1,212.1,174.34Z')
+							]),
+						_List_Nil)
+					]);
+		}
+	}();
+	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
+};
+var $elm$html$Html$hr = _VirtualDom_node('hr');
+var $elm$html$Html$label = _VirtualDom_node('label');
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$html$Html$Events$alwaysPreventDefault = function (msg) {
+	return _Utils_Tuple2(msg, true);
+};
+var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
+	return {$: 'MayPreventDefault', a: a};
+};
+var $elm$html$Html$Events$preventDefaultOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
+	});
+var $elm$html$Html$Events$onSubmit = function (msg) {
+	return A2(
+		$elm$html$Html$Events$preventDefaultOn,
+		'submit',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysPreventDefault,
+			$elm$json$Json$Decode$succeed(msg)));
+};
+var $elm$html$Html$option = _VirtualDom_node('option');
+var $elm$html$Html$select = _VirtualDom_node('select');
+var $author$project$Html$Extra$selectChangeHelper = F3(
+	function (toKey, options, key) {
+		selectChangeHelper:
+		while (true) {
+			if (!options.b) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var value = options.a;
+				var rest = options.b;
+				if (_Utils_eq(
+					toKey(value),
+					key)) {
+					return $elm$core$Maybe$Just(value);
+				} else {
+					var $temp$toKey = toKey,
+						$temp$options = rest,
+						$temp$key = key;
+					toKey = $temp$toKey;
+					options = $temp$options;
+					key = $temp$key;
+					continue selectChangeHelper;
+				}
+			}
+		}
+	});
+var $author$project$Html$Extra$select = F2(
+	function (attributes, config) {
+		return A2(
+			$elm$html$Html$select,
+			_Utils_ap(
+				attributes,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onInput(
+						function (key) {
+							return config.onSelect(
+								A3($author$project$Html$Extra$selectChangeHelper, config.toKey, config.options, key));
+						}),
+						$elm$html$Html$Attributes$value(
+						function () {
+							var _v0 = config.value;
+							if (_v0.$ === 'Nothing') {
+								return '';
+							} else {
+								var value = _v0.a;
+								return config.toKey(value);
+							}
+						}())
+					])),
+			A2(
+				$elm$core$List$map,
+				function (option) {
+					return A2(
+						$elm$html$Html$option,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$value(
+								config.toKey(option))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								config.toLabel(option))
+							]));
+				},
+				config.options));
+	});
+var $elm$html$Html$small = _VirtualDom_node('small');
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
+var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
+var $elm$svg$Svg$map = $elm$virtual_dom$VirtualDom$map;
+var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+var $elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
+var $elm$svg$Svg$Attributes$strokeLinejoin = _VirtualDom_attribute('stroke-linejoin');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $elm$virtual_dom$VirtualDom$property = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_property,
+			_VirtualDom_noInnerHtmlOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlJson(value));
+	});
+var $phosphor_icons$phosphor_elm$Phosphor$xmlns = function (s) {
+	return A2(
+		$elm$virtual_dom$VirtualDom$property,
+		'xmlns',
+		$elm$json$Json$Encode$string(s));
+};
+var $phosphor_icons$phosphor_elm$Phosphor$toHtml = F2(
+	function (attributes, _v0) {
+		var src = _v0.a.src;
+		var attrs = _v0.a.attrs;
+		var strSize = $elm$core$String$fromFloat(attrs.size);
+		var baseAttributes = _List_fromArray(
+			[
+				$phosphor_icons$phosphor_elm$Phosphor$xmlns('http://www.w3.org/2000/svg'),
+				$elm$svg$Svg$Attributes$fill('currentColor'),
+				$elm$svg$Svg$Attributes$height(
+				_Utils_ap(strSize, attrs.sizeUnit)),
+				$elm$svg$Svg$Attributes$width(
+				_Utils_ap(strSize, attrs.sizeUnit)),
+				$elm$svg$Svg$Attributes$stroke('currentColor'),
+				$elm$svg$Svg$Attributes$strokeLinecap('round'),
+				$elm$svg$Svg$Attributes$strokeLinejoin('round'),
+				$elm$svg$Svg$Attributes$viewBox('0 0 256 256')
+			]);
+		var combinedAttributes = _Utils_ap(
+			function () {
+				var _v1 = attrs._class;
+				if (_v1.$ === 'Just') {
+					var c = _v1.a;
+					return A2(
+						$elm$core$List$cons,
+						$elm$svg$Svg$Attributes$class(c),
+						baseAttributes);
+				} else {
+					return baseAttributes;
+				}
+			}(),
+			attributes);
+		return A2(
+			$elm$svg$Svg$svg,
+			combinedAttributes,
+			A2(
+				$elm$core$List$map,
+				$elm$svg$Svg$map($elm$core$Basics$never),
+				src));
+	});
+var $author$project$Board$viewAllPointsCollected = F2(
+	function (level, nextActions) {
+		return _Utils_eq(level.capturedPoints, level.totalCapturePoints) ? A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'position', 'fixed'),
+					A2($elm$html$Html$Attributes$style, 'top', '50%'),
+					A2($elm$html$Html$Attributes$style, 'left', '50%'),
+					A2($elm$html$Html$Attributes$style, 'transform', 'translate(-50%, -50%)'),
+					A2($elm$html$Html$Attributes$style, 'background-color', 'rgba(0, 255, 125, 0.5)'),
+					A2($elm$html$Html$Attributes$style, 'font-size', '4rem'),
+					A2($elm$html$Html$Attributes$style, 'backdrop-filter', 'blur(5px)'),
+					A2($elm$html$Html$Attributes$style, 'padding', '4rem 8rem'),
+					A2($elm$html$Html$Attributes$style, 'border-radius', '1rem'),
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+					A2($elm$html$Html$Attributes$style, 'gap', '1rem')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Board Complete!')
+						])),
+					nextActions
+				])) : $elm$html$Html$text('');
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$CastsShadows = function (a) {
+	return {$: 'CastsShadows', a: a};
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows = function (flag) {
+	return $ianmackenzie$elm_3d_scene$Scene3d$Light$CastsShadows(flag);
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$Chromaticity = function (a) {
+	return {$: 'Chromaticity', a: a};
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$chromaticity = function (xy) {
+	return $ianmackenzie$elm_3d_scene$Scene3d$Types$Chromaticity(xy);
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight = $ianmackenzie$elm_3d_scene$Scene3d$Light$chromaticity(
+	{x: 0.31271, y: 0.32902});
+var $author$project$Screen$Editor$MouseDown = function (a) {
+	return {$: 'MouseDown', a: a};
+};
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $author$project$Screen$Editor$decodeMouseDown = function (toMsg) {
+	return A2(
+		$elm$json$Json$Decode$andThen,
+		function (button) {
+			return (!button) ? A2(
+				$elm$json$Json$Decode$map,
+				A2($elm$core$Basics$composeR, $author$project$Screen$Editor$MouseDown, toMsg),
+				A2($elm$json$Json$Decode$field, 'pointerId', $elm$json$Json$Decode$value)) : $elm$json$Json$Decode$fail('Non-primary mouse button');
+		},
+		A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
+};
+var $author$project$Screen$Editor$MouseUp = {$: 'MouseUp'};
+var $author$project$Screen$Editor$decodeMouseUp = function (toMsg) {
+	return A2(
+		$elm$json$Json$Decode$andThen,
+		function (button) {
+			return (!button) ? $elm$json$Json$Decode$succeed(
+				toMsg($author$project$Screen$Editor$MouseUp)) : $elm$json$Json$Decode$fail('Non-primary mouse button');
+		},
+		A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
+};
+var $author$project$Screen$Editor$MouseMove = F3(
+	function (a, b, c) {
+		return {$: 'MouseMove', a: a, b: b, c: c};
+	});
+var $elm$json$Json$Decode$map4 = _Json_map4;
+var $author$project$Screen$Editor$decodePointerMove = F2(
+	function (toMsg, mouseDetails) {
+		return A5(
+			$elm$json$Json$Decode$map4,
+			F4(
+				function (ox, oy, mx, my) {
+					return toMsg(
+						A3(
+							$author$project$Screen$Editor$MouseMove,
+							mouseDetails,
+							A2($ianmackenzie$elm_geometry$Point2d$pixels, ox, oy),
+							A2($ianmackenzie$elm_geometry$Point2d$pixels, mx, my)));
+				}),
+			A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float),
+			A2($elm$json$Json$Decode$field, 'offsetY', $elm$json$Json$Decode$float),
+			A2($elm$json$Json$Decode$field, 'movementX', $elm$json$Json$Decode$float),
+			A2($elm$json$Json$Decode$field, 'movementY', $elm$json$Json$Decode$float));
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$Light = function (a) {
+	return {$: 'Light', a: a};
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$CieXyz = F3(
+	function (a, b, c) {
+		return {$: 'CieXyz', a: a, b: b, c: c};
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToCieXyz = F2(
+	function (_v0, _v1) {
+		var intensity = _v0.a;
+		var x = _v1.a.x;
+		var y = _v1.a.y;
+		return A3($ianmackenzie$elm_3d_scene$Scene3d$Types$CieXyz, (intensity * x) / y, intensity, (intensity * ((1 - x) - y)) / y);
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$Types$LinearRgb = function (a) {
+	return {$: 'LinearRgb', a: a};
+};
+var $elm_explorations$linear_algebra$Math$Vector3$vec3 = _MJS_v3;
+var $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$cieXyzToLinearRgb = function (_v0) {
+	var bigX = _v0.a;
+	var bigY = _v0.b;
+	var bigZ = _v0.c;
+	return $ianmackenzie$elm_3d_scene$Scene3d$Types$LinearRgb(
+		A3($elm_explorations$linear_algebra$Math$Vector3$vec3, ((3.2406 * bigX) - (1.5372 * bigY)) - (0.4986 * bigZ), (((-0.9689) * bigX) + (1.8758 * bigY)) + (0.0415 * bigZ), ((0.0557 * bigX) - (0.204 * bigY)) + (1.057 * bigZ)));
+};
+var $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToLinearRgb = F2(
+	function (intensity, chromaticity) {
+		return $ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$cieXyzToLinearRgb(
+			A2($ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToCieXyz, intensity, chromaticity));
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$Light$directional = F2(
+	function (_v0, light) {
+		var shadowFlag = _v0.a;
+		var _v1 = $ianmackenzie$elm_geometry$Direction3d$unwrap(light.direction);
+		var x = _v1.x;
+		var y = _v1.y;
+		var z = _v1.z;
+		var _v2 = A2($ianmackenzie$elm_3d_scene$Scene3d$ColorConversions$chromaticityToLinearRgb, light.intensity, light.chromaticity);
+		var rgb = _v2.a;
+		return $ianmackenzie$elm_3d_scene$Scene3d$Types$Light(
+			{
+				b: $elm_explorations$linear_algebra$Math$Vector3$getZ(rgb),
+				castsShadows: shadowFlag,
+				g: $elm_explorations$linear_algebra$Math$Vector3$getY(rgb),
+				parameter: 0,
+				r: $elm_explorations$linear_algebra$Math$Vector3$getX(rgb),
+				type_: 1,
+				x: -x,
+				y: -y,
+				z: -z
+			});
+	});
 var $ianmackenzie$elm_3d_scene$Scene3d$Light$disabled = $ianmackenzie$elm_3d_scene$Scene3d$Types$Light(
 	{b: 0, castsShadows: false, g: 0, parameter: 0, r: 0, type_: 0, x: 0, y: 0, z: 0});
 var $ianmackenzie$elm_3d_scene$Scene3d$MultiplePasses = F2(
@@ -20336,111 +20799,12 @@ var $author$project$Board$gamePlayCamera = function (playerFrame) {
 			}()
 		});
 };
-var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
-var $phosphor_icons$phosphor_elm$Phosphor$IconVariant = function (a) {
-	return {$: 'IconVariant', a: a};
-};
-var $phosphor_icons$phosphor_elm$Phosphor$defaultAttributes = {
-	_class: $elm$core$Maybe$Just('ph-icon'),
-	size: 1,
-	sizeUnit: 'em'
-};
-var $phosphor_icons$phosphor_elm$Phosphor$makeBuilder = function (src) {
-	return $phosphor_icons$phosphor_elm$Phosphor$IconVariant(
-		{attrs: $phosphor_icons$phosphor_elm$Phosphor$defaultAttributes, src: src});
-};
-var $elm$svg$Svg$Attributes$opacity = _VirtualDom_attribute('opacity');
-var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var $elm$svg$Svg$path = $elm$svg$Svg$trustedNode('path');
-var $phosphor_icons$phosphor_elm$Phosphor$gear = function (weight) {
-	var elements = function () {
-		switch (weight.$) {
-			case 'Bold':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M128,76a52,52,0,1,0,52,52A52.06,52.06,0,0,0,128,76Zm0,80a28,28,0,1,1,28-28A28,28,0,0,1,128,156Zm92-27.21v-1.58l14-17.51a12,12,0,0,0,2.23-10.59A111.75,111.75,0,0,0,225,71.89,12,12,0,0,0,215.89,66L193.61,63.5l-1.11-1.11L190,40.1A12,12,0,0,0,184.11,31a111.67,111.67,0,0,0-27.23-11.27A12,12,0,0,0,146.3,22L128.79,36h-1.58L109.7,22a12,12,0,0,0-10.59-2.23A111.75,111.75,0,0,0,71.89,31.05,12,12,0,0,0,66,40.11L63.5,62.39,62.39,63.5,40.1,66A12,12,0,0,0,31,71.89,111.67,111.67,0,0,0,19.77,99.12,12,12,0,0,0,22,109.7l14,17.51v1.58L22,146.3a12,12,0,0,0-2.23,10.59,111.75,111.75,0,0,0,11.29,27.22A12,12,0,0,0,40.11,190l22.28,2.48,1.11,1.11L66,215.9A12,12,0,0,0,71.89,225a111.67,111.67,0,0,0,27.23,11.27A12,12,0,0,0,109.7,234l17.51-14h1.58l17.51,14a12,12,0,0,0,10.59,2.23A111.75,111.75,0,0,0,184.11,225a12,12,0,0,0,5.91-9.06l2.48-22.28,1.11-1.11L215.9,190a12,12,0,0,0,9.06-5.91,111.67,111.67,0,0,0,11.27-27.23A12,12,0,0,0,234,146.3Zm-24.12-4.89a70.1,70.1,0,0,1,0,8.2,12,12,0,0,0,2.61,8.22l12.84,16.05A86.47,86.47,0,0,1,207,166.86l-20.43,2.27a12,12,0,0,0-7.65,4,69,69,0,0,1-5.8,5.8,12,12,0,0,0-4,7.65L166.86,207a86.47,86.47,0,0,1-10.49,4.35l-16.05-12.85a12,12,0,0,0-7.5-2.62c-.24,0-.48,0-.72,0a70.1,70.1,0,0,1-8.2,0,12.06,12.06,0,0,0-8.22,2.6L99.63,211.33A86.47,86.47,0,0,1,89.14,207l-2.27-20.43a12,12,0,0,0-4-7.65,69,69,0,0,1-5.8-5.8,12,12,0,0,0-7.65-4L49,166.86a86.47,86.47,0,0,1-4.35-10.49l12.84-16.05a12,12,0,0,0,2.61-8.22,70.1,70.1,0,0,1,0-8.2,12,12,0,0,0-2.61-8.22L44.67,99.63A86.47,86.47,0,0,1,49,89.14l20.43-2.27a12,12,0,0,0,7.65-4,69,69,0,0,1,5.8-5.8,12,12,0,0,0,4-7.65L89.14,49a86.47,86.47,0,0,1,10.49-4.35l16.05,12.85a12.06,12.06,0,0,0,8.22,2.6,70.1,70.1,0,0,1,8.2,0,12,12,0,0,0,8.22-2.6l16.05-12.85A86.47,86.47,0,0,1,166.86,49l2.27,20.43a12,12,0,0,0,4,7.65,69,69,0,0,1,5.8,5.8,12,12,0,0,0,7.65,4L207,89.14a86.47,86.47,0,0,1,4.35,10.49l-12.84,16.05A12,12,0,0,0,195.88,123.9Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Duotone':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M207.86,123.18l16.78-21a99.14,99.14,0,0,0-10.07-24.29l-26.7-3a81,81,0,0,0-6.81-6.81l-3-26.71a99.43,99.43,0,0,0-24.3-10l-21,16.77a81.59,81.59,0,0,0-9.64,0l-21-16.78A99.14,99.14,0,0,0,77.91,41.43l-3,26.7a81,81,0,0,0-6.81,6.81l-26.71,3a99.43,99.43,0,0,0-10,24.3l16.77,21a81.59,81.59,0,0,0,0,9.64l-16.78,21a99.14,99.14,0,0,0,10.07,24.29l26.7,3a81,81,0,0,0,6.81,6.81l3,26.71a99.43,99.43,0,0,0,24.3,10l21-16.77a81.59,81.59,0,0,0,9.64,0l21,16.78a99.14,99.14,0,0,0,24.29-10.07l3-26.7a81,81,0,0,0,6.81-6.81l26.71-3a99.43,99.43,0,0,0,10-24.3l-16.77-21A81.59,81.59,0,0,0,207.86,123.18ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z'),
-								$elm$svg$Svg$Attributes$opacity('0.2')
-							]),
-						_List_Nil),
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.6,107.6,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.29,107.29,0,0,0-26.25-10.86,8,8,0,0,0-7.06,1.48L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.6,107.6,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8.06,8.06,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8.06,8.06,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Fill':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M216,130.16q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.6,107.6,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.29,107.29,0,0,0-26.25-10.86,8,8,0,0,0-7.06,1.48L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.6,107.6,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Light':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M128,82a46,46,0,1,0,46,46A46.06,46.06,0,0,0,128,82Zm0,80a34,34,0,1,1,34-34A34,34,0,0,1,128,162ZM214,130.84c.06-1.89.06-3.79,0-5.68L229.33,106a6,6,0,0,0,1.11-5.29A105.34,105.34,0,0,0,219.76,74.9a6,6,0,0,0-4.53-3l-24.45-2.71q-1.93-2.07-4-4l-2.72-24.46a6,6,0,0,0-3-4.53,105.65,105.65,0,0,0-25.77-10.66A6,6,0,0,0,150,26.68l-19.2,15.37c-1.89-.06-3.79-.06-5.68,0L106,26.67a6,6,0,0,0-5.29-1.11A105.34,105.34,0,0,0,74.9,36.24a6,6,0,0,0-3,4.53L69.23,65.22q-2.07,1.94-4,4L40.76,72a6,6,0,0,0-4.53,3,105.65,105.65,0,0,0-10.66,25.77A6,6,0,0,0,26.68,106l15.37,19.2c-.06,1.89-.06,3.79,0,5.68L26.67,150.05a6,6,0,0,0-1.11,5.29A105.34,105.34,0,0,0,36.24,181.1a6,6,0,0,0,4.53,3l24.45,2.71q1.94,2.07,4,4L72,215.24a6,6,0,0,0,3,4.53,105.65,105.65,0,0,0,25.77,10.66,6,6,0,0,0,5.29-1.11L125.16,214c1.89.06,3.79.06,5.68,0l19.21,15.38a6,6,0,0,0,3.75,1.31,6.2,6.2,0,0,0,1.54-.2,105.34,105.34,0,0,0,25.76-10.68,6,6,0,0,0,3-4.53l2.71-24.45q2.07-1.93,4-4l24.46-2.72a6,6,0,0,0,4.53-3,105.49,105.49,0,0,0,10.66-25.77,6,6,0,0,0-1.11-5.29Zm-3.1,41.63-23.64,2.63a6,6,0,0,0-3.82,2,75.14,75.14,0,0,1-6.31,6.31,6,6,0,0,0-2,3.82l-2.63,23.63A94.28,94.28,0,0,1,155.14,218l-18.57-14.86a6,6,0,0,0-3.75-1.31h-.36a78.07,78.07,0,0,1-8.92,0,6,6,0,0,0-4.11,1.3L100.87,218a94.13,94.13,0,0,1-17.34-7.17L80.9,187.21a6,6,0,0,0-2-3.82,75.14,75.14,0,0,1-6.31-6.31,6,6,0,0,0-3.82-2l-23.63-2.63A94.28,94.28,0,0,1,38,155.14l14.86-18.57a6,6,0,0,0,1.3-4.11,78.07,78.07,0,0,1,0-8.92,6,6,0,0,0-1.3-4.11L38,100.87a94.13,94.13,0,0,1,7.17-17.34L68.79,80.9a6,6,0,0,0,3.82-2,75.14,75.14,0,0,1,6.31-6.31,6,6,0,0,0,2-3.82l2.63-23.63A94.28,94.28,0,0,1,100.86,38l18.57,14.86a6,6,0,0,0,4.11,1.3,78.07,78.07,0,0,1,8.92,0,6,6,0,0,0,4.11-1.3L155.13,38a94.13,94.13,0,0,1,17.34,7.17l2.63,23.64a6,6,0,0,0,2,3.82,75.14,75.14,0,0,1,6.31,6.31,6,6,0,0,0,3.82,2l23.63,2.63A94.28,94.28,0,0,1,218,100.86l-14.86,18.57a6,6,0,0,0-1.3,4.11,78.07,78.07,0,0,1,0,8.92,6,6,0,0,0,1.3,4.11L218,155.13A94.13,94.13,0,0,1,210.85,172.47Z')
-							]),
-						_List_Nil)
-					]);
-			case 'Regular':
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.71,107.71,0,0,0-26.25-10.87,8,8,0,0,0-7.06,1.49L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8,8,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8,8,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z')
-							]),
-						_List_Nil)
-					]);
-			default:
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$path,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$d('M128,84a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,84Zm0,80a36,36,0,1,1,36-36A36,36,0,0,1,128,164Zm83.93-32.49q.13-3.51,0-7l15.83-19.79a4,4,0,0,0,.75-3.53A103.64,103.64,0,0,0,218,75.9a4,4,0,0,0-3-2l-25.19-2.8c-1.58-1.71-3.24-3.37-4.95-4.95L182.07,41a4,4,0,0,0-2-3A104,104,0,0,0,154.82,27.5a4,4,0,0,0-3.53.74L131.51,44.07q-3.51-.14-7,0L104.7,28.24a4,4,0,0,0-3.53-.75A103.64,103.64,0,0,0,75.9,38a4,4,0,0,0-2,3l-2.8,25.19c-1.71,1.58-3.37,3.24-4.95,4.95L41,73.93a4,4,0,0,0-3,2A104,104,0,0,0,27.5,101.18a4,4,0,0,0,.74,3.53l15.83,19.78q-.14,3.51,0,7L28.24,151.3a4,4,0,0,0-.75,3.53A103.64,103.64,0,0,0,38,180.1a4,4,0,0,0,3,2l25.19,2.8c1.58,1.71,3.24,3.37,4.95,4.95l2.8,25.2a4,4,0,0,0,2,3,104,104,0,0,0,25.28,10.46,4,4,0,0,0,3.53-.74l19.78-15.83q3.51.13,7,0l19.79,15.83a4,4,0,0,0,2.5.88,4,4,0,0,0,1-.13A103.64,103.64,0,0,0,180.1,218a4,4,0,0,0,2-3l2.8-25.19c1.71-1.58,3.37-3.24,4.95-4.95l25.2-2.8a4,4,0,0,0,3-2,104,104,0,0,0,10.46-25.28,4,4,0,0,0-.74-3.53Zm.17,42.83-24.67,2.74a4,4,0,0,0-2.55,1.32,76.2,76.2,0,0,1-6.48,6.48,4,4,0,0,0-1.32,2.55l-2.74,24.66a95.45,95.45,0,0,1-19.64,8.15l-19.38-15.51a4,4,0,0,0-2.5-.87h-.24a73.67,73.67,0,0,1-9.16,0,4,4,0,0,0-2.74.87l-19.37,15.5a95.33,95.33,0,0,1-19.65-8.13l-2.74-24.67a4,4,0,0,0-1.32-2.55,76.2,76.2,0,0,1-6.48-6.48,4,4,0,0,0-2.55-1.32l-24.66-2.74a95.45,95.45,0,0,1-8.15-19.64l15.51-19.38a4,4,0,0,0,.87-2.74,77.76,77.76,0,0,1,0-9.16,4,4,0,0,0-.87-2.74l-15.5-19.37A95.33,95.33,0,0,1,43.9,81.66l24.67-2.74a4,4,0,0,0,2.55-1.32,76.2,76.2,0,0,1,6.48-6.48,4,4,0,0,0,1.32-2.55l2.74-24.66a95.45,95.45,0,0,1,19.64-8.15l19.38,15.51a4,4,0,0,0,2.74.87,73.67,73.67,0,0,1,9.16,0,4,4,0,0,0,2.74-.87l19.37-15.5a95.33,95.33,0,0,1,19.65,8.13l2.74,24.67a4,4,0,0,0,1.32,2.55,76.2,76.2,0,0,1,6.48,6.48,4,4,0,0,0,2.55,1.32l24.66,2.74a95.45,95.45,0,0,1,8.15,19.64l-15.51,19.38a4,4,0,0,0-.87,2.74,77.76,77.76,0,0,1,0,9.16,4,4,0,0,0,.87,2.74l15.5,19.37A95.33,95.33,0,0,1,212.1,174.34Z')
-							]),
-						_List_Nil)
-					]);
-		}
-	}();
-	return $phosphor_icons$phosphor_elm$Phosphor$makeBuilder(elements);
-};
 var $avh4$elm_color$Color$RgbaSpace = F4(
 	function (a, b, c, d) {
 		return {$: 'RgbaSpace', a: a, b: b, c: c, d: d};
 	});
 var $avh4$elm_color$Color$green = A4($avh4$elm_color$Color$RgbaSpace, 115 / 255, 210 / 255, 22 / 255, 1.0);
-var $elm$html$Html$hr = _VirtualDom_node('hr');
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
-var $elm$html$Html$label = _VirtualDom_node('label');
 var $ianmackenzie$elm_units$Illuminance$lux = function (numLux) {
 	return $ianmackenzie$elm_units$Quantity$Quantity(numLux);
 };
@@ -20450,44 +20814,6 @@ var $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity = function (a) {
 };
 var $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty = $ianmackenzie$elm_3d_scene$Scene3d$Types$Entity($ianmackenzie$elm_3d_scene$Scene3d$Types$EmptyNode);
 var $ianmackenzie$elm_3d_scene$Scene3d$nothing = $ianmackenzie$elm_3d_scene$Scene3d$Entity$empty;
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $elm$html$Html$Events$alwaysPreventDefault = function (msg) {
-	return _Utils_Tuple2(msg, true);
-};
-var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
-	return {$: 'MayPreventDefault', a: a};
-};
-var $elm$html$Html$Events$preventDefaultOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
-	});
-var $elm$html$Html$Events$onSubmit = function (msg) {
-	return A2(
-		$elm$html$Html$Events$preventDefaultOn,
-		'submit',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysPreventDefault,
-			$elm$json$Json$Decode$succeed(msg)));
-};
 var $ianmackenzie$elm_units$Illuminance$inLux = function (_v0) {
 	var numLux = _v0.a;
 	return numLux;
@@ -20544,84 +20870,8 @@ var $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead = function (_arguments) {
 	return $ianmackenzie$elm_3d_scene$Scene3d$Light$soft(
 		{chromaticity: _arguments.chromaticity, intensityAbove: _arguments.intensity, intensityBelow: $ianmackenzie$elm_units$Quantity$zero, upDirection: _arguments.upDirection});
 };
-var $elm$virtual_dom$VirtualDom$property = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_property,
-			_VirtualDom_noInnerHtmlOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlJson(value));
-	});
 var $elm$html$Html$Attributes$property = $elm$virtual_dom$VirtualDom$property;
 var $avh4$elm_color$Color$red = A4($avh4$elm_color$Color$RgbaSpace, 204 / 255, 0 / 255, 0 / 255, 1.0);
-var $elm$html$Html$option = _VirtualDom_node('option');
-var $elm$html$Html$select = _VirtualDom_node('select');
-var $author$project$Html$Extra$selectChangeHelper = F3(
-	function (toKey, options, key) {
-		selectChangeHelper:
-		while (true) {
-			if (!options.b) {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var value = options.a;
-				var rest = options.b;
-				if (_Utils_eq(
-					toKey(value),
-					key)) {
-					return $elm$core$Maybe$Just(value);
-				} else {
-					var $temp$toKey = toKey,
-						$temp$options = rest,
-						$temp$key = key;
-					toKey = $temp$toKey;
-					options = $temp$options;
-					key = $temp$key;
-					continue selectChangeHelper;
-				}
-			}
-		}
-	});
-var $author$project$Html$Extra$select = F2(
-	function (attributes, config) {
-		return A2(
-			$elm$html$Html$select,
-			_Utils_ap(
-				attributes,
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onInput(
-						function (key) {
-							return config.onSelect(
-								A3($author$project$Html$Extra$selectChangeHelper, config.toKey, config.options, key));
-						}),
-						$elm$html$Html$Attributes$value(
-						function () {
-							var _v0 = config.value;
-							if (_v0.$ === 'Nothing') {
-								return '';
-							} else {
-								var value = _v0.a;
-								return config.toKey(value);
-							}
-						}())
-					])),
-			A2(
-				$elm$core$List$map,
-				function (option) {
-					return A2(
-						$elm$html$Html$option,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$value(
-								config.toKey(option))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								config.toLabel(option))
-							]));
-				},
-				config.options));
-	});
 var $elm$core$Basics$clamp = F3(
 	function (low, high, number) {
 		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
@@ -20649,70 +20899,8 @@ var $ianmackenzie$elm_units$Temperature$kelvins = function (numKelvins) {
 };
 var $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight = $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature(
 	$ianmackenzie$elm_units$Temperature$kelvins(12000));
-var $elm$html$Html$small = _VirtualDom_node('small');
-var $elm$html$Html$span = _VirtualDom_node('span');
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight = $ianmackenzie$elm_3d_scene$Scene3d$Light$colorTemperature(
 	$ianmackenzie$elm_units$Temperature$kelvins(5600));
-var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
-var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
-var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
-var $elm$svg$Svg$map = $elm$virtual_dom$VirtualDom$map;
-var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
-var $elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
-var $elm$svg$Svg$Attributes$strokeLinejoin = _VirtualDom_attribute('stroke-linejoin');
-var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
-var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $phosphor_icons$phosphor_elm$Phosphor$xmlns = function (s) {
-	return A2(
-		$elm$virtual_dom$VirtualDom$property,
-		'xmlns',
-		$elm$json$Json$Encode$string(s));
-};
-var $phosphor_icons$phosphor_elm$Phosphor$toHtml = F2(
-	function (attributes, _v0) {
-		var src = _v0.a.src;
-		var attrs = _v0.a.attrs;
-		var strSize = $elm$core$String$fromFloat(attrs.size);
-		var baseAttributes = _List_fromArray(
-			[
-				$phosphor_icons$phosphor_elm$Phosphor$xmlns('http://www.w3.org/2000/svg'),
-				$elm$svg$Svg$Attributes$fill('currentColor'),
-				$elm$svg$Svg$Attributes$height(
-				_Utils_ap(strSize, attrs.sizeUnit)),
-				$elm$svg$Svg$Attributes$width(
-				_Utils_ap(strSize, attrs.sizeUnit)),
-				$elm$svg$Svg$Attributes$stroke('currentColor'),
-				$elm$svg$Svg$Attributes$strokeLinecap('round'),
-				$elm$svg$Svg$Attributes$strokeLinejoin('round'),
-				$elm$svg$Svg$Attributes$viewBox('0 0 256 256')
-			]);
-		var combinedAttributes = _Utils_ap(
-			function () {
-				var _v1 = attrs._class;
-				if (_v1.$ === 'Just') {
-					var c = _v1.a;
-					return A2(
-						$elm$core$List$cons,
-						$elm$svg$Svg$Attributes$class(c),
-						baseAttributes);
-				} else {
-					return baseAttributes;
-				}
-			}(),
-			attributes);
-		return A2(
-			$elm$svg$Svg$svg,
-			combinedAttributes,
-			A2(
-				$elm$core$List$map,
-				$elm$svg$Svg$map($elm$core$Basics$never),
-				src));
-	});
 var $ianmackenzie$elm_3d_scene$Scene3d$BackgroundColor = function (a) {
 	return {$: 'BackgroundColor', a: a};
 };
@@ -21915,40 +22103,6 @@ var $author$project$Board$view3dScene = F4(
 				toneMapping: $ianmackenzie$elm_3d_scene$Scene3d$noToneMapping,
 				whiteBalance: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight
 			});
-	});
-var $author$project$Board$viewAllPointsCollected = F2(
-	function (level, nextActions) {
-		return _Utils_eq(level.capturedPoints, level.totalCapturePoints) ? A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'position', 'fixed'),
-					A2($elm$html$Html$Attributes$style, 'top', '50%'),
-					A2($elm$html$Html$Attributes$style, 'left', '50%'),
-					A2($elm$html$Html$Attributes$style, 'transform', 'translate(-50%, -50%)'),
-					A2($elm$html$Html$Attributes$style, 'background-color', 'rgba(0, 255, 125, 0.5)'),
-					A2($elm$html$Html$Attributes$style, 'font-size', '4rem'),
-					A2($elm$html$Html$Attributes$style, 'backdrop-filter', 'blur(5px)'),
-					A2($elm$html$Html$Attributes$style, 'padding', '4rem 8rem'),
-					A2($elm$html$Html$Attributes$style, 'border-radius', '1rem'),
-					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-					A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
-					A2($elm$html$Html$Attributes$style, 'gap', '1rem')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$span,
-					_List_fromArray(
-						[
-							A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('Board Complete!')
-						])),
-					nextActions
-				])) : $elm$html$Html$text('');
 	});
 var $ianmackenzie$elm_geometry$Frame3d$atPoint = function (point) {
 	return $ianmackenzie$elm_geometry$Frame3d$unsafe(
@@ -26212,6 +26366,581 @@ var $author$project$Board$viewEnemy = function (enemy) {
 					dimensions))
 			]));
 };
+var $author$project$Screen$Editor$viewOrientationArrows = $ianmackenzie$elm_3d_scene$Scene3d$group(
+	_List_fromArray(
+		[
+			A2(
+			$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
+			$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
+			A2(
+				$ianmackenzie$elm_geometry$LineSegment3d$from,
+				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, -0.5),
+				A3($ianmackenzie$elm_geometry$Point3d$meters, 1, -1, -0.5))),
+			A2(
+			$ianmackenzie$elm_3d_scene$Scene3d$cone,
+			$ianmackenzie$elm_3d_scene$Scene3d$Material$matte($avh4$elm_color$Color$red),
+			A3(
+				$ianmackenzie$elm_geometry$Cone3d$startingAt,
+				A3($ianmackenzie$elm_geometry$Point3d$meters, 1, -1, -0.5),
+				$ianmackenzie$elm_geometry$Direction3d$positiveX,
+				{
+					length: $ianmackenzie$elm_units$Length$meters(0.25),
+					radius: $ianmackenzie$elm_units$Length$meters(0.125)
+				})),
+			A2(
+			$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
+			$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$green),
+			A2(
+				$ianmackenzie$elm_geometry$LineSegment3d$from,
+				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, -0.5),
+				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, 1, -0.5))),
+			A2(
+			$ianmackenzie$elm_3d_scene$Scene3d$cone,
+			$ianmackenzie$elm_3d_scene$Scene3d$Material$matte($avh4$elm_color$Color$green),
+			A3(
+				$ianmackenzie$elm_geometry$Cone3d$startingAt,
+				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, 1, -0.5),
+				$ianmackenzie$elm_geometry$Direction3d$positiveY,
+				{
+					length: $ianmackenzie$elm_units$Length$meters(0.25),
+					radius: $ianmackenzie$elm_units$Length$meters(0.125)
+				})),
+			A2(
+			$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
+			$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$blue),
+			A2(
+				$ianmackenzie$elm_geometry$LineSegment3d$from,
+				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, -0.5),
+				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, 1.5))),
+			A2(
+			$ianmackenzie$elm_3d_scene$Scene3d$cone,
+			$ianmackenzie$elm_3d_scene$Scene3d$Material$matte($avh4$elm_color$Color$blue),
+			A3(
+				$ianmackenzie$elm_geometry$Cone3d$startingAt,
+				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, 1.5),
+				$ianmackenzie$elm_geometry$Direction3d$positiveZ,
+				{
+					length: $ianmackenzie$elm_units$Length$meters(0.25),
+					radius: $ianmackenzie$elm_units$Length$meters(0.125)
+				}))
+		]));
+var $noahzgordon$elm_color_extra$Color$Interpolate$RGB = {$: 'RGB'};
+var $noahzgordon$elm_color_extra$Color$Convert$colorToXyz = function (cl) {
+	var c = function (ch) {
+		var ch_ = (ch > 4.045e-2) ? A2($elm$core$Basics$pow, (ch + 5.5e-2) / 1.055, 2.4) : (ch / 12.92);
+		return ch_ * 100;
+	};
+	var _v0 = $avh4$elm_color$Color$toRgba(cl);
+	var red = _v0.red;
+	var green = _v0.green;
+	var blue = _v0.blue;
+	var b = c(blue);
+	var g = c(green);
+	var r = c(red);
+	return {x: ((r * 0.4124) + (g * 0.3576)) + (b * 0.1805), y: ((r * 0.2126) + (g * 0.7152)) + (b * 7.22e-2), z: ((r * 1.93e-2) + (g * 0.1192)) + (b * 0.9505)};
+};
+var $noahzgordon$elm_color_extra$Color$Convert$xyzToLab = function (_v0) {
+	var x = _v0.x;
+	var y = _v0.y;
+	var z = _v0.z;
+	var c = function (ch) {
+		return (ch > 8.856e-3) ? A2($elm$core$Basics$pow, ch, 1 / 3) : ((7.787 * ch) + (16 / 116));
+	};
+	var x_ = c(x / 95.047);
+	var y_ = c(y / 100);
+	var z_ = c(z / 108.883);
+	return {a: 500 * (x_ - y_), b: 200 * (y_ - z_), l: (116 * y_) - 16};
+};
+var $noahzgordon$elm_color_extra$Color$Convert$colorToLab = A2($elm$core$Basics$composeR, $noahzgordon$elm_color_extra$Color$Convert$colorToXyz, $noahzgordon$elm_color_extra$Color$Convert$xyzToLab);
+var $elm$core$Basics$degrees = function (angleInDegrees) {
+	return (angleInDegrees * $elm$core$Basics$pi) / 180;
+};
+var $noahzgordon$elm_color_extra$Color$Interpolate$degree180 = $elm$core$Basics$degrees(180);
+var $noahzgordon$elm_color_extra$Color$Interpolate$degree360 = $elm$core$Basics$degrees(360);
+var $avh4$elm_color$Color$hsla = F4(
+	function (hue, sat, light, alpha) {
+		var _v0 = _Utils_Tuple3(hue, sat, light);
+		var h = _v0.a;
+		var s = _v0.b;
+		var l = _v0.c;
+		var m2 = (l <= 0.5) ? (l * (s + 1)) : ((l + s) - (l * s));
+		var m1 = (l * 2) - m2;
+		var hueToRgb = function (h__) {
+			var h_ = (h__ < 0) ? (h__ + 1) : ((h__ > 1) ? (h__ - 1) : h__);
+			return ((h_ * 6) < 1) ? (m1 + (((m2 - m1) * h_) * 6)) : (((h_ * 2) < 1) ? m2 : (((h_ * 3) < 2) ? (m1 + (((m2 - m1) * ((2 / 3) - h_)) * 6)) : m1));
+		};
+		var b = hueToRgb(h - (1 / 3));
+		var g = hueToRgb(h);
+		var r = hueToRgb(h + (1 / 3));
+		return A4($avh4$elm_color$Color$RgbaSpace, r, g, b, alpha);
+	});
+var $noahzgordon$elm_color_extra$Color$Convert$labToXyz = function (_v0) {
+	var l = _v0.l;
+	var a = _v0.a;
+	var b = _v0.b;
+	var y = (l + 16) / 116;
+	var c = function (ch) {
+		var ch_ = (ch * ch) * ch;
+		return (ch_ > 8.856e-3) ? ch_ : ((ch - (16 / 116)) / 7.787);
+	};
+	return {
+		x: c(y + (a / 500)) * 95.047,
+		y: c(y) * 100,
+		z: c(y - (b / 200)) * 108.883
+	};
+};
+var $noahzgordon$elm_color_extra$Color$Convert$xyzToColor = function (_v0) {
+	var x = _v0.x;
+	var y = _v0.y;
+	var z = _v0.z;
+	var z_ = z / 100;
+	var y_ = y / 100;
+	var x_ = x / 100;
+	var r = ((x_ * 3.2404542) + (y_ * (-1.5371385))) + (z_ * (-0.4986));
+	var g = ((x_ * (-0.969266)) + (y_ * 1.8760108)) + (z_ * 4.1556e-2);
+	var c = function (ch) {
+		var ch_ = (ch > 3.1308e-3) ? ((1.055 * A2($elm$core$Basics$pow, ch, 1 / 2.4)) - 5.5e-2) : (12.92 * ch);
+		return A3($elm$core$Basics$clamp, 0, 1, ch_);
+	};
+	var b = ((x_ * 5.56434e-2) + (y_ * (-0.2040259))) + (z_ * 1.0572252);
+	return A3(
+		$avh4$elm_color$Color$rgb,
+		c(r),
+		c(g),
+		c(b));
+};
+var $noahzgordon$elm_color_extra$Color$Convert$labToColor = A2($elm$core$Basics$composeR, $noahzgordon$elm_color_extra$Color$Convert$labToXyz, $noahzgordon$elm_color_extra$Color$Convert$xyzToColor);
+var $noahzgordon$elm_color_extra$Color$Interpolate$linear = F3(
+	function (t, i1, i2) {
+		return i1 + ((i2 - i1) * t);
+	});
+var $avh4$elm_color$Color$rgba = F4(
+	function (r, g, b, a) {
+		return A4($avh4$elm_color$Color$RgbaSpace, r, g, b, a);
+	});
+var $avh4$elm_color$Color$toHsla = function (_v0) {
+	var r = _v0.a;
+	var g = _v0.b;
+	var b = _v0.c;
+	var a = _v0.d;
+	var minColor = A2(
+		$elm$core$Basics$min,
+		r,
+		A2($elm$core$Basics$min, g, b));
+	var maxColor = A2(
+		$elm$core$Basics$max,
+		r,
+		A2($elm$core$Basics$max, g, b));
+	var l = (minColor + maxColor) / 2;
+	var s = _Utils_eq(minColor, maxColor) ? 0 : ((l < 0.5) ? ((maxColor - minColor) / (maxColor + minColor)) : ((maxColor - minColor) / ((2 - maxColor) - minColor)));
+	var h1 = _Utils_eq(maxColor, r) ? ((g - b) / (maxColor - minColor)) : (_Utils_eq(maxColor, g) ? (2 + ((b - r) / (maxColor - minColor))) : (4 + ((r - g) / (maxColor - minColor))));
+	var h2 = h1 * (1 / 6);
+	var h3 = $elm$core$Basics$isNaN(h2) ? 0 : ((h2 < 0) ? (h2 + 1) : h2);
+	return {alpha: a, hue: h3, lightness: l, saturation: s};
+};
+var $noahzgordon$elm_color_extra$Color$Interpolate$interpolate = F4(
+	function (space, cl1, cl2, t) {
+		var i = $noahzgordon$elm_color_extra$Color$Interpolate$linear(t);
+		switch (space.$) {
+			case 'RGB':
+				var cl2_ = $avh4$elm_color$Color$toRgba(cl2);
+				var cl1_ = $avh4$elm_color$Color$toRgba(cl1);
+				return A4(
+					$avh4$elm_color$Color$rgba,
+					A2(i, cl1_.red, cl2_.red),
+					A2(i, cl1_.green, cl2_.green),
+					A2(i, cl1_.blue, cl2_.blue),
+					A2(i, cl1_.alpha, cl2_.alpha));
+			case 'HSL':
+				var cl2_ = $avh4$elm_color$Color$toHsla(cl2);
+				var h2 = cl2_.hue;
+				var cl1_ = $avh4$elm_color$Color$toHsla(cl1);
+				var h1 = cl1_.hue;
+				var dH = ((_Utils_cmp(h2, h1) > 0) && (_Utils_cmp(h2 - h1, $noahzgordon$elm_color_extra$Color$Interpolate$degree180) > 0)) ? ((h2 - h1) + $noahzgordon$elm_color_extra$Color$Interpolate$degree360) : (((_Utils_cmp(h2, h1) < 0) && (_Utils_cmp(h1 - h2, $noahzgordon$elm_color_extra$Color$Interpolate$degree180) > 0)) ? ((h2 + $noahzgordon$elm_color_extra$Color$Interpolate$degree360) - h1) : (h2 - h1));
+				return A4(
+					$avh4$elm_color$Color$hsla,
+					h1 + (t * dH),
+					A2(i, cl1_.saturation, cl2_.saturation),
+					A2(i, cl1_.lightness, cl2_.lightness),
+					A2(i, cl1_.alpha, cl2_.alpha));
+			default:
+				var lab2 = $noahzgordon$elm_color_extra$Color$Convert$colorToLab(cl2);
+				var lab1 = $noahzgordon$elm_color_extra$Color$Convert$colorToLab(cl1);
+				return $noahzgordon$elm_color_extra$Color$Convert$labToColor(
+					{
+						a: A2(i, lab1.a, lab2.a),
+						b: A2(i, lab1.b, lab2.b),
+						l: A2(i, lab1.l, lab2.l)
+					});
+		}
+	});
+var $ianmackenzie$elm_geometry$Cone3d$placeIn = F2(
+	function (frame, _v0) {
+		var cone = _v0.a;
+		return $ianmackenzie$elm_geometry$Geometry$Types$Cone3d(
+			{
+				axis: A2($ianmackenzie$elm_geometry$Axis3d$placeIn, frame, cone.axis),
+				length: cone.length,
+				radius: cone.radius
+			});
+	});
+var $ianmackenzie$elm_geometry$Sphere3d$placeIn = F2(
+	function (frame, sphere) {
+		return A2(
+			$ianmackenzie$elm_geometry$Sphere3d$withRadius,
+			$ianmackenzie$elm_geometry$Sphere3d$radius(sphere),
+			A2(
+				$ianmackenzie$elm_geometry$Point3d$placeIn,
+				frame,
+				$ianmackenzie$elm_geometry$Sphere3d$centerPoint(sphere)));
+	});
+var $author$project$Board$pulse = F2(
+	function (time, frequency) {
+		return 0.5 * (1 + $elm$core$Basics$sin(((2 * $elm$core$Basics$pi) * frequency) * time));
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$Transformation$rotateAround = F2(
+	function (axis, _v0) {
+		var angle = _v0.a;
+		var p0 = $ianmackenzie$elm_geometry$Point3d$unwrap(
+			$ianmackenzie$elm_geometry$Axis3d$originPoint(axis));
+		var halfAngle = 0.5 * angle;
+		var qw = $elm$core$Basics$cos(halfAngle);
+		var sinHalfAngle = $elm$core$Basics$sin(halfAngle);
+		var a = $ianmackenzie$elm_geometry$Direction3d$unwrap(
+			$ianmackenzie$elm_geometry$Axis3d$direction(axis));
+		var qx = a.x * sinHalfAngle;
+		var wx = qw * qx;
+		var xx = qx * qx;
+		var qy = a.y * sinHalfAngle;
+		var wy = qw * qy;
+		var xy = qx * qy;
+		var yy = qy * qy;
+		var a22 = 1 - (2 * (xx + yy));
+		var qz = a.z * sinHalfAngle;
+		var wz = qw * qz;
+		var a01 = 2 * (xy - wz);
+		var a10 = 2 * (xy + wz);
+		var xz = qx * qz;
+		var a02 = 2 * (xz + wy);
+		var a20 = 2 * (xz - wy);
+		var yz = qy * qz;
+		var a12 = 2 * (yz - wx);
+		var a21 = 2 * (yz + wx);
+		var zz = qz * qz;
+		var a00 = 1 - (2 * (yy + zz));
+		var a11 = 1 - (2 * (xx + zz));
+		return {isRightHanded: true, ix: a00, iy: a10, iz: a20, jx: a01, jy: a11, jz: a21, kx: a02, ky: a12, kz: a22, px: ((p0.x - (a00 * p0.x)) - (a01 * p0.y)) - (a02 * p0.z), py: ((p0.y - (a10 * p0.x)) - (a11 * p0.y)) - (a12 * p0.z), pz: ((p0.z - (a20 * p0.x)) - (a21 * p0.y)) - (a22 * p0.z), scale: 1};
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$Entity$rotateAround = F3(
+	function (axis, angle, givenDrawable) {
+		return A2(
+			$ianmackenzie$elm_3d_scene$Scene3d$Entity$transformBy,
+			A2($ianmackenzie$elm_3d_scene$Scene3d$Transformation$rotateAround, axis, angle),
+			givenDrawable);
+	});
+var $ianmackenzie$elm_3d_scene$Scene3d$rotateAround = F3(
+	function (axis, angle, entity) {
+		return A3($ianmackenzie$elm_3d_scene$Scene3d$Entity$rotateAround, axis, angle, entity);
+	});
+var $author$project$Board$viewPlayer = function (level) {
+	var frame = level.playerFrame;
+	var color = A2(
+		$ianmackenzie$elm_units$Quantity$greaterThan,
+		$ianmackenzie$elm_units$Quantity$Quantity(0),
+		level.invincibleFrames) ? A4(
+		$noahzgordon$elm_color_extra$Color$Interpolate$interpolate,
+		$noahzgordon$elm_color_extra$Color$Interpolate$RGB,
+		$avh4$elm_color$Color$gray,
+		$avh4$elm_color$Color$blue,
+		A2(
+			$author$project$Board$pulse,
+			$ianmackenzie$elm_units$Duration$inSeconds(level.invincibleFrames),
+			2.5)) : $avh4$elm_color$Color$gray;
+	return A3(
+		$ianmackenzie$elm_3d_scene$Scene3d$rotateAround,
+		A2(
+			$ianmackenzie$elm_geometry$Axis3d$through,
+			$ianmackenzie$elm_geometry$Frame3d$originPoint(frame),
+			$ianmackenzie$elm_geometry$Frame3d$zDirection(frame)),
+		$ianmackenzie$elm_units$Angle$degrees(
+			function () {
+				var _v0 = level.playerFacing;
+				switch (_v0.$) {
+					case 'Forward':
+						return 0;
+					case 'Backward':
+						return 180;
+					case 'Left':
+						return 90;
+					default:
+						return -90;
+				}
+			}()),
+		$ianmackenzie$elm_3d_scene$Scene3d$group(
+			_List_fromArray(
+				[
+					A2(
+					$ianmackenzie$elm_3d_scene$Scene3d$sphere,
+					A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
+						$ianmackenzie$elm_3d_scene$Scene3d$Light$color(color),
+						$ianmackenzie$elm_units$Luminance$nits(20000)),
+					A2(
+						$ianmackenzie$elm_geometry$Sphere3d$placeIn,
+						frame,
+						A2($ianmackenzie$elm_geometry$Sphere3d$atPoint, $ianmackenzie$elm_geometry$Point3d$origin, $author$project$Board$playerRadius))),
+					A2(
+					$ianmackenzie$elm_3d_scene$Scene3d$cone,
+					A2(
+						$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
+						$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$red),
+						$ianmackenzie$elm_units$Luminance$nits(2500)),
+					A2(
+						$ianmackenzie$elm_geometry$Cone3d$placeIn,
+						frame,
+						A3(
+							$ianmackenzie$elm_geometry$Cone3d$startingAt,
+							$ianmackenzie$elm_geometry$Point3d$origin,
+							$ianmackenzie$elm_geometry$Direction3d$positiveX,
+							{
+								length: $ianmackenzie$elm_units$Length$meters(0.75),
+								radius: $ianmackenzie$elm_units$Length$meters(0.5)
+							})))
+				])));
+};
+var $ianmackenzie$elm_geometry$Axis3d$x = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$x);
+var $ianmackenzie$elm_geometry$Axis3d$z = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$z);
+var $author$project$Screen$Editor$viewEditor3dScene = F3(
+	function (sharedModel, toMsg, model) {
+		return A2(
+			$elm$html$Html$div,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$id('editor-viewport'),
+						function () {
+						var _v0 = model.editorMode;
+						if (_v0.$ === 'EditBoard') {
+							return $elm$html$Html$Attributes$class('');
+						} else {
+							return A2($elm$html$Html$Attributes$style, 'width', '100vw');
+						}
+					}(),
+						A2(
+						$elm$html$Html$Attributes$style,
+						'grid-column',
+						function () {
+							var _v1 = model.editorMode;
+							if (_v1.$ === 'EditBoard') {
+								return '1';
+							} else {
+								return '1 / 2';
+							}
+						}()),
+						A2(
+						$elm$html$Html$Attributes$style,
+						'grid-row',
+						function () {
+							var _v2 = model.editorMode;
+							if (_v2.$ === 'EditBoard') {
+								return '2';
+							} else {
+								return '1';
+							}
+						}())
+					]),
+				function () {
+					var _v3 = model.mouseDragging;
+					switch (_v3.$) {
+						case 'NoInteraction':
+							return _List_fromArray(
+								[
+									A2(
+									$elm$html$Html$Events$on,
+									'pointerdown',
+									$author$project$Screen$Editor$decodeMouseDown(toMsg)),
+									A2(
+									$elm$html$Html$Events$on,
+									'pointermove',
+									A2(
+										$author$project$Screen$Editor$decodePointerMove,
+										toMsg,
+										{modifyingMany: false, pointerId: $elm$json$Json$Encode$null})),
+									A2($elm$html$Html$Attributes$property, '___setPointerCapture', $elm$json$Json$Encode$null)
+								]);
+						case 'InteractionStart':
+							var details = _v3.a;
+							return _List_fromArray(
+								[
+									A2(
+									$elm$html$Html$Events$on,
+									'pointerup',
+									$author$project$Screen$Editor$decodeMouseUp(toMsg)),
+									A2(
+									$elm$html$Html$Events$on,
+									'pointermove',
+									A2($author$project$Screen$Editor$decodePointerMove, toMsg, details)),
+									A2($elm$html$Html$Attributes$property, '___setPointerCapture', details.pointerId)
+								]);
+						default:
+							var details = _v3.a;
+							return _List_fromArray(
+								[
+									A2(
+									$elm$html$Html$Events$on,
+									'pointerup',
+									$author$project$Screen$Editor$decodeMouseUp(toMsg)),
+									A2(
+									$elm$html$Html$Events$on,
+									'pointermove',
+									A2($author$project$Screen$Editor$decodePointerMove, toMsg, details)),
+									A2($elm$html$Html$Attributes$property, '___setPointerCapture', details.pointerId)
+								]);
+					}
+				}()),
+			_List_fromArray(
+				[
+					function () {
+					var _v4 = model.screenSize;
+					if (_v4.$ === 'Nothing') {
+						return A2(
+							$elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Loading...')
+								]));
+					} else {
+						var screenSize = _v4.a;
+						var lights = function () {
+							var _v11 = model.editorMode;
+							if (_v11.$ === 'TestGame') {
+								return A2(
+									$author$project$Board$gameLights,
+									model.level.board,
+									$ianmackenzie$elm_geometry$Frame3d$originPoint(model.level.playerFrame));
+							} else {
+								var upsideDownSky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+									{
+										chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+										intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
+										upDirection: $ianmackenzie$elm_geometry$Direction3d$negativeZ
+									});
+								var sun = A2(
+									$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
+									$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
+									{
+										chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
+										direction: A3(
+											$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+											$ianmackenzie$elm_geometry$Axis3d$z,
+											A2(
+												$ianmackenzie$elm_units$Quantity$plus,
+												$ianmackenzie$elm_units$Angle$degrees(90),
+												model.cameraRotation),
+											A3(
+												$ianmackenzie$elm_geometry$Direction3d$rotateAround,
+												$ianmackenzie$elm_geometry$Axis3d$x,
+												$ianmackenzie$elm_units$Angle$degrees(70),
+												$ianmackenzie$elm_geometry$Direction3d$negativeZ)),
+										intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
+									});
+								var sky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+									{
+										chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
+										intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
+										upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
+									});
+								var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
+									{
+										chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
+										intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
+										upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
+									});
+								return A4($ianmackenzie$elm_3d_scene$Scene3d$fourLights, sun, sky, environment, upsideDownSky);
+							}
+						}();
+						return A4(
+							$author$project$Board$view3dScene,
+							lights,
+							function () {
+								var _v5 = model.editorMode;
+								if (_v5.$ === 'TestGame') {
+									return sharedModel.screenSize;
+								} else {
+									return screenSize;
+								}
+							}(),
+							function () {
+								var _v6 = model.editorMode;
+								if (_v6.$ === 'TestGame') {
+									return $author$project$Board$gamePlayCamera(model.level.playerFrame);
+								} else {
+									return $author$project$Screen$Editor$editorCamera(model);
+								}
+							}(),
+							function () {
+								var _v7 = model.editorMode;
+								if (_v7.$ === 'EditBoard') {
+									var editorBoard = $author$project$Undo$value(model.editorBoard);
+									return $elm$core$List$concat(
+										_List_fromArray(
+											[
+												A2(
+												$elm$core$List$map,
+												A3($author$project$Screen$Editor$viewBlock, sharedModel, editorBoard, model),
+												$elm$core$Dict$toList(editorBoard.blocks)),
+												_List_fromArray(
+												[
+													A3(
+													$author$project$Screen$Editor$viewCursor,
+													function () {
+														var _v8 = model.blockEditMode;
+														switch (_v8.$) {
+															case 'Select':
+																return $avh4$elm_color$Color$white;
+															case 'Remove':
+																return $avh4$elm_color$Color$red;
+															default:
+																return $avh4$elm_color$Color$green;
+														}
+													}(),
+													model.cursorBounce,
+													model.editorCursor),
+													$author$project$Screen$Editor$viewOrientationArrows,
+													function () {
+													var _v9 = model.selectedBlock;
+													if (_v9.$ === 'Nothing') {
+														return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
+													} else {
+														var _v10 = _v9.a;
+														var point = _v10.a;
+														return A3($author$project$Screen$Editor$viewCursor, $avh4$elm_color$Color$yellow, model.cursorBounce, point);
+													}
+												}(),
+													model.showBoardBounds ? $author$project$Screen$Editor$viewBounds(editorBoard) : $ianmackenzie$elm_3d_scene$Scene3d$nothing
+												])
+											]));
+								} else {
+									return $elm$core$List$concat(
+										_List_fromArray(
+											[
+												A2(
+												$elm$core$List$map,
+												$author$project$Board$viewBlock,
+												$elm$core$Dict$toList(model.level.board.blocks)),
+												_List_fromArray(
+												[
+													$author$project$Board$viewPlayer(model.level)
+												]),
+												A2($elm$core$List$map, $author$project$Board$viewEnemy, model.level.enemies)
+											]));
+								}
+							}());
+					}
+				}()
+				]));
+	});
 var $author$project$Board$viewGameOver = F2(
 	function (level, nextActions) {
 		return (level.hearts > 0) ? $elm$html$Html$text('') : A2(
@@ -27814,348 +28543,6 @@ var $author$project$Screen$Editor$viewHeader = F5(
 					]));
 		}
 	});
-var $author$project$Screen$Editor$viewOrientationArrows = $ianmackenzie$elm_3d_scene$Scene3d$group(
-	_List_fromArray(
-		[
-			A2(
-			$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
-			$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$red),
-			A2(
-				$ianmackenzie$elm_geometry$LineSegment3d$from,
-				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, -0.5),
-				A3($ianmackenzie$elm_geometry$Point3d$meters, 1, -1, -0.5))),
-			A2(
-			$ianmackenzie$elm_3d_scene$Scene3d$cone,
-			$ianmackenzie$elm_3d_scene$Scene3d$Material$matte($avh4$elm_color$Color$red),
-			A3(
-				$ianmackenzie$elm_geometry$Cone3d$startingAt,
-				A3($ianmackenzie$elm_geometry$Point3d$meters, 1, -1, -0.5),
-				$ianmackenzie$elm_geometry$Direction3d$positiveX,
-				{
-					length: $ianmackenzie$elm_units$Length$meters(0.25),
-					radius: $ianmackenzie$elm_units$Length$meters(0.125)
-				})),
-			A2(
-			$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
-			$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$green),
-			A2(
-				$ianmackenzie$elm_geometry$LineSegment3d$from,
-				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, -0.5),
-				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, 1, -0.5))),
-			A2(
-			$ianmackenzie$elm_3d_scene$Scene3d$cone,
-			$ianmackenzie$elm_3d_scene$Scene3d$Material$matte($avh4$elm_color$Color$green),
-			A3(
-				$ianmackenzie$elm_geometry$Cone3d$startingAt,
-				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, 1, -0.5),
-				$ianmackenzie$elm_geometry$Direction3d$positiveY,
-				{
-					length: $ianmackenzie$elm_units$Length$meters(0.25),
-					radius: $ianmackenzie$elm_units$Length$meters(0.125)
-				})),
-			A2(
-			$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
-			$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$blue),
-			A2(
-				$ianmackenzie$elm_geometry$LineSegment3d$from,
-				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, -0.5),
-				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, 1.5))),
-			A2(
-			$ianmackenzie$elm_3d_scene$Scene3d$cone,
-			$ianmackenzie$elm_3d_scene$Scene3d$Material$matte($avh4$elm_color$Color$blue),
-			A3(
-				$ianmackenzie$elm_geometry$Cone3d$startingAt,
-				A3($ianmackenzie$elm_geometry$Point3d$meters, -1, -1, 1.5),
-				$ianmackenzie$elm_geometry$Direction3d$positiveZ,
-				{
-					length: $ianmackenzie$elm_units$Length$meters(0.25),
-					radius: $ianmackenzie$elm_units$Length$meters(0.125)
-				}))
-		]));
-var $noahzgordon$elm_color_extra$Color$Interpolate$RGB = {$: 'RGB'};
-var $noahzgordon$elm_color_extra$Color$Convert$colorToXyz = function (cl) {
-	var c = function (ch) {
-		var ch_ = (ch > 4.045e-2) ? A2($elm$core$Basics$pow, (ch + 5.5e-2) / 1.055, 2.4) : (ch / 12.92);
-		return ch_ * 100;
-	};
-	var _v0 = $avh4$elm_color$Color$toRgba(cl);
-	var red = _v0.red;
-	var green = _v0.green;
-	var blue = _v0.blue;
-	var b = c(blue);
-	var g = c(green);
-	var r = c(red);
-	return {x: ((r * 0.4124) + (g * 0.3576)) + (b * 0.1805), y: ((r * 0.2126) + (g * 0.7152)) + (b * 7.22e-2), z: ((r * 1.93e-2) + (g * 0.1192)) + (b * 0.9505)};
-};
-var $noahzgordon$elm_color_extra$Color$Convert$xyzToLab = function (_v0) {
-	var x = _v0.x;
-	var y = _v0.y;
-	var z = _v0.z;
-	var c = function (ch) {
-		return (ch > 8.856e-3) ? A2($elm$core$Basics$pow, ch, 1 / 3) : ((7.787 * ch) + (16 / 116));
-	};
-	var x_ = c(x / 95.047);
-	var y_ = c(y / 100);
-	var z_ = c(z / 108.883);
-	return {a: 500 * (x_ - y_), b: 200 * (y_ - z_), l: (116 * y_) - 16};
-};
-var $noahzgordon$elm_color_extra$Color$Convert$colorToLab = A2($elm$core$Basics$composeR, $noahzgordon$elm_color_extra$Color$Convert$colorToXyz, $noahzgordon$elm_color_extra$Color$Convert$xyzToLab);
-var $elm$core$Basics$degrees = function (angleInDegrees) {
-	return (angleInDegrees * $elm$core$Basics$pi) / 180;
-};
-var $noahzgordon$elm_color_extra$Color$Interpolate$degree180 = $elm$core$Basics$degrees(180);
-var $noahzgordon$elm_color_extra$Color$Interpolate$degree360 = $elm$core$Basics$degrees(360);
-var $avh4$elm_color$Color$hsla = F4(
-	function (hue, sat, light, alpha) {
-		var _v0 = _Utils_Tuple3(hue, sat, light);
-		var h = _v0.a;
-		var s = _v0.b;
-		var l = _v0.c;
-		var m2 = (l <= 0.5) ? (l * (s + 1)) : ((l + s) - (l * s));
-		var m1 = (l * 2) - m2;
-		var hueToRgb = function (h__) {
-			var h_ = (h__ < 0) ? (h__ + 1) : ((h__ > 1) ? (h__ - 1) : h__);
-			return ((h_ * 6) < 1) ? (m1 + (((m2 - m1) * h_) * 6)) : (((h_ * 2) < 1) ? m2 : (((h_ * 3) < 2) ? (m1 + (((m2 - m1) * ((2 / 3) - h_)) * 6)) : m1));
-		};
-		var b = hueToRgb(h - (1 / 3));
-		var g = hueToRgb(h);
-		var r = hueToRgb(h + (1 / 3));
-		return A4($avh4$elm_color$Color$RgbaSpace, r, g, b, alpha);
-	});
-var $noahzgordon$elm_color_extra$Color$Convert$labToXyz = function (_v0) {
-	var l = _v0.l;
-	var a = _v0.a;
-	var b = _v0.b;
-	var y = (l + 16) / 116;
-	var c = function (ch) {
-		var ch_ = (ch * ch) * ch;
-		return (ch_ > 8.856e-3) ? ch_ : ((ch - (16 / 116)) / 7.787);
-	};
-	return {
-		x: c(y + (a / 500)) * 95.047,
-		y: c(y) * 100,
-		z: c(y - (b / 200)) * 108.883
-	};
-};
-var $noahzgordon$elm_color_extra$Color$Convert$xyzToColor = function (_v0) {
-	var x = _v0.x;
-	var y = _v0.y;
-	var z = _v0.z;
-	var z_ = z / 100;
-	var y_ = y / 100;
-	var x_ = x / 100;
-	var r = ((x_ * 3.2404542) + (y_ * (-1.5371385))) + (z_ * (-0.4986));
-	var g = ((x_ * (-0.969266)) + (y_ * 1.8760108)) + (z_ * 4.1556e-2);
-	var c = function (ch) {
-		var ch_ = (ch > 3.1308e-3) ? ((1.055 * A2($elm$core$Basics$pow, ch, 1 / 2.4)) - 5.5e-2) : (12.92 * ch);
-		return A3($elm$core$Basics$clamp, 0, 1, ch_);
-	};
-	var b = ((x_ * 5.56434e-2) + (y_ * (-0.2040259))) + (z_ * 1.0572252);
-	return A3(
-		$avh4$elm_color$Color$rgb,
-		c(r),
-		c(g),
-		c(b));
-};
-var $noahzgordon$elm_color_extra$Color$Convert$labToColor = A2($elm$core$Basics$composeR, $noahzgordon$elm_color_extra$Color$Convert$labToXyz, $noahzgordon$elm_color_extra$Color$Convert$xyzToColor);
-var $noahzgordon$elm_color_extra$Color$Interpolate$linear = F3(
-	function (t, i1, i2) {
-		return i1 + ((i2 - i1) * t);
-	});
-var $avh4$elm_color$Color$rgba = F4(
-	function (r, g, b, a) {
-		return A4($avh4$elm_color$Color$RgbaSpace, r, g, b, a);
-	});
-var $avh4$elm_color$Color$toHsla = function (_v0) {
-	var r = _v0.a;
-	var g = _v0.b;
-	var b = _v0.c;
-	var a = _v0.d;
-	var minColor = A2(
-		$elm$core$Basics$min,
-		r,
-		A2($elm$core$Basics$min, g, b));
-	var maxColor = A2(
-		$elm$core$Basics$max,
-		r,
-		A2($elm$core$Basics$max, g, b));
-	var l = (minColor + maxColor) / 2;
-	var s = _Utils_eq(minColor, maxColor) ? 0 : ((l < 0.5) ? ((maxColor - minColor) / (maxColor + minColor)) : ((maxColor - minColor) / ((2 - maxColor) - minColor)));
-	var h1 = _Utils_eq(maxColor, r) ? ((g - b) / (maxColor - minColor)) : (_Utils_eq(maxColor, g) ? (2 + ((b - r) / (maxColor - minColor))) : (4 + ((r - g) / (maxColor - minColor))));
-	var h2 = h1 * (1 / 6);
-	var h3 = $elm$core$Basics$isNaN(h2) ? 0 : ((h2 < 0) ? (h2 + 1) : h2);
-	return {alpha: a, hue: h3, lightness: l, saturation: s};
-};
-var $noahzgordon$elm_color_extra$Color$Interpolate$interpolate = F4(
-	function (space, cl1, cl2, t) {
-		var i = $noahzgordon$elm_color_extra$Color$Interpolate$linear(t);
-		switch (space.$) {
-			case 'RGB':
-				var cl2_ = $avh4$elm_color$Color$toRgba(cl2);
-				var cl1_ = $avh4$elm_color$Color$toRgba(cl1);
-				return A4(
-					$avh4$elm_color$Color$rgba,
-					A2(i, cl1_.red, cl2_.red),
-					A2(i, cl1_.green, cl2_.green),
-					A2(i, cl1_.blue, cl2_.blue),
-					A2(i, cl1_.alpha, cl2_.alpha));
-			case 'HSL':
-				var cl2_ = $avh4$elm_color$Color$toHsla(cl2);
-				var h2 = cl2_.hue;
-				var cl1_ = $avh4$elm_color$Color$toHsla(cl1);
-				var h1 = cl1_.hue;
-				var dH = ((_Utils_cmp(h2, h1) > 0) && (_Utils_cmp(h2 - h1, $noahzgordon$elm_color_extra$Color$Interpolate$degree180) > 0)) ? ((h2 - h1) + $noahzgordon$elm_color_extra$Color$Interpolate$degree360) : (((_Utils_cmp(h2, h1) < 0) && (_Utils_cmp(h1 - h2, $noahzgordon$elm_color_extra$Color$Interpolate$degree180) > 0)) ? ((h2 + $noahzgordon$elm_color_extra$Color$Interpolate$degree360) - h1) : (h2 - h1));
-				return A4(
-					$avh4$elm_color$Color$hsla,
-					h1 + (t * dH),
-					A2(i, cl1_.saturation, cl2_.saturation),
-					A2(i, cl1_.lightness, cl2_.lightness),
-					A2(i, cl1_.alpha, cl2_.alpha));
-			default:
-				var lab2 = $noahzgordon$elm_color_extra$Color$Convert$colorToLab(cl2);
-				var lab1 = $noahzgordon$elm_color_extra$Color$Convert$colorToLab(cl1);
-				return $noahzgordon$elm_color_extra$Color$Convert$labToColor(
-					{
-						a: A2(i, lab1.a, lab2.a),
-						b: A2(i, lab1.b, lab2.b),
-						l: A2(i, lab1.l, lab2.l)
-					});
-		}
-	});
-var $ianmackenzie$elm_geometry$Cone3d$placeIn = F2(
-	function (frame, _v0) {
-		var cone = _v0.a;
-		return $ianmackenzie$elm_geometry$Geometry$Types$Cone3d(
-			{
-				axis: A2($ianmackenzie$elm_geometry$Axis3d$placeIn, frame, cone.axis),
-				length: cone.length,
-				radius: cone.radius
-			});
-	});
-var $ianmackenzie$elm_geometry$Sphere3d$placeIn = F2(
-	function (frame, sphere) {
-		return A2(
-			$ianmackenzie$elm_geometry$Sphere3d$withRadius,
-			$ianmackenzie$elm_geometry$Sphere3d$radius(sphere),
-			A2(
-				$ianmackenzie$elm_geometry$Point3d$placeIn,
-				frame,
-				$ianmackenzie$elm_geometry$Sphere3d$centerPoint(sphere)));
-	});
-var $author$project$Board$pulse = F2(
-	function (time, frequency) {
-		return 0.5 * (1 + $elm$core$Basics$sin(((2 * $elm$core$Basics$pi) * frequency) * time));
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$Transformation$rotateAround = F2(
-	function (axis, _v0) {
-		var angle = _v0.a;
-		var p0 = $ianmackenzie$elm_geometry$Point3d$unwrap(
-			$ianmackenzie$elm_geometry$Axis3d$originPoint(axis));
-		var halfAngle = 0.5 * angle;
-		var qw = $elm$core$Basics$cos(halfAngle);
-		var sinHalfAngle = $elm$core$Basics$sin(halfAngle);
-		var a = $ianmackenzie$elm_geometry$Direction3d$unwrap(
-			$ianmackenzie$elm_geometry$Axis3d$direction(axis));
-		var qx = a.x * sinHalfAngle;
-		var wx = qw * qx;
-		var xx = qx * qx;
-		var qy = a.y * sinHalfAngle;
-		var wy = qw * qy;
-		var xy = qx * qy;
-		var yy = qy * qy;
-		var a22 = 1 - (2 * (xx + yy));
-		var qz = a.z * sinHalfAngle;
-		var wz = qw * qz;
-		var a01 = 2 * (xy - wz);
-		var a10 = 2 * (xy + wz);
-		var xz = qx * qz;
-		var a02 = 2 * (xz + wy);
-		var a20 = 2 * (xz - wy);
-		var yz = qy * qz;
-		var a12 = 2 * (yz - wx);
-		var a21 = 2 * (yz + wx);
-		var zz = qz * qz;
-		var a00 = 1 - (2 * (yy + zz));
-		var a11 = 1 - (2 * (xx + zz));
-		return {isRightHanded: true, ix: a00, iy: a10, iz: a20, jx: a01, jy: a11, jz: a21, kx: a02, ky: a12, kz: a22, px: ((p0.x - (a00 * p0.x)) - (a01 * p0.y)) - (a02 * p0.z), py: ((p0.y - (a10 * p0.x)) - (a11 * p0.y)) - (a12 * p0.z), pz: ((p0.z - (a20 * p0.x)) - (a21 * p0.y)) - (a22 * p0.z), scale: 1};
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$Entity$rotateAround = F3(
-	function (axis, angle, givenDrawable) {
-		return A2(
-			$ianmackenzie$elm_3d_scene$Scene3d$Entity$transformBy,
-			A2($ianmackenzie$elm_3d_scene$Scene3d$Transformation$rotateAround, axis, angle),
-			givenDrawable);
-	});
-var $ianmackenzie$elm_3d_scene$Scene3d$rotateAround = F3(
-	function (axis, angle, entity) {
-		return A3($ianmackenzie$elm_3d_scene$Scene3d$Entity$rotateAround, axis, angle, entity);
-	});
-var $author$project$Board$viewPlayer = function (level) {
-	var frame = level.playerFrame;
-	var color = A2(
-		$ianmackenzie$elm_units$Quantity$greaterThan,
-		$ianmackenzie$elm_units$Quantity$Quantity(0),
-		level.invincibleFrames) ? A4(
-		$noahzgordon$elm_color_extra$Color$Interpolate$interpolate,
-		$noahzgordon$elm_color_extra$Color$Interpolate$RGB,
-		$avh4$elm_color$Color$gray,
-		$avh4$elm_color$Color$blue,
-		A2(
-			$author$project$Board$pulse,
-			$ianmackenzie$elm_units$Duration$inSeconds(level.invincibleFrames),
-			2.5)) : $avh4$elm_color$Color$gray;
-	return A3(
-		$ianmackenzie$elm_3d_scene$Scene3d$rotateAround,
-		A2(
-			$ianmackenzie$elm_geometry$Axis3d$through,
-			$ianmackenzie$elm_geometry$Frame3d$originPoint(frame),
-			$ianmackenzie$elm_geometry$Frame3d$zDirection(frame)),
-		$ianmackenzie$elm_units$Angle$degrees(
-			function () {
-				var _v0 = level.playerFacing;
-				switch (_v0.$) {
-					case 'Forward':
-						return 0;
-					case 'Backward':
-						return 180;
-					case 'Left':
-						return 90;
-					default:
-						return -90;
-				}
-			}()),
-		$ianmackenzie$elm_3d_scene$Scene3d$group(
-			_List_fromArray(
-				[
-					A2(
-					$ianmackenzie$elm_3d_scene$Scene3d$sphere,
-					A2(
-						$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
-						$ianmackenzie$elm_3d_scene$Scene3d$Light$color(color),
-						$ianmackenzie$elm_units$Luminance$nits(20000)),
-					A2(
-						$ianmackenzie$elm_geometry$Sphere3d$placeIn,
-						frame,
-						A2($ianmackenzie$elm_geometry$Sphere3d$atPoint, $ianmackenzie$elm_geometry$Point3d$origin, $author$project$Board$playerRadius))),
-					A2(
-					$ianmackenzie$elm_3d_scene$Scene3d$cone,
-					A2(
-						$ianmackenzie$elm_3d_scene$Scene3d$Material$emissive,
-						$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$red),
-						$ianmackenzie$elm_units$Luminance$nits(2500)),
-					A2(
-						$ianmackenzie$elm_geometry$Cone3d$placeIn,
-						frame,
-						A3(
-							$ianmackenzie$elm_geometry$Cone3d$startingAt,
-							$ianmackenzie$elm_geometry$Point3d$origin,
-							$ianmackenzie$elm_geometry$Direction3d$positiveX,
-							{
-								length: $ianmackenzie$elm_units$Length$meters(0.75),
-								radius: $ianmackenzie$elm_units$Length$meters(0.5)
-							})))
-				])));
-};
 var $author$project$Shared$SetMapping = function (a) {
 	return {$: 'SetMapping', a: a};
 };
@@ -29085,8 +29472,6 @@ var $author$project$Screen$Editor$viewSettings = F4(
 				}()
 				]));
 	});
-var $ianmackenzie$elm_geometry$Axis3d$x = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$x);
-var $ianmackenzie$elm_geometry$Axis3d$z = A2($ianmackenzie$elm_geometry$Axis3d$through, $ianmackenzie$elm_geometry$Point3d$origin, $ianmackenzie$elm_geometry$Direction3d$z);
 var $author$project$Board$zigZagBoard = '[1,[9,9,9,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[1]],[[0,0,3],[1]],[[0,0,4],[2]],[[0,0,5],[1]],[[0,0,6],[1]],[[0,0,7],[1]],[[0,0,8],[1]],[[0,1,0],[2]],[[0,1,1],[3,false]],[[0,1,2],[1]],[[0,1,3],[3,false]],[[0,1,4],[3,false]],[[0,1,5],[3,false]],[[0,1,6],[1]],[[0,1,7],[3,false]],[[0,1,8],[2]],[[0,2,0],[1]],[[0,2,1],[3,false]],[[0,2,2],[1]],[[0,2,3],[3,false]],[[0,2,4],[1]],[[0,2,5],[3,false]],[[0,2,6],[1]],[[0,2,7],[3,false]],[[0,2,8],[1]],[[0,3,0],[1]],[[0,3,1],[3,false]],[[0,3,2],[1]],[[0,3,3],[3,false]],[[0,3,4],[3,false]],[[0,3,5],[3,false]],[[0,3,6],[1]],[[0,3,7],[3,false]],[[0,3,8],[1]],[[0,4,0],[1]],[[0,4,1],[3,false]],[[0,4,2],[1]],[[0,4,3],[3,false]],[[0,4,4],[1]],[[0,4,5],[3,false]],[[0,4,6],[1]],[[0,4,7],[3,false]],[[0,4,8],[1]],[[0,5,0],[1]],[[0,5,1],[3,false]],[[0,5,2],[3,false]],[[0,5,3],[3,false]],[[0,5,4],[1]],[[0,5,5],[3,false]],[[0,5,6],[3,false]],[[0,5,7],[3,false]],[[0,5,8],[1]],[[0,6,0],[1]],[[0,6,1],[3,false]],[[0,6,2],[1]],[[0,6,3],[3,false]],[[0,6,4],[1]],[[0,6,5],[3,false]],[[0,6,6],[1]],[[0,6,7],[3,false]],[[0,6,8],[1]],[[0,7,0],[1]],[[0,7,1],[3,false]],[[0,7,2],[3,false]],[[0,7,3],[3,false]],[[0,7,4],[1]],[[0,7,5],[3,false]],[[0,7,6],[3,false]],[[0,7,7],[3,false]],[[0,7,8],[1]],[[0,8,0],[1]],[[0,8,1],[1]],[[0,8,2],[1]],[[0,8,3],[1]],[[0,8,4],[1]],[[0,8,5],[1]],[[0,8,6],[1]],[[0,8,7],[1]],[[0,8,8],[1]],[[1,0,0],[2]],[[1,0,1],[3,false]],[[1,0,2],[1]],[[1,0,3],[3,false]],[[1,0,4],[3,false]],[[1,0,5],[3,false]],[[1,0,6],[1]],[[1,0,7],[3,false]],[[1,0,8],[2]],[[1,1,0],[3,false]],[[1,1,1],[1]],[[1,1,2],[1]],[[1,1,3],[1]],[[1,1,4],[1]],[[1,1,5],[1]],[[1,1,6],[1]],[[1,1,7],[1]],[[1,1,8],[3,false]],[[1,2,0],[1]],[[1,2,1],[1]],[[1,2,2],[1]],[[1,2,3],[1]],[[1,2,4],[1]],[[1,2,5],[1]],[[1,2,6],[1]],[[1,2,7],[1]],[[1,2,8],[3,false]],[[1,3,0],[3,false]],[[1,3,1],[1]],[[1,3,2],[1]],[[1,3,3],[1]],[[1,3,4],[1]],[[1,3,5],[1]],[[1,3,6],[1]],[[1,3,7],[1]],[[1,3,8],[3,false]],[[1,4,0],[3,false]],[[1,4,1],[1]],[[1,4,2],[1]],[[1,4,3],[1]],[[1,4,4],[1]],[[1,4,5],[1]],[[1,4,6],[1]],[[1,4,7],[1]],[[1,4,8],[3,false]],[[1,5,0],[3,false]],[[1,5,1],[1]],[[1,5,2],[1]],[[1,5,3],[1]],[[1,5,4],[1]],[[1,5,5],[1]],[[1,5,6],[1]],[[1,5,7],[1]],[[1,5,8],[3,false]],[[1,6,0],[3,false]],[[1,6,1],[1]],[[1,6,2],[1]],[[1,6,3],[1]],[[1,6,4],[1]],[[1,6,5],[1]],[[1,6,6],[1]],[[1,6,7],[1]],[[1,6,8],[3,false]],[[1,7,0],[3,false]],[[1,7,1],[1]],[[1,7,2],[1]],[[1,7,3],[1]],[[1,7,4],[1]],[[1,7,5],[1]],[[1,7,6],[1]],[[1,7,7],[1]],[[1,7,8],[3,false]],[[1,8,0],[1]],[[1,8,1],[3,false]],[[1,8,2],[3,false]],[[1,8,3],[3,false]],[[1,8,4],[1]],[[1,8,5],[3,false]],[[1,8,6],[3,false]],[[1,8,7],[3,false]],[[1,8,8],[1]],[[2,0,0],[1]],[[2,0,1],[3,false]],[[2,0,2],[1]],[[2,0,3],[3,false]],[[2,0,4],[1]],[[2,0,5],[3,false]],[[2,0,6],[1]],[[2,0,7],[3,false]],[[2,0,8],[1]],[[2,1,0],[3,false]],[[2,1,1],[1]],[[2,1,2],[1]],[[2,1,3],[1]],[[2,1,4],[1]],[[2,1,5],[1]],[[2,1,6],[1]],[[2,1,7],[1]],[[2,1,8],[1]],[[2,2,0],[1]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,2,3],[1]],[[2,2,4],[1]],[[2,2,5],[1]],[[2,2,6],[1]],[[2,2,7],[1]],[[2,2,8],[1]],[[2,3,0],[3,false]],[[2,3,1],[1]],[[2,3,2],[1]],[[2,3,3],[1]],[[2,3,4],[1]],[[2,3,5],[1]],[[2,3,6],[1]],[[2,3,7],[1]],[[2,3,8],[1]],[[2,4,0],[1]],[[2,4,1],[1]],[[2,4,2],[1]],[[2,4,3],[1]],[[2,4,4],[1]],[[2,4,5],[1]],[[2,4,6],[1]],[[2,4,7],[1]],[[2,4,8],[1]],[[2,5,0],[3,false]],[[2,5,1],[1]],[[2,5,2],[1]],[[2,5,3],[1]],[[2,5,4],[1]],[[2,5,5],[1]],[[2,5,6],[1]],[[2,5,7],[1]],[[2,5,8],[1]],[[2,6,0],[1]],[[2,6,1],[1]],[[2,6,2],[1]],[[2,6,3],[1]],[[2,6,4],[1]],[[2,6,5],[1]],[[2,6,6],[1]],[[2,6,7],[1]],[[2,6,8],[1]],[[2,7,0],[3,false]],[[2,7,1],[1]],[[2,7,2],[1]],[[2,7,3],[1]],[[2,7,4],[1]],[[2,7,5],[1]],[[2,7,6],[1]],[[2,7,7],[1]],[[2,7,8],[3,false]],[[2,8,0],[1]],[[2,8,1],[3,false]],[[2,8,2],[1]],[[2,8,3],[3,false]],[[2,8,4],[1]],[[2,8,5],[3,false]],[[2,8,6],[1]],[[2,8,7],[3,false]],[[2,8,8],[1]],[[3,0,0],[1]],[[3,0,1],[3,false]],[[3,0,2],[1]],[[3,0,3],[3,false]],[[3,0,4],[3,false]],[[3,0,5],[3,false]],[[3,0,6],[1]],[[3,0,7],[3,false]],[[3,0,8],[1]],[[3,1,0],[3,false]],[[3,1,1],[1]],[[3,1,2],[1]],[[3,1,3],[1]],[[3,1,4],[1]],[[3,1,5],[1]],[[3,1,6],[1]],[[3,1,7],[1]],[[3,1,8],[3,false]],[[3,2,0],[1]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,2,3],[1]],[[3,2,4],[1]],[[3,2,5],[1]],[[3,2,6],[1]],[[3,2,7],[1]],[[3,2,8],[3,false]],[[3,3,0],[0]],[[3,3,1],[1]],[[3,3,2],[1]],[[3,3,3],[1]],[[3,3,4],[1]],[[3,3,5],[1]],[[3,3,6],[1]],[[3,3,7],[1]],[[3,3,8],[0]],[[3,4,0],[1]],[[3,4,1],[1]],[[3,4,2],[1]],[[3,4,3],[1]],[[3,4,4],[1]],[[3,4,5],[1]],[[3,4,6],[1]],[[3,4,7],[1]],[[3,4,8],[4,[[3],[0]]]],[[3,5,0],[0]],[[3,5,1],[1]],[[3,5,2],[1]],[[3,5,3],[1]],[[3,5,4],[1]],[[3,5,5],[1]],[[3,5,6],[1]],[[3,5,7],[1]],[[3,5,8],[0]],[[3,6,0],[1]],[[3,6,1],[1]],[[3,6,2],[1]],[[3,6,3],[1]],[[3,6,4],[1]],[[3,6,5],[1]],[[3,6,6],[1]],[[3,6,7],[1]],[[3,6,8],[3,false]],[[3,7,0],[3,false]],[[3,7,1],[1]],[[3,7,2],[1]],[[3,7,3],[1]],[[3,7,4],[1]],[[3,7,5],[1]],[[3,7,6],[1]],[[3,7,7],[1]],[[3,7,8],[3,false]],[[3,8,0],[1]],[[3,8,1],[3,false]],[[3,8,2],[3,false]],[[3,8,3],[3,false]],[[3,8,4],[1]],[[3,8,5],[3,false]],[[3,8,6],[3,false]],[[3,8,7],[3,false]],[[3,8,8],[1]],[[4,0,0],[1]],[[4,0,1],[3,false]],[[4,0,2],[1]],[[4,0,3],[3,false]],[[4,0,4],[1]],[[4,0,5],[3,false]],[[4,0,6],[1]],[[4,0,7],[3,false]],[[4,0,8],[1]],[[4,1,0],[3,false]],[[4,1,1],[1]],[[4,1,2],[1]],[[4,1,3],[1]],[[4,1,4],[1]],[[4,1,5],[1]],[[4,1,6],[1]],[[4,1,7],[1]],[[4,1,8],[3,false]],[[4,2,0],[1]],[[4,2,1],[1]],[[4,2,2],[1]],[[4,2,3],[1]],[[4,2,4],[1]],[[4,2,5],[1]],[[4,2,6],[1]],[[4,2,7],[1]],[[4,2,8],[1]],[[4,3,0],[0]],[[4,3,1],[1]],[[4,3,2],[1]],[[4,3,3],[1]],[[4,3,4],[1]],[[4,3,5],[1]],[[4,3,6],[1]],[[4,3,7],[1]],[[4,3,8],[1]],[[4,4,0],[5,[[0,3]]]],[[4,4,1],[1]],[[4,4,2],[1]],[[4,4,3],[1]],[[4,4,4],[1]],[[4,4,5],[1]],[[4,4,6],[1]],[[4,4,7],[1]],[[4,4,8],[1]],[[4,5,0],[0]],[[4,5,1],[1]],[[4,5,2],[1]],[[4,5,3],[1]],[[4,5,4],[1]],[[4,5,5],[1]],[[4,5,6],[1]],[[4,5,7],[1]],[[4,5,8],[1]],[[4,6,0],[1]],[[4,6,1],[1]],[[4,6,2],[1]],[[4,6,3],[1]],[[4,6,4],[1]],[[4,6,5],[1]],[[4,6,6],[1]],[[4,6,7],[1]],[[4,6,8],[1]],[[4,7,0],[3,false]],[[4,7,1],[1]],[[4,7,2],[1]],[[4,7,3],[1]],[[4,7,4],[1]],[[4,7,5],[1]],[[4,7,6],[1]],[[4,7,7],[1]],[[4,7,8],[3,false]],[[4,8,0],[1]],[[4,8,1],[3,false]],[[4,8,2],[1]],[[4,8,3],[3,false]],[[4,8,4],[1]],[[4,8,5],[3,false]],[[4,8,6],[1]],[[4,8,7],[3,false]],[[4,8,8],[1]],[[5,0,0],[1]],[[5,0,1],[3,false]],[[5,0,2],[3,false]],[[5,0,3],[3,false]],[[5,0,4],[1]],[[5,0,5],[3,false]],[[5,0,6],[3,false]],[[5,0,7],[3,false]],[[5,0,8],[1]],[[5,1,0],[3,false]],[[5,1,1],[1]],[[5,1,2],[1]],[[5,1,3],[1]],[[5,1,4],[1]],[[5,1,5],[1]],[[5,1,6],[1]],[[5,1,7],[1]],[[5,1,8],[3,false]],[[5,2,0],[1]],[[5,2,1],[1]],[[5,2,2],[1]],[[5,2,3],[1]],[[5,2,4],[1]],[[5,2,5],[1]],[[5,2,6],[1]],[[5,2,7],[1]],[[5,2,8],[3,false]],[[5,3,0],[0]],[[5,3,1],[1]],[[5,3,2],[1]],[[5,3,3],[1]],[[5,3,4],[1]],[[5,3,5],[1]],[[5,3,6],[1]],[[5,3,7],[1]],[[5,3,8],[3,false]],[[5,4,0],[1]],[[5,4,1],[1]],[[5,4,2],[1]],[[5,4,3],[1]],[[5,4,4],[1]],[[5,4,5],[1]],[[5,4,6],[1]],[[5,4,7],[1]],[[5,4,8],[3,false]],[[5,5,0],[0]],[[5,5,1],[1]],[[5,5,2],[1]],[[5,5,3],[1]],[[5,5,4],[1]],[[5,5,5],[1]],[[5,5,6],[1]],[[5,5,7],[1]],[[5,5,8],[3,false]],[[5,6,0],[1]],[[5,6,1],[1]],[[5,6,2],[1]],[[5,6,3],[1]],[[5,6,4],[1]],[[5,6,5],[1]],[[5,6,6],[1]],[[5,6,7],[1]],[[5,6,8],[3,false]],[[5,7,0],[3,false]],[[5,7,1],[1]],[[5,7,2],[1]],[[5,7,3],[1]],[[5,7,4],[1]],[[5,7,5],[1]],[[5,7,6],[1]],[[5,7,7],[1]],[[5,7,8],[3,false]],[[5,8,0],[1]],[[5,8,1],[3,false]],[[5,8,2],[1]],[[5,8,3],[3,false]],[[5,8,4],[3,false]],[[5,8,5],[3,false]],[[5,8,6],[1]],[[5,8,7],[3,false]],[[5,8,8],[1]],[[6,0,0],[1]],[[6,0,1],[3,false]],[[6,0,2],[1]],[[6,0,3],[3,false]],[[6,0,4],[1]],[[6,0,5],[3,false]],[[6,0,6],[1]],[[6,0,7],[3,false]],[[6,0,8],[1]],[[6,1,0],[3,false]],[[6,1,1],[1]],[[6,1,2],[1]],[[6,1,3],[1]],[[6,1,4],[1]],[[6,1,5],[1]],[[6,1,6],[1]],[[6,1,7],[1]],[[6,1,8],[3,false]],[[6,2,0],[1]],[[6,2,1],[1]],[[6,2,2],[1]],[[6,2,3],[1]],[[6,2,4],[1]],[[6,2,5],[1]],[[6,2,6],[1]],[[6,2,7],[1]],[[6,2,8],[1]],[[6,3,0],[3,false]],[[6,3,1],[1]],[[6,3,2],[1]],[[6,3,3],[1]],[[6,3,4],[1]],[[6,3,5],[1]],[[6,3,6],[1]],[[6,3,7],[1]],[[6,3,8],[1]],[[6,4,0],[1]],[[6,4,1],[1]],[[6,4,2],[1]],[[6,4,3],[1]],[[6,4,4],[1]],[[6,4,5],[1]],[[6,4,6],[1]],[[6,4,7],[1]],[[6,4,8],[1]],[[6,5,0],[3,false]],[[6,5,1],[1]],[[6,5,2],[1]],[[6,5,3],[1]],[[6,5,4],[1]],[[6,5,5],[1]],[[6,5,6],[1]],[[6,5,7],[1]],[[6,5,8],[1]],[[6,6,0],[1]],[[6,6,1],[1]],[[6,6,2],[1]],[[6,6,3],[1]],[[6,6,4],[1]],[[6,6,5],[1]],[[6,6,6],[1]],[[6,6,7],[1]],[[6,6,8],[1]],[[6,7,0],[3,false]],[[6,7,1],[1]],[[6,7,2],[1]],[[6,7,3],[1]],[[6,7,4],[1]],[[6,7,5],[1]],[[6,7,6],[1]],[[6,7,7],[1]],[[6,7,8],[1]],[[6,8,0],[1]],[[6,8,1],[3,false]],[[6,8,2],[1]],[[6,8,3],[3,false]],[[6,8,4],[1]],[[6,8,5],[3,false]],[[6,8,6],[1]],[[6,8,7],[3,false]],[[6,8,8],[1]],[[7,0,0],[1]],[[7,0,1],[3,false]],[[7,0,2],[3,false]],[[7,0,3],[3,false]],[[7,0,4],[1]],[[7,0,5],[3,false]],[[7,0,6],[3,false]],[[7,0,7],[3,false]],[[7,0,8],[1]],[[7,1,0],[3,false]],[[7,1,1],[1]],[[7,1,2],[1]],[[7,1,3],[1]],[[7,1,4],[1]],[[7,1,5],[1]],[[7,1,6],[1]],[[7,1,7],[1]],[[7,1,8],[3,false]],[[7,2,0],[3,false]],[[7,2,1],[1]],[[7,2,2],[1]],[[7,2,3],[1]],[[7,2,4],[1]],[[7,2,5],[1]],[[7,2,6],[1]],[[7,2,7],[1]],[[7,2,8],[3,false]],[[7,3,0],[3,false]],[[7,3,1],[1]],[[7,3,2],[1]],[[7,3,3],[1]],[[7,3,4],[1]],[[7,3,5],[1]],[[7,3,6],[1]],[[7,3,7],[1]],[[7,3,8],[3,false]],[[7,4,0],[3,false]],[[7,4,1],[1]],[[7,4,2],[1]],[[7,4,3],[1]],[[7,4,4],[1]],[[7,4,5],[1]],[[7,4,6],[1]],[[7,4,7],[1]],[[7,4,8],[3,false]],[[7,5,0],[3,false]],[[7,5,1],[1]],[[7,5,2],[1]],[[7,5,3],[1]],[[7,5,4],[1]],[[7,5,5],[1]],[[7,5,6],[1]],[[7,5,7],[1]],[[7,5,8],[3,false]],[[7,6,0],[1]],[[7,6,1],[1]],[[7,6,2],[1]],[[7,6,3],[1]],[[7,6,4],[1]],[[7,6,5],[1]],[[7,6,6],[1]],[[7,6,7],[1]],[[7,6,8],[3,false]],[[7,7,0],[3,false]],[[7,7,1],[1]],[[7,7,2],[1]],[[7,7,3],[1]],[[7,7,4],[1]],[[7,7,5],[1]],[[7,7,6],[1]],[[7,7,7],[1]],[[7,7,8],[3,false]],[[7,8,0],[2]],[[7,8,1],[3,false]],[[7,8,2],[1]],[[7,8,3],[3,false]],[[7,8,4],[3,false]],[[7,8,5],[3,false]],[[7,8,6],[1]],[[7,8,7],[3,false]],[[7,8,8],[2]],[[8,0,0],[1]],[[8,0,1],[1]],[[8,0,2],[1]],[[8,0,3],[1]],[[8,0,4],[1]],[[8,0,5],[1]],[[8,0,6],[1]],[[8,0,7],[1]],[[8,0,8],[1]],[[8,1,0],[1]],[[8,1,1],[3,false]],[[8,1,2],[3,false]],[[8,1,3],[3,false]],[[8,1,4],[1]],[[8,1,5],[3,false]],[[8,1,6],[3,false]],[[8,1,7],[3,false]],[[8,1,8],[1]],[[8,2,0],[1]],[[8,2,1],[3,false]],[[8,2,2],[1]],[[8,2,3],[3,false]],[[8,2,4],[1]],[[8,2,5],[3,false]],[[8,2,6],[1]],[[8,2,7],[3,false]],[[8,2,8],[1]],[[8,3,0],[1]],[[8,3,1],[3,false]],[[8,3,2],[3,false]],[[8,3,3],[3,false]],[[8,3,4],[1]],[[8,3,5],[3,false]],[[8,3,6],[3,false]],[[8,3,7],[3,false]],[[8,3,8],[1]],[[8,4,0],[1]],[[8,4,1],[3,false]],[[8,4,2],[1]],[[8,4,3],[3,false]],[[8,4,4],[1]],[[8,4,5],[3,false]],[[8,4,6],[1]],[[8,4,7],[3,false]],[[8,4,8],[1]],[[8,5,0],[1]],[[8,5,1],[3,false]],[[8,5,2],[1]],[[8,5,3],[3,false]],[[8,5,4],[3,false]],[[8,5,5],[3,false]],[[8,5,6],[1]],[[8,5,7],[3,false]],[[8,5,8],[1]],[[8,6,0],[1]],[[8,6,1],[3,false]],[[8,6,2],[1]],[[8,6,3],[3,false]],[[8,6,4],[1]],[[8,6,5],[3,false]],[[8,6,6],[1]],[[8,6,7],[3,false]],[[8,6,8],[1]],[[8,7,0],[2]],[[8,7,1],[3,false]],[[8,7,2],[1]],[[8,7,3],[3,false]],[[8,7,4],[3,false]],[[8,7,5],[3,false]],[[8,7,6],[1]],[[8,7,7],[3,false]],[[8,7,8],[2]],[[8,8,0],[1]],[[8,8,1],[1]],[[8,8,2],[1]],[[8,8,3],[1]],[[8,8,4],[2]],[[8,8,5],[1]],[[8,8,6],[1]],[[8,8,7],[1]],[[8,8,8],[1]]]]]';
 var $author$project$Screen$Editor$view = function (_v0) {
 	var setScreen = _v0.setScreen;
@@ -29127,236 +29512,12 @@ var $author$project$Screen$Editor$view = function (_v0) {
 				]),
 			_List_fromArray(
 				[
-					A2(
-					$elm$html$Html$div,
-					_Utils_ap(
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$id('editor-viewport'),
-								function () {
-								var _v3 = model.editorMode;
-								if (_v3.$ === 'EditBoard') {
-									return $elm$html$Html$Attributes$class('');
-								} else {
-									return A2($elm$html$Html$Attributes$style, 'width', '100vw');
-								}
-							}(),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'grid-column',
-								function () {
-									var _v4 = model.editorMode;
-									if (_v4.$ === 'EditBoard') {
-										return '1';
-									} else {
-										return '1 / 2';
-									}
-								}()),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'grid-row',
-								function () {
-									var _v5 = model.editorMode;
-									if (_v5.$ === 'EditBoard') {
-										return '2';
-									} else {
-										return '1';
-									}
-								}())
-							]),
-						function () {
-							var _v6 = model.mouseDragging;
-							switch (_v6.$) {
-								case 'NoInteraction':
-									return _List_fromArray(
-										[
-											A2(
-											$elm$html$Html$Events$on,
-											'pointerdown',
-											$author$project$Screen$Editor$decodeMouseDown(toMsg)),
-											A2(
-											$elm$html$Html$Events$on,
-											'pointermove',
-											A2($author$project$Screen$Editor$decodePointerMove, toMsg, $elm$json$Json$Encode$null)),
-											A2($elm$html$Html$Attributes$property, '___setPointerCapture', $elm$json$Json$Encode$null)
-										]);
-								case 'InteractionStart':
-									var pointer = _v6.a;
-									return _List_fromArray(
-										[
-											A2(
-											$elm$html$Html$Events$on,
-											'pointerup',
-											$author$project$Screen$Editor$decodeMouseUp(toMsg)),
-											A2(
-											$elm$html$Html$Events$on,
-											'pointermove',
-											A2($author$project$Screen$Editor$decodePointerMove, toMsg, pointer)),
-											A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
-										]);
-								default:
-									var pointer = _v6.a;
-									return _List_fromArray(
-										[
-											A2(
-											$elm$html$Html$Events$on,
-											'pointerup',
-											$author$project$Screen$Editor$decodeMouseUp(toMsg)),
-											A2(
-											$elm$html$Html$Events$on,
-											'pointermove',
-											A2($author$project$Screen$Editor$decodePointerMove, toMsg, pointer)),
-											A2($elm$html$Html$Attributes$property, '___setPointerCapture', pointer)
-										]);
-							}
-						}()),
-					_List_fromArray(
-						[
-							function () {
-							var _v7 = model.screenSize;
-							if (_v7.$ === 'Nothing') {
-								return A2(
-									$elm$html$Html$div,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text('Loading...')
-										]));
-							} else {
-								var screenSize = _v7.a;
-								var lights = function () {
-									var _v14 = model.editorMode;
-									if (_v14.$ === 'TestGame') {
-										return A2(
-											$author$project$Board$gameLights,
-											model.level.board,
-											$ianmackenzie$elm_geometry$Frame3d$originPoint(model.level.playerFrame));
-									} else {
-										var upsideDownSky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(40000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$negativeZ
-											});
-										var sun = A2(
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$directional,
-											$ianmackenzie$elm_3d_scene$Scene3d$Light$castsShadows(true),
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$sunlight,
-												direction: A3(
-													$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-													$ianmackenzie$elm_geometry$Axis3d$z,
-													A2(
-														$ianmackenzie$elm_units$Quantity$plus,
-														$ianmackenzie$elm_units$Angle$degrees(90),
-														model.cameraRotation),
-													A3(
-														$ianmackenzie$elm_geometry$Direction3d$rotateAround,
-														$ianmackenzie$elm_geometry$Axis3d$x,
-														$ianmackenzie$elm_units$Angle$degrees(70),
-														$ianmackenzie$elm_geometry$Direction3d$negativeZ)),
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(80000)
-											});
-										var sky = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$skylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(20000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$positiveZ
-											});
-										var environment = $ianmackenzie$elm_3d_scene$Scene3d$Light$overhead(
-											{
-												chromaticity: $ianmackenzie$elm_3d_scene$Scene3d$Light$daylight,
-												intensity: $ianmackenzie$elm_units$Illuminance$lux(15000),
-												upDirection: $ianmackenzie$elm_geometry$Direction3d$reverse($ianmackenzie$elm_geometry$Direction3d$positiveZ)
-											});
-										return A4($ianmackenzie$elm_3d_scene$Scene3d$fourLights, sun, sky, environment, upsideDownSky);
-									}
-								}();
-								return A4(
-									$author$project$Board$view3dScene,
-									lights,
-									function () {
-										var _v8 = model.editorMode;
-										if (_v8.$ === 'TestGame') {
-											return sharedModel.screenSize;
-										} else {
-											return screenSize;
-										}
-									}(),
-									function () {
-										var _v9 = model.editorMode;
-										if (_v9.$ === 'TestGame') {
-											return $author$project$Board$gamePlayCamera(model.level.playerFrame);
-										} else {
-											return $author$project$Screen$Editor$editorCamera(model);
-										}
-									}(),
-									function () {
-										var _v10 = model.editorMode;
-										if (_v10.$ === 'EditBoard') {
-											var editorBoard = $author$project$Undo$value(model.editorBoard);
-											return $elm$core$List$concat(
-												_List_fromArray(
-													[
-														A2(
-														$elm$core$List$map,
-														A3($author$project$Screen$Editor$viewBlock, sharedModel, editorBoard, model),
-														$elm$core$Dict$toList(editorBoard.blocks)),
-														_List_fromArray(
-														[
-															A3(
-															$author$project$Screen$Editor$viewCursor,
-															function () {
-																var _v11 = model.blockEditMode;
-																switch (_v11.$) {
-																	case 'Select':
-																		return $avh4$elm_color$Color$white;
-																	case 'Remove':
-																		return $avh4$elm_color$Color$red;
-																	default:
-																		return $avh4$elm_color$Color$green;
-																}
-															}(),
-															model.cursorBounce,
-															model.editorCursor),
-															$author$project$Screen$Editor$viewOrientationArrows,
-															function () {
-															var _v12 = model.selectedBlock;
-															if (_v12.$ === 'Nothing') {
-																return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
-															} else {
-																var _v13 = _v12.a;
-																var point = _v13.a;
-																return A3($author$project$Screen$Editor$viewCursor, $avh4$elm_color$Color$yellow, model.cursorBounce, point);
-															}
-														}(),
-															model.showBoardBounds ? $author$project$Screen$Editor$viewBounds(editorBoard) : $ianmackenzie$elm_3d_scene$Scene3d$nothing
-														])
-													]));
-										} else {
-											return $elm$core$List$concat(
-												_List_fromArray(
-													[
-														A2(
-														$elm$core$List$map,
-														$author$project$Board$viewBlock,
-														$elm$core$Dict$toList(model.level.board.blocks)),
-														_List_fromArray(
-														[
-															$author$project$Board$viewPlayer(model.level)
-														]),
-														A2($elm$core$List$map, $author$project$Board$viewEnemy, model.level.enemies)
-													]));
-										}
-									}());
-							}
-						}()
-						])),
+					A3($author$project$Screen$Editor$viewEditor3dScene, sharedModel, toMsg, model),
 					A5($author$project$Screen$Editor$viewHeader, setScreen, toSharedMsg, sharedModel, toMsg, model),
 					A4($author$project$Screen$Editor$viewSettings, toSharedMsg, sharedModel, toMsg, model),
 					function () {
-					var _v15 = model.editorMode;
-					if (_v15.$ === 'TestGame') {
+					var _v3 = model.editorMode;
+					if (_v3.$ === 'TestGame') {
 						return A2(
 							$elm$html$Html$div,
 							_List_fromArray(
@@ -29501,8 +29662,8 @@ var $author$project$Screen$Editor$view = function (_v0) {
 							_List_fromArray(
 								[
 									function () {
-									var _v16 = model.selectedBlock;
-									if (_v16.$ === 'Nothing') {
+									var _v4 = model.selectedBlock;
+									if (_v4.$ === 'Nothing') {
 										return A2(
 											$elm$html$Html$span,
 											_List_Nil,
@@ -29511,9 +29672,9 @@ var $author$project$Screen$Editor$view = function (_v0) {
 													$elm$html$Html$text('No block selected')
 												]));
 									} else {
-										var _v17 = _v16.a;
-										var point = _v17.a;
-										var block = _v17.b;
+										var _v5 = _v4.a;
+										var point = _v5.a;
+										var block = _v5.b;
 										switch (block.$) {
 											case 'Empty':
 												return A2(
@@ -29962,11 +30123,11 @@ var $author$project$Screen$Editor$view = function (_v0) {
 													$elm$html$Html$text('Load')
 												])),
 											function () {
-											var _v21 = model.boardLoadError;
-											if (_v21.$ === 'Nothing') {
+											var _v9 = model.boardLoadError;
+											if (_v9.$ === 'Nothing') {
 												return $elm$html$Html$text('');
 											} else {
-												var error = _v21.a;
+												var error = _v9.a;
 												return A2(
 													$elm$html$Html$small,
 													_List_Nil,
@@ -30012,13 +30173,13 @@ var $author$project$Screen$Editor$view = function (_v0) {
 															} else {
 																switch (value.a.$) {
 																	case 'DefaultBoard':
-																		var _v24 = value.a;
+																		var _v12 = value.a;
 																		return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$defaultBoard);
 																	case 'BasicMiniBoard':
-																		var _v25 = value.a;
+																		var _v13 = value.a;
 																		return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$basicMiniBoard);
 																	default:
-																		var _v26 = value.a;
+																		var _v14 = value.a;
 																		return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$zigZagBoard);
 																}
 															}

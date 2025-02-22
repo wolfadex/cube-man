@@ -46,8 +46,9 @@ import Pixels exposing (Pixels)
 import Point2d exposing (Point2d)
 import Point3d exposing (Point3d)
 import Point3d.Extra
-import Quantity
+import Quantity exposing (Quantity(..))
 import Rectangle2d
+import Rectangle3d
 import Scene3d
 import Scene3d.Light
 import Scene3d.Material
@@ -100,8 +101,14 @@ type alias Model =
 
 type EditorMouseInteraction
     = NoInteraction
-    | InteractionStart Json.Decode.Value
-    | InteractionMoving Json.Decode.Value
+    | InteractionStart MouseDetails
+    | InteractionMoving MouseDetails
+
+
+type alias MouseDetails =
+    { pointerId : Json.Decode.Value
+    , modifyingMany : Bool
+    }
 
 
 type EditorMode
@@ -245,7 +252,7 @@ type Msg
     | KeyUp String
     | MouseDown Json.Decode.Value
     | MouseUp
-    | MouseMove Json.Decode.Value (Point2d Pixels Board.ScreenCoordinates) (Point2d Pixels Board.ScreenCoordinates)
+    | MouseMove MouseDetails (Point2d Pixels Board.ScreenCoordinates) (Point2d Pixels Board.ScreenCoordinates)
     | EncodingChanged String
     | LoadEditorBoard String
     | ChangeMode
@@ -389,9 +396,6 @@ update toSharedMsg sharedModel toMsg msg model =
         Redo ->
             redo model
 
-        MouseDown pointerId ->
-            ( { model | mouseDragging = InteractionStart pointerId }, Cmd.none )
-
         KeyDown key ->
             case model.editorMode of
                 EditBoard ->
@@ -408,6 +412,17 @@ update toSharedMsg sharedModel toMsg msg model =
 
         KeyUp key ->
             ( { model | editorKeysDown = Set.remove key model.editorKeysDown }, Cmd.none )
+
+        MouseDown pointerId ->
+            ( { model
+                | mouseDragging =
+                    InteractionStart
+                        { pointerId = pointerId
+                        , modifyingMany = Set.member "Alt" model.editorKeysDown
+                        }
+              }
+            , Cmd.none
+            )
 
         MouseUp ->
             if Set.member "Shift" model.editorKeysDown then
@@ -535,9 +550,9 @@ update toSharedMsg sharedModel toMsg msg model =
                         , Cmd.none
                         )
 
-        MouseMove pointerId offset movement ->
+        MouseMove details offset movement ->
             if Set.member "Shift" model.editorKeysDown then
-                moveCameraByMouse pointerId movement model
+                moveCameraByMouse details movement model
 
             else
                 moveCursorByMouse offset model
@@ -796,12 +811,12 @@ update toSharedMsg sharedModel toMsg msg model =
             )
 
 
-moveCameraByMouse : Json.Encode.Value -> Point2d Pixels Board.ScreenCoordinates -> Model -> ( Model, Cmd msg )
-moveCameraByMouse pointerId movement model =
+moveCameraByMouse : MouseDetails -> Point2d Pixels Board.ScreenCoordinates -> Model -> ( Model, Cmd msg )
+moveCameraByMouse details movement model =
     case model.cameraMode of
         Orbit ->
             ( { model
-                | mouseDragging = InteractionMoving pointerId
+                | mouseDragging = InteractionMoving details
                 , cameraRotation =
                     model.cameraRotation
                         |> Quantity.minus
@@ -941,7 +956,47 @@ moveCursorByMouse offset model =
             in
             case maybeIntersection of
                 Nothing ->
-                    ( model, Cmd.none )
+                    case model.blockEditMode of
+                        Remove ->
+                            ( model, Cmd.none )
+
+                        Select ->
+                            ( model, Cmd.none )
+
+                        Add ->
+                            if model.cameraElevation |> Quantity.greaterThan (Quantity 0) then
+                                case
+                                    Axis3d.intersectionWithRectangle
+                                        (Rectangle3d.centeredOn
+                                            (SketchPlane3d.xy
+                                                |> SketchPlane3d.moveTo
+                                                    (Point3d.meters
+                                                        (toFloat editorBoard.maxX / 2 - 0.5)
+                                                        (toFloat editorBoard.maxY / 2 - 0.5)
+                                                        -0.5
+                                                    )
+                                            )
+                                            ( Length.meters (toFloat editorBoard.maxX)
+                                            , Length.meters (toFloat editorBoard.maxY)
+                                            )
+                                        )
+                                        ray
+                                of
+                                    Nothing ->
+                                        ( model, Cmd.none )
+
+                                    Just intersectionPoint ->
+                                        ( { model
+                                            | editorCursor =
+                                                intersectionPoint
+                                                    |> Point3d.translateIn Direction3d.positiveZ (Length.meters 0.5)
+                                                    |> Board.point3dToPoint
+                                          }
+                                        , Cmd.none
+                                        )
+
+                            else
+                                ( model, Cmd.none )
 
                 Just ( intersection, _ ) ->
                     ( { model
@@ -1136,165 +1191,7 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                     "auto"
         , Html.Attributes.style "width" "100vw"
         ]
-        [ Html.div
-            ([ Html.Attributes.id "editor-viewport"
-             , case model.editorMode of
-                EditBoard ->
-                    Html.Attributes.class ""
-
-                TestGame ->
-                    Html.Attributes.style "width" <|
-                        -- "calc(100vw - 25rem)"
-                        "100vw"
-             , Html.Attributes.style "grid-column" <|
-                case model.editorMode of
-                    EditBoard ->
-                        "1"
-
-                    TestGame ->
-                        "1 / 2"
-             , Html.Attributes.style "grid-row" <|
-                case model.editorMode of
-                    EditBoard ->
-                        "2"
-
-                    TestGame ->
-                        "1"
-             ]
-                ++ (case model.mouseDragging of
-                        NoInteraction ->
-                            [ Html.Events.on "pointerdown" (decodeMouseDown toMsg)
-                            , Html.Events.on "pointermove" (decodePointerMove toMsg Json.Encode.null)
-                            , Html.Attributes.property "___setPointerCapture" Json.Encode.null
-                            ]
-
-                        InteractionStart pointer ->
-                            [ Html.Events.on "pointerup" (decodeMouseUp toMsg)
-                            , Html.Events.on "pointermove" (decodePointerMove toMsg pointer)
-                            , Html.Attributes.property "___setPointerCapture" pointer
-                            ]
-
-                        InteractionMoving pointer ->
-                            [ Html.Events.on "pointerup" (decodeMouseUp toMsg)
-                            , Html.Events.on "pointermove" (decodePointerMove toMsg pointer)
-                            , Html.Attributes.property "___setPointerCapture" pointer
-                            ]
-                   )
-            )
-            [ case model.screenSize of
-                Nothing ->
-                    Html.div [] [ Html.text "Loading..." ]
-
-                Just screenSize ->
-                    let
-                        lights =
-                            case model.editorMode of
-                                TestGame ->
-                                    Board.gameLights model.level.board (Frame3d.originPoint model.level.playerFrame)
-
-                                EditBoard ->
-                                    let
-                                        sun =
-                                            Scene3d.Light.directional (Scene3d.Light.castsShadows True)
-                                                { direction =
-                                                    Direction3d.negativeZ
-                                                        |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
-                                                        |> Direction3d.rotateAround Axis3d.z
-                                                            (model.cameraRotation
-                                                                |> Quantity.plus (Angle.degrees 90)
-                                                            )
-                                                , intensity = Illuminance.lux 80000
-                                                , chromaticity = Scene3d.Light.sunlight
-                                                }
-
-                                        sky =
-                                            Scene3d.Light.overhead
-                                                { upDirection = Direction3d.positiveZ
-                                                , chromaticity = Scene3d.Light.skylight
-                                                , intensity = Illuminance.lux 20000
-                                                }
-
-                                        upsideDownSky =
-                                            Scene3d.Light.overhead
-                                                { upDirection = Direction3d.negativeZ
-                                                , chromaticity = Scene3d.Light.skylight
-                                                , intensity = Illuminance.lux 40000
-                                                }
-
-                                        environment =
-                                            Scene3d.Light.overhead
-                                                { upDirection = Direction3d.reverse Direction3d.positiveZ
-                                                , chromaticity = Scene3d.Light.daylight
-                                                , intensity = Illuminance.lux 15000
-                                                }
-                                    in
-                                    Scene3d.fourLights sun sky environment upsideDownSky
-                    in
-                    Board.view3dScene
-                        lights
-                        (case model.editorMode of
-                            TestGame ->
-                                sharedModel.screenSize
-
-                            EditBoard ->
-                                screenSize
-                        )
-                        (case model.editorMode of
-                            TestGame ->
-                                Board.gamePlayCamera model.level.playerFrame
-
-                            EditBoard ->
-                                editorCamera model
-                        )
-                        (case model.editorMode of
-                            EditBoard ->
-                                let
-                                    editorBoard =
-                                        model.editorBoard
-                                            |> Undo.value
-                                in
-                                List.concat
-                                    [ editorBoard.blocks
-                                        |> Dict.toList
-                                        |> List.map (viewBlock sharedModel editorBoard model)
-                                    , [ viewCursor
-                                            (case model.blockEditMode of
-                                                Select ->
-                                                    Color.white
-
-                                                Remove ->
-                                                    Color.red
-
-                                                Add ->
-                                                    Color.green
-                                            )
-                                            model.cursorBounce
-                                            model.editorCursor
-                                      , viewOrientationArrows
-                                      , case model.selectedBlock of
-                                            Nothing ->
-                                                Scene3d.nothing
-
-                                            Just ( point, _ ) ->
-                                                viewCursor Color.yellow model.cursorBounce point
-                                      , if model.showBoardBounds then
-                                            viewBounds editorBoard
-
-                                        else
-                                            Scene3d.nothing
-                                      ]
-                                    ]
-
-                            TestGame ->
-                                List.concat
-                                    [ model.level.board.blocks
-                                        |> Dict.toList
-                                        |> List.map Board.viewBlock
-                                    , [ Board.viewPlayer model.level ]
-                                    , List.map Board.viewEnemy model.level.enemies
-                                    ]
-                        )
-            ]
+        [ viewEditor3dScene sharedModel toMsg model
         , viewHeader setScreen toSharedMsg sharedModel toMsg model
         , viewSettings toSharedMsg sharedModel toMsg model
         , case model.editorMode of
@@ -1670,6 +1567,174 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                     ]
         ]
     ]
+
+
+viewEditor3dScene : Shared.LoadedModel -> (Msg -> msg) -> Model -> Html msg
+viewEditor3dScene sharedModel toMsg model =
+    Html.div
+        ([ Html.Attributes.id "editor-viewport"
+         , case model.editorMode of
+            EditBoard ->
+                Html.Attributes.class ""
+
+            TestGame ->
+                Html.Attributes.style "width" <|
+                    -- "calc(100vw - 25rem)"
+                    "100vw"
+         , Html.Attributes.style "grid-column" <|
+            case model.editorMode of
+                EditBoard ->
+                    "1"
+
+                TestGame ->
+                    "1 / 2"
+         , Html.Attributes.style "grid-row" <|
+            case model.editorMode of
+                EditBoard ->
+                    "2"
+
+                TestGame ->
+                    "1"
+         ]
+            ++ (case model.mouseDragging of
+                    NoInteraction ->
+                        [ Html.Events.on "pointerdown" (decodeMouseDown toMsg)
+                        , Html.Events.on "pointermove"
+                            (decodePointerMove toMsg
+                                { pointerId = Json.Encode.null
+                                , modifyingMany = False
+                                }
+                            )
+                        , Html.Attributes.property "___setPointerCapture" Json.Encode.null
+                        ]
+
+                    InteractionStart details ->
+                        [ Html.Events.on "pointerup" (decodeMouseUp toMsg)
+                        , Html.Events.on "pointermove" (decodePointerMove toMsg details)
+                        , Html.Attributes.property "___setPointerCapture" details.pointerId
+                        ]
+
+                    InteractionMoving details ->
+                        [ Html.Events.on "pointerup" (decodeMouseUp toMsg)
+                        , Html.Events.on "pointermove" (decodePointerMove toMsg details)
+                        , Html.Attributes.property "___setPointerCapture" details.pointerId
+                        ]
+               )
+        )
+        [ case model.screenSize of
+            Nothing ->
+                Html.div [] [ Html.text "Loading..." ]
+
+            Just screenSize ->
+                let
+                    lights =
+                        case model.editorMode of
+                            TestGame ->
+                                Board.gameLights model.level.board (Frame3d.originPoint model.level.playerFrame)
+
+                            EditBoard ->
+                                let
+                                    sun =
+                                        Scene3d.Light.directional (Scene3d.Light.castsShadows True)
+                                            { direction =
+                                                Direction3d.negativeZ
+                                                    |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
+                                                    |> Direction3d.rotateAround Axis3d.z
+                                                        (model.cameraRotation
+                                                            |> Quantity.plus (Angle.degrees 90)
+                                                        )
+                                            , intensity = Illuminance.lux 80000
+                                            , chromaticity = Scene3d.Light.sunlight
+                                            }
+
+                                    sky =
+                                        Scene3d.Light.overhead
+                                            { upDirection = Direction3d.positiveZ
+                                            , chromaticity = Scene3d.Light.skylight
+                                            , intensity = Illuminance.lux 20000
+                                            }
+
+                                    upsideDownSky =
+                                        Scene3d.Light.overhead
+                                            { upDirection = Direction3d.negativeZ
+                                            , chromaticity = Scene3d.Light.skylight
+                                            , intensity = Illuminance.lux 40000
+                                            }
+
+                                    environment =
+                                        Scene3d.Light.overhead
+                                            { upDirection = Direction3d.reverse Direction3d.positiveZ
+                                            , chromaticity = Scene3d.Light.daylight
+                                            , intensity = Illuminance.lux 15000
+                                            }
+                                in
+                                Scene3d.fourLights sun sky environment upsideDownSky
+                in
+                Board.view3dScene
+                    lights
+                    (case model.editorMode of
+                        TestGame ->
+                            sharedModel.screenSize
+
+                        EditBoard ->
+                            screenSize
+                    )
+                    (case model.editorMode of
+                        TestGame ->
+                            Board.gamePlayCamera model.level.playerFrame
+
+                        EditBoard ->
+                            editorCamera model
+                    )
+                    (case model.editorMode of
+                        EditBoard ->
+                            let
+                                editorBoard =
+                                    model.editorBoard
+                                        |> Undo.value
+                            in
+                            List.concat
+                                [ editorBoard.blocks
+                                    |> Dict.toList
+                                    |> List.map (viewBlock sharedModel editorBoard model)
+                                , [ viewCursor
+                                        (case model.blockEditMode of
+                                            Select ->
+                                                Color.white
+
+                                            Remove ->
+                                                Color.red
+
+                                            Add ->
+                                                Color.green
+                                        )
+                                        model.cursorBounce
+                                        model.editorCursor
+                                  , viewOrientationArrows
+                                  , case model.selectedBlock of
+                                        Nothing ->
+                                            Scene3d.nothing
+
+                                        Just ( point, _ ) ->
+                                            viewCursor Color.yellow model.cursorBounce point
+                                  , if model.showBoardBounds then
+                                        viewBounds editorBoard
+
+                                    else
+                                        Scene3d.nothing
+                                  ]
+                                ]
+
+                        TestGame ->
+                            List.concat
+                                [ model.level.board.blocks
+                                    |> Dict.toList
+                                    |> List.map Board.viewBlock
+                                , [ Board.viewPlayer model.level ]
+                                , List.map Board.viewEnemy model.level.enemies
+                                ]
+                    )
+        ]
 
 
 viewSettings : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> Html msg
@@ -2103,12 +2168,12 @@ decodeMouseUp toMsg =
             )
 
 
-decodePointerMove : (Msg -> msg) -> Json.Decode.Value -> Json.Decode.Decoder msg
-decodePointerMove toMsg pointer =
+decodePointerMove : (Msg -> msg) -> MouseDetails -> Json.Decode.Decoder msg
+decodePointerMove toMsg mouseDetails =
     Json.Decode.map4
         (\ox oy mx my ->
             toMsg
-                (MouseMove pointer
+                (MouseMove mouseDetails
                     (Point2d.pixels ox oy)
                     (Point2d.pixels mx my)
                 )
