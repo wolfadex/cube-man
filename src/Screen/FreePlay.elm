@@ -231,10 +231,13 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                               , boardEncoding = Board.basicMiniBoard
                               }
                             , { name = "Something Familiar"
-                              , boardEncoding = Board.somethingFamiliar
+                              , boardEncoding = Board.somethingFamiliarBoard
                               }
                             , { name = "Zig-Zag"
                               , boardEncoding = Board.zigZagBoard
+                              }
+                            , { name = "Layers"
+                              , boardEncoding = Board.layersBoard
                               }
                             ]
                             ++ [ Html.div

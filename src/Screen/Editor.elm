@@ -1685,7 +1685,8 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                                 [ Board.DefaultBoard
                                 , Board.BasicMiniBoard
                                 , Board.ZigZagBoard
-                                , Board.SomethingFamiliar
+                                , Board.SomethingFamiliarBoard
+                                , Board.LayersBoard
                                 ]
                             , toLabel =
                                 \value ->
@@ -1699,8 +1700,11 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                                         Board.ZigZagBoard ->
                                             "Zig zag"
 
-                                        Board.SomethingFamiliar ->
+                                        Board.SomethingFamiliarBoard ->
                                             "Something Familiar"
+
+                                        Board.LayersBoard ->
+                                            "Layers"
                             , toKey =
                                 \value ->
                                     case value of
@@ -1713,8 +1717,11 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                                         Board.ZigZagBoard ->
                                             "ZigZagBoard"
 
-                                        Board.SomethingFamiliar ->
-                                            "SomethingFamilar"
+                                        Board.SomethingFamiliarBoard ->
+                                            "SomethingFamiliarBoard"
+
+                                        Board.LayersBoard ->
+                                            "LayersBoard"
                             , onSelect =
                                 \value ->
                                     toMsg <|
@@ -1731,8 +1738,11 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                                             Just Board.ZigZagBoard ->
                                                 LoadEditorBoard Board.zigZagBoard
 
-                                            Just Board.SomethingFamiliar ->
-                                                LoadEditorBoard Board.somethingFamiliar
+                                            Just Board.SomethingFamiliarBoard ->
+                                                LoadEditorBoard Board.somethingFamiliarBoard
+
+                                            Just Board.LayersBoard ->
+                                                LoadEditorBoard Board.layersBoard
                             }
                         ]
                     ]
@@ -1980,6 +1990,9 @@ viewSettings toSharedMsg sharedModel toMsg model =
                 ]
             ]
         , Html.span [] [ Html.text "Hold 'Shift' and move mouse to use camera actions (orbit, pan, zoom)" ]
+        , Html.br [] []
+        , Html.br [] []
+        , Html.span [] [ Html.text "Hold 'Alt/Option' to edit an area of blocks" ]
         , Html.br [] []
         , Html.br [] []
         , let
@@ -3112,7 +3125,13 @@ viewHeader setScreen _ sharedModel toMsg model =
                         ]
                     ]
                 , Html.div
-                    [ Html.Attributes.attribute "role" "group" ]
+                    [ Html.Attributes.attribute "role" "group"
+                    , if Set.member "Shift" model.editorKeysDown then
+                        Html.Attributes.style "outline" "2px solid rgb(25, 255, 75)"
+
+                      else
+                        Html.Attributes.class ""
+                    ]
                     [ Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (toMsg (SetCameraMode Orbit))
@@ -3187,6 +3206,11 @@ viewHeader setScreen _ sharedModel toMsg model =
                     ]
                 , Html.div
                     [ Html.Attributes.attribute "role" "group"
+                    , if Set.member "Alt" model.editorKeysDown && not (Set.member "Shift" model.editorKeysDown) then
+                        Html.Attributes.style "outline" "2px solid rgb(25, 255, 75)"
+
+                      else
+                        Html.Attributes.class ""
                     ]
                     [ Html.button
                         [ Html.Attributes.Extra.aria "current" <|
