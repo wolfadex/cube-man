@@ -469,7 +469,7 @@ update toSharedMsg sharedModel toMsg msg model =
                                                                     (\y blocks__ ->
                                                                         List.foldl
                                                                             (\z ->
-                                                                                Dict.remove ( x, y, z )
+                                                                                Dict.insert ( x, y, z ) Board.Empty
                                                                             )
                                                                             blocks__
                                                                             (List.range (min z1 z2) (max z1 z2))
