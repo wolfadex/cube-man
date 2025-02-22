@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1740249820327"
+    "1740251941653"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -15649,12 +15649,14 @@ var $author$project$Screen$Game$init = _Utils_Tuple2(
 		score: 0
 	},
 	$elm$core$Platform$Cmd$none);
+var $author$project$Screen$Editor$Add = {$: 'Add'};
 var $author$project$Board$DataCorrupted = {$: 'DataCorrupted'};
 var $author$project$Screen$Editor$InteractionStart = function (a) {
 	return {$: 'InteractionStart', a: a};
 };
 var $author$project$Board$MissingPlayerSpawn = {$: 'MissingPlayerSpawn'};
 var $author$project$Board$OtherError = {$: 'OtherError'};
+var $author$project$Screen$Editor$Remove = {$: 'Remove'};
 var $author$project$Board$SerializerOutOfDate = {$: 'SerializerOutOfDate'};
 var $author$project$Screen$Editor$TestGame = {$: 'TestGame'};
 var $ianmackenzie$elm_geometry$Point3d$unsafe = function (givenCoordinates) {
@@ -15797,10 +15799,8 @@ var $author$project$Board$findSpawn = function (board) {
 	return $author$project$Board$findSpawnHelper(
 		$elm$core$Dict$toList(board.blocks));
 };
-var $author$project$Screen$Editor$Add = {$: 'Add'};
 var $author$project$Screen$Editor$Pan = {$: 'Pan'};
 var $author$project$Board$RainbowBlocks = {$: 'RainbowBlocks'};
-var $author$project$Screen$Editor$Remove = {$: 'Remove'};
 var $author$project$Shared$SetBlockPalette = function (a) {
 	return {$: 'SetBlockPalette', a: a};
 };
@@ -18600,7 +18600,7 @@ var $author$project$Screen$Editor$update = F5(
 						{
 							mouseDragging: $author$project$Screen$Editor$InteractionStart(
 								{
-									modifyingMany: A2($elm$core$Set$member, 'Alt', model.editorKeysDown),
+									modifyingMany: (A2($elm$core$Set$member, 'Alt', model.editorKeysDown) && (_Utils_eq(model.blockEditMode, $author$project$Screen$Editor$Add) || _Utils_eq(model.blockEditMode, $author$project$Screen$Editor$Remove))) ? $elm$core$Maybe$Just(model.editorCursor) : $elm$core$Maybe$Nothing,
 									pointerId: pointerId
 								})
 						}),
@@ -18613,140 +18613,347 @@ var $author$project$Screen$Editor$update = F5(
 							{mouseDragging: $author$project$Screen$Editor$NoInteraction}),
 						$elm$core$Platform$Cmd$none);
 				} else {
-					var _v7 = model.blockEditMode;
-					switch (_v7.$) {
-						case 'Remove':
-							var editorBoard = A2(
-								$author$project$Undo$insertWith,
-								function (board) {
-									return _Utils_update(
-										board,
-										{
-											blocks: A3($elm$core$Dict$insert, model.editorCursor, $author$project$Board$Empty, board.blocks)
-										});
-								},
-								model.editorBoard);
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{
-										boardEncoding: A2(
-											$elm$json$Json$Encode$encode,
-											0,
-											A2(
-												$MartinSStewart$elm_serialize$Serialize$encodeToJson,
-												$author$project$Board$boardCodec,
-												$author$project$Undo$value(editorBoard))),
-										editorBoard: editorBoard,
-										mouseDragging: $author$project$Screen$Editor$NoInteraction,
-										selectedBlock: $elm$core$Maybe$Nothing
-									}),
-								$elm$core$Platform$Cmd$none);
-						case 'Add':
-							var editorBoard = A2(
-								$author$project$Undo$insertWith,
-								function (board) {
-									return _Utils_update(
-										board,
-										{
-											blocks: function () {
-												var _v11 = model.selectedBlockType;
-												switch (_v11.$) {
-													case 'PlayerSpawn':
-														return A3(
-															$elm$core$Dict$insert,
-															model.editorCursor,
-															model.selectedBlockType,
-															A2(
-																$elm$core$Dict$map,
+					var editingMany = function () {
+						var _v28 = model.mouseDragging;
+						switch (_v28.$) {
+							case 'NoInteraction':
+								return $elm$core$Maybe$Nothing;
+							case 'InteractionStart':
+								var details = _v28.a;
+								return details.modifyingMany;
+							default:
+								var details = _v28.a;
+								return details.modifyingMany;
+						}
+					}();
+					if (editingMany.$ === 'Just') {
+						var modifyingMany = editingMany.a;
+						var _v8 = model.editorCursor;
+						var x2 = _v8.a;
+						var y2 = _v8.b;
+						var z2 = _v8.c;
+						var _v9 = modifyingMany;
+						var x1 = _v9.a;
+						var y1 = _v9.b;
+						var z1 = _v9.c;
+						var _v10 = model.blockEditMode;
+						switch (_v10.$) {
+							case 'Remove':
+								var editorBoard = A2(
+									$author$project$Undo$insertWith,
+									function (board) {
+										return _Utils_update(
+											board,
+											{
+												blocks: A3(
+													$elm$core$List$foldl,
+													F2(
+														function (x, blocks_) {
+															return A3(
+																$elm$core$List$foldl,
 																F2(
-																	function (_v12, block) {
-																		if (block.$ === 'PlayerSpawn') {
-																			return $author$project$Board$Empty;
-																		} else {
-																			return block;
-																		}
+																	function (y, blocks__) {
+																		return A3(
+																			$elm$core$List$foldl,
+																			function (z) {
+																				return $elm$core$Dict$remove(
+																					_Utils_Tuple3(x, y, z));
+																			},
+																			blocks__,
+																			A2(
+																				$elm$core$List$range,
+																				A2($elm$core$Basics$min, z1, z2),
+																				A2($elm$core$Basics$max, z1, z2)));
 																	}),
-																board.blocks));
-													case 'EnemySpawner':
-														return A3(
-															$elm$core$Dict$insert,
-															model.editorCursor,
-															model.selectedBlockType,
-															A2(
-																$elm$core$Dict$map,
+																blocks_,
+																A2(
+																	$elm$core$List$range,
+																	A2($elm$core$Basics$min, y1, y2),
+																	A2($elm$core$Basics$max, y1, y2)));
+														}),
+													board.blocks,
+													A2(
+														$elm$core$List$range,
+														A2($elm$core$Basics$min, x1, x2),
+														A2($elm$core$Basics$max, x1, x2)))
+											});
+									},
+									model.editorBoard);
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{
+											boardEncoding: A2(
+												$elm$json$Json$Encode$encode,
+												0,
+												A2(
+													$MartinSStewart$elm_serialize$Serialize$encodeToJson,
+													$author$project$Board$boardCodec,
+													$author$project$Undo$value(editorBoard))),
+											editorBoard: editorBoard,
+											mouseDragging: $author$project$Screen$Editor$NoInteraction,
+											selectedBlock: $elm$core$Maybe$Nothing
+										}),
+									$elm$core$Platform$Cmd$none);
+							case 'Add':
+								var editorBoard = A2(
+									$author$project$Undo$insertWith,
+									function (board) {
+										return _Utils_update(
+											board,
+											{
+												blocks: function () {
+													var _v14 = model.selectedBlockType;
+													switch (_v14.$) {
+														case 'PlayerSpawn':
+															return A3(
+																$elm$core$Dict$insert,
+																model.editorCursor,
+																model.selectedBlockType,
+																A2(
+																	$elm$core$Dict$map,
+																	F2(
+																		function (_v15, block) {
+																			if (block.$ === 'PlayerSpawn') {
+																				return $author$project$Board$Empty;
+																			} else {
+																				return block;
+																			}
+																		}),
+																	board.blocks));
+														case 'EnemySpawner':
+															return A3(
+																$elm$core$Dict$insert,
+																model.editorCursor,
+																model.selectedBlockType,
+																A2(
+																	$elm$core$Dict$map,
+																	F2(
+																		function (_v17, block) {
+																			if (block.$ === 'EnemySpawner') {
+																				return $author$project$Board$Wall;
+																			} else {
+																				return block;
+																			}
+																		}),
+																	board.blocks));
+														default:
+															return A3(
+																$elm$core$List$foldl,
 																F2(
-																	function (_v14, block) {
-																		if (block.$ === 'EnemySpawner') {
-																			return $author$project$Board$Wall;
-																		} else {
-																			return block;
-																		}
+																	function (x, blocks_) {
+																		return A3(
+																			$elm$core$List$foldl,
+																			F2(
+																				function (y, blocks__) {
+																					return A3(
+																						$elm$core$List$foldl,
+																						function (z) {
+																							return A2(
+																								$elm$core$Dict$insert,
+																								_Utils_Tuple3(x, y, z),
+																								model.selectedBlockType);
+																						},
+																						blocks__,
+																						A2(
+																							$elm$core$List$range,
+																							A2($elm$core$Basics$min, z1, z2),
+																							A2($elm$core$Basics$max, z1, z2)));
+																				}),
+																			blocks_,
+																			A2(
+																				$elm$core$List$range,
+																				A2($elm$core$Basics$min, y1, y2),
+																				A2($elm$core$Basics$max, y1, y2)));
 																	}),
-																board.blocks));
-													default:
-														return A3($elm$core$Dict$insert, model.editorCursor, model.selectedBlockType, board.blocks);
-												}
-											}()
-										});
-								},
-								model.editorBoard);
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{
-										boardEncoding: A2(
-											$elm$json$Json$Encode$encode,
-											0,
-											A2(
-												$MartinSStewart$elm_serialize$Serialize$encodeToJson,
-												$author$project$Board$boardCodec,
-												$author$project$Undo$value(editorBoard))),
-										boardPlayError: function () {
-											var _v8 = model.boardPlayError;
-											if (_v8.$ === 'Nothing') {
-												return model.boardPlayError;
-											} else {
-												var _v9 = _v8.a;
-												var _v10 = $author$project$Board$findSpawn(
-													$author$project$Undo$value(editorBoard));
-												if (_v10.$ === 'Nothing') {
+																board.blocks,
+																A2(
+																	$elm$core$List$range,
+																	A2($elm$core$Basics$min, x1, x2),
+																	A2($elm$core$Basics$max, x1, x2)));
+													}
+												}()
+											});
+									},
+									model.editorBoard);
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{
+											boardEncoding: A2(
+												$elm$json$Json$Encode$encode,
+												0,
+												A2(
+													$MartinSStewart$elm_serialize$Serialize$encodeToJson,
+													$author$project$Board$boardCodec,
+													$author$project$Undo$value(editorBoard))),
+											boardPlayError: function () {
+												var _v11 = model.boardPlayError;
+												if (_v11.$ === 'Nothing') {
 													return model.boardPlayError;
 												} else {
-													return $elm$core$Maybe$Nothing;
+													var _v12 = _v11.a;
+													var _v13 = $author$project$Board$findSpawn(
+														$author$project$Undo$value(editorBoard));
+													if (_v13.$ === 'Nothing') {
+														return model.boardPlayError;
+													} else {
+														return $elm$core$Maybe$Nothing;
+													}
 												}
-											}
-										}(),
-										editorBoard: editorBoard,
-										mouseDragging: $author$project$Screen$Editor$NoInteraction,
-										selectedBlock: function () {
-											var board = $author$project$Undo$value(editorBoard);
-											return A2(
-												$elm$core$Maybe$map,
-												function (block) {
-													return _Utils_Tuple2(model.editorCursor, block);
-												},
-												A2($elm$core$Dict$get, model.editorCursor, board.blocks));
-										}()
-									}),
-								$elm$core$Platform$Cmd$none);
-						default:
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{
-										mouseDragging: $author$project$Screen$Editor$NoInteraction,
-										selectedBlock: function () {
-											var editorBoard = $author$project$Undo$value(model.editorBoard);
-											return A2(
-												$elm$core$Maybe$map,
-												function (block) {
-													return _Utils_Tuple2(model.editorCursor, block);
-												},
-												A2($elm$core$Dict$get, model.editorCursor, editorBoard.blocks));
-										}()
-									}),
-								$elm$core$Platform$Cmd$none);
+											}(),
+											editorBoard: editorBoard,
+											mouseDragging: $author$project$Screen$Editor$NoInteraction,
+											selectedBlock: function () {
+												var board = $author$project$Undo$value(editorBoard);
+												return A2(
+													$elm$core$Maybe$map,
+													function (block) {
+														return _Utils_Tuple2(model.editorCursor, block);
+													},
+													A2($elm$core$Dict$get, model.editorCursor, board.blocks));
+											}()
+										}),
+									$elm$core$Platform$Cmd$none);
+							default:
+								return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						}
+					} else {
+						var _v19 = model.blockEditMode;
+						switch (_v19.$) {
+							case 'Remove':
+								var editorBoard = A2(
+									$author$project$Undo$insertWith,
+									function (board) {
+										return _Utils_update(
+											board,
+											{
+												blocks: A3($elm$core$Dict$insert, model.editorCursor, $author$project$Board$Empty, board.blocks)
+											});
+									},
+									model.editorBoard);
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{
+											boardEncoding: A2(
+												$elm$json$Json$Encode$encode,
+												0,
+												A2(
+													$MartinSStewart$elm_serialize$Serialize$encodeToJson,
+													$author$project$Board$boardCodec,
+													$author$project$Undo$value(editorBoard))),
+											editorBoard: editorBoard,
+											mouseDragging: $author$project$Screen$Editor$NoInteraction,
+											selectedBlock: $elm$core$Maybe$Nothing
+										}),
+									$elm$core$Platform$Cmd$none);
+							case 'Add':
+								var editorBoard = A2(
+									$author$project$Undo$insertWith,
+									function (board) {
+										return _Utils_update(
+											board,
+											{
+												blocks: function () {
+													var _v23 = model.selectedBlockType;
+													switch (_v23.$) {
+														case 'PlayerSpawn':
+															return A3(
+																$elm$core$Dict$insert,
+																model.editorCursor,
+																model.selectedBlockType,
+																A2(
+																	$elm$core$Dict$map,
+																	F2(
+																		function (_v24, block) {
+																			if (block.$ === 'PlayerSpawn') {
+																				return $author$project$Board$Empty;
+																			} else {
+																				return block;
+																			}
+																		}),
+																	board.blocks));
+														case 'EnemySpawner':
+															return A3(
+																$elm$core$Dict$insert,
+																model.editorCursor,
+																model.selectedBlockType,
+																A2(
+																	$elm$core$Dict$map,
+																	F2(
+																		function (_v26, block) {
+																			if (block.$ === 'EnemySpawner') {
+																				return $author$project$Board$Wall;
+																			} else {
+																				return block;
+																			}
+																		}),
+																	board.blocks));
+														default:
+															return A3($elm$core$Dict$insert, model.editorCursor, model.selectedBlockType, board.blocks);
+													}
+												}()
+											});
+									},
+									model.editorBoard);
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{
+											boardEncoding: A2(
+												$elm$json$Json$Encode$encode,
+												0,
+												A2(
+													$MartinSStewart$elm_serialize$Serialize$encodeToJson,
+													$author$project$Board$boardCodec,
+													$author$project$Undo$value(editorBoard))),
+											boardPlayError: function () {
+												var _v20 = model.boardPlayError;
+												if (_v20.$ === 'Nothing') {
+													return model.boardPlayError;
+												} else {
+													var _v21 = _v20.a;
+													var _v22 = $author$project$Board$findSpawn(
+														$author$project$Undo$value(editorBoard));
+													if (_v22.$ === 'Nothing') {
+														return model.boardPlayError;
+													} else {
+														return $elm$core$Maybe$Nothing;
+													}
+												}
+											}(),
+											editorBoard: editorBoard,
+											mouseDragging: $author$project$Screen$Editor$NoInteraction,
+											selectedBlock: function () {
+												var board = $author$project$Undo$value(editorBoard);
+												return A2(
+													$elm$core$Maybe$map,
+													function (block) {
+														return _Utils_Tuple2(model.editorCursor, block);
+													},
+													A2($elm$core$Dict$get, model.editorCursor, board.blocks));
+											}()
+										}),
+									$elm$core$Platform$Cmd$none);
+							default:
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{
+											mouseDragging: $author$project$Screen$Editor$NoInteraction,
+											selectedBlock: function () {
+												var editorBoard = $author$project$Undo$value(model.editorBoard);
+												return A2(
+													$elm$core$Maybe$map,
+													function (block) {
+														return _Utils_Tuple2(model.editorCursor, block);
+													},
+													A2($elm$core$Dict$get, model.editorCursor, editorBoard.blocks));
+											}()
+										}),
+									$elm$core$Platform$Cmd$none);
+						}
 					}
 				}
 			case 'MouseMove':
@@ -18846,13 +19053,13 @@ var $author$project$Screen$Editor$update = F5(
 				var maxXStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v16 = $elm$core$String$toInt(maxXStr);
-						if (_v16.$ === 'Nothing') {
+						var _v29 = $elm$core$String$toInt(maxXStr);
+						if (_v29.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxXRaw: maxXStr});
 						} else {
-							var maxX = _v16.a;
+							var maxX = _v29.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -18901,13 +19108,13 @@ var $author$project$Screen$Editor$update = F5(
 				var maxYStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v17 = $elm$core$String$toInt(maxYStr);
-						if (_v17.$ === 'Nothing') {
+						var _v30 = $elm$core$String$toInt(maxYStr);
+						if (_v30.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxYRaw: maxYStr});
 						} else {
-							var maxY = _v17.a;
+							var maxY = _v30.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -18956,13 +19163,13 @@ var $author$project$Screen$Editor$update = F5(
 				var maxZStr = msg.a;
 				return _Utils_Tuple2(
 					function () {
-						var _v18 = $elm$core$String$toInt(maxZStr);
-						if (_v18.$ === 'Nothing') {
+						var _v31 = $elm$core$String$toInt(maxZStr);
+						if (_v31.$ === 'Nothing') {
 							return _Utils_update(
 								model,
 								{editorMaxZRaw: maxZStr});
 						} else {
-							var maxZ = _v18.a;
+							var maxZ = _v31.a;
 							var editorBoard = A2(
 								$author$project$Undo$insertWith,
 								function (eb) {
@@ -19520,6 +19727,7 @@ var $author$project$Screen$Editor$SetBlock = F2(
 var $author$project$Screen$Editor$ShowSettings = function (a) {
 	return {$: 'ShowSettings', a: a};
 };
+var $author$project$Board$SomethingFamiliar = {$: 'SomethingFamiliar'};
 var $author$project$Screen$Editor$XLowerVisibleChanged = function (a) {
 	return {$: 'XLowerVisibleChanged', a: a};
 };
@@ -19923,6 +20131,7 @@ var $author$project$Html$Extra$select = F2(
 				config.options));
 	});
 var $elm$html$Html$small = _VirtualDom_node('small');
+var $author$project$Board$somethingFamiliar = '[1,[20,20,3,[[[0,0,0],[1]],[[0,0,1],[1]],[[0,0,2],[1]],[[0,1,0],[1]],[[0,1,1],[1]],[[0,1,2],[1]],[[0,2,0],[1]],[[0,2,1],[1]],[[0,2,2],[1]],[[0,3,0],[1]],[[0,3,1],[1]],[[0,3,2],[1]],[[0,4,0],[1]],[[0,4,1],[1]],[[0,4,2],[1]],[[0,5,0],[1]],[[0,5,1],[1]],[[0,5,2],[1]],[[0,6,0],[1]],[[0,6,1],[1]],[[0,6,2],[1]],[[0,7,0],[1]],[[0,7,1],[1]],[[0,7,2],[1]],[[0,8,0],[1]],[[0,8,1],[1]],[[0,8,2],[1]],[[0,9,0],[1]],[[0,9,1],[1]],[[0,9,2],[1]],[[0,10,0],[2]],[[0,10,1],[0]],[[0,10,2],[2]],[[0,11,0],[1]],[[0,11,1],[1]],[[0,11,2],[1]],[[0,12,0],[1]],[[0,12,1],[1]],[[0,12,2],[1]],[[0,13,0],[1]],[[0,13,1],[1]],[[0,13,2],[1]],[[0,14,0],[1]],[[0,14,1],[1]],[[0,14,2],[1]],[[0,15,0],[1]],[[0,15,1],[1]],[[0,15,2],[1]],[[0,16,0],[1]],[[0,16,1],[1]],[[0,16,2],[1]],[[0,17,0],[1]],[[0,17,1],[1]],[[0,17,2],[1]],[[0,18,0],[1]],[[0,18,1],[1]],[[0,18,2],[1]],[[0,19,0],[1]],[[0,19,1],[1]],[[0,19,2],[1]],[[1,0,0],[1]],[[1,0,1],[1]],[[1,0,2],[1]],[[1,1,0],[1]],[[1,1,1],[1]],[[1,1,2],[3,false]],[[1,2,0],[1]],[[1,2,1],[1]],[[1,2,2],[3,false]],[[1,3,0],[1]],[[1,3,1],[1]],[[1,3,2],[3,false]],[[1,4,0],[1]],[[1,4,1],[1]],[[1,4,2],[1]],[[1,5,0],[1]],[[1,5,1],[1]],[[1,5,2],[3,false]],[[1,6,0],[1]],[[1,6,1],[1]],[[1,6,2],[3,false]],[[1,7,0],[1]],[[1,7,1],[1]],[[1,7,2],[3,false]],[[1,8,0],[1]],[[1,8,1],[1]],[[1,8,2],[1]],[[1,9,0],[1]],[[1,9,1],[1]],[[1,9,2],[1]],[[1,10,1],[1]],[[1,11,0],[1]],[[1,11,1],[1]],[[1,11,2],[1]],[[1,12,0],[1]],[[1,12,1],[1]],[[1,12,2],[1]],[[1,13,0],[1]],[[1,13,1],[1]],[[1,13,2],[3,false]],[[1,14,0],[1]],[[1,14,1],[1]],[[1,14,2],[3,false]],[[1,15,0],[1]],[[1,15,1],[1]],[[1,15,2],[3,false]],[[1,16,0],[1]],[[1,16,1],[1]],[[1,16,2],[3,false]],[[1,17,0],[1]],[[1,17,1],[1]],[[1,17,2],[3,false]],[[1,18,0],[1]],[[1,18,1],[1]],[[1,18,2],[3,false]],[[1,19,0],[1]],[[1,19,1],[1]],[[1,19,2],[1]],[[2,0,0],[1]],[[2,0,1],[1]],[[2,0,2],[1]],[[2,1,0],[1]],[[2,1,1],[1]],[[2,1,2],[3,false]],[[2,2,0],[1]],[[2,2,1],[1]],[[2,2,2],[1]],[[2,3,0],[1]],[[2,3,1],[1]],[[2,3,2],[3,false]],[[2,4,0],[1]],[[2,4,1],[1]],[[2,4,2],[3,false]],[[2,5,0],[1]],[[2,5,1],[1]],[[2,5,2],[3,false]],[[2,6,0],[1]],[[2,6,1],[1]],[[2,6,2],[1]],[[2,7,0],[1]],[[2,7,1],[1]],[[2,7,2],[3,false]],[[2,8,0],[1]],[[2,8,1],[1]],[[2,8,2],[1]],[[2,9,0],[1]],[[2,9,1],[1]],[[2,9,2],[1]],[[2,10,0],[3,false]],[[2,10,1],[1]],[[2,11,0],[1]],[[2,11,1],[1]],[[2,11,2],[1]],[[2,12,0],[1]],[[2,12,1],[1]],[[2,12,2],[1]],[[2,13,0],[1]],[[2,13,1],[1]],[[2,13,2],[3,false]],[[2,14,0],[1]],[[2,14,1],[1]],[[2,14,2],[1]],[[2,15,0],[1]],[[2,15,1],[1]],[[2,15,2],[3,false]],[[2,16,0],[1]],[[2,16,1],[1]],[[2,16,2],[1]],[[2,17,0],[1]],[[2,17,1],[1]],[[2,17,2],[1]],[[2,18,0],[1]],[[2,18,1],[1]],[[2,18,2],[3,false]],[[2,19,0],[1]],[[2,19,1],[1]],[[2,19,2],[1]],[[3,0,0],[1]],[[3,0,1],[1]],[[3,0,2],[1]],[[3,1,0],[1]],[[3,1,1],[1]],[[3,1,2],[3,false]],[[3,2,0],[3,false]],[[3,2,1],[1]],[[3,2,2],[1]],[[3,3,0],[3,false]],[[3,3,1],[1]],[[3,3,2],[3,false]],[[3,4,0],[3,false]],[[3,4,1],[1]],[[3,4,2],[1]],[[3,5,0],[3,false]],[[3,5,1],[1]],[[3,5,2],[1]],[[3,6,0],[3,false]],[[3,6,1],[1]],[[3,6,2],[1]],[[3,7,0],[1]],[[3,7,1],[1]],[[3,7,2],[3,false]],[[3,8,0],[1]],[[3,8,1],[1]],[[3,8,2],[1]],[[3,9,0],[1]],[[3,9,1],[1]],[[3,9,2],[1]],[[3,10,0],[3,false]],[[3,10,1],[1]],[[3,11,0],[1]],[[3,11,1],[1]],[[3,11,2],[1]],[[3,12,0],[1]],[[3,12,1],[1]],[[3,12,2],[1]],[[3,13,0],[1]],[[3,13,1],[1]],[[3,13,2],[3,false]],[[3,14,0],[3,false]],[[3,14,1],[1]],[[3,14,2],[1]],[[3,15,0],[3,false]],[[3,15,1],[1]],[[3,15,2],[3,false]],[[3,16,0],[3,false]],[[3,16,1],[1]],[[3,16,2],[1]],[[3,17,0],[3,false]],[[3,17,1],[1]],[[3,17,2],[1]],[[3,18,0],[1]],[[3,18,1],[1]],[[3,18,2],[3,false]],[[3,19,0],[1]],[[3,19,1],[1]],[[3,19,2],[1]],[[4,0,0],[1]],[[4,0,1],[1]],[[4,0,2],[1]],[[4,1,0],[1]],[[4,1,1],[1]],[[4,1,2],[3,false]],[[4,2,0],[3,false]],[[4,2,1],[1]],[[4,2,2],[1]],[[4,3,0],[1]],[[4,3,1],[1]],[[4,3,2],[3,false]],[[4,4,0],[1]],[[4,4,1],[1]],[[4,4,2],[3,false]],[[4,5,0],[1]],[[4,5,1],[1]],[[4,5,2],[3,false]],[[4,6,0],[3,false]],[[4,6,1],[1]],[[4,6,2],[3,false]],[[4,7,0],[1]],[[4,7,1],[1]],[[4,7,2],[3,false]],[[4,8,0],[1]],[[4,8,1],[1]],[[4,8,2],[3,false]],[[4,9,0],[1]],[[4,9,1],[1]],[[4,9,2],[3,false]],[[4,10,0],[3,false]],[[4,10,1],[1]],[[4,10,2],[3,false]],[[4,11,0],[1]],[[4,11,1],[1]],[[4,11,2],[3,false]],[[4,12,0],[1]],[[4,12,1],[1]],[[4,12,2],[3,false]],[[4,13,0],[1]],[[4,13,1],[1]],[[4,13,2],[3,false]],[[4,14,0],[3,false]],[[4,14,1],[1]],[[4,14,2],[3,false]],[[4,15,0],[1]],[[4,15,1],[1]],[[4,15,2],[3,false]],[[4,16,0],[1]],[[4,16,1],[1]],[[4,16,2],[3,false]],[[4,17,0],[3,false]],[[4,17,1],[1]],[[4,17,2],[3,false]],[[4,18,0],[1]],[[4,18,1],[1]],[[4,18,2],[3,false]],[[4,19,0],[1]],[[4,19,1],[1]],[[4,19,2],[1]],[[5,0,0],[1]],[[5,0,1],[1]],[[5,0,2],[1]],[[5,1,0],[1]],[[5,1,1],[1]],[[5,1,2],[3,false]],[[5,2,0],[3,false]],[[5,2,1],[1]],[[5,2,2],[1]],[[5,3,0],[1]],[[5,3,1],[1]],[[5,3,2],[1]],[[5,4,0],[1]],[[5,4,1],[1]],[[5,4,2],[1]],[[5,5,0],[1]],[[5,5,1],[1]],[[5,5,2],[3,false]],[[5,6,0],[3,false]],[[5,6,1],[1]],[[5,6,2],[1]],[[5,7,0],[1]],[[5,7,1],[1]],[[5,7,2],[3,false]],[[5,8,0],[1]],[[5,8,1],[1]],[[5,8,2],[1]],[[5,9,0],[1]],[[5,9,1],[1]],[[5,9,2],[1]],[[5,10,0],[3,false]],[[5,10,1],[1]],[[5,11,0],[1]],[[5,11,1],[1]],[[5,11,2],[1]],[[5,12,0],[1]],[[5,12,1],[1]],[[5,12,2],[1]],[[5,13,0],[1]],[[5,13,1],[1]],[[5,13,2],[1]],[[5,14,0],[3,false]],[[5,14,1],[1]],[[5,14,2],[1]],[[5,15,0],[1]],[[5,15,1],[1]],[[5,15,2],[3,false]],[[5,16,0],[1]],[[5,16,1],[1]],[[5,16,2],[1]],[[5,17,0],[3,false]],[[5,17,1],[1]],[[5,17,2],[1]],[[5,18,0],[1]],[[5,18,1],[1]],[[5,18,2],[3,false]],[[5,19,0],[1]],[[5,19,1],[1]],[[5,19,2],[1]],[[6,0,0],[1]],[[6,0,1],[1]],[[6,0,2],[1]],[[6,1,0],[1]],[[6,1,1],[1]],[[6,1,2],[3,false]],[[6,2,0],[3,false]],[[6,2,1],[1]],[[6,2,2],[1]],[[6,3,0],[3,false]],[[6,3,1],[1]],[[6,3,2],[3,false]],[[6,4,0],[3,false]],[[6,4,1],[1]],[[6,4,2],[3,false]],[[6,5,0],[3,false]],[[6,5,1],[1]],[[6,5,2],[3,false]],[[6,6,0],[3,false]],[[6,6,1],[1]],[[6,6,2],[1]],[[6,7,0],[3,false]],[[6,7,1],[1]],[[6,7,2],[3,false]],[[6,8,0],[3,false]],[[6,8,1],[1]],[[6,8,2],[1]],[[6,9,0],[3,false]],[[6,9,1],[1]],[[6,9,2],[1]],[[6,10,0],[3,false]],[[6,10,1],[1]],[[6,11,0],[3,false]],[[6,11,1],[1]],[[6,11,2],[1]],[[6,12,0],[3,false]],[[6,12,1],[1]],[[6,12,2],[1]],[[6,13,0],[3,false]],[[6,13,1],[1]],[[6,13,2],[3,false]],[[6,14,0],[3,false]],[[6,14,1],[1]],[[6,14,2],[3,false]],[[6,15,0],[3,false]],[[6,15,1],[1]],[[6,15,2],[3,false]],[[6,16,0],[3,false]],[[6,16,1],[1]],[[6,16,2],[1]],[[6,17,0],[3,false]],[[6,17,1],[1]],[[6,17,2],[1]],[[6,18,0],[1]],[[6,18,1],[1]],[[6,18,2],[3,false]],[[6,19,0],[1]],[[6,19,1],[1]],[[6,19,2],[1]],[[7,0,0],[1]],[[7,0,1],[1]],[[7,0,2],[1]],[[7,1,0],[1]],[[7,1,1],[1]],[[7,1,2],[3,false]],[[7,2,0],[3,false]],[[7,2,1],[1]],[[7,2,2],[1]],[[7,3,0],[1]],[[7,3,1],[1]],[[7,3,2],[3,false]],[[7,4,0],[1]],[[7,4,1],[1]],[[7,4,2],[1]],[[7,5,0],[1]],[[7,5,1],[1]],[[7,5,2],[3,false]],[[7,6,0],[3,false]],[[7,6,1],[1]],[[7,6,2],[1]],[[7,7,0],[1]],[[7,7,1],[1]],[[7,7,2],[3,false]],[[7,8,0],[1]],[[7,8,1],[1]],[[7,8,2],[0]],[[7,9,0],[1]],[[7,9,1],[1]],[[7,9,2],[0]],[[7,10,0],[3,false]],[[7,10,1],[1]],[[7,11,0],[1]],[[7,11,1],[1]],[[7,11,2],[0]],[[7,12,0],[1]],[[7,12,1],[1]],[[7,12,2],[1]],[[7,13,0],[1]],[[7,13,1],[1]],[[7,13,2],[3,false]],[[7,14,0],[3,false]],[[7,14,1],[1]],[[7,14,2],[1]],[[7,15,0],[1]],[[7,15,1],[1]],[[7,15,2],[3,false]],[[7,16,0],[1]],[[7,16,1],[1]],[[7,16,2],[3,false]],[[7,17,0],[3,false]],[[7,17,1],[1]],[[7,17,2],[3,false]],[[7,18,0],[1]],[[7,18,1],[1]],[[7,18,2],[3,false]],[[7,19,0],[1]],[[7,19,1],[1]],[[7,19,2],[1]],[[8,0,0],[1]],[[8,0,1],[1]],[[8,0,2],[1]],[[8,1,0],[1]],[[8,1,1],[1]],[[8,1,2],[3,false]],[[8,2,0],[3,false]],[[8,2,1],[1]],[[8,2,2],[1]],[[8,3,0],[1]],[[8,3,1],[1]],[[8,3,2],[3,false]],[[8,4,0],[1]],[[8,4,1],[1]],[[8,4,2],[1]],[[8,5,0],[1]],[[8,5,1],[1]],[[8,5,2],[3,false]],[[8,6,0],[3,false]],[[8,6,1],[1]],[[8,6,2],[1]],[[8,7,0],[1]],[[8,7,1],[1]],[[8,7,2],[3,false]],[[8,8,0],[1]],[[8,8,1],[1]],[[8,8,2],[1]],[[8,9,0],[1]],[[8,9,1],[1]],[[8,10,0],[3,false]],[[8,10,1],[1]],[[8,10,2],[1]],[[8,11,0],[1]],[[8,11,1],[1]],[[8,11,2],[0]],[[8,12,0],[1]],[[8,12,1],[1]],[[8,12,2],[0]],[[8,13,0],[1]],[[8,13,1],[1]],[[8,13,2],[3,false]],[[8,14,0],[3,false]],[[8,14,1],[1]],[[8,14,2],[1]],[[8,15,0],[1]],[[8,15,1],[1]],[[8,15,2],[3,false]],[[8,16,0],[1]],[[8,16,1],[1]],[[8,16,2],[1]],[[8,17,0],[3,false]],[[8,17,1],[1]],[[8,17,2],[1]],[[8,18,0],[1]],[[8,18,1],[1]],[[8,18,2],[1]],[[8,19,0],[1]],[[8,19,1],[1]],[[8,19,2],[1]],[[9,0,0],[1]],[[9,0,1],[1]],[[9,0,2],[1]],[[9,1,0],[1]],[[9,1,1],[1]],[[9,1,2],[3,false]],[[9,2,0],[3,false]],[[9,2,1],[1]],[[9,2,2],[3,false]],[[9,3,0],[1]],[[9,3,1],[1]],[[9,3,2],[3,false]],[[9,4,0],[1]],[[9,4,1],[1]],[[9,4,2],[1]],[[9,5,0],[1]],[[9,5,1],[1]],[[9,5,2],[3,false]],[[9,6,0],[3,false]],[[9,6,1],[1]],[[9,6,2],[0]],[[9,7,0],[1]],[[9,7,1],[1]],[[9,7,2],[3,false]],[[9,8,0],[1]],[[9,8,1],[1]],[[9,8,2],[1]],[[9,9,0],[1]],[[9,9,1],[1]],[[9,10,0],[3,false]],[[9,10,1],[1]],[[9,10,2],[1]],[[9,11,0],[1]],[[9,11,1],[1]],[[9,12,0],[1]],[[9,12,1],[1]],[[9,12,2],[1]],[[9,13,0],[1]],[[9,13,1],[1]],[[9,13,2],[1]],[[9,14,0],[3,false]],[[9,14,1],[1]],[[9,14,2],[1]],[[9,15,0],[1]],[[9,15,1],[1]],[[9,15,2],[3,false]],[[9,16,0],[1]],[[9,16,1],[1]],[[9,16,2],[1]],[[9,17,0],[3,false]],[[9,17,1],[1]],[[9,17,2],[1]],[[9,18,0],[1]],[[9,18,1],[1]],[[9,18,2],[1]],[[9,19,0],[1]],[[9,19,1],[1]],[[9,19,2],[1]],[[10,0,0],[1]],[[10,0,1],[1]],[[10,0,2],[1]],[[10,1,0],[1]],[[10,1,1],[1]],[[10,1,2],[3,false]],[[10,2,0],[3,false]],[[10,2,1],[1]],[[10,2,2],[1]],[[10,3,0],[1]],[[10,3,1],[1]],[[10,3,2],[1]],[[10,4,0],[1]],[[10,4,1],[1]],[[10,4,2],[1]],[[10,5,0],[1]],[[10,5,1],[1]],[[10,5,2],[4,[[2],[1]]]],[[10,6,0],[3,false]],[[10,6,1],[1]],[[10,6,2],[1]],[[10,7,0],[1]],[[10,7,1],[1]],[[10,7,2],[1]],[[10,8,0],[1]],[[10,8,1],[1]],[[10,8,2],[1]],[[10,9,0],[1]],[[10,9,1],[1]],[[10,10,0],[3,false]],[[10,10,1],[1]],[[10,10,2],[5,[[0,3]]]],[[10,11,0],[1]],[[10,11,1],[1]],[[10,12,0],[1]],[[10,12,1],[1]],[[10,12,2],[1]],[[10,13,0],[1]],[[10,13,1],[1]],[[10,13,2],[1]],[[10,14,0],[3,false]],[[10,14,1],[1]],[[10,14,2],[1]],[[10,15,0],[1]],[[10,15,1],[1]],[[10,15,2],[3,false]],[[10,16,0],[1]],[[10,16,1],[1]],[[10,16,2],[1]],[[10,17,0],[3,false]],[[10,17,1],[1]],[[10,17,2],[1]],[[10,18,0],[1]],[[10,18,1],[1]],[[10,18,2],[1]],[[10,19,0],[1]],[[10,19,1],[1]],[[10,19,2],[1]],[[11,0,0],[1]],[[11,0,1],[1]],[[11,0,2],[1]],[[11,1,0],[1]],[[11,1,1],[1]],[[11,1,2],[3,false]],[[11,2,0],[3,false]],[[11,2,1],[1]],[[11,2,2],[3,false]],[[11,3,0],[1]],[[11,3,1],[1]],[[11,3,2],[3,false]],[[11,4,0],[1]],[[11,4,1],[1]],[[11,4,2],[1]],[[11,5,0],[1]],[[11,5,1],[1]],[[11,5,2],[3,false]],[[11,6,0],[3,false]],[[11,6,1],[1]],[[11,6,2],[0]],[[11,7,0],[1]],[[11,7,1],[1]],[[11,7,2],[3,false]],[[11,8,0],[1]],[[11,8,1],[1]],[[11,8,2],[1]],[[11,9,0],[1]],[[11,9,1],[1]],[[11,10,0],[3,false]],[[11,10,1],[1]],[[11,10,2],[1]],[[11,11,0],[1]],[[11,11,1],[1]],[[11,12,0],[1]],[[11,12,1],[1]],[[11,12,2],[1]],[[11,13,0],[1]],[[11,13,1],[1]],[[11,13,2],[1]],[[11,14,0],[3,false]],[[11,14,1],[1]],[[11,14,2],[1]],[[11,15,0],[1]],[[11,15,1],[1]],[[11,15,2],[3,false]],[[11,16,0],[1]],[[11,16,1],[1]],[[11,16,2],[1]],[[11,17,0],[3,false]],[[11,17,1],[1]],[[11,17,2],[1]],[[11,18,0],[1]],[[11,18,1],[1]],[[11,18,2],[1]],[[11,19,0],[1]],[[11,19,1],[1]],[[11,19,2],[1]],[[12,0,0],[1]],[[12,0,1],[1]],[[12,0,2],[1]],[[12,1,0],[1]],[[12,1,1],[1]],[[12,1,2],[3,false]],[[12,2,0],[3,false]],[[12,2,1],[1]],[[12,2,2],[1]],[[12,3,0],[1]],[[12,3,1],[1]],[[12,3,2],[3,false]],[[12,4,0],[1]],[[12,4,1],[1]],[[12,4,2],[1]],[[12,5,0],[1]],[[12,5,1],[1]],[[12,5,2],[3,false]],[[12,6,0],[3,false]],[[12,6,1],[1]],[[12,6,2],[1]],[[12,7,0],[1]],[[12,7,1],[1]],[[12,7,2],[3,false]],[[12,8,0],[1]],[[12,8,1],[1]],[[12,8,2],[1]],[[12,9,0],[1]],[[12,9,1],[1]],[[12,10,0],[3,false]],[[12,10,1],[1]],[[12,10,2],[1]],[[12,11,0],[1]],[[12,11,1],[1]],[[12,11,2],[0]],[[12,12,0],[1]],[[12,12,1],[1]],[[12,12,2],[0]],[[12,13,0],[1]],[[12,13,1],[1]],[[12,13,2],[3,false]],[[12,14,0],[3,false]],[[12,14,1],[1]],[[12,14,2],[1]],[[12,15,0],[1]],[[12,15,1],[1]],[[12,15,2],[3,false]],[[12,16,0],[1]],[[12,16,1],[1]],[[12,17,0],[3,false]],[[12,17,1],[1]],[[12,18,0],[1]],[[12,18,1],[1]],[[12,18,2],[3,false]],[[12,19,0],[1]],[[12,19,1],[1]],[[12,19,2],[1]],[[13,0,0],[1]],[[13,0,1],[1]],[[13,0,2],[1]],[[13,1,0],[1]],[[13,1,1],[1]],[[13,1,2],[3,false]],[[13,2,0],[3,false]],[[13,2,1],[1]],[[13,2,2],[1]],[[13,3,0],[3,false]],[[13,3,1],[1]],[[13,3,2],[3,false]],[[13,4,0],[3,false]],[[13,4,1],[1]],[[13,4,2],[3,false]],[[13,5,0],[3,false]],[[13,5,1],[1]],[[13,5,2],[3,false]],[[13,6,0],[3,false]],[[13,6,1],[1]],[[13,6,2],[1]],[[13,7,0],[3,false]],[[13,7,1],[1]],[[13,7,2],[3,false]],[[13,8,0],[3,false]],[[13,8,1],[1]],[[13,8,2],[0]],[[13,9,0],[3,false]],[[13,9,1],[1]],[[13,10,0],[3,false]],[[13,10,1],[1]],[[13,11,0],[3,false]],[[13,11,1],[1]],[[13,11,2],[0]],[[13,12,0],[3,false]],[[13,12,1],[1]],[[13,12,2],[1]],[[13,13,0],[3,false]],[[13,13,1],[1]],[[13,13,2],[3,false]],[[13,14,0],[3,false]],[[13,14,1],[1]],[[13,14,2],[3,false]],[[13,15,0],[3,false]],[[13,15,1],[1]],[[13,15,2],[3,false]],[[13,16,0],[3,false]],[[13,16,1],[1]],[[13,16,2],[1]],[[13,17,0],[3,false]],[[13,17,1],[1]],[[13,17,2],[1]],[[13,18,0],[1]],[[13,18,1],[1]],[[13,18,2],[3,false]],[[13,19,0],[1]],[[13,19,1],[1]],[[13,19,2],[1]],[[14,0,0],[1]],[[14,0,1],[1]],[[14,0,2],[1]],[[14,1,0],[1]],[[14,1,1],[1]],[[14,1,2],[3,false]],[[14,2,0],[3,false]],[[14,2,1],[1]],[[14,2,2],[1]],[[14,3,0],[1]],[[14,3,1],[1]],[[14,3,2],[1]],[[14,4,0],[1]],[[14,4,1],[1]],[[14,4,2],[1]],[[14,5,0],[1]],[[14,5,1],[1]],[[14,5,2],[3,false]],[[14,6,0],[3,false]],[[14,6,1],[1]],[[14,6,2],[1]],[[14,7,0],[1]],[[14,7,1],[1]],[[14,7,2],[3,false]],[[14,8,0],[1]],[[14,8,1],[1]],[[14,8,2],[1]],[[14,9,0],[1]],[[14,9,1],[1]],[[14,9,2],[1]],[[14,10,0],[3,false]],[[14,10,1],[1]],[[14,11,0],[1]],[[14,11,1],[1]],[[14,11,2],[1]],[[14,12,0],[1]],[[14,12,1],[1]],[[14,12,2],[1]],[[14,13,0],[1]],[[14,13,1],[1]],[[14,13,2],[1]],[[14,14,0],[3,false]],[[14,14,1],[1]],[[14,14,2],[1]],[[14,15,0],[1]],[[14,15,1],[1]],[[14,15,2],[3,false]],[[14,16,0],[1]],[[14,16,1],[1]],[[14,16,2],[1]],[[14,17,0],[3,false]],[[14,17,1],[1]],[[14,17,2],[1]],[[14,18,0],[1]],[[14,18,1],[1]],[[14,18,2],[3,false]],[[14,19,0],[1]],[[14,19,1],[1]],[[14,19,2],[1]],[[15,0,0],[1]],[[15,0,1],[1]],[[15,0,2],[1]],[[15,1,0],[1]],[[15,1,1],[1]],[[15,1,2],[3,false]],[[15,2,0],[3,false]],[[15,2,1],[1]],[[15,2,2],[1]],[[15,3,0],[1]],[[15,3,1],[1]],[[15,3,2],[3,false]],[[15,4,0],[1]],[[15,4,1],[1]],[[15,4,2],[3,false]],[[15,5,0],[1]],[[15,5,1],[1]],[[15,5,2],[3,false]],[[15,6,0],[3,false]],[[15,6,1],[1]],[[15,6,2],[3,false]],[[15,7,0],[1]],[[15,7,1],[1]],[[15,7,2],[3,false]],[[15,8,0],[1]],[[15,8,1],[1]],[[15,8,2],[3,false]],[[15,9,0],[1]],[[15,9,1],[1]],[[15,9,2],[3,false]],[[15,10,0],[3,false]],[[15,10,1],[1]],[[15,10,2],[3,false]],[[15,11,0],[1]],[[15,11,1],[1]],[[15,11,2],[3,false]],[[15,12,0],[1]],[[15,12,1],[1]],[[15,12,2],[3,false]],[[15,13,0],[1]],[[15,13,1],[1]],[[15,13,2],[3,false]],[[15,14,0],[3,false]],[[15,14,1],[1]],[[15,14,2],[3,false]],[[15,15,0],[1]],[[15,15,1],[1]],[[15,15,2],[3,false]],[[15,16,0],[1]],[[15,16,1],[1]],[[15,16,2],[3,false]],[[15,17,0],[3,false]],[[15,17,1],[1]],[[15,17,2],[3,false]],[[15,18,0],[1]],[[15,18,1],[1]],[[15,18,2],[3,false]],[[15,19,0],[1]],[[15,19,1],[1]],[[15,19,2],[1]],[[16,0,0],[1]],[[16,0,1],[1]],[[16,0,2],[1]],[[16,1,0],[1]],[[16,1,1],[1]],[[16,1,2],[3,false]],[[16,2,0],[3,false]],[[16,2,1],[1]],[[16,2,2],[1]],[[16,3,0],[3,false]],[[16,3,1],[1]],[[16,3,2],[3,false]],[[16,4,0],[3,false]],[[16,4,1],[1]],[[16,4,2],[1]],[[16,5,0],[3,false]],[[16,5,1],[1]],[[16,5,2],[1]],[[16,6,0],[3,false]],[[16,6,1],[1]],[[16,6,2],[1]],[[16,7,0],[1]],[[16,7,1],[1]],[[16,7,2],[3,false]],[[16,8,0],[1]],[[16,8,1],[1]],[[16,8,2],[1]],[[16,9,0],[1]],[[16,9,1],[1]],[[16,9,2],[1]],[[16,10,0],[3,false]],[[16,10,1],[1]],[[16,11,0],[1]],[[16,11,1],[1]],[[16,11,2],[1]],[[16,12,0],[1]],[[16,12,1],[1]],[[16,12,2],[1]],[[16,13,0],[1]],[[16,13,1],[1]],[[16,13,2],[3,false]],[[16,14,0],[3,false]],[[16,14,1],[1]],[[16,14,2],[1]],[[16,15,0],[3,false]],[[16,15,1],[1]],[[16,15,2],[3,false]],[[16,16,0],[3,false]],[[16,16,1],[1]],[[16,16,2],[1]],[[16,17,0],[3,false]],[[16,17,1],[1]],[[16,17,2],[1]],[[16,18,0],[1]],[[16,18,1],[1]],[[16,18,2],[3,false]],[[16,19,0],[1]],[[16,19,1],[1]],[[16,19,2],[1]],[[17,0,0],[1]],[[17,0,1],[1]],[[17,0,2],[1]],[[17,1,0],[1]],[[17,1,1],[1]],[[17,1,2],[3,false]],[[17,2,0],[1]],[[17,2,1],[1]],[[17,2,2],[1]],[[17,3,0],[1]],[[17,3,1],[1]],[[17,3,2],[3,false]],[[17,4,0],[1]],[[17,4,1],[1]],[[17,4,2],[3,false]],[[17,5,0],[1]],[[17,5,1],[1]],[[17,5,2],[3,false]],[[17,6,0],[1]],[[17,6,1],[1]],[[17,6,2],[1]],[[17,7,0],[1]],[[17,7,1],[1]],[[17,7,2],[3,false]],[[17,8,0],[1]],[[17,8,1],[1]],[[17,8,2],[1]],[[17,9,0],[1]],[[17,9,1],[1]],[[17,9,2],[1]],[[17,10,0],[3,false]],[[17,10,1],[1]],[[17,11,0],[1]],[[17,11,1],[1]],[[17,11,2],[1]],[[17,12,0],[1]],[[17,12,1],[1]],[[17,12,2],[1]],[[17,13,0],[1]],[[17,13,1],[1]],[[17,13,2],[3,false]],[[17,14,0],[1]],[[17,14,1],[1]],[[17,14,2],[1]],[[17,15,0],[1]],[[17,15,1],[1]],[[17,15,2],[3,false]],[[17,16,0],[1]],[[17,16,1],[1]],[[17,16,2],[1]],[[17,17,0],[1]],[[17,17,1],[1]],[[17,17,2],[1]],[[17,18,0],[1]],[[17,18,1],[1]],[[17,18,2],[3,false]],[[17,19,0],[1]],[[17,19,1],[1]],[[17,19,2],[1]],[[18,0,0],[1]],[[18,0,1],[1]],[[18,0,2],[1]],[[18,1,0],[1]],[[18,1,1],[1]],[[18,1,2],[3,false]],[[18,2,0],[1]],[[18,2,1],[1]],[[18,2,2],[3,false]],[[18,3,0],[1]],[[18,3,1],[1]],[[18,3,2],[3,false]],[[18,4,0],[1]],[[18,4,1],[1]],[[18,4,2],[1]],[[18,5,0],[1]],[[18,5,1],[1]],[[18,5,2],[3,false]],[[18,6,0],[1]],[[18,6,1],[1]],[[18,6,2],[3,false]],[[18,7,0],[1]],[[18,7,1],[1]],[[18,7,2],[3,false]],[[18,8,0],[1]],[[18,8,1],[1]],[[18,8,2],[1]],[[18,9,0],[1]],[[18,9,1],[1]],[[18,9,2],[1]],[[18,10,1],[1]],[[18,11,0],[1]],[[18,11,1],[1]],[[18,11,2],[1]],[[18,12,0],[1]],[[18,12,1],[1]],[[18,12,2],[1]],[[18,13,0],[1]],[[18,13,1],[1]],[[18,13,2],[3,false]],[[18,14,0],[1]],[[18,14,1],[1]],[[18,14,2],[3,false]],[[18,15,0],[1]],[[18,15,1],[1]],[[18,15,2],[3,false]],[[18,16,0],[1]],[[18,16,1],[1]],[[18,16,2],[3,false]],[[18,17,0],[1]],[[18,17,1],[1]],[[18,17,2],[3,false]],[[18,18,0],[1]],[[18,18,1],[1]],[[18,18,2],[3,false]],[[18,19,0],[1]],[[18,19,1],[1]],[[18,19,2],[1]],[[19,0,0],[1]],[[19,0,1],[1]],[[19,0,2],[1]],[[19,1,0],[1]],[[19,1,1],[1]],[[19,1,2],[1]],[[19,2,0],[1]],[[19,2,1],[1]],[[19,2,2],[1]],[[19,3,0],[1]],[[19,3,1],[1]],[[19,3,2],[1]],[[19,4,0],[1]],[[19,4,1],[1]],[[19,4,2],[1]],[[19,5,0],[1]],[[19,5,1],[1]],[[19,5,2],[1]],[[19,6,0],[1]],[[19,6,1],[1]],[[19,6,2],[1]],[[19,7,0],[1]],[[19,7,1],[1]],[[19,7,2],[1]],[[19,8,0],[1]],[[19,8,1],[1]],[[19,8,2],[1]],[[19,9,0],[1]],[[19,9,1],[1]],[[19,9,2],[1]],[[19,10,0],[2]],[[19,10,1],[0]],[[19,10,2],[2]],[[19,11,0],[1]],[[19,11,1],[1]],[[19,11,2],[1]],[[19,12,0],[1]],[[19,12,1],[1]],[[19,12,2],[1]],[[19,13,0],[1]],[[19,13,1],[1]],[[19,13,2],[1]],[[19,14,0],[1]],[[19,14,1],[1]],[[19,14,2],[1]],[[19,15,0],[1]],[[19,15,1],[1]],[[19,15,2],[1]],[[19,16,0],[1]],[[19,16,1],[1]],[[19,16,2],[1]],[[19,17,0],[1]],[[19,17,1],[1]],[[19,17,2],[1]],[[19,18,0],[1]],[[19,18,1],[1]],[[19,18,2],[1]],[[19,19,0],[1]],[[19,19,1],[1]],[[19,19,2],[1]]]]]';
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
@@ -26765,7 +26974,7 @@ var $author$project$Screen$Editor$viewEditor3dScene = F3(
 									A2(
 										$author$project$Screen$Editor$decodePointerMove,
 										toMsg,
-										{modifyingMany: false, pointerId: $elm$json$Json$Encode$null})),
+										{modifyingMany: $elm$core$Maybe$Nothing, pointerId: $elm$json$Json$Encode$null})),
 									A2($elm$html$Html$Attributes$property, '___setPointerCapture', $elm$json$Json$Encode$null)
 								]);
 						case 'InteractionStart':
@@ -26813,8 +27022,8 @@ var $author$project$Screen$Editor$viewEditor3dScene = F3(
 					} else {
 						var screenSize = _v4.a;
 						var lights = function () {
-							var _v11 = model.editorMode;
-							if (_v11.$ === 'TestGame') {
+							var _v16 = model.editorMode;
+							if (_v16.$ === 'TestGame') {
 								return A2(
 									$author$project$Board$gameLights,
 									model.level.board,
@@ -26886,17 +27095,89 @@ var $author$project$Screen$Editor$viewEditor3dScene = F3(
 									return $elm$core$List$concat(
 										_List_fromArray(
 											[
-												A2(
-												$elm$core$List$map,
-												A3($author$project$Screen$Editor$viewBlock, sharedModel, editorBoard, model),
-												$elm$core$Dict$toList(editorBoard.blocks)),
+												function () {
+												var editingMany = function () {
+													var _v12 = model.mouseDragging;
+													switch (_v12.$) {
+														case 'NoInteraction':
+															return $elm$core$Maybe$Nothing;
+														case 'InteractionStart':
+															var details = _v12.a;
+															return details.modifyingMany;
+														default:
+															var details = _v12.a;
+															return details.modifyingMany;
+													}
+												}();
+												var blocks = function () {
+													if (editingMany.$ === 'Just') {
+														var modifyingMany = editingMany.a;
+														var _v9 = model.editorCursor;
+														var x2 = _v9.a;
+														var y2 = _v9.b;
+														var z2 = _v9.c;
+														var _v10 = modifyingMany;
+														var x1 = _v10.a;
+														var y1 = _v10.b;
+														var z1 = _v10.c;
+														return A3(
+															$elm$core$List$foldl,
+															F2(
+																function (x, blocks_) {
+																	return A3(
+																		$elm$core$List$foldl,
+																		F2(
+																			function (y, blocks__) {
+																				return A3(
+																					$elm$core$List$foldl,
+																					function (z) {
+																						var _v11 = model.blockEditMode;
+																						switch (_v11.$) {
+																							case 'Remove':
+																								return $elm$core$Dict$remove(
+																									_Utils_Tuple3(x, y, z));
+																							case 'Add':
+																								return A2(
+																									$elm$core$Dict$insert,
+																									_Utils_Tuple3(x, y, z),
+																									model.selectedBlockType);
+																							default:
+																								return $elm$core$Basics$identity;
+																						}
+																					},
+																					blocks__,
+																					A2(
+																						$elm$core$List$range,
+																						A2($elm$core$Basics$min, z1, z2),
+																						A2($elm$core$Basics$max, z1, z2)));
+																			}),
+																		blocks_,
+																		A2(
+																			$elm$core$List$range,
+																			A2($elm$core$Basics$min, y1, y2),
+																			A2($elm$core$Basics$max, y1, y2)));
+																}),
+															editorBoard.blocks,
+															A2(
+																$elm$core$List$range,
+																A2($elm$core$Basics$min, x1, x2),
+																A2($elm$core$Basics$max, x1, x2)));
+													} else {
+														return editorBoard.blocks;
+													}
+												}();
+												return A2(
+													$elm$core$List$map,
+													A3($author$project$Screen$Editor$viewBlock, sharedModel, editorBoard, model),
+													$elm$core$Dict$toList(blocks));
+											}(),
 												_List_fromArray(
 												[
 													A3(
 													$author$project$Screen$Editor$viewCursor,
 													function () {
-														var _v8 = model.blockEditMode;
-														switch (_v8.$) {
+														var _v13 = model.blockEditMode;
+														switch (_v13.$) {
 															case 'Select':
 																return $avh4$elm_color$Color$white;
 															case 'Remove':
@@ -26909,12 +27190,12 @@ var $author$project$Screen$Editor$viewEditor3dScene = F3(
 													model.editorCursor),
 													$author$project$Screen$Editor$viewOrientationArrows,
 													function () {
-													var _v9 = model.selectedBlock;
-													if (_v9.$ === 'Nothing') {
+													var _v14 = model.selectedBlock;
+													if (_v14.$ === 'Nothing') {
 														return $ianmackenzie$elm_3d_scene$Scene3d$nothing;
 													} else {
-														var _v10 = _v9.a;
-														var point = _v10.a;
+														var _v15 = _v14.a;
+														var point = _v15.a;
 														return A3($author$project$Screen$Editor$viewCursor, $avh4$elm_color$Color$yellow, model.cursorBounce, point);
 													}
 												}(),
@@ -30178,23 +30459,28 @@ var $author$project$Screen$Editor$view = function (_v0) {
 																	case 'BasicMiniBoard':
 																		var _v13 = value.a;
 																		return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$basicMiniBoard);
-																	default:
+																	case 'ZigZagBoard':
 																		var _v14 = value.a;
 																		return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$zigZagBoard);
+																	default:
+																		var _v15 = value.a;
+																		return $author$project$Screen$Editor$LoadEditorBoard($author$project$Board$somethingFamiliar);
 																}
 															}
 														}());
 												},
 												options: _List_fromArray(
-													[$author$project$Board$DefaultBoard, $author$project$Board$BasicMiniBoard, $author$project$Board$ZigZagBoard]),
+													[$author$project$Board$DefaultBoard, $author$project$Board$BasicMiniBoard, $author$project$Board$ZigZagBoard, $author$project$Board$SomethingFamiliar]),
 												toKey: function (value) {
 													switch (value.$) {
 														case 'DefaultBoard':
 															return 'DefaultBoard';
 														case 'BasicMiniBoard':
 															return 'BasicMiniBoard';
-														default:
+														case 'ZigZagBoard':
 															return 'ZigZagBoard';
+														default:
+															return 'SomethingFamilar';
 													}
 												},
 												toLabel: function (value) {
@@ -30203,8 +30489,10 @@ var $author$project$Screen$Editor$view = function (_v0) {
 															return '9 x 9 blank slate';
 														case 'BasicMiniBoard':
 															return 'Basic mini';
-														default:
+														case 'ZigZagBoard':
 															return 'Zig zag';
+														default:
+															return 'Something Familiar';
 													}
 												},
 												value: $elm$core$Maybe$Nothing
@@ -30329,6 +30617,7 @@ var $author$project$Screen$FreePlay$view = function (_v0) {
 											_List_fromArray(
 												[
 													{boardEncoding: $author$project$Board$basicMiniBoard, name: 'Mini'},
+													{boardEncoding: $author$project$Board$somethingFamiliar, name: 'Something Familiar'},
 													{boardEncoding: $author$project$Board$zigZagBoard, name: 'Zig-Zag'}
 												])),
 										_List_fromArray(

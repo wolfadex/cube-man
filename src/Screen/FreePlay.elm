@@ -230,6 +230,9 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                             [ { name = "Mini"
                               , boardEncoding = Board.basicMiniBoard
                               }
+                            , { name = "Something Familiar"
+                              , boardEncoding = Board.somethingFamiliar
+                              }
                             , { name = "Zig-Zag"
                               , boardEncoding = Board.zigZagBoard
                               }

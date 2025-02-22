@@ -107,7 +107,7 @@ type EditorMouseInteraction
 
 type alias MouseDetails =
     { pointerId : Json.Decode.Value
-    , modifyingMany : Bool
+    , modifyingMany : Maybe Board.Point
     }
 
 
@@ -418,7 +418,12 @@ update toSharedMsg sharedModel toMsg msg model =
                 | mouseDragging =
                     InteractionStart
                         { pointerId = pointerId
-                        , modifyingMany = Set.member "Alt" model.editorKeysDown
+                        , modifyingMany =
+                            if Set.member "Alt" model.editorKeysDown && (model.blockEditMode == Add || model.blockEditMode == Remove) then
+                                Just model.editorCursor
+
+                            else
+                                Nothing
                         }
               }
             , Cmd.none
@@ -429,126 +434,282 @@ update toSharedMsg sharedModel toMsg msg model =
                 ( { model | mouseDragging = NoInteraction }, Cmd.none )
 
             else
-                case model.blockEditMode of
-                    Remove ->
+                let
+                    editingMany =
+                        case model.mouseDragging of
+                            NoInteraction ->
+                                Nothing
+
+                            InteractionStart details ->
+                                details.modifyingMany
+
+                            InteractionMoving details ->
+                                details.modifyingMany
+                in
+                case editingMany of
+                    Just modifyingMany ->
                         let
-                            editorBoard =
-                                Undo.insertWith
-                                    (\board ->
-                                        { board
-                                            | blocks =
-                                                Dict.insert model.editorCursor
-                                                    Board.Empty
-                                                    board.blocks
-                                        }
-                                    )
-                                    model.editorBoard
+                            ( x1, y1, z1 ) =
+                                modifyingMany
+
+                            ( x2, y2, z2 ) =
+                                model.editorCursor
                         in
-                        ( { model
-                            | mouseDragging = NoInteraction
-                            , editorBoard = editorBoard
-                            , boardEncoding =
-                                editorBoard
-                                    |> Undo.value
-                                    |> Serialize.encodeToJson Board.boardCodec
-                                    |> Json.Encode.encode 0
-                            , selectedBlock = Nothing
-                          }
-                        , Cmd.none
-                        )
-
-                    Add ->
-                        let
-                            editorBoard =
-                                Undo.insertWith
-                                    (\board ->
-                                        { board
-                                            | blocks =
-                                                case model.selectedBlockType of
-                                                    Board.PlayerSpawn _ ->
-                                                        board.blocks
-                                                            |> Dict.map
-                                                                (\_ block ->
-                                                                    case block of
-                                                                        Board.PlayerSpawn _ ->
-                                                                            Board.Empty
-
-                                                                        _ ->
-                                                                            block
-                                                                )
-                                                            |> Dict.insert model.editorCursor
-                                                                model.selectedBlockType
-
-                                                    Board.EnemySpawner _ ->
-                                                        board.blocks
-                                                            |> Dict.map
-                                                                (\_ block ->
-                                                                    case block of
-                                                                        Board.EnemySpawner _ ->
-                                                                            Board.Wall
-
-                                                                        _ ->
-                                                                            block
-                                                                )
-                                                            |> Dict.insert model.editorCursor
-                                                                model.selectedBlockType
-
-                                                    _ ->
-                                                        Dict.insert model.editorCursor
-                                                            model.selectedBlockType
-                                                            board.blocks
-                                        }
-                                    )
-                                    model.editorBoard
-                        in
-                        ( { model
-                            | mouseDragging = NoInteraction
-                            , editorBoard = editorBoard
-                            , boardEncoding =
-                                editorBoard
-                                    |> Undo.value
-                                    |> Serialize.encodeToJson Board.boardCodec
-                                    |> Json.Encode.encode 0
-                            , selectedBlock =
+                        case model.blockEditMode of
+                            Remove ->
                                 let
-                                    board =
+                                    editorBoard =
+                                        Undo.insertWith
+                                            (\board ->
+                                                { board
+                                                    | blocks =
+                                                        List.foldl
+                                                            (\x blocks_ ->
+                                                                List.foldl
+                                                                    (\y blocks__ ->
+                                                                        List.foldl
+                                                                            (\z ->
+                                                                                Dict.remove ( x, y, z )
+                                                                            )
+                                                                            blocks__
+                                                                            (List.range (min z1 z2) (max z1 z2))
+                                                                    )
+                                                                    blocks_
+                                                                    (List.range (min y1 y2) (max y1 y2))
+                                                            )
+                                                            board.blocks
+                                                            (List.range (min x1 x2) (max x1 x2))
+                                                }
+                                            )
+                                            model.editorBoard
+                                in
+                                ( { model
+                                    | mouseDragging = NoInteraction
+                                    , editorBoard = editorBoard
+                                    , boardEncoding =
                                         editorBoard
                                             |> Undo.value
-                                in
-                                board.blocks
-                                    |> Dict.get model.editorCursor
-                                    |> Maybe.map (\block -> ( model.editorCursor, block ))
-                            , boardPlayError =
-                                case model.boardPlayError of
-                                    Nothing ->
-                                        model.boardPlayError
+                                            |> Serialize.encodeToJson Board.boardCodec
+                                            |> Json.Encode.encode 0
+                                    , selectedBlock = Nothing
+                                  }
+                                , Cmd.none
+                                )
 
-                                    Just Board.MissingPlayerSpawn ->
-                                        case Board.findSpawn (Undo.value editorBoard) of
+                            Add ->
+                                let
+                                    editorBoard =
+                                        Undo.insertWith
+                                            (\board ->
+                                                { board
+                                                    | blocks =
+                                                        case model.selectedBlockType of
+                                                            Board.PlayerSpawn _ ->
+                                                                board.blocks
+                                                                    |> Dict.map
+                                                                        (\_ block ->
+                                                                            case block of
+                                                                                Board.PlayerSpawn _ ->
+                                                                                    Board.Empty
+
+                                                                                _ ->
+                                                                                    block
+                                                                        )
+                                                                    |> Dict.insert model.editorCursor
+                                                                        model.selectedBlockType
+
+                                                            Board.EnemySpawner _ ->
+                                                                board.blocks
+                                                                    |> Dict.map
+                                                                        (\_ block ->
+                                                                            case block of
+                                                                                Board.EnemySpawner _ ->
+                                                                                    Board.Wall
+
+                                                                                _ ->
+                                                                                    block
+                                                                        )
+                                                                    |> Dict.insert model.editorCursor
+                                                                        model.selectedBlockType
+
+                                                            _ ->
+                                                                List.foldl
+                                                                    (\x blocks_ ->
+                                                                        List.foldl
+                                                                            (\y blocks__ ->
+                                                                                List.foldl
+                                                                                    (\z ->
+                                                                                        Dict.insert ( x, y, z ) model.selectedBlockType
+                                                                                    )
+                                                                                    blocks__
+                                                                                    (List.range (min z1 z2) (max z1 z2))
+                                                                            )
+                                                                            blocks_
+                                                                            (List.range (min y1 y2) (max y1 y2))
+                                                                    )
+                                                                    board.blocks
+                                                                    (List.range (min x1 x2) (max x1 x2))
+                                                }
+                                            )
+                                            model.editorBoard
+                                in
+                                ( { model
+                                    | mouseDragging = NoInteraction
+                                    , editorBoard = editorBoard
+                                    , boardEncoding =
+                                        editorBoard
+                                            |> Undo.value
+                                            |> Serialize.encodeToJson Board.boardCodec
+                                            |> Json.Encode.encode 0
+                                    , selectedBlock =
+                                        let
+                                            board =
+                                                editorBoard
+                                                    |> Undo.value
+                                        in
+                                        board.blocks
+                                            |> Dict.get model.editorCursor
+                                            |> Maybe.map (\block -> ( model.editorCursor, block ))
+                                    , boardPlayError =
+                                        case model.boardPlayError of
                                             Nothing ->
                                                 model.boardPlayError
 
-                                            Just _ ->
-                                                Nothing
-                          }
-                        , Cmd.none
-                        )
+                                            Just Board.MissingPlayerSpawn ->
+                                                case Board.findSpawn (Undo.value editorBoard) of
+                                                    Nothing ->
+                                                        model.boardPlayError
 
-                    Select ->
-                        ( { model
-                            | mouseDragging = NoInteraction
-                            , selectedBlock =
+                                                    Just _ ->
+                                                        Nothing
+                                  }
+                                , Cmd.none
+                                )
+
+                            Select ->
+                                ( model, Cmd.none )
+
+                    Nothing ->
+                        case model.blockEditMode of
+                            Remove ->
                                 let
                                     editorBoard =
-                                        model.editorBoard
-                                            |> Undo.value
+                                        Undo.insertWith
+                                            (\board ->
+                                                { board
+                                                    | blocks =
+                                                        Dict.insert model.editorCursor
+                                                            Board.Empty
+                                                            board.blocks
+                                                }
+                                            )
+                                            model.editorBoard
                                 in
-                                editorBoard.blocks
-                                    |> Dict.get model.editorCursor
-                                    |> Maybe.map (\block -> ( model.editorCursor, block ))
-                          }
-                        , Cmd.none
-                        )
+                                ( { model
+                                    | mouseDragging = NoInteraction
+                                    , editorBoard = editorBoard
+                                    , boardEncoding =
+                                        editorBoard
+                                            |> Undo.value
+                                            |> Serialize.encodeToJson Board.boardCodec
+                                            |> Json.Encode.encode 0
+                                    , selectedBlock = Nothing
+                                  }
+                                , Cmd.none
+                                )
+
+                            Add ->
+                                let
+                                    editorBoard =
+                                        Undo.insertWith
+                                            (\board ->
+                                                { board
+                                                    | blocks =
+                                                        case model.selectedBlockType of
+                                                            Board.PlayerSpawn _ ->
+                                                                board.blocks
+                                                                    |> Dict.map
+                                                                        (\_ block ->
+                                                                            case block of
+                                                                                Board.PlayerSpawn _ ->
+                                                                                    Board.Empty
+
+                                                                                _ ->
+                                                                                    block
+                                                                        )
+                                                                    |> Dict.insert model.editorCursor
+                                                                        model.selectedBlockType
+
+                                                            Board.EnemySpawner _ ->
+                                                                board.blocks
+                                                                    |> Dict.map
+                                                                        (\_ block ->
+                                                                            case block of
+                                                                                Board.EnemySpawner _ ->
+                                                                                    Board.Wall
+
+                                                                                _ ->
+                                                                                    block
+                                                                        )
+                                                                    |> Dict.insert model.editorCursor
+                                                                        model.selectedBlockType
+
+                                                            _ ->
+                                                                Dict.insert model.editorCursor
+                                                                    model.selectedBlockType
+                                                                    board.blocks
+                                                }
+                                            )
+                                            model.editorBoard
+                                in
+                                ( { model
+                                    | mouseDragging = NoInteraction
+                                    , editorBoard = editorBoard
+                                    , boardEncoding =
+                                        editorBoard
+                                            |> Undo.value
+                                            |> Serialize.encodeToJson Board.boardCodec
+                                            |> Json.Encode.encode 0
+                                    , selectedBlock =
+                                        let
+                                            board =
+                                                editorBoard
+                                                    |> Undo.value
+                                        in
+                                        board.blocks
+                                            |> Dict.get model.editorCursor
+                                            |> Maybe.map (\block -> ( model.editorCursor, block ))
+                                    , boardPlayError =
+                                        case model.boardPlayError of
+                                            Nothing ->
+                                                model.boardPlayError
+
+                                            Just Board.MissingPlayerSpawn ->
+                                                case Board.findSpawn (Undo.value editorBoard) of
+                                                    Nothing ->
+                                                        model.boardPlayError
+
+                                                    Just _ ->
+                                                        Nothing
+                                  }
+                                , Cmd.none
+                                )
+
+                            Select ->
+                                ( { model
+                                    | mouseDragging = NoInteraction
+                                    , selectedBlock =
+                                        let
+                                            editorBoard =
+                                                model.editorBoard
+                                                    |> Undo.value
+                                        in
+                                        editorBoard.blocks
+                                            |> Dict.get model.editorCursor
+                                            |> Maybe.map (\block -> ( model.editorCursor, block ))
+                                  }
+                                , Cmd.none
+                                )
 
         MouseMove details offset movement ->
             if Set.member "Shift" model.editorKeysDown then
@@ -1524,6 +1685,7 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                                 [ Board.DefaultBoard
                                 , Board.BasicMiniBoard
                                 , Board.ZigZagBoard
+                                , Board.SomethingFamiliar
                                 ]
                             , toLabel =
                                 \value ->
@@ -1536,6 +1698,9 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
 
                                         Board.ZigZagBoard ->
                                             "Zig zag"
+
+                                        Board.SomethingFamiliar ->
+                                            "Something Familiar"
                             , toKey =
                                 \value ->
                                     case value of
@@ -1547,6 +1712,9 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
 
                                         Board.ZigZagBoard ->
                                             "ZigZagBoard"
+
+                                        Board.SomethingFamiliar ->
+                                            "SomethingFamilar"
                             , onSelect =
                                 \value ->
                                     toMsg <|
@@ -1562,6 +1730,9 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
 
                                             Just Board.ZigZagBoard ->
                                                 LoadEditorBoard Board.zigZagBoard
+
+                                            Just Board.SomethingFamiliar ->
+                                                LoadEditorBoard Board.somethingFamiliar
                             }
                         ]
                     ]
@@ -1602,7 +1773,7 @@ viewEditor3dScene sharedModel toMsg model =
                         , Html.Events.on "pointermove"
                             (decodePointerMove toMsg
                                 { pointerId = Json.Encode.null
-                                , modifyingMany = False
+                                , modifyingMany = Nothing
                                 }
                             )
                         , Html.Attributes.property "___setPointerCapture" Json.Encode.null
@@ -1694,7 +1865,58 @@ viewEditor3dScene sharedModel toMsg model =
                                         |> Undo.value
                             in
                             List.concat
-                                [ editorBoard.blocks
+                                [ let
+                                    editingMany =
+                                        case model.mouseDragging of
+                                            NoInteraction ->
+                                                Nothing
+
+                                            InteractionStart details ->
+                                                details.modifyingMany
+
+                                            InteractionMoving details ->
+                                                details.modifyingMany
+
+                                    blocks =
+                                        case editingMany of
+                                            Just modifyingMany ->
+                                                let
+                                                    ( x1, y1, z1 ) =
+                                                        modifyingMany
+
+                                                    ( x2, y2, z2 ) =
+                                                        model.editorCursor
+                                                in
+                                                List.foldl
+                                                    (\x blocks_ ->
+                                                        List.foldl
+                                                            (\y blocks__ ->
+                                                                List.foldl
+                                                                    (\z ->
+                                                                        case model.blockEditMode of
+                                                                            Remove ->
+                                                                                Dict.remove ( x, y, z )
+
+                                                                            Add ->
+                                                                                Dict.insert ( x, y, z )
+                                                                                    model.selectedBlockType
+
+                                                                            Select ->
+                                                                                identity
+                                                                    )
+                                                                    blocks__
+                                                                    (List.range (min z1 z2) (max z1 z2))
+                                                            )
+                                                            blocks_
+                                                            (List.range (min y1 y2) (max y1 y2))
+                                                    )
+                                                    editorBoard.blocks
+                                                    (List.range (min x1 x2) (max x1 x2))
+
+                                            Nothing ->
+                                                editorBoard.blocks
+                                  in
+                                  blocks
                                     |> Dict.toList
                                     |> List.map (viewBlock sharedModel editorBoard model)
                                 , [ viewCursor
