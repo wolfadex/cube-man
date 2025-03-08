@@ -2998,8 +2998,8 @@ viewBounds board =
                     Scene3d.lineSegment
                         (Scene3d.Material.color Color.orange)
                         (LineSegment3d.from
-                            (Point3d.meters -0.5 (toFloat y - 0.5) -0.5)
-                            (Point3d.meters (toFloat board.maxX - 0.5) (toFloat y - 0.5) -0.5)
+                            (Point3d.meters -0.501 (toFloat y - 0.501) -0.501)
+                            (Point3d.meters (toFloat board.maxX - 0.501) (toFloat y - 0.501) -0.501)
                         )
                 )
                 (List.range 0 board.maxY)
@@ -3008,58 +3008,58 @@ viewBounds board =
                     Scene3d.lineSegment
                         (Scene3d.Material.color Color.orange)
                         (LineSegment3d.from
-                            (Point3d.meters (toFloat x - 0.5) -0.5 -0.5)
-                            (Point3d.meters (toFloat x - 0.5) (toFloat board.maxY - 0.5) -0.5)
+                            (Point3d.meters (toFloat x - 0.501) -0.501 -0.501)
+                            (Point3d.meters (toFloat x - 0.501) (toFloat board.maxY - 0.501) -0.501)
                         )
                 )
                 (List.range 0 board.maxX)
             , [ Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters -0.5 -0.5 (toFloat board.maxZ - 0.5))
-                        (Point3d.meters (toFloat board.maxX - 0.5) -0.5 (toFloat board.maxZ - 0.5))
+                        (Point3d.meters -0.501 -0.501 (toFloat board.maxZ - 0.501))
+                        (Point3d.meters (toFloat board.maxX - 0.501) -0.501 (toFloat board.maxZ - 0.501))
                     )
               , Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters -0.5 (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
-                        (Point3d.meters (toFloat board.maxX - 0.5) (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                        (Point3d.meters -0.501 (toFloat board.maxY - 0.501) (toFloat board.maxZ - 0.501))
+                        (Point3d.meters (toFloat board.maxX - 0.501) (toFloat board.maxY - 0.501) (toFloat board.maxZ - 0.501))
                     )
               , Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters -0.5 -0.5 (toFloat board.maxZ - 0.5))
-                        (Point3d.meters -0.5 (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                        (Point3d.meters -0.501 -0.501 (toFloat board.maxZ - 0.501))
+                        (Point3d.meters -0.501 (toFloat board.maxY - 0.501) (toFloat board.maxZ - 0.501))
                     )
               , Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters (toFloat board.maxX - 0.5) -0.5 (toFloat board.maxZ - 0.5))
-                        (Point3d.meters (toFloat board.maxX - 0.5) (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                        (Point3d.meters (toFloat board.maxX - 0.501) -0.501 (toFloat board.maxZ - 0.501))
+                        (Point3d.meters (toFloat board.maxX - 0.501) (toFloat board.maxY - 0.501) (toFloat board.maxZ - 0.501))
                     )
               , Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters -0.5 -0.5 -0.5)
-                        (Point3d.meters -0.5 -0.5 (toFloat board.maxZ - 0.5))
+                        (Point3d.meters -0.501 -0.501 -0.501)
+                        (Point3d.meters -0.501 -0.501 (toFloat board.maxZ - 0.501))
                     )
               , Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters (toFloat board.maxX - 0.5) -0.5 -0.5)
-                        (Point3d.meters (toFloat board.maxX - 0.5) -0.5 (toFloat board.maxZ - 0.5))
+                        (Point3d.meters (toFloat board.maxX - 0.501) -0.501 -0.501)
+                        (Point3d.meters (toFloat board.maxX - 0.501) -0.501 (toFloat board.maxZ - 0.501))
                     )
               , Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters -0.5 (toFloat board.maxY - 0.5) -0.5)
-                        (Point3d.meters -0.5 (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                        (Point3d.meters -0.501 (toFloat board.maxY - 0.501) -0.501)
+                        (Point3d.meters -0.501 (toFloat board.maxY - 0.501) (toFloat board.maxZ - 0.501))
                     )
               , Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters (toFloat board.maxX - 0.5) (toFloat board.maxY - 0.5) -0.5)
-                        (Point3d.meters (toFloat board.maxX - 0.5) (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                        (Point3d.meters (toFloat board.maxX - 0.501) (toFloat board.maxY - 0.501) -0.501)
+                        (Point3d.meters (toFloat board.maxX - 0.501) (toFloat board.maxY - 0.501) (toFloat board.maxZ - 0.501))
                     )
               ]
             ]

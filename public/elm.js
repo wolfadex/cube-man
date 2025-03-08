@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1741473182847"
+    "1741473935812"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -26182,8 +26182,8 @@ var $author$project$Screen$Editor$viewBounds = function (board) {
 							$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
 							A2(
 								$ianmackenzie$elm_geometry$LineSegment3d$from,
-								A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, y - 0.5, -0.5),
-								A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, y - 0.5, -0.5)));
+								A3($ianmackenzie$elm_geometry$Point3d$meters, -0.501, y - 0.501, -0.501),
+								A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.501, y - 0.501, -0.501)));
 					},
 					A2($elm$core$List$range, 0, board.maxY)),
 					A2(
@@ -26194,8 +26194,8 @@ var $author$project$Screen$Editor$viewBounds = function (board) {
 							$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
 							A2(
 								$ianmackenzie$elm_geometry$LineSegment3d$from,
-								A3($ianmackenzie$elm_geometry$Point3d$meters, x - 0.5, -0.5, -0.5),
-								A3($ianmackenzie$elm_geometry$Point3d$meters, x - 0.5, board.maxY - 0.5, -0.5)));
+								A3($ianmackenzie$elm_geometry$Point3d$meters, x - 0.501, -0.501, -0.501),
+								A3($ianmackenzie$elm_geometry$Point3d$meters, x - 0.501, board.maxY - 0.501, -0.501)));
 					},
 					A2($elm$core$List$range, 0, board.maxX)),
 					_List_fromArray(
@@ -26205,57 +26205,57 @@ var $author$project$Screen$Editor$viewBounds = function (board) {
 						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
 						A2(
 							$ianmackenzie$elm_geometry$LineSegment3d$from,
-							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, -0.5, board.maxZ - 0.5),
-							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, -0.5, board.maxZ - 0.5))),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.501, -0.501, board.maxZ - 0.501),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.501, -0.501, board.maxZ - 0.501))),
 						A2(
 						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
 						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
 						A2(
 							$ianmackenzie$elm_geometry$LineSegment3d$from,
-							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, board.maxY - 0.5, board.maxZ - 0.5),
-							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, board.maxY - 0.5, board.maxZ - 0.5))),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.501, board.maxY - 0.501, board.maxZ - 0.501),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.501, board.maxY - 0.501, board.maxZ - 0.501))),
 						A2(
 						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
 						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
 						A2(
 							$ianmackenzie$elm_geometry$LineSegment3d$from,
-							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, -0.5, board.maxZ - 0.5),
-							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, board.maxY - 0.5, board.maxZ - 0.5))),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.501, -0.501, board.maxZ - 0.501),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.501, board.maxY - 0.501, board.maxZ - 0.501))),
 						A2(
 						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
 						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
 						A2(
 							$ianmackenzie$elm_geometry$LineSegment3d$from,
-							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, -0.5, board.maxZ - 0.5),
-							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, board.maxY - 0.5, board.maxZ - 0.5))),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.501, -0.501, board.maxZ - 0.501),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.501, board.maxY - 0.501, board.maxZ - 0.501))),
 						A2(
 						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
 						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
 						A2(
 							$ianmackenzie$elm_geometry$LineSegment3d$from,
-							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, -0.5, -0.5),
-							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, -0.5, board.maxZ - 0.5))),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.501, -0.501, -0.501),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.501, -0.501, board.maxZ - 0.501))),
 						A2(
 						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
 						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
 						A2(
 							$ianmackenzie$elm_geometry$LineSegment3d$from,
-							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, -0.5, -0.5),
-							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, -0.5, board.maxZ - 0.5))),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.501, -0.501, -0.501),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.501, -0.501, board.maxZ - 0.501))),
 						A2(
 						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
 						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
 						A2(
 							$ianmackenzie$elm_geometry$LineSegment3d$from,
-							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, board.maxY - 0.5, -0.5),
-							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.5, board.maxY - 0.5, board.maxZ - 0.5))),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.501, board.maxY - 0.501, -0.501),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, -0.501, board.maxY - 0.501, board.maxZ - 0.501))),
 						A2(
 						$ianmackenzie$elm_3d_scene$Scene3d$lineSegment,
 						$ianmackenzie$elm_3d_scene$Scene3d$Material$color($avh4$elm_color$Color$orange),
 						A2(
 							$ianmackenzie$elm_geometry$LineSegment3d$from,
-							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, board.maxY - 0.5, -0.5),
-							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.5, board.maxY - 0.5, board.maxZ - 0.5)))
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.501, board.maxY - 0.501, -0.501),
+							A3($ianmackenzie$elm_geometry$Point3d$meters, board.maxX - 0.501, board.maxY - 0.501, board.maxZ - 0.501)))
 					])
 				])));
 };
