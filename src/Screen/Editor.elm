@@ -287,7 +287,7 @@ update toSharedMsg sharedModel toMsg msg model =
 
         Tick deltaMs ->
             model
-                |> tick deltaMs
+                |> tick sharedModel deltaMs
 
         EncodingChanged boardEncoding ->
             ( { model | boardEncoding = boardEncoding }, Cmd.none )
@@ -1201,14 +1201,14 @@ moveCursorByMouse offset model =
                     )
 
 
-tick : Duration -> Model -> ( Model, Cmd msg )
-tick deltaMs model =
+tick : Shared.LoadedModel -> Duration -> Model -> ( Model, Cmd msg )
+tick sharedModel deltaMs model =
     case model.editorMode of
         EditBoard ->
             ( model, Cmd.none )
 
         TestGame ->
-            Board.tick deltaMs model.level
+            Board.tick sharedModel.audioMapping deltaMs model.level
                 |> Tuple.mapFirst (\level -> { model | level = level })
 
 
@@ -1968,7 +1968,7 @@ viewSettings : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Mode
 viewSettings toSharedMsg sharedModel toMsg model =
     Html.Extra.modal { open = model.showSettings, onClose = toMsg (ShowSettings False) }
         []
-        [ Html.h2
+        [ Html.h1
             [ Html.Attributes.style "width" "100%"
             , Html.Attributes.style "margin-top" "0"
             ]
@@ -1990,6 +1990,23 @@ viewSettings toSharedMsg sharedModel toMsg model =
         , Html.span [] [ Html.text "Hold 'Alt/Option' to edit an area of blocks" ]
         , Html.br [] []
         , Html.br [] []
+        , Html.h2 [] [ Html.text "Audio" ]
+        , Html.label
+            [ Html.Attributes.style "display" "flex"
+            , Html.Attributes.style "align-items" "center"
+            , Html.Attributes.style "gap" "1rem"
+            ]
+            [ Html.span [] [ Html.text "Sound Effects" ]
+            , Html.Extra.range
+                []
+                { step = 0.1
+                , min = 0.0
+                , max = 1.0
+                , value = sharedModel.audioMapping.effects
+                , onInput = Shared.AudioEffectsChanged >> toSharedMsg
+                }
+            ]
+        , Html.h2 [] [ Html.text "Input" ]
         , let
             viewMapping =
                 Input.viewMapping (Shared.SetMapping >> toSharedMsg)

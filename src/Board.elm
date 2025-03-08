@@ -46,6 +46,7 @@ port module Board exposing
 
 import AStar.Generalised
 import Angle exposing (Angle)
+import Audio
 import Axis3d
 import Block3d
 import Camera3d exposing (Camera3d)
@@ -82,7 +83,7 @@ import Vector3d
 import Viewpoint3d
 
 
-port playAudio : String -> Cmd msg
+port playAudio : { label : String, volume : Float } -> Cmd msg
 
 
 type WorldCoordinates
@@ -1207,11 +1208,11 @@ durationEnemyMovement =
     Duration.seconds 1
 
 
-tick : Duration -> Level -> ( Level, Cmd msg )
-tick deltaDuration level =
+tick : Audio.Mapping -> Duration -> Level -> ( Level, Cmd msg )
+tick audioMapping deltaDuration level =
     if level.hearts > 0 && level.capturedPoints /= level.totalCapturePoints then
         ( level, Cmd.none )
-            |> tickPlayer deltaDuration
+            |> tickPlayer audioMapping deltaDuration
             |> tickEnemies deltaDuration
 
     else
@@ -1443,12 +1444,12 @@ tickEnemySpawners deltaDuration level =
     }
 
 
-tickPlayer : Duration -> ( Level, Cmd msg ) -> ( Level, Cmd msg )
-tickPlayer deltaDuration ( level, cmd ) =
+tickPlayer : Audio.Mapping -> Duration -> ( Level, Cmd msg ) -> ( Level, Cmd msg )
+tickPlayer audioMapping deltaDuration ( level, cmd ) =
     level
         |> setPlayerFacing
         |> tickPlayerOther deltaDuration
-        |> movePlayer deltaDuration
+        |> movePlayer audioMapping deltaDuration
         |> Tuple.mapSecond (\c -> Cmd.batch [ c, cmd ])
 
 
@@ -1576,8 +1577,8 @@ handlePlayerCollisionsHelper checkedEnemies toCheckEnemies level =
                     level
 
 
-movePlayer : Duration -> Level -> ( Level, Cmd msg )
-movePlayer deltaDuration level =
+movePlayer : Audio.Mapping -> Duration -> Level -> ( Level, Cmd msg )
+movePlayer audioMapping deltaDuration level =
     case level.playerTarget of
         NoTarget ->
             ( level, Cmd.none )
@@ -1601,7 +1602,7 @@ movePlayer deltaDuration level =
                     | playerFrame = playerFrame
                     , playerTarget = findNextTarget level.board level.playerFacing moveDetails.to playerFrame
                 }
-                    |> scorePoints
+                    |> scorePoints audioMapping
                     |> handlePlayerCollisions
 
             else if remainingDuration |> Quantity.lessThan (Quantity 0) then
@@ -1615,7 +1616,7 @@ movePlayer deltaDuration level =
                             | playerFrame = playerFrame
                             , playerTarget = findNextTarget level.board level.playerFacing moveDetails.to playerFrame
                         }
-                            |> scorePoints
+                            |> scorePoints audioMapping
                             |> handlePlayerCollisions
                 in
                 if nextLevel.hearts < 1 then
@@ -1623,7 +1624,7 @@ movePlayer deltaDuration level =
 
                 else
                     ( nextLevel, cmd )
-                        |> tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
+                        |> tickPlayer audioMapping (Quantity 0 |> Quantity.minus remainingDuration)
 
             else
                 let
@@ -1651,7 +1652,7 @@ movePlayer deltaDuration level =
                                 )
                     , playerTarget = MoveForward { moveDetails | duration = remainingDuration }
                 }
-                    |> scorePoints
+                    |> scorePoints audioMapping
                     |> handlePlayerCollisions
 
         TraverseEdge edgeDetails ->
@@ -1672,7 +1673,7 @@ movePlayer deltaDuration level =
 
                 traverseSound =
                     if edgeDetails.duration == durationForEdgeMovement then
-                        playAudio "effect_shiw"
+                        playAudio { label = "effect_shiw", volume = audioMapping.effects }
 
                     else
                         Cmd.none
@@ -1727,7 +1728,7 @@ movePlayer deltaDuration level =
                             | playerFrame = correctedPlayerFrame
                             , playerTarget = findNextTarget level.board level.playerFacing edgeDetails.to correctedPlayerFrame
                         }
-                            |> scorePoints
+                            |> scorePoints audioMapping
                             |> handlePlayerCollisions
                 in
                 if nextLevel.hearts < 1 then
@@ -1735,7 +1736,7 @@ movePlayer deltaDuration level =
 
                 else
                     ( nextLevel, Cmd.batch [ cmd, traverseSound ] )
-                        |> tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
+                        |> tickPlayer audioMapping (Quantity 0 |> Quantity.minus remainingDuration)
 
             else
                 let
@@ -1783,7 +1784,7 @@ movePlayer deltaDuration level =
                         | playerFrame = correctedPlayerFrame
                         , playerTarget = findNextTarget level.board level.playerFacing edgeDetails.to correctedPlayerFrame
                     }
-                        |> scorePoints
+                        |> scorePoints audioMapping
                         |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, traverseSound ])
                         |> handlePlayerCollisions
 
@@ -1820,7 +1821,7 @@ movePlayer deltaDuration level =
                                     edgeMovement
                         , playerTarget = TraverseEdge { edgeDetails | duration = remainingDuration }
                     }
-                        |> scorePoints
+                        |> scorePoints audioMapping
                         |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, traverseSound ])
                         |> handlePlayerCollisions
 
@@ -1902,8 +1903,8 @@ viewStats level =
         ]
 
 
-scorePoints : Level -> ( Level, Cmd msg )
-scorePoints level =
+scorePoints : Audio.Mapping -> Level -> ( Level, Cmd msg )
+scorePoints audioMapping level =
     let
         playerActualPoint =
             Frame3d.originPoint level.playerFrame
@@ -1938,7 +1939,7 @@ scorePoints level =
                 , score = level.score + 50
                 , capturedPoints = level.capturedPoints + 1
               }
-            , playAudio "effect_tck"
+            , playAudio { label = "effect_tck", volume = audioMapping.effects }
             )
 
         else

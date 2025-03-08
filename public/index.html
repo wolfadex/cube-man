@@ -67,9 +67,9 @@
 
             const app = Elm.Main.init();
 
-            app.ports.playAudio.subscribe(function (sound) {
-                const audio = new Audio(`assets/${sound}.mp3`);
-                audio.volumne = 1;
+            app.ports.playAudio.subscribe(function ({ label, volume }) {
+                const audio = new Audio(`assets/${label}.mp3`);
+                audio.volume = volume;
                 audio.play();
             });
         </script>

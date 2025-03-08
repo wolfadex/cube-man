@@ -1,6 +1,7 @@
 module Html.Extra exposing
     ( dualRange
     , modal
+    , range
     , select
     )
 
@@ -66,6 +67,34 @@ selectChangeHelper toKey options key =
 -- nonBreakingSpace : String
 -- nonBreakingSpace =
 --     "\u{00A0}"
+
+
+range :
+    List (Html.Attribute msg)
+    ->
+        { value : Float
+        , onInput : Float -> msg
+        , min : Float
+        , max : Float
+        , step : Float
+        }
+    -> Html msg
+range attributes config =
+    Html.input
+        ([ Html.Attributes.type_ "range"
+         , Html.Attributes.step (String.fromFloat config.step)
+         , Html.Attributes.min (String.fromFloat config.min)
+         , Html.Attributes.max (String.fromFloat config.max)
+         , Html.Attributes.value (String.fromFloat config.value)
+         , Html.Events.onInput
+            (String.toFloat
+                >> Maybe.withDefault config.value
+                >> config.onInput
+            )
+         ]
+            ++ attributes
+        )
+        []
 
 
 dualRange :

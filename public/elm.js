@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1741470715056"
+    "1741473182847"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -13635,6 +13635,7 @@ var $author$project$Shared$init = function () {
 	return _Utils_Tuple2(
 		$author$project$Shared$Loaded(
 			{
+				audioMapping: {effects: 1.0},
 				blockPalette: $author$project$Board$SimpleBlocks,
 				inputMapping: $author$project$Input$defaultMapping,
 				screenSize: {height: 600, width: 800}
@@ -17943,48 +17944,76 @@ var $ianmackenzie$elm_geometry$Frame3d$moveTo = F2(
 				zDirection: $ianmackenzie$elm_geometry$Frame3d$zDirection(frame)
 			});
 	});
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
 var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$Board$playAudio = _Platform_outgoingPort('playAudio', $elm$json$Json$Encode$string);
-var $author$project$Board$scorePoints = function (level) {
-	var playerActualPoint = $ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame);
-	var playerBoardPoint = $author$project$Board$point3dToPoint(playerActualPoint);
-	var blockAtPoint = A2($elm$core$Dict$get, playerBoardPoint, level.board.blocks);
-	if (_Utils_eq(
-		blockAtPoint,
-		$elm$core$Maybe$Just(
-			$author$project$Board$PointPickup(false)))) {
-		var boardPoint3d = $author$project$Board$pointToPoint3d(playerBoardPoint);
-		var distFromBoardPointCenter = A2($ianmackenzie$elm_geometry$Point3d$distanceFrom, playerActualPoint, boardPoint3d);
-		if (A3(
-			$ianmackenzie$elm_units$Quantity$equalWithin,
-			$ianmackenzie$elm_units$Length$meters(0.25),
-			distFromBoardPointCenter,
-			$ianmackenzie$elm_units$Length$meters(0))) {
-			var board = level.board;
-			return _Utils_Tuple2(
-				_Utils_update(
-					level,
-					{
-						board: _Utils_update(
-							board,
-							{
-								blocks: A3(
-									$elm$core$Dict$insert,
-									playerBoardPoint,
-									$author$project$Board$PointPickup(true),
-									board.blocks)
-							}),
-						capturedPoints: level.capturedPoints + 1,
-						score: level.score + 50
-					}),
-				$author$project$Board$playAudio('effect_tck'));
+var $author$project$Board$playAudio = _Platform_outgoingPort(
+	'playAudio',
+	function ($) {
+		return $elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'label',
+					$elm$json$Json$Encode$string($.label)),
+					_Utils_Tuple2(
+					'volume',
+					$elm$json$Json$Encode$float($.volume))
+				]));
+	});
+var $author$project$Board$scorePoints = F2(
+	function (audioMapping, level) {
+		var playerActualPoint = $ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame);
+		var playerBoardPoint = $author$project$Board$point3dToPoint(playerActualPoint);
+		var blockAtPoint = A2($elm$core$Dict$get, playerBoardPoint, level.board.blocks);
+		if (_Utils_eq(
+			blockAtPoint,
+			$elm$core$Maybe$Just(
+				$author$project$Board$PointPickup(false)))) {
+			var boardPoint3d = $author$project$Board$pointToPoint3d(playerBoardPoint);
+			var distFromBoardPointCenter = A2($ianmackenzie$elm_geometry$Point3d$distanceFrom, playerActualPoint, boardPoint3d);
+			if (A3(
+				$ianmackenzie$elm_units$Quantity$equalWithin,
+				$ianmackenzie$elm_units$Length$meters(0.25),
+				distFromBoardPointCenter,
+				$ianmackenzie$elm_units$Length$meters(0))) {
+				var board = level.board;
+				return _Utils_Tuple2(
+					_Utils_update(
+						level,
+						{
+							board: _Utils_update(
+								board,
+								{
+									blocks: A3(
+										$elm$core$Dict$insert,
+										playerBoardPoint,
+										$author$project$Board$PointPickup(true),
+										board.blocks)
+								}),
+							capturedPoints: level.capturedPoints + 1,
+							score: level.score + 50
+						}),
+					$author$project$Board$playAudio(
+						{label: 'effect_tck', volume: audioMapping.effects}));
+			} else {
+				return _Utils_Tuple2(level, $elm$core$Platform$Cmd$none);
+			}
 		} else {
 			return _Utils_Tuple2(level, $elm$core$Platform$Cmd$none);
 		}
-	} else {
-		return _Utils_Tuple2(level, $elm$core$Platform$Cmd$none);
-	}
-};
+	});
 var $author$project$Board$oppositeFacings = F2(
 	function (faceA, faceB) {
 		var _v0 = _Utils_Tuple2(faceA, faceB);
@@ -18189,8 +18218,8 @@ var $author$project$Board$tickPlayerOther = F2(
 					A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, level.invincibleFrames))
 			});
 	});
-var $author$project$Board$movePlayer = F2(
-	function (deltaDuration, level) {
+var $author$project$Board$movePlayer = F3(
+	function (audioMapping, deltaDuration, level) {
 		var _v1 = level.playerTarget;
 		switch (_v1.$) {
 			case 'NoTarget':
@@ -18207,7 +18236,9 @@ var $author$project$Board$movePlayer = F2(
 					$elm$core$Basics$EQ)) {
 					var playerFrame = A2($ianmackenzie$elm_geometry$Frame3d$moveTo, toPoint, level.playerFrame);
 					return $author$project$Board$handlePlayerCollisions(
-						$author$project$Board$scorePoints(
+						A2(
+							$author$project$Board$scorePoints,
+							audioMapping,
 							_Utils_update(
 								level,
 								{
@@ -18221,7 +18252,9 @@ var $author$project$Board$movePlayer = F2(
 						remainingDuration)) {
 						var playerFrame = A2($ianmackenzie$elm_geometry$Frame3d$moveTo, toPoint, level.playerFrame);
 						var _v2 = $author$project$Board$handlePlayerCollisions(
-							$author$project$Board$scorePoints(
+							A2(
+								$author$project$Board$scorePoints,
+								audioMapping,
 								_Utils_update(
 									level,
 									{
@@ -18230,8 +18263,9 @@ var $author$project$Board$movePlayer = F2(
 									})));
 						var nextLevel = _v2.a;
 						var cmd = _v2.b;
-						return (nextLevel.hearts < 1) ? _Utils_Tuple2(nextLevel, cmd) : A2(
+						return (nextLevel.hearts < 1) ? _Utils_Tuple2(nextLevel, cmd) : A3(
 							$author$project$Board$tickPlayer,
+							audioMapping,
 							A2(
 								$ianmackenzie$elm_units$Quantity$minus,
 								remainingDuration,
@@ -18240,7 +18274,9 @@ var $author$project$Board$movePlayer = F2(
 					} else {
 						var fromPoint = $author$project$Board$pointToPoint3d(moveDetails.from);
 						return $author$project$Board$handlePlayerCollisions(
-							$author$project$Board$scorePoints(
+							A2(
+								$author$project$Board$scorePoints,
+								audioMapping,
 								_Utils_update(
 									level,
 									{
@@ -18269,7 +18305,8 @@ var $author$project$Board$movePlayer = F2(
 				}
 			default:
 				var edgeDetails = _v1.a;
-				var traverseSound = _Utils_eq(edgeDetails.duration, $author$project$Board$durationForEdgeMovement) ? $author$project$Board$playAudio('effect_shiw') : $elm$core$Platform$Cmd$none;
+				var traverseSound = _Utils_eq(edgeDetails.duration, $author$project$Board$durationForEdgeMovement) ? $author$project$Board$playAudio(
+					{label: 'effect_shiw', volume: audioMapping.effects}) : $elm$core$Platform$Cmd$none;
 				var targetAngle = $ianmackenzie$elm_units$Angle$degrees(90);
 				var targetSpeed = A2($ianmackenzie$elm_units$Quantity$per, $author$project$Board$durationForEdgeMovement, targetAngle);
 				var remainingDuration = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, edgeDetails.duration);
@@ -18309,7 +18346,9 @@ var $author$project$Board$movePlayer = F2(
 						level.playerFrame);
 					var correctedPlayerFrame = $author$project$Board$correctPlayerFrame(playerFrame);
 					var _v5 = $author$project$Board$handlePlayerCollisions(
-						$author$project$Board$scorePoints(
+						A2(
+							$author$project$Board$scorePoints,
+							audioMapping,
 							_Utils_update(
 								level,
 								{
@@ -18322,8 +18361,9 @@ var $author$project$Board$movePlayer = F2(
 						nextLevel,
 						$elm$core$Platform$Cmd$batch(
 							_List_fromArray(
-								[cmd, traverseSound]))) : A2(
+								[cmd, traverseSound]))) : A3(
 						$author$project$Board$tickPlayer,
+						audioMapping,
 						A2(
 							$ianmackenzie$elm_units$Quantity$minus,
 							remainingDuration,
@@ -18378,7 +18418,9 @@ var $author$project$Board$movePlayer = F2(
 										_List_fromArray(
 											[cmd, traverseSound]));
 								},
-								$author$project$Board$scorePoints(
+								A2(
+									$author$project$Board$scorePoints,
+									audioMapping,
 									_Utils_update(
 										level,
 										{
@@ -18394,7 +18436,9 @@ var $author$project$Board$movePlayer = F2(
 										_List_fromArray(
 											[cmd, traverseSound]));
 								},
-								$author$project$Board$scorePoints(
+								A2(
+									$author$project$Board$scorePoints,
+									audioMapping,
 									_Utils_update(
 										level,
 										{
@@ -18435,8 +18479,8 @@ var $author$project$Board$movePlayer = F2(
 				}
 		}
 	});
-var $author$project$Board$tickPlayer = F2(
-	function (deltaDuration, _v0) {
+var $author$project$Board$tickPlayer = F3(
+	function (audioMapping, deltaDuration, _v0) {
 		var level = _v0.a;
 		var cmd = _v0.b;
 		return A2(
@@ -18446,26 +18490,28 @@ var $author$project$Board$tickPlayer = F2(
 					_List_fromArray(
 						[c, cmd]));
 			},
-			A2(
+			A3(
 				$author$project$Board$movePlayer,
+				audioMapping,
 				deltaDuration,
 				A2(
 					$author$project$Board$tickPlayerOther,
 					deltaDuration,
 					$author$project$Board$setPlayerFacing(level))));
 	});
-var $author$project$Board$tick = F2(
-	function (deltaDuration, level) {
+var $author$project$Board$tick = F3(
+	function (audioMapping, deltaDuration, level) {
 		return ((level.hearts > 0) && (!_Utils_eq(level.capturedPoints, level.totalCapturePoints))) ? A2(
 			$author$project$Board$tickEnemies,
 			deltaDuration,
-			A2(
+			A3(
 				$author$project$Board$tickPlayer,
+				audioMapping,
 				deltaDuration,
 				_Utils_Tuple2(level, $elm$core$Platform$Cmd$none))) : _Utils_Tuple2(level, $elm$core$Platform$Cmd$none);
 	});
-var $author$project$Screen$Editor$tick = F2(
-	function (deltaMs, model) {
+var $author$project$Screen$Editor$tick = F3(
+	function (sharedModel, deltaMs, model) {
 		var _v0 = model.editorMode;
 		if (_v0.$ === 'EditBoard') {
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -18477,7 +18523,7 @@ var $author$project$Screen$Editor$tick = F2(
 						model,
 						{level: level});
 				},
-				A2($author$project$Board$tick, deltaMs, model.level));
+				A3($author$project$Board$tick, sharedModel.audioMapping, deltaMs, model.level));
 		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
@@ -18497,7 +18543,7 @@ var $author$project$Screen$Editor$update = F5(
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'Tick':
 				var deltaMs = msg.a;
-				return A2($author$project$Screen$Editor$tick, deltaMs, model);
+				return A3($author$project$Screen$Editor$tick, sharedModel, deltaMs, model);
 			case 'EncodingChanged':
 				var boardEncoding = msg.a;
 				return _Utils_Tuple2(
@@ -19325,8 +19371,8 @@ var $author$project$Screen$Editor$update = F5(
 		}
 	});
 var $author$project$Screen$FreePlay$FreePlayBoardLoaded = {$: 'FreePlayBoardLoaded'};
-var $author$project$Screen$FreePlay$tick = F2(
-	function (deltaMs, model) {
+var $author$project$Screen$FreePlay$tick = F3(
+	function (sharedModel, deltaMs, model) {
 		var _v0 = model.freePlayMode;
 		if (_v0.$ === 'FreePlayBoardSelection') {
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -19338,7 +19384,7 @@ var $author$project$Screen$FreePlay$tick = F2(
 						model,
 						{level: level});
 				},
-				A2($author$project$Board$tick, deltaMs, model.level));
+				A3($author$project$Board$tick, sharedModel.audioMapping, deltaMs, model.level));
 		}
 	});
 var $author$project$Screen$FreePlay$update = F3(
@@ -19346,7 +19392,7 @@ var $author$project$Screen$FreePlay$update = F3(
 		switch (msg.$) {
 			case 'Tick':
 				var deltaMs = msg.a;
-				return A2($author$project$Screen$FreePlay$tick, deltaMs, model);
+				return A3($author$project$Screen$FreePlay$tick, sharedModel, deltaMs, model);
 			case 'ExitFreePlayBoard':
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -19522,6 +19568,7 @@ var $author$project$Shared$update = F2(
 						return _Utils_Tuple2(
 							$author$project$Shared$Loaded(
 								{
+									audioMapping: {effects: 1.0},
 									blockPalette: $author$project$Board$SimpleBlocks,
 									inputMapping: $author$project$Input$defaultMapping,
 									screenSize: {height: 600, width: 800}
@@ -19577,7 +19624,7 @@ var $author$project$Shared$update = F2(
 										})),
 								$elm$core$Platform$Cmd$none);
 						}
-					default:
+					case 'SetScreenSize':
 						var mod = _v0.a.a;
 						var screenSize = _v0.b.a;
 						return _Utils_Tuple2(
@@ -19585,6 +19632,20 @@ var $author$project$Shared$update = F2(
 								_Utils_update(
 									mod,
 									{screenSize: screenSize})),
+							$elm$core$Platform$Cmd$none);
+					default:
+						var mod = _v0.a.a;
+						var volume = _v0.b.a;
+						var audioMapping = mod.audioMapping;
+						return _Utils_Tuple2(
+							$author$project$Shared$Loaded(
+								_Utils_update(
+									mod,
+									{
+										audioMapping: _Utils_update(
+											audioMapping,
+											{effects: volume})
+									})),
 							$elm$core$Platform$Cmd$none);
 				}
 		}
@@ -28902,9 +28963,13 @@ var $author$project$Screen$Editor$viewHeader = F5(
 					]));
 		}
 	});
+var $author$project$Shared$AudioEffectsChanged = function (a) {
+	return {$: 'AudioEffectsChanged', a: a};
+};
 var $author$project$Shared$SetMapping = function (a) {
 	return {$: 'SetMapping', a: a};
 };
+var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$virtual_dom$VirtualDom$node = function (tag) {
 	return _VirtualDom_node(
@@ -28930,6 +28995,34 @@ var $author$project$Html$Extra$modal = F3(
 					]),
 				attributes),
 			children);
+	});
+var $author$project$Html$Extra$range = F2(
+	function (attributes, config) {
+		return A2(
+			$elm$html$Html$input,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$type_('range'),
+						$elm$html$Html$Attributes$step(
+						$elm$core$String$fromFloat(config.step)),
+						$elm$html$Html$Attributes$min(
+						$elm$core$String$fromFloat(config.min)),
+						$elm$html$Html$Attributes$max(
+						$elm$core$String$fromFloat(config.max)),
+						$elm$html$Html$Attributes$value(
+						$elm$core$String$fromFloat(config.value)),
+						$elm$html$Html$Events$onInput(
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$String$toFloat,
+							A2(
+								$elm$core$Basics$composeR,
+								$elm$core$Maybe$withDefault(config.value),
+								config.onInput)))
+					]),
+				attributes),
+			_List_Nil);
 	});
 var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$html$Html$tbody = _VirtualDom_node('tbody');
@@ -29150,7 +29243,7 @@ var $author$project$Screen$Editor$viewSettings = F4(
 			_List_fromArray(
 				[
 					A2(
-					$elm$html$Html$h2,
+					$elm$html$Html$h1,
 					_List_fromArray(
 						[
 							A2($elm$html$Html$Attributes$style, 'width', '100%'),
@@ -29197,6 +29290,48 @@ var $author$project$Screen$Editor$viewSettings = F4(
 						])),
 					A2($elm$html$Html$br, _List_Nil, _List_Nil),
 					A2($elm$html$Html$br, _List_Nil, _List_Nil),
+					A2(
+					$elm$html$Html$h2,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Audio')
+						])),
+					A2(
+					$elm$html$Html$label,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+							A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+							A2($elm$html$Html$Attributes$style, 'gap', '1rem')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$span,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Sound Effects')
+								])),
+							A2(
+							$author$project$Html$Extra$range,
+							_List_Nil,
+							{
+								max: 1.0,
+								min: 0.0,
+								onInput: A2($elm$core$Basics$composeR, $author$project$Shared$AudioEffectsChanged, toSharedMsg),
+								step: 0.1,
+								value: sharedModel.audioMapping.effects
+							})
+						])),
+					A2(
+					$elm$html$Html$h2,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Input')
+						])),
 					function () {
 					var viewMapping = $author$project$Input$viewMapping(
 						A2($elm$core$Basics$composeR, $author$project$Shared$SetMapping, toSharedMsg));
@@ -30602,7 +30737,6 @@ var $author$project$Screen$FreePlay$ExitFreePlayBoard = {$: 'ExitFreePlayBoard'}
 var $author$project$Screen$FreePlay$ShowFreePlayMenu = function (a) {
 	return {$: 'ShowFreePlayMenu', a: a};
 };
-var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $author$project$Screen$FreePlay$LoadFreePlayBoard = function (a) {
 	return {$: 'LoadFreePlayBoard', a: a};
 };
@@ -30824,7 +30958,7 @@ var $author$project$Screen$FreePlay$view = function (_v0) {
 							_List_fromArray(
 								[
 									A2(
-									$elm$html$Html$h2,
+									$elm$html$Html$h1,
 									_List_fromArray(
 										[
 											A2($elm$html$Html$Attributes$style, 'width', '100%'),
@@ -30867,6 +31001,48 @@ var $author$project$Screen$FreePlay$view = function (_v0) {
 										])),
 									A2($elm$html$Html$br, _List_Nil, _List_Nil),
 									A2($elm$html$Html$br, _List_Nil, _List_Nil),
+									A2(
+									$elm$html$Html$h2,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Audio')
+										])),
+									A2(
+									$elm$html$Html$label,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+											A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+											A2($elm$html$Html$Attributes$style, 'gap', '1rem')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$span,
+											_List_Nil,
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Sound Effects')
+												])),
+											A2(
+											$author$project$Html$Extra$range,
+											_List_Nil,
+											{
+												max: 1.0,
+												min: 0.0,
+												onInput: A2($elm$core$Basics$composeR, $author$project$Shared$AudioEffectsChanged, toSharedMsg),
+												step: 0.1,
+												value: sharedModel.audioMapping.effects
+											})
+										])),
+									A2(
+									$elm$html$Html$h2,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Input')
+										])),
 									function () {
 									var viewMapping = $author$project$Input$viewMapping(
 										A2($elm$core$Basics$composeR, $author$project$Shared$SetMapping, toSharedMsg));

@@ -97,7 +97,7 @@ update sharedModel msg model =
     case msg of
         Tick deltaMs ->
             model
-                |> tick deltaMs
+                |> tick sharedModel deltaMs
 
         ExitFreePlayBoard ->
             ( { model
@@ -167,14 +167,14 @@ update sharedModel msg model =
                     )
 
 
-tick : Duration -> Model -> ( Model, Cmd msg )
-tick deltaMs model =
+tick : Shared.LoadedModel -> Duration -> Model -> ( Model, Cmd msg )
+tick sharedModel deltaMs model =
     case model.freePlayMode of
         FreePlayBoardSelection ->
             ( model, Cmd.none )
 
         FreePlayBoardLoaded ->
-            Board.tick deltaMs model.level
+            Board.tick sharedModel.audioMapping deltaMs model.level
                 |> Tuple.mapFirst (\level -> { model | level = level })
 
 
@@ -294,7 +294,7 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                     ]
                 , Html.Extra.modal { open = model.showFreePlayMenu, onClose = toMsg (ShowFreePlayMenu False) }
                     []
-                    [ Html.h2
+                    [ Html.h1
                         [ Html.Attributes.style "width" "100%"
                         , Html.Attributes.style "margin-top" "0"
                         ]
@@ -318,6 +318,23 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                         ]
                     , Html.br [] []
                     , Html.br [] []
+                    , Html.h2 [] [ Html.text "Audio" ]
+                    , Html.label
+                        [ Html.Attributes.style "display" "flex"
+                        , Html.Attributes.style "align-items" "center"
+                        , Html.Attributes.style "gap" "1rem"
+                        ]
+                        [ Html.span [] [ Html.text "Sound Effects" ]
+                        , Html.Extra.range
+                            []
+                            { step = 0.1
+                            , min = 0.0
+                            , max = 1.0
+                            , value = sharedModel.audioMapping.effects
+                            , onInput = Shared.AudioEffectsChanged >> toSharedMsg
+                            }
+                        ]
+                    , Html.h2 [] [ Html.text "Input" ]
                     , let
                         viewMapping =
                             Input.viewMapping (Shared.SetMapping >> toSharedMsg)
