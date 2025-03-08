@@ -24,3 +24,13 @@ Thoughts and ideas about where this project is headed.
 - Stone
 - Minimalist
 - Hard lines
+
+### Audio
+- enemies?
+- on emeny hit
+- on level beat
+- on level lose
+- on block place
+- on block removal
+- on button click?
+- on enemy spawn
