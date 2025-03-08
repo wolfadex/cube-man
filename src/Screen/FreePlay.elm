@@ -96,10 +96,8 @@ update : Shared.LoadedModel -> Msg -> Model -> ( Model, Cmd Msg )
 update sharedModel msg model =
     case msg of
         Tick deltaMs ->
-            ( model
+            model
                 |> tick deltaMs
-            , Cmd.none
-            )
 
         ExitFreePlayBoard ->
             ( { model
@@ -169,18 +167,15 @@ update sharedModel msg model =
                     )
 
 
-tick : Duration -> Model -> Model
+tick : Duration -> Model -> ( Model, Cmd msg )
 tick deltaMs model =
     case model.freePlayMode of
         FreePlayBoardSelection ->
-            model
+            ( model, Cmd.none )
 
         FreePlayBoardLoaded ->
-            { model
-                | level =
-                    model.level
-                        |> Board.tick deltaMs
-            }
+            Board.tick deltaMs model.level
+                |> Tuple.mapFirst (\level -> { model | level = level })
 
 
 view : { setScreen : Screen -> msg, toSharedMsg : Shared.Msg -> msg, sharedModel : Shared.LoadedModel, toMsg : Msg -> msg, model : Model } -> List (Html msg)

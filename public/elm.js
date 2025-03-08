@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1740257676482"
+    "1741469599871"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -17236,6 +17236,14 @@ var $elm$core$Set$remove = F2(
 		return $elm$core$Set$Set_elm_builtin(
 			A2($elm$core$Dict$remove, key, dict));
 	});
+var $elm$core$Tuple$mapFirst = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			func(x),
+			y);
+	});
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $author$project$Board$enemyRadius = $ianmackenzie$elm_units$Length$meters(0.1);
 var $author$project$Board$playerRadius = $ianmackenzie$elm_units$Length$meters(0.5);
@@ -17810,11 +17818,15 @@ var $author$project$Board$tickEnemySpawners = F2(
 			});
 	});
 var $author$project$Board$tickEnemies = F2(
-	function (deltaDuration, level) {
-		return A2(
-			$author$project$Board$tickEnemySpawners,
-			deltaDuration,
-			A2($author$project$Board$moveEnemies, deltaDuration, level));
+	function (deltaDuration, _v0) {
+		var level = _v0.a;
+		var cmd = _v0.b;
+		return _Utils_Tuple2(
+			A2(
+				$author$project$Board$tickEnemySpawners,
+				deltaDuration,
+				A2($author$project$Board$moveEnemies, deltaDuration, level)),
+			cmd);
 	});
 var $ianmackenzie$elm_geometry$Direction3d$unwrap = function (_v0) {
 	var coordinates = _v0.a;
@@ -17903,12 +17915,24 @@ var $author$project$Board$handlePlayerCollisionsHelper = F3(
 			}
 		}
 	});
-var $author$project$Board$handlePlayerCollisions = function (level) {
+var $author$project$Board$handlePlayerCollisions = function (_v0) {
+	var level = _v0.a;
+	var cmd = _v0.b;
 	return A2(
 		$ianmackenzie$elm_units$Quantity$greaterThan,
 		$ianmackenzie$elm_units$Quantity$Quantity(0),
-		level.invincibleFrames) ? level : A3($author$project$Board$handlePlayerCollisionsHelper, _List_Nil, level.enemies, level);
+		level.invincibleFrames) ? _Utils_Tuple2(level, cmd) : _Utils_Tuple2(
+		A3($author$project$Board$handlePlayerCollisionsHelper, _List_Nil, level.enemies, level),
+		cmd);
 };
+var $elm$core$Tuple$mapSecond = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			x,
+			func(y));
+	});
 var $ianmackenzie$elm_geometry$Frame3d$moveTo = F2(
 	function (newOrigin, frame) {
 		return $ianmackenzie$elm_geometry$Frame3d$unsafe(
@@ -17919,6 +17943,8 @@ var $ianmackenzie$elm_geometry$Frame3d$moveTo = F2(
 				zDirection: $ianmackenzie$elm_geometry$Frame3d$zDirection(frame)
 			});
 	});
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Board$playAudio = _Platform_outgoingPort('playAudio', $elm$json$Json$Encode$string);
 var $author$project$Board$scorePoints = function (level) {
 	var playerActualPoint = $ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame);
 	var playerBoardPoint = $author$project$Board$point3dToPoint(playerActualPoint);
@@ -17935,26 +17961,28 @@ var $author$project$Board$scorePoints = function (level) {
 			distFromBoardPointCenter,
 			$ianmackenzie$elm_units$Length$meters(0))) {
 			var board = level.board;
-			return _Utils_update(
-				level,
-				{
-					board: _Utils_update(
-						board,
-						{
-							blocks: A3(
-								$elm$core$Dict$insert,
-								playerBoardPoint,
-								$author$project$Board$PointPickup(true),
-								board.blocks)
-						}),
-					capturedPoints: level.capturedPoints + 1,
-					score: level.score + 50
-				});
+			return _Utils_Tuple2(
+				_Utils_update(
+					level,
+					{
+						board: _Utils_update(
+							board,
+							{
+								blocks: A3(
+									$elm$core$Dict$insert,
+									playerBoardPoint,
+									$author$project$Board$PointPickup(true),
+									board.blocks)
+							}),
+						capturedPoints: level.capturedPoints + 1,
+						score: level.score + 50
+					}),
+				$author$project$Board$playAudio('effect_tck'));
 		} else {
-			return level;
+			return _Utils_Tuple2(level, $elm$core$Platform$Cmd$none);
 		}
 	} else {
-		return level;
+		return _Utils_Tuple2(level, $elm$core$Platform$Cmd$none);
 	}
 };
 var $author$project$Board$oppositeFacings = F2(
@@ -18163,12 +18191,12 @@ var $author$project$Board$tickPlayerOther = F2(
 	});
 var $author$project$Board$movePlayer = F2(
 	function (deltaDuration, level) {
-		var _v0 = A2($elm$core$Debug$log, 'movePlayer playerTarget', level.playerTarget);
-		switch (_v0.$) {
+		var _v1 = A2($elm$core$Debug$log, 'movePlayer playerTarget', level.playerTarget);
+		switch (_v1.$) {
 			case 'NoTarget':
-				return level;
+				return _Utils_Tuple2(level, $elm$core$Platform$Cmd$none);
 			case 'MoveForward':
-				var moveDetails = _v0.a;
+				var moveDetails = _v1.a;
 				var toPoint = $author$project$Board$pointToPoint3d(moveDetails.to);
 				var remainingDuration = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, moveDetails.duration);
 				if (_Utils_eq(
@@ -18192,7 +18220,7 @@ var $author$project$Board$movePlayer = F2(
 						$ianmackenzie$elm_units$Quantity$Quantity(0),
 						remainingDuration)) {
 						var playerFrame = A2($ianmackenzie$elm_geometry$Frame3d$moveTo, toPoint, level.playerFrame);
-						var nextLevel = $author$project$Board$handlePlayerCollisions(
+						var _v2 = $author$project$Board$handlePlayerCollisions(
 							$author$project$Board$scorePoints(
 								_Utils_update(
 									level,
@@ -18200,13 +18228,15 @@ var $author$project$Board$movePlayer = F2(
 										playerFrame: playerFrame,
 										playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, moveDetails.to, playerFrame)
 									})));
-						return (nextLevel.hearts < 1) ? nextLevel : A2(
+						var nextLevel = _v2.a;
+						var cmd = _v2.b;
+						return (nextLevel.hearts < 1) ? _Utils_Tuple2(nextLevel, cmd) : A2(
 							$author$project$Board$tickPlayer,
 							A2(
 								$ianmackenzie$elm_units$Quantity$minus,
 								remainingDuration,
 								$ianmackenzie$elm_units$Quantity$Quantity(0)),
-							nextLevel);
+							_Utils_Tuple2(nextLevel, cmd));
 					} else {
 						var fromPoint = $author$project$Board$pointToPoint3d(moveDetails.from);
 						return $author$project$Board$handlePlayerCollisions(
@@ -18221,10 +18251,10 @@ var $author$project$Board$movePlayer = F2(
 												A2(
 													$ianmackenzie$elm_geometry$Vector3d$scaleBy,
 													function () {
-														var _v1 = remainingDuration;
-														var remDur = _v1.a;
-														var _v2 = $author$project$Board$durationForForwardMovement;
-														var durFordMove = _v2.a;
+														var _v3 = remainingDuration;
+														var remDur = _v3.a;
+														var _v4 = $author$project$Board$durationForForwardMovement;
+														var durFordMove = _v4.a;
 														return (durFordMove - remDur) / durFordMove;
 													}(),
 													A2($ianmackenzie$elm_geometry$Vector3d$from, fromPoint, toPoint)),
@@ -18238,7 +18268,7 @@ var $author$project$Board$movePlayer = F2(
 					}
 				}
 			default:
-				var edgeDetails = _v0.a;
+				var edgeDetails = _v1.a;
 				var targetAngle = $ianmackenzie$elm_units$Angle$degrees(90);
 				var targetSpeed = A2($ianmackenzie$elm_units$Quantity$per, $author$project$Board$durationForEdgeMovement, targetAngle);
 				var remainingDuration = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, edgeDetails.duration);
@@ -18260,8 +18290,8 @@ var $author$project$Board$movePlayer = F2(
 									$author$project$Board$point3dToPoint(
 										$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame)))),
 							function () {
-								var _v3 = level.playerFacing;
-								switch (_v3.$) {
+								var _v6 = level.playerFacing;
+								switch (_v6.$) {
 									case 'Forward':
 										return $ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame);
 									case 'Backward':
@@ -18277,7 +18307,7 @@ var $author$project$Board$movePlayer = F2(
 						edgeMovement,
 						level.playerFrame);
 					var correctedPlayerFrame = $author$project$Board$correctPlayerFrame(playerFrame);
-					var nextLevel = $author$project$Board$handlePlayerCollisions(
+					var _v5 = $author$project$Board$handlePlayerCollisions(
 						$author$project$Board$scorePoints(
 							_Utils_update(
 								level,
@@ -18285,13 +18315,15 @@ var $author$project$Board$movePlayer = F2(
 									playerFrame: correctedPlayerFrame,
 									playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, edgeDetails.to, correctedPlayerFrame)
 								})));
-					return (nextLevel.hearts < 1) ? nextLevel : A2(
+					var nextLevel = _v5.a;
+					var cmd = _v5.b;
+					return (nextLevel.hearts < 1) ? _Utils_Tuple2(nextLevel, cmd) : A2(
 						$author$project$Board$tickPlayer,
 						A2(
 							$ianmackenzie$elm_units$Quantity$minus,
 							remainingDuration,
 							$ianmackenzie$elm_units$Quantity$Quantity(0)),
-						nextLevel);
+						_Utils_Tuple2(nextLevel, cmd));
 				} else {
 					var edgeMovement = A2($ianmackenzie$elm_units$Quantity$for, deltaDuration, targetSpeed);
 					if (_Utils_eq(
@@ -18312,8 +18344,8 @@ var $author$project$Board$movePlayer = F2(
 										$author$project$Board$point3dToPoint(
 											$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame)))),
 								function () {
-									var _v4 = level.playerFacing;
-									switch (_v4.$) {
+									var _v7 = level.playerFacing;
+									switch (_v7.$) {
 										case 'Forward':
 											return $ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame);
 										case 'Backward':
@@ -18355,8 +18387,8 @@ var $author$project$Board$movePlayer = F2(
 														$author$project$Board$point3dToPoint(
 															$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame)))),
 												function () {
-													var _v5 = level.playerFacing;
-													switch (_v5.$) {
+													var _v8 = level.playerFacing;
+													switch (_v8.$) {
 														case 'Forward':
 															return $ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame);
 														case 'Backward':
@@ -18381,33 +18413,48 @@ var $author$project$Board$movePlayer = F2(
 		}
 	});
 var $author$project$Board$tickPlayer = F2(
-	function (deltaDuration, model) {
+	function (deltaDuration, _v0) {
+		var level = _v0.a;
+		var cmd = _v0.b;
 		return A2(
-			$author$project$Board$movePlayer,
-			deltaDuration,
+			$elm$core$Tuple$mapSecond,
+			function (c) {
+				return $elm$core$Platform$Cmd$batch(
+					_List_fromArray(
+						[c, cmd]));
+			},
 			A2(
-				$author$project$Board$tickPlayerOther,
+				$author$project$Board$movePlayer,
 				deltaDuration,
-				$author$project$Board$setPlayerFacing(model)));
+				A2(
+					$author$project$Board$tickPlayerOther,
+					deltaDuration,
+					$author$project$Board$setPlayerFacing(level))));
 	});
 var $author$project$Board$tick = F2(
 	function (deltaDuration, level) {
 		return ((level.hearts > 0) && (!_Utils_eq(level.capturedPoints, level.totalCapturePoints))) ? A2(
 			$author$project$Board$tickEnemies,
 			deltaDuration,
-			A2($author$project$Board$tickPlayer, deltaDuration, level)) : level;
+			A2(
+				$author$project$Board$tickPlayer,
+				deltaDuration,
+				_Utils_Tuple2(level, $elm$core$Platform$Cmd$none))) : _Utils_Tuple2(level, $elm$core$Platform$Cmd$none);
 	});
 var $author$project$Screen$Editor$tick = F2(
 	function (deltaMs, model) {
 		var _v0 = model.editorMode;
 		if (_v0.$ === 'EditBoard') {
-			return model;
+			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		} else {
-			return _Utils_update(
-				model,
-				{
-					level: A2($author$project$Board$tick, deltaMs, model.level)
-				});
+			return A2(
+				$elm$core$Tuple$mapFirst,
+				function (level) {
+					return _Utils_update(
+						model,
+						{level: level});
+				},
+				A2($author$project$Board$tick, deltaMs, model.level));
 		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
@@ -18427,9 +18474,7 @@ var $author$project$Screen$Editor$update = F5(
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'Tick':
 				var deltaMs = msg.a;
-				return _Utils_Tuple2(
-					A2($author$project$Screen$Editor$tick, deltaMs, model),
-					$elm$core$Platform$Cmd$none);
+				return A2($author$project$Screen$Editor$tick, deltaMs, model);
 			case 'EncodingChanged':
 				var boardEncoding = msg.a;
 				return _Utils_Tuple2(
@@ -19261,13 +19306,16 @@ var $author$project$Screen$FreePlay$tick = F2(
 	function (deltaMs, model) {
 		var _v0 = model.freePlayMode;
 		if (_v0.$ === 'FreePlayBoardSelection') {
-			return model;
+			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		} else {
-			return _Utils_update(
-				model,
-				{
-					level: A2($author$project$Board$tick, deltaMs, model.level)
-				});
+			return A2(
+				$elm$core$Tuple$mapFirst,
+				function (level) {
+					return _Utils_update(
+						model,
+						{level: level});
+				},
+				A2($author$project$Board$tick, deltaMs, model.level));
 		}
 	});
 var $author$project$Screen$FreePlay$update = F3(
@@ -19275,9 +19323,7 @@ var $author$project$Screen$FreePlay$update = F3(
 		switch (msg.$) {
 			case 'Tick':
 				var deltaMs = msg.a;
-				return _Utils_Tuple2(
-					A2($author$project$Screen$FreePlay$tick, deltaMs, model),
-					$elm$core$Platform$Cmd$none);
+				return A2($author$project$Screen$FreePlay$tick, deltaMs, model);
 			case 'ExitFreePlayBoard':
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -19783,7 +19829,6 @@ var $elm$virtual_dom$VirtualDom$attribute = F2(
 			_VirtualDom_noJavaScriptOrHtmlUri(value));
 	});
 var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
-var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(

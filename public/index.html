@@ -65,7 +65,12 @@
                 },
             );
 
-            Elm.Main.init();
+            const app = Elm.Main.init();
+
+            app.ports.playAudio.subscribe(function (sound) {
+                const audio = new Audio(`assets/${sound}.mp3`);
+                audio.play();
+            });
         </script>
     </body>
 </html>

@@ -286,10 +286,8 @@ update toSharedMsg sharedModel toMsg msg model =
             ( model, Cmd.none )
 
         Tick deltaMs ->
-            ( model
+            model
                 |> tick deltaMs
-            , Cmd.none
-            )
 
         EncodingChanged boardEncoding ->
             ( { model | boardEncoding = boardEncoding }, Cmd.none )
@@ -1203,18 +1201,15 @@ moveCursorByMouse offset model =
                     )
 
 
-tick : Duration -> Model -> Model
+tick : Duration -> Model -> ( Model, Cmd msg )
 tick deltaMs model =
     case model.editorMode of
         EditBoard ->
-            model
+            ( model, Cmd.none )
 
         TestGame ->
-            { model
-                | level =
-                    model.level
-                        |> Board.tick deltaMs
-            }
+            Board.tick deltaMs model.level
+                |> Tuple.mapFirst (\level -> { model | level = level })
 
 
 handleEditorKeyPressed : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> String -> Model -> ( Model, Cmd msg )

@@ -1,4 +1,4 @@
-module Board exposing
+port module Board exposing
     ( Axis(..)
     , Block(..)
     , BlockPalette(..)
@@ -80,6 +80,9 @@ import Sphere3d
 import Units.Serialize
 import Vector3d
 import Viewpoint3d
+
+
+port playAudio : String -> Cmd msg
 
 
 type WorldCoordinates
@@ -1204,22 +1207,24 @@ durationEnemyMovement =
     Duration.seconds 1
 
 
-tick : Duration -> Level -> Level
+tick : Duration -> Level -> ( Level, Cmd msg )
 tick deltaDuration level =
     if level.hearts > 0 && level.capturedPoints /= level.totalCapturePoints then
-        level
+        ( level, Cmd.none )
             |> tickPlayer deltaDuration
             |> tickEnemies deltaDuration
 
     else
-        level
+        ( level, Cmd.none )
 
 
-tickEnemies : Duration -> Level -> Level
-tickEnemies deltaDuration level =
-    level
+tickEnemies : Duration -> ( Level, Cmd msg ) -> ( Level, Cmd msg )
+tickEnemies deltaDuration ( level, cmd ) =
+    ( level
         |> moveEnemies deltaDuration
         |> tickEnemySpawners deltaDuration
+    , cmd
+    )
 
 
 moveEnemies : Duration -> Level -> Level
@@ -1438,12 +1443,13 @@ tickEnemySpawners deltaDuration level =
     }
 
 
-tickPlayer : Duration -> Level -> Level
-tickPlayer deltaDuration model =
-    model
+tickPlayer : Duration -> ( Level, Cmd msg ) -> ( Level, Cmd msg )
+tickPlayer deltaDuration ( level, cmd ) =
+    level
         |> setPlayerFacing
         |> tickPlayerOther deltaDuration
         |> movePlayer deltaDuration
+        |> Tuple.mapSecond (\c -> Cmd.batch [ c, cmd ])
 
 
 tickPlayerOther : Duration -> Level -> Level
@@ -1540,13 +1546,13 @@ enemyPlayerCollision enemyPoint level =
         |> not
 
 
-handlePlayerCollisions : Level -> Level
-handlePlayerCollisions level =
+handlePlayerCollisions : ( Level, Cmd msg ) -> ( Level, Cmd msg )
+handlePlayerCollisions ( level, cmd ) =
     if level.invincibleFrames |> Quantity.greaterThan (Quantity 0) then
-        level
+        ( level, cmd )
 
     else
-        handlePlayerCollisionsHelper [] level.enemies level
+        ( handlePlayerCollisionsHelper [] level.enemies level, cmd )
 
 
 handlePlayerCollisionsHelper : List Enemy -> List Enemy -> Level -> Level
@@ -1570,11 +1576,11 @@ handlePlayerCollisionsHelper checkedEnemies toCheckEnemies level =
                     level
 
 
-movePlayer : Duration -> Level -> Level
+movePlayer : Duration -> Level -> ( Level, Cmd msg )
 movePlayer deltaDuration level =
     case Debug.log "movePlayer playerTarget" level.playerTarget of
         NoTarget ->
-            level
+            ( level, Cmd.none )
 
         MoveForward moveDetails ->
             let
@@ -1604,7 +1610,7 @@ movePlayer deltaDuration level =
                         level.playerFrame
                             |> Frame3d.moveTo toPoint
 
-                    nextLevel =
+                    ( nextLevel, cmd ) =
                         { level
                             | playerFrame = playerFrame
                             , playerTarget = findNextTarget level.board level.playerFacing moveDetails.to playerFrame
@@ -1613,10 +1619,10 @@ movePlayer deltaDuration level =
                             |> handlePlayerCollisions
                 in
                 if nextLevel.hearts < 1 then
-                    nextLevel
+                    ( nextLevel, cmd )
 
                 else
-                    nextLevel
+                    ( nextLevel, cmd )
                         |> tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
 
             else
@@ -1709,7 +1715,7 @@ movePlayer deltaDuration level =
                     correctedPlayerFrame =
                         correctPlayerFrame playerFrame
 
-                    nextLevel =
+                    ( nextLevel, cmd ) =
                         { level
                             | playerFrame = correctedPlayerFrame
                             , playerTarget = findNextTarget level.board level.playerFacing edgeDetails.to correctedPlayerFrame
@@ -1718,10 +1724,10 @@ movePlayer deltaDuration level =
                             |> handlePlayerCollisions
                 in
                 if nextLevel.hearts < 1 then
-                    nextLevel
+                    ( nextLevel, cmd )
 
                 else
-                    nextLevel
+                    ( nextLevel, cmd )
                         |> tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
 
             else
@@ -1887,7 +1893,7 @@ viewStats level =
         ]
 
 
-scorePoints : Level -> Level
+scorePoints : Level -> ( Level, Cmd msg )
 scorePoints level =
     let
         playerActualPoint =
@@ -1912,7 +1918,7 @@ scorePoints level =
                 board =
                     level.board
             in
-            { level
+            ( { level
                 | board =
                     { board
                         | blocks =
@@ -1922,13 +1928,15 @@ scorePoints level =
                     }
                 , score = level.score + 50
                 , capturedPoints = level.capturedPoints + 1
-            }
+              }
+            , playAudio "effect_tck"
+            )
 
         else
-            level
+            ( level, Cmd.none )
 
     else
-        level
+        ( level, Cmd.none )
 
 
 correctPlayerFrame : Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates } -> Frame3d Length.Meters WorldCoordinates { defines : WorldCoordinates }
