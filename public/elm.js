@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1741473935812"
+    "1741474194916"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -20349,7 +20349,7 @@ var $author$project$Board$viewAllPointsCollected = F2(
 					A2($elm$html$Html$Attributes$style, 'transform', 'translate(-50%, -50%)'),
 					A2($elm$html$Html$Attributes$style, 'background-color', 'rgba(0, 255, 125, 0.5)'),
 					A2($elm$html$Html$Attributes$style, 'font-size', '4rem'),
-					A2($elm$html$Html$Attributes$style, 'backdrop-filter', 'blur(5px)'),
+					A2($elm$html$Html$Attributes$style, 'backdrop-filter', 'blur(20px)'),
 					A2($elm$html$Html$Attributes$style, 'padding', '4rem 8rem'),
 					A2($elm$html$Html$Attributes$style, 'border-radius', '1rem'),
 					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
@@ -27371,7 +27371,7 @@ var $author$project$Board$viewGameOver = F2(
 					A2($elm$html$Html$Attributes$style, 'transform', 'translate(-50%, -50%)'),
 					A2($elm$html$Html$Attributes$style, 'background-color', 'rgba(255, 0, 0, 0.5)'),
 					A2($elm$html$Html$Attributes$style, 'font-size', '4rem'),
-					A2($elm$html$Html$Attributes$style, 'backdrop-filter', 'blur(5px)'),
+					A2($elm$html$Html$Attributes$style, 'backdrop-filter', 'blur(20px)'),
 					A2($elm$html$Html$Attributes$style, 'padding', '4rem 8rem'),
 					A2($elm$html$Html$Attributes$style, 'border-radius', '1rem'),
 					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
