@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1741469599871"
+    "1741470715056"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -18191,7 +18191,7 @@ var $author$project$Board$tickPlayerOther = F2(
 	});
 var $author$project$Board$movePlayer = F2(
 	function (deltaDuration, level) {
-		var _v1 = A2($elm$core$Debug$log, 'movePlayer playerTarget', level.playerTarget);
+		var _v1 = level.playerTarget;
 		switch (_v1.$) {
 			case 'NoTarget':
 				return _Utils_Tuple2(level, $elm$core$Platform$Cmd$none);
@@ -18269,6 +18269,7 @@ var $author$project$Board$movePlayer = F2(
 				}
 			default:
 				var edgeDetails = _v1.a;
+				var traverseSound = _Utils_eq(edgeDetails.duration, $author$project$Board$durationForEdgeMovement) ? $author$project$Board$playAudio('effect_shiw') : $elm$core$Platform$Cmd$none;
 				var targetAngle = $ianmackenzie$elm_units$Angle$degrees(90);
 				var targetSpeed = A2($ianmackenzie$elm_units$Quantity$per, $author$project$Board$durationForEdgeMovement, targetAngle);
 				var remainingDuration = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, edgeDetails.duration);
@@ -18317,13 +18318,21 @@ var $author$project$Board$movePlayer = F2(
 								})));
 					var nextLevel = _v5.a;
 					var cmd = _v5.b;
-					return (nextLevel.hearts < 1) ? _Utils_Tuple2(nextLevel, cmd) : A2(
+					return (nextLevel.hearts < 1) ? _Utils_Tuple2(
+						nextLevel,
+						$elm$core$Platform$Cmd$batch(
+							_List_fromArray(
+								[cmd, traverseSound]))) : A2(
 						$author$project$Board$tickPlayer,
 						A2(
 							$ianmackenzie$elm_units$Quantity$minus,
 							remainingDuration,
 							$ianmackenzie$elm_units$Quantity$Quantity(0)),
-						_Utils_Tuple2(nextLevel, cmd));
+						_Utils_Tuple2(
+							nextLevel,
+							$elm$core$Platform$Cmd$batch(
+								_List_fromArray(
+									[cmd, traverseSound]))));
 				} else {
 					var edgeMovement = A2($ianmackenzie$elm_units$Quantity$for, deltaDuration, targetSpeed);
 					if (_Utils_eq(
@@ -18362,52 +18371,66 @@ var $author$project$Board$movePlayer = F2(
 							level.playerFrame);
 						var correctedPlayerFrame = $author$project$Board$correctPlayerFrame(playerFrame);
 						return $author$project$Board$handlePlayerCollisions(
-							$author$project$Board$scorePoints(
-								_Utils_update(
-									level,
-									{
-										playerFrame: correctedPlayerFrame,
-										playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, edgeDetails.to, correctedPlayerFrame)
-									})));
+							A2(
+								$elm$core$Tuple$mapSecond,
+								function (cmd) {
+									return $elm$core$Platform$Cmd$batch(
+										_List_fromArray(
+											[cmd, traverseSound]));
+								},
+								$author$project$Board$scorePoints(
+									_Utils_update(
+										level,
+										{
+											playerFrame: correctedPlayerFrame,
+											playerTarget: A4($author$project$Board$findNextTarget, level.board, level.playerFacing, edgeDetails.to, correctedPlayerFrame)
+										}))));
 					} else {
 						return $author$project$Board$handlePlayerCollisions(
-							$author$project$Board$scorePoints(
-								_Utils_update(
-									level,
-									{
-										playerFrame: A3(
-											$ianmackenzie$elm_geometry$Frame3d$rotateAround,
-											A2(
-												$ianmackenzie$elm_geometry$Axis3d$through,
-												A3(
-													$ianmackenzie$elm_geometry$Point3d$translateIn,
-													$ianmackenzie$elm_geometry$Frame3d$zDirection(level.playerFrame),
-													$ianmackenzie$elm_units$Length$meters(-1),
-													$author$project$Board$pointToPoint3d(
-														$author$project$Board$point3dToPoint(
-															$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame)))),
-												function () {
-													var _v8 = level.playerFacing;
-													switch (_v8.$) {
-														case 'Forward':
-															return $ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame);
-														case 'Backward':
-															return $ianmackenzie$elm_geometry$Direction3d$reverse(
-																$ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame));
-														case 'Left':
-															return $ianmackenzie$elm_geometry$Direction3d$reverse(
-																$ianmackenzie$elm_geometry$Frame3d$xDirection(level.playerFrame));
-														default:
-															return $ianmackenzie$elm_geometry$Frame3d$xDirection(level.playerFrame);
-													}
-												}()),
-											edgeMovement,
-											level.playerFrame),
-										playerTarget: $author$project$Board$TraverseEdge(
-											_Utils_update(
-												edgeDetails,
-												{duration: remainingDuration}))
-									})));
+							A2(
+								$elm$core$Tuple$mapSecond,
+								function (cmd) {
+									return $elm$core$Platform$Cmd$batch(
+										_List_fromArray(
+											[cmd, traverseSound]));
+								},
+								$author$project$Board$scorePoints(
+									_Utils_update(
+										level,
+										{
+											playerFrame: A3(
+												$ianmackenzie$elm_geometry$Frame3d$rotateAround,
+												A2(
+													$ianmackenzie$elm_geometry$Axis3d$through,
+													A3(
+														$ianmackenzie$elm_geometry$Point3d$translateIn,
+														$ianmackenzie$elm_geometry$Frame3d$zDirection(level.playerFrame),
+														$ianmackenzie$elm_units$Length$meters(-1),
+														$author$project$Board$pointToPoint3d(
+															$author$project$Board$point3dToPoint(
+																$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame)))),
+													function () {
+														var _v8 = level.playerFacing;
+														switch (_v8.$) {
+															case 'Forward':
+																return $ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame);
+															case 'Backward':
+																return $ianmackenzie$elm_geometry$Direction3d$reverse(
+																	$ianmackenzie$elm_geometry$Frame3d$yDirection(level.playerFrame));
+															case 'Left':
+																return $ianmackenzie$elm_geometry$Direction3d$reverse(
+																	$ianmackenzie$elm_geometry$Frame3d$xDirection(level.playerFrame));
+															default:
+																return $ianmackenzie$elm_geometry$Frame3d$xDirection(level.playerFrame);
+														}
+													}()),
+												edgeMovement,
+												level.playerFrame),
+											playerTarget: $author$project$Board$TraverseEdge(
+												_Utils_update(
+													edgeDetails,
+													{duration: remainingDuration}))
+										}))));
 					}
 				}
 		}

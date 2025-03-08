@@ -1578,7 +1578,7 @@ handlePlayerCollisionsHelper checkedEnemies toCheckEnemies level =
 
 movePlayer : Duration -> Level -> ( Level, Cmd msg )
 movePlayer deltaDuration level =
-    case Debug.log "movePlayer playerTarget" level.playerTarget of
+    case level.playerTarget of
         NoTarget ->
             ( level, Cmd.none )
 
@@ -1669,6 +1669,13 @@ movePlayer deltaDuration level =
                 targetSpeed =
                     targetAngle
                         |> Quantity.per durationForEdgeMovement
+
+                traverseSound =
+                    if edgeDetails.duration == durationForEdgeMovement then
+                        playAudio "effect_shiw"
+
+                    else
+                        Cmd.none
             in
             if remainingDuration |> Quantity.lessThan (Quantity 0) then
                 let
@@ -1724,10 +1731,10 @@ movePlayer deltaDuration level =
                             |> handlePlayerCollisions
                 in
                 if nextLevel.hearts < 1 then
-                    ( nextLevel, cmd )
+                    ( nextLevel, Cmd.batch [ cmd, traverseSound ] )
 
                 else
-                    ( nextLevel, cmd )
+                    ( nextLevel, Cmd.batch [ cmd, traverseSound ] )
                         |> tickPlayer (Quantity 0 |> Quantity.minus remainingDuration)
 
             else
@@ -1777,6 +1784,7 @@ movePlayer deltaDuration level =
                         , playerTarget = findNextTarget level.board level.playerFacing edgeDetails.to correctedPlayerFrame
                     }
                         |> scorePoints
+                        |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, traverseSound ])
                         |> handlePlayerCollisions
 
                 else
@@ -1813,6 +1821,7 @@ movePlayer deltaDuration level =
                         , playerTarget = TraverseEdge { edgeDetails | duration = remainingDuration }
                     }
                         |> scorePoints
+                        |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, traverseSound ])
                         |> handlePlayerCollisions
 
 
