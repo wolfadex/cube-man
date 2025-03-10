@@ -1159,7 +1159,7 @@ findNextTarget board playerFacing fromPoint playerFrame =
                 |> Frame3d.originPoint
                 |> point3dToPoint
     in
-    case Dict.get toPoint board.blocks |> Debug.log "block at toPoint" of
+    case Dict.get toPoint board.blocks of
         Nothing ->
             NoTarget
 

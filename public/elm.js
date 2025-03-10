@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1741639818799"
+    "1741641253431"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -15489,7 +15489,6 @@ var $author$project$Board$TraverseEdge = function (a) {
 };
 var $author$project$Board$durationForEdgeMovement = $ianmackenzie$elm_units$Duration$seconds(0.75);
 var $author$project$Board$durationForForwardMovement = $ianmackenzie$elm_units$Duration$seconds(0.25);
-var $elm$core$Debug$log = _Debug_log;
 var $ianmackenzie$elm_geometry$Frame3d$originPoint = function (_v0) {
 	var properties = _v0.a;
 	return properties.originPoint;
@@ -15595,10 +15594,7 @@ var $author$project$Board$findNextTarget = F4(
 					}(),
 					$ianmackenzie$elm_units$Length$meters(1),
 					playerFrame)));
-		var _v0 = A2(
-			$elm$core$Debug$log,
-			'block at toPoint',
-			A2($elm$core$Dict$get, toPoint, board.blocks));
+		var _v0 = A2($elm$core$Dict$get, toPoint, board.blocks);
 		if (_v0.$ === 'Nothing') {
 			return $author$project$Board$NoTarget;
 		} else {
