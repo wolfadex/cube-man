@@ -34,3 +34,4 @@ Thoughts and ideas about where this project is headed.
 - on block removal
 - on button click?
 - on enemy spawn
+- bg music

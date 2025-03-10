@@ -1,4 +1,4 @@
-port module Board exposing
+module Board exposing
     ( Axis(..)
     , Block(..)
     , BlockPalette(..)
@@ -81,9 +81,6 @@ import Sphere3d
 import Units.Serialize
 import Vector3d
 import Viewpoint3d
-
-
-port playAudio : { label : String, volume : Float } -> Cmd msg
 
 
 type WorldCoordinates
@@ -1673,7 +1670,7 @@ movePlayer audioMapping deltaDuration level =
 
                 traverseSound =
                     if edgeDetails.duration == durationForEdgeMovement then
-                        playAudio { label = "effect_shiw", volume = audioMapping.effects }
+                        Audio.playAudio { label = "effect_shiw", volume = audioMapping.effects, delay = 0 }
 
                     else
                         Cmd.none
@@ -1939,7 +1936,7 @@ scorePoints audioMapping level =
                 , score = level.score + 50
                 , capturedPoints = level.capturedPoints + 1
               }
-            , playAudio { label = "effect_tck", volume = audioMapping.effects }
+            , Audio.playAudio { label = "effect_tck", volume = audioMapping.effects, delay = 0 }
             )
 
         else

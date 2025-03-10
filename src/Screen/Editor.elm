@@ -13,6 +13,7 @@ module Screen.Editor exposing
 
 import Angle exposing (Angle)
 import Animation exposing (Animation)
+import Audio
 import Axis3d exposing (Axis3d)
 import Axis3d.Extra
 import Block3d
@@ -491,7 +492,23 @@ update toSharedMsg sharedModel toMsg msg model =
                                             |> Json.Encode.encode 0
                                     , selectedBlock = Nothing
                                   }
-                                , Cmd.none
+                                , Cmd.batch
+                                    [ Audio.playAudio
+                                        { label = "effect_remove"
+                                        , volume = sharedModel.audioMapping.effects
+                                        , delay = 0
+                                        }
+                                    , Audio.playAudio
+                                        { label = "effect_remove"
+                                        , volume = sharedModel.audioMapping.effects
+                                        , delay = 60
+                                        }
+                                    , Audio.playAudio
+                                        { label = "effect_remove"
+                                        , volume = sharedModel.audioMapping.effects
+                                        , delay = 120
+                                        }
+                                    ]
                                 )
 
                             Add ->
@@ -581,7 +598,23 @@ update toSharedMsg sharedModel toMsg msg model =
                                                     Just _ ->
                                                         Nothing
                                   }
-                                , Cmd.none
+                                , Cmd.batch
+                                    [ Audio.playAudio
+                                        { label = "effect_add"
+                                        , volume = sharedModel.audioMapping.effects
+                                        , delay = 0
+                                        }
+                                    , Audio.playAudio
+                                        { label = "effect_add"
+                                        , volume = sharedModel.audioMapping.effects
+                                        , delay = 60
+                                        }
+                                    , Audio.playAudio
+                                        { label = "effect_add"
+                                        , volume = sharedModel.audioMapping.effects
+                                        , delay = 120
+                                        }
+                                    ]
                                 )
 
                             Select ->
@@ -613,7 +646,7 @@ update toSharedMsg sharedModel toMsg msg model =
                                             |> Json.Encode.encode 0
                                     , selectedBlock = Nothing
                                   }
-                                , Cmd.none
+                                , Audio.playAudio { label = "effect_remove", volume = sharedModel.audioMapping.effects, delay = 0 }
                                 )
 
                             Add ->
@@ -690,7 +723,7 @@ update toSharedMsg sharedModel toMsg msg model =
                                                     Just _ ->
                                                         Nothing
                                   }
-                                , Cmd.none
+                                , Audio.playAudio { label = "effect_add", volume = sharedModel.audioMapping.effects, delay = 0 }
                                 )
 
                             Select ->

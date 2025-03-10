@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1741474194916"
+    "1741638087364"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -17231,6 +17231,37 @@ var $author$project$Screen$Editor$moveCursorByMouse = F2(
 			}
 		}
 	});
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Audio$playAudio = _Platform_outgoingPort(
+	'playAudio',
+	function ($) {
+		return $elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'delay',
+					$elm$json$Json$Encode$float($.delay)),
+					_Utils_Tuple2(
+					'label',
+					$elm$json$Json$Encode$string($.label)),
+					_Utils_Tuple2(
+					'volume',
+					$elm$json$Json$Encode$float($.volume))
+				]));
+	});
 var $elm$core$Set$remove = F2(
 	function (key, _v0) {
 		var dict = _v0.a;
@@ -17944,34 +17975,6 @@ var $ianmackenzie$elm_geometry$Frame3d$moveTo = F2(
 				zDirection: $ianmackenzie$elm_geometry$Frame3d$zDirection(frame)
 			});
 	});
-var $elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v0, obj) {
-					var k = _v0.a;
-					var v = _v0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
-};
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$Board$playAudio = _Platform_outgoingPort(
-	'playAudio',
-	function ($) {
-		return $elm$json$Json$Encode$object(
-			_List_fromArray(
-				[
-					_Utils_Tuple2(
-					'label',
-					$elm$json$Json$Encode$string($.label)),
-					_Utils_Tuple2(
-					'volume',
-					$elm$json$Json$Encode$float($.volume))
-				]));
-	});
 var $author$project$Board$scorePoints = F2(
 	function (audioMapping, level) {
 		var playerActualPoint = $ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame);
@@ -18005,8 +18008,8 @@ var $author$project$Board$scorePoints = F2(
 							capturedPoints: level.capturedPoints + 1,
 							score: level.score + 50
 						}),
-					$author$project$Board$playAudio(
-						{label: 'effect_tck', volume: audioMapping.effects}));
+					$author$project$Audio$playAudio(
+						{delay: 0, label: 'effect_tck', volume: audioMapping.effects}));
 			} else {
 				return _Utils_Tuple2(level, $elm$core$Platform$Cmd$none);
 			}
@@ -18305,8 +18308,8 @@ var $author$project$Board$movePlayer = F3(
 				}
 			default:
 				var edgeDetails = _v1.a;
-				var traverseSound = _Utils_eq(edgeDetails.duration, $author$project$Board$durationForEdgeMovement) ? $author$project$Board$playAudio(
-					{label: 'effect_shiw', volume: audioMapping.effects}) : $elm$core$Platform$Cmd$none;
+				var traverseSound = _Utils_eq(edgeDetails.duration, $author$project$Board$durationForEdgeMovement) ? $author$project$Audio$playAudio(
+					{delay: 0, label: 'effect_shiw', volume: audioMapping.effects}) : $elm$core$Platform$Cmd$none;
 				var targetAngle = $ianmackenzie$elm_units$Angle$degrees(90);
 				var targetSpeed = A2($ianmackenzie$elm_units$Quantity$per, $author$project$Board$durationForEdgeMovement, targetAngle);
 				var remainingDuration = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, edgeDetails.duration);
@@ -18814,7 +18817,16 @@ var $author$project$Screen$Editor$update = F5(
 											mouseDragging: $author$project$Screen$Editor$NoInteraction,
 											selectedBlock: $elm$core$Maybe$Nothing
 										}),
-									$elm$core$Platform$Cmd$none);
+									$elm$core$Platform$Cmd$batch(
+										_List_fromArray(
+											[
+												$author$project$Audio$playAudio(
+												{delay: 0, label: 'effect_remove', volume: sharedModel.audioMapping.effects}),
+												$author$project$Audio$playAudio(
+												{delay: 60, label: 'effect_remove', volume: sharedModel.audioMapping.effects}),
+												$author$project$Audio$playAudio(
+												{delay: 120, label: 'effect_remove', volume: sharedModel.audioMapping.effects})
+											])));
 							case 'Add':
 								var editorBoard = A2(
 									$author$project$Undo$insertWith,
@@ -18934,7 +18946,16 @@ var $author$project$Screen$Editor$update = F5(
 													A2($elm$core$Dict$get, model.editorCursor, board.blocks));
 											}()
 										}),
-									$elm$core$Platform$Cmd$none);
+									$elm$core$Platform$Cmd$batch(
+										_List_fromArray(
+											[
+												$author$project$Audio$playAudio(
+												{delay: 0, label: 'effect_add', volume: sharedModel.audioMapping.effects}),
+												$author$project$Audio$playAudio(
+												{delay: 60, label: 'effect_add', volume: sharedModel.audioMapping.effects}),
+												$author$project$Audio$playAudio(
+												{delay: 120, label: 'effect_add', volume: sharedModel.audioMapping.effects})
+											])));
 							default:
 								return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 						}
@@ -18967,7 +18988,8 @@ var $author$project$Screen$Editor$update = F5(
 											mouseDragging: $author$project$Screen$Editor$NoInteraction,
 											selectedBlock: $elm$core$Maybe$Nothing
 										}),
-									$elm$core$Platform$Cmd$none);
+									$author$project$Audio$playAudio(
+										{delay: 0, label: 'effect_remove', volume: sharedModel.audioMapping.effects}));
 							case 'Add':
 								var editorBoard = A2(
 									$author$project$Undo$insertWith,
@@ -19055,7 +19077,8 @@ var $author$project$Screen$Editor$update = F5(
 													A2($elm$core$Dict$get, model.editorCursor, board.blocks));
 											}()
 										}),
-									$elm$core$Platform$Cmd$none);
+									$author$project$Audio$playAudio(
+										{delay: 0, label: 'effect_add', volume: sharedModel.audioMapping.effects}));
 							default:
 								return _Utils_Tuple2(
 									_Utils_update(
