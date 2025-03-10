@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1741638087364"
+    "1741639818799"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -15712,6 +15712,15 @@ var $MartinSStewart$elm_serialize$Serialize$decodeFromJson = F2(
 		}
 	});
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
+var $author$project$Audio$Audio = function (a) {
+	return {$: 'Audio', a: a};
+};
+var $author$project$Audio$effect = function (_v0) {
+	var label = _v0.label;
+	var volume = _v0.volume;
+	return $author$project$Audio$Audio(
+		{delay: 0, label: 'effect_' + label, volume: volume});
+};
 var $ianmackenzie$elm_geometry$Direction3d$negativeX = $ianmackenzie$elm_geometry$Direction3d$unsafe(
 	{x: -1, y: 0, z: 0});
 var $ianmackenzie$elm_geometry$Direction3d$negativeY = $ianmackenzie$elm_geometry$Direction3d$unsafe(
@@ -17262,6 +17271,10 @@ var $author$project$Audio$playAudio = _Platform_outgoingPort(
 					$elm$json$Json$Encode$float($.volume))
 				]));
 	});
+var $author$project$Audio$play = function (_v0) {
+	var audio = _v0.a;
+	return $author$project$Audio$playAudio(audio);
+};
 var $elm$core$Set$remove = F2(
 	function (key, _v0) {
 		var dict = _v0.a;
@@ -18008,8 +18021,9 @@ var $author$project$Board$scorePoints = F2(
 							capturedPoints: level.capturedPoints + 1,
 							score: level.score + 50
 						}),
-					$author$project$Audio$playAudio(
-						{delay: 0, label: 'effect_tck', volume: audioMapping.effects}));
+					$author$project$Audio$play(
+						$author$project$Audio$effect(
+							{label: 'tck', volume: audioMapping.effects})));
 			} else {
 				return _Utils_Tuple2(level, $elm$core$Platform$Cmd$none);
 			}
@@ -18308,8 +18322,9 @@ var $author$project$Board$movePlayer = F3(
 				}
 			default:
 				var edgeDetails = _v1.a;
-				var traverseSound = _Utils_eq(edgeDetails.duration, $author$project$Board$durationForEdgeMovement) ? $author$project$Audio$playAudio(
-					{delay: 0, label: 'effect_shiw', volume: audioMapping.effects}) : $elm$core$Platform$Cmd$none;
+				var traverseSound = _Utils_eq(edgeDetails.duration, $author$project$Board$durationForEdgeMovement) ? $author$project$Audio$play(
+					$author$project$Audio$effect(
+						{label: 'shiw', volume: audioMapping.effects})) : $elm$core$Platform$Cmd$none;
 				var targetAngle = $ianmackenzie$elm_units$Angle$degrees(90);
 				var targetSpeed = A2($ianmackenzie$elm_units$Quantity$per, $author$project$Board$durationForEdgeMovement, targetAngle);
 				var remainingDuration = A2($ianmackenzie$elm_units$Quantity$minus, deltaDuration, edgeDetails.duration);
@@ -18538,6 +18553,14 @@ var $elm$core$Result$withDefault = F2(
 		} else {
 			return def;
 		}
+	});
+var $author$project$Audio$withDelay = F2(
+	function (delay, _v0) {
+		var audio = _v0.a;
+		return $author$project$Audio$Audio(
+			_Utils_update(
+				audio,
+				{delay: delay}));
 	});
 var $author$project$Screen$Editor$update = F5(
 	function (toSharedMsg, sharedModel, toMsg, msg, model) {
@@ -18820,12 +18843,21 @@ var $author$project$Screen$Editor$update = F5(
 									$elm$core$Platform$Cmd$batch(
 										_List_fromArray(
 											[
-												$author$project$Audio$playAudio(
-												{delay: 0, label: 'effect_remove', volume: sharedModel.audioMapping.effects}),
-												$author$project$Audio$playAudio(
-												{delay: 60, label: 'effect_remove', volume: sharedModel.audioMapping.effects}),
-												$author$project$Audio$playAudio(
-												{delay: 120, label: 'effect_remove', volume: sharedModel.audioMapping.effects})
+												$author$project$Audio$play(
+												$author$project$Audio$effect(
+													{label: 'remove', volume: sharedModel.audioMapping.effects})),
+												$author$project$Audio$play(
+												A2(
+													$author$project$Audio$withDelay,
+													60,
+													$author$project$Audio$effect(
+														{label: 'remove', volume: sharedModel.audioMapping.effects}))),
+												$author$project$Audio$play(
+												A2(
+													$author$project$Audio$withDelay,
+													120,
+													$author$project$Audio$effect(
+														{label: 'remove', volume: sharedModel.audioMapping.effects})))
 											])));
 							case 'Add':
 								var editorBoard = A2(
@@ -18949,12 +18981,21 @@ var $author$project$Screen$Editor$update = F5(
 									$elm$core$Platform$Cmd$batch(
 										_List_fromArray(
 											[
-												$author$project$Audio$playAudio(
-												{delay: 0, label: 'effect_add', volume: sharedModel.audioMapping.effects}),
-												$author$project$Audio$playAudio(
-												{delay: 60, label: 'effect_add', volume: sharedModel.audioMapping.effects}),
-												$author$project$Audio$playAudio(
-												{delay: 120, label: 'effect_add', volume: sharedModel.audioMapping.effects})
+												$author$project$Audio$play(
+												$author$project$Audio$effect(
+													{label: 'add', volume: sharedModel.audioMapping.effects})),
+												$author$project$Audio$play(
+												A2(
+													$author$project$Audio$withDelay,
+													60,
+													$author$project$Audio$effect(
+														{label: 'add', volume: sharedModel.audioMapping.effects}))),
+												$author$project$Audio$play(
+												A2(
+													$author$project$Audio$withDelay,
+													120,
+													$author$project$Audio$effect(
+														{label: 'add', volume: sharedModel.audioMapping.effects})))
 											])));
 							default:
 								return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -18988,8 +19029,9 @@ var $author$project$Screen$Editor$update = F5(
 											mouseDragging: $author$project$Screen$Editor$NoInteraction,
 											selectedBlock: $elm$core$Maybe$Nothing
 										}),
-									$author$project$Audio$playAudio(
-										{delay: 0, label: 'effect_remove', volume: sharedModel.audioMapping.effects}));
+									$author$project$Audio$play(
+										$author$project$Audio$effect(
+											{label: 'remove', volume: sharedModel.audioMapping.effects})));
 							case 'Add':
 								var editorBoard = A2(
 									$author$project$Undo$insertWith,
@@ -19077,8 +19119,9 @@ var $author$project$Screen$Editor$update = F5(
 													A2($elm$core$Dict$get, model.editorCursor, board.blocks));
 											}()
 										}),
-									$author$project$Audio$playAudio(
-										{delay: 0, label: 'effect_add', volume: sharedModel.audioMapping.effects}));
+									$author$project$Audio$play(
+										$author$project$Audio$effect(
+											{label: 'add', volume: sharedModel.audioMapping.effects})));
 							default:
 								return _Utils_Tuple2(
 									_Utils_update(

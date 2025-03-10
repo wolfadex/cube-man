@@ -1670,7 +1670,8 @@ movePlayer audioMapping deltaDuration level =
 
                 traverseSound =
                     if edgeDetails.duration == durationForEdgeMovement then
-                        Audio.playAudio { label = "effect_shiw", volume = audioMapping.effects, delay = 0 }
+                        Audio.effect { label = "shiw", volume = audioMapping.effects }
+                            |> Audio.play
 
                     else
                         Cmd.none
@@ -1936,7 +1937,8 @@ scorePoints audioMapping level =
                 , score = level.score + 50
                 , capturedPoints = level.capturedPoints + 1
               }
-            , Audio.playAudio { label = "effect_tck", volume = audioMapping.effects, delay = 0 }
+            , Audio.effect { label = "tck", volume = audioMapping.effects }
+                |> Audio.play
             )
 
         else

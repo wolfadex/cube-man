@@ -493,21 +493,23 @@ update toSharedMsg sharedModel toMsg msg model =
                                     , selectedBlock = Nothing
                                   }
                                 , Cmd.batch
-                                    [ Audio.playAudio
-                                        { label = "effect_remove"
+                                    [ Audio.effect
+                                        { label = "remove"
                                         , volume = sharedModel.audioMapping.effects
-                                        , delay = 0
                                         }
-                                    , Audio.playAudio
-                                        { label = "effect_remove"
+                                        |> Audio.play
+                                    , Audio.effect
+                                        { label = "remove"
                                         , volume = sharedModel.audioMapping.effects
-                                        , delay = 60
                                         }
-                                    , Audio.playAudio
-                                        { label = "effect_remove"
+                                        |> Audio.withDelay 60
+                                        |> Audio.play
+                                    , Audio.effect
+                                        { label = "remove"
                                         , volume = sharedModel.audioMapping.effects
-                                        , delay = 120
                                         }
+                                        |> Audio.withDelay 120
+                                        |> Audio.play
                                     ]
                                 )
 
@@ -599,21 +601,23 @@ update toSharedMsg sharedModel toMsg msg model =
                                                         Nothing
                                   }
                                 , Cmd.batch
-                                    [ Audio.playAudio
-                                        { label = "effect_add"
+                                    [ Audio.effect
+                                        { label = "add"
                                         , volume = sharedModel.audioMapping.effects
-                                        , delay = 0
                                         }
-                                    , Audio.playAudio
-                                        { label = "effect_add"
+                                        |> Audio.play
+                                    , Audio.effect
+                                        { label = "add"
                                         , volume = sharedModel.audioMapping.effects
-                                        , delay = 60
                                         }
-                                    , Audio.playAudio
-                                        { label = "effect_add"
+                                        |> Audio.withDelay 60
+                                        |> Audio.play
+                                    , Audio.effect
+                                        { label = "add"
                                         , volume = sharedModel.audioMapping.effects
-                                        , delay = 120
                                         }
+                                        |> Audio.withDelay 120
+                                        |> Audio.play
                                     ]
                                 )
 
@@ -646,7 +650,11 @@ update toSharedMsg sharedModel toMsg msg model =
                                             |> Json.Encode.encode 0
                                     , selectedBlock = Nothing
                                   }
-                                , Audio.playAudio { label = "effect_remove", volume = sharedModel.audioMapping.effects, delay = 0 }
+                                , Audio.effect
+                                    { label = "remove"
+                                    , volume = sharedModel.audioMapping.effects
+                                    }
+                                    |> Audio.play
                                 )
 
                             Add ->
@@ -723,7 +731,11 @@ update toSharedMsg sharedModel toMsg msg model =
                                                     Just _ ->
                                                         Nothing
                                   }
-                                , Audio.playAudio { label = "effect_add", volume = sharedModel.audioMapping.effects, delay = 0 }
+                                , Audio.effect
+                                    { label = "add"
+                                    , volume = sharedModel.audioMapping.effects
+                                    }
+                                    |> Audio.play
                                 )
 
                             Select ->
