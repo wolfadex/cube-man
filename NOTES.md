@@ -28,10 +28,8 @@ Thoughts and ideas about where this project is headed.
 ### Audio
 - enemies?
 - on emeny hit
-- on level beat
-- on level lose
-- on block place
-- on block removal
+- on level complete
+- on level fail
 - on button click?
 - on enemy spawn
 - bg music
