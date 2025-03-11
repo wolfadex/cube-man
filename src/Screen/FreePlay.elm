@@ -96,10 +96,8 @@ update : Shared.LoadedModel -> Msg -> Model -> ( Model, Cmd Msg )
 update sharedModel msg model =
     case msg of
         Tick deltaMs ->
-            ( model
-                |> tick deltaMs
-            , Cmd.none
-            )
+            model
+                |> tick sharedModel deltaMs
 
         ExitFreePlayBoard ->
             ( { model
@@ -169,18 +167,15 @@ update sharedModel msg model =
                     )
 
 
-tick : Duration -> Model -> Model
-tick deltaMs model =
+tick : Shared.LoadedModel -> Duration -> Model -> ( Model, Cmd msg )
+tick sharedModel deltaMs model =
     case model.freePlayMode of
         FreePlayBoardSelection ->
-            model
+            ( model, Cmd.none )
 
         FreePlayBoardLoaded ->
-            { model
-                | level =
-                    model.level
-                        |> Board.tick deltaMs
-            }
+            Board.tick sharedModel.audioMapping deltaMs model.level
+                |> Tuple.mapFirst (\level -> { model | level = level })
 
 
 view : { setScreen : Screen -> msg, toSharedMsg : Shared.Msg -> msg, sharedModel : Shared.LoadedModel, toMsg : Msg -> msg, model : Model } -> List (Html msg)
@@ -230,8 +225,14 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                             [ { name = "Mini"
                               , boardEncoding = Board.basicMiniBoard
                               }
+                            , { name = "Something Familiar"
+                              , boardEncoding = Board.somethingFamiliarBoard
+                              }
                             , { name = "Zig-Zag"
                               , boardEncoding = Board.zigZagBoard
+                              }
+                            , { name = "Layers"
+                              , boardEncoding = Board.layersBoard
                               }
                             ]
                             ++ [ Html.div
@@ -271,6 +272,13 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                         ]
                         [ Html.text "Select another board" ]
                     )
+                , Board.viewAllPointsCollected model.level
+                    (Html.button
+                        [ Html.Attributes.type_ "button"
+                        , Html.Events.onClick (toMsg ExitFreePlayBoard)
+                        ]
+                        [ Html.text "Select another board" ]
+                    )
                 , Html.div
                     [ Html.Attributes.style "position" "absolute"
                     , Html.Attributes.style "padding" "0.5rem"
@@ -286,7 +294,7 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                     ]
                 , Html.Extra.modal { open = model.showFreePlayMenu, onClose = toMsg (ShowFreePlayMenu False) }
                     []
-                    [ Html.h2
+                    [ Html.h1
                         [ Html.Attributes.style "width" "100%"
                         , Html.Attributes.style "margin-top" "0"
                         ]
@@ -310,6 +318,23 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                         ]
                     , Html.br [] []
                     , Html.br [] []
+                    , Html.h2 [] [ Html.text "Audio" ]
+                    , Html.label
+                        [ Html.Attributes.style "display" "flex"
+                        , Html.Attributes.style "align-items" "center"
+                        , Html.Attributes.style "gap" "1rem"
+                        ]
+                        [ Html.span [] [ Html.text "Sound Effects" ]
+                        , Html.Extra.range
+                            []
+                            { step = 0.1
+                            , min = 0.0
+                            , max = 1.0
+                            , value = sharedModel.audioMapping.effects
+                            , onInput = Shared.AudioEffectsChanged >> toSharedMsg
+                            }
+                        ]
+                    , Html.h2 [] [ Html.text "Input" ]
                     , let
                         viewMapping =
                             Input.viewMapping (Shared.SetMapping >> toSharedMsg)

@@ -3,11 +3,7 @@
 Thoughts and ideas about where this project is headed.
 
 ### Enemies
-- Spiky balls? Pulsating?
 - Explode on contact?
-
-### Points (the game object)
-- Make them glow?
 
 ### Desktop version
 - Fancier graphics?
@@ -18,6 +14,7 @@ Thoughts and ideas about where this project is headed.
 - Tunnels through levels?
 - Powerups?
 - Multiplayer mode?
+- camera should slightly lead the player/be a little more fluid and not as stiff
 
 ### Art/graphics
 - Mayan art
@@ -25,6 +22,12 @@ Thoughts and ideas about where this project is headed.
 - Stone
 - Minimalist
 - Hard lines
-- Dark
-- Glowing player
-- Glowing enemies
+
+### Audio
+- enemies?
+- on emeny hit
+- on level complete
+- on level fail
+- on button click?
+- on enemy spawn
+- bg music

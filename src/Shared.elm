@@ -9,6 +9,7 @@ module Shared exposing
     , update
     )
 
+import Audio
 import Board
 import Browser.Dom
 import Color exposing (Color)
@@ -33,6 +34,7 @@ type alias LoadedModel =
     { screenSize : ScreenSize
     , blockPalette : Board.BlockPalette
     , inputMapping : Input.Mapping
+    , audioMapping : Audio.Mapping
 
     --
     -- , playerMesh : TexturedMesh
@@ -51,6 +53,7 @@ init =
         { screenSize = { width = 800, height = 600 }
         , blockPalette = Board.SimpleBlocks
         , inputMapping = Input.defaultMapping
+        , audioMapping = { effects = 1.0 }
         }
     , loadingCmd
     )
@@ -137,6 +140,7 @@ type Msg
     | AllTasksCompleted TexturedMesh TexturedMesh
     | ViewportResized (Result Browser.Dom.Error Browser.Dom.Viewport)
     | SetScreenSize ScreenSize
+    | AudioEffectsChanged Float
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -160,6 +164,7 @@ update msg model =
                 { screenSize = { width = 800, height = 600 }
                 , blockPalette = Board.SimpleBlocks
                 , inputMapping = Input.defaultMapping
+                , audioMapping = { effects = 1.0 }
 
                 -- , playerMesh = playerMesh
                 -- , wallMesh = wallMesh
@@ -201,6 +206,13 @@ update msg model =
 
         ( Loaded mod, SetScreenSize screenSize ) ->
             ( Loaded { mod | screenSize = screenSize }, Cmd.none )
+
+        ( Loaded mod, AudioEffectsChanged volume ) ->
+            let
+                audioMapping =
+                    mod.audioMapping
+            in
+            ( Loaded { mod | audioMapping = { audioMapping | effects = volume } }, Cmd.none )
 
 
 type alias ScreenSize =

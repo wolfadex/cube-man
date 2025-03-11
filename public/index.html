@@ -65,7 +65,21 @@
                 },
             );
 
-            Elm.Main.init();
+            const app = Elm.Main.init();
+
+            app.ports.playAudio.subscribe(function ({ label, volume, delay }) {
+                if (delay > 0) {
+                    setTimeout(function () {
+                        const audio = new Audio(`assets/${label}.mp3`);
+                        audio.volume = volume;
+                        audio.play();
+                    }, delay);
+                } else {
+                    const audio = new Audio(`assets/${label}.mp3`);
+                    audio.volume = volume;
+                    audio.play();
+                }
+            });
         </script>
     </body>
 </html>

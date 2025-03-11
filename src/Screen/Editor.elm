@@ -13,6 +13,7 @@ module Screen.Editor exposing
 
 import Angle exposing (Angle)
 import Animation exposing (Animation)
+import Audio
 import Axis3d exposing (Axis3d)
 import Axis3d.Extra
 import Block3d
@@ -46,8 +47,9 @@ import Pixels exposing (Pixels)
 import Point2d exposing (Point2d)
 import Point3d exposing (Point3d)
 import Point3d.Extra
-import Quantity
+import Quantity exposing (Quantity(..))
 import Rectangle2d
+import Rectangle3d
 import Scene3d
 import Scene3d.Light
 import Scene3d.Material
@@ -100,8 +102,14 @@ type alias Model =
 
 type EditorMouseInteraction
     = NoInteraction
-    | InteractionStart Json.Decode.Value
-    | InteractionMoving Json.Decode.Value
+    | InteractionStart MouseDetails
+    | InteractionMoving MouseDetails
+
+
+type alias MouseDetails =
+    { pointerId : Json.Decode.Value
+    , modifyingMany : Maybe Board.Point
+    }
 
 
 type EditorMode
@@ -245,7 +253,7 @@ type Msg
     | KeyUp String
     | MouseDown Json.Decode.Value
     | MouseUp
-    | MouseMove Json.Decode.Value (Point2d Pixels Board.ScreenCoordinates) (Point2d Pixels Board.ScreenCoordinates)
+    | MouseMove MouseDetails (Point2d Pixels Board.ScreenCoordinates) (Point2d Pixels Board.ScreenCoordinates)
     | EncodingChanged String
     | LoadEditorBoard String
     | ChangeMode
@@ -279,10 +287,8 @@ update toSharedMsg sharedModel toMsg msg model =
             ( model, Cmd.none )
 
         Tick deltaMs ->
-            ( model
-                |> tick deltaMs
-            , Cmd.none
-            )
+            model
+                |> tick sharedModel deltaMs
 
         EncodingChanged boardEncoding ->
             ( { model | boardEncoding = boardEncoding }, Cmd.none )
@@ -389,9 +395,6 @@ update toSharedMsg sharedModel toMsg msg model =
         Redo ->
             redo model
 
-        MouseDown pointerId ->
-            ( { model | mouseDragging = InteractionStart pointerId }, Cmd.none )
-
         KeyDown key ->
             case model.editorMode of
                 EditBoard ->
@@ -409,135 +412,351 @@ update toSharedMsg sharedModel toMsg msg model =
         KeyUp key ->
             ( { model | editorKeysDown = Set.remove key model.editorKeysDown }, Cmd.none )
 
+        MouseDown pointerId ->
+            ( { model
+                | mouseDragging =
+                    InteractionStart
+                        { pointerId = pointerId
+                        , modifyingMany =
+                            if Set.member "Alt" model.editorKeysDown && (model.blockEditMode == Add || model.blockEditMode == Remove) then
+                                Just model.editorCursor
+
+                            else
+                                Nothing
+                        }
+              }
+            , Cmd.none
+            )
+
         MouseUp ->
             if Set.member "Shift" model.editorKeysDown then
                 ( { model | mouseDragging = NoInteraction }, Cmd.none )
 
             else
-                case model.blockEditMode of
-                    Remove ->
+                let
+                    editingMany =
+                        case model.mouseDragging of
+                            NoInteraction ->
+                                Nothing
+
+                            InteractionStart details ->
+                                details.modifyingMany
+
+                            InteractionMoving details ->
+                                details.modifyingMany
+                in
+                case editingMany of
+                    Just modifyingMany ->
                         let
-                            editorBoard =
-                                Undo.insertWith
-                                    (\board ->
-                                        { board
-                                            | blocks =
-                                                Dict.insert model.editorCursor
-                                                    Board.Empty
-                                                    board.blocks
-                                        }
-                                    )
-                                    model.editorBoard
+                            ( x1, y1, z1 ) =
+                                modifyingMany
+
+                            ( x2, y2, z2 ) =
+                                model.editorCursor
                         in
-                        ( { model
-                            | mouseDragging = NoInteraction
-                            , editorBoard = editorBoard
-                            , boardEncoding =
-                                editorBoard
-                                    |> Undo.value
-                                    |> Serialize.encodeToJson Board.boardCodec
-                                    |> Json.Encode.encode 0
-                            , selectedBlock = Nothing
-                          }
-                        , Cmd.none
-                        )
-
-                    Add ->
-                        let
-                            editorBoard =
-                                Undo.insertWith
-                                    (\board ->
-                                        { board
-                                            | blocks =
-                                                case model.selectedBlockType of
-                                                    Board.PlayerSpawn _ ->
-                                                        board.blocks
-                                                            |> Dict.map
-                                                                (\_ block ->
-                                                                    case block of
-                                                                        Board.PlayerSpawn _ ->
-                                                                            Board.Empty
-
-                                                                        _ ->
-                                                                            block
-                                                                )
-                                                            |> Dict.insert model.editorCursor
-                                                                model.selectedBlockType
-
-                                                    Board.EnemySpawner _ ->
-                                                        board.blocks
-                                                            |> Dict.map
-                                                                (\_ block ->
-                                                                    case block of
-                                                                        Board.EnemySpawner _ ->
-                                                                            Board.Wall
-
-                                                                        _ ->
-                                                                            block
-                                                                )
-                                                            |> Dict.insert model.editorCursor
-                                                                model.selectedBlockType
-
-                                                    _ ->
-                                                        Dict.insert model.editorCursor
-                                                            model.selectedBlockType
-                                                            board.blocks
-                                        }
-                                    )
-                                    model.editorBoard
-                        in
-                        ( { model
-                            | mouseDragging = NoInteraction
-                            , editorBoard = editorBoard
-                            , boardEncoding =
-                                editorBoard
-                                    |> Undo.value
-                                    |> Serialize.encodeToJson Board.boardCodec
-                                    |> Json.Encode.encode 0
-                            , selectedBlock =
+                        case model.blockEditMode of
+                            Remove ->
                                 let
-                                    board =
+                                    editorBoard =
+                                        Undo.insertWith
+                                            (\board ->
+                                                { board
+                                                    | blocks =
+                                                        List.foldl
+                                                            (\x blocks_ ->
+                                                                List.foldl
+                                                                    (\y blocks__ ->
+                                                                        List.foldl
+                                                                            (\z ->
+                                                                                Dict.insert ( x, y, z ) Board.Empty
+                                                                            )
+                                                                            blocks__
+                                                                            (List.range (min z1 z2) (max z1 z2))
+                                                                    )
+                                                                    blocks_
+                                                                    (List.range (min y1 y2) (max y1 y2))
+                                                            )
+                                                            board.blocks
+                                                            (List.range (min x1 x2) (max x1 x2))
+                                                }
+                                            )
+                                            model.editorBoard
+                                in
+                                ( { model
+                                    | mouseDragging = NoInteraction
+                                    , editorBoard = editorBoard
+                                    , boardEncoding =
                                         editorBoard
                                             |> Undo.value
-                                in
-                                board.blocks
-                                    |> Dict.get model.editorCursor
-                                    |> Maybe.map (\block -> ( model.editorCursor, block ))
-                            , boardPlayError =
-                                case model.boardPlayError of
-                                    Nothing ->
-                                        model.boardPlayError
+                                            |> Serialize.encodeToJson Board.boardCodec
+                                            |> Json.Encode.encode 0
+                                    , selectedBlock = Nothing
+                                  }
+                                , Cmd.batch
+                                    [ Audio.effect
+                                        { label = "remove"
+                                        , volume = sharedModel.audioMapping.effects
+                                        }
+                                        |> Audio.play
+                                    , Audio.effect
+                                        { label = "remove"
+                                        , volume = sharedModel.audioMapping.effects
+                                        }
+                                        |> Audio.withDelay 60
+                                        |> Audio.play
+                                    , Audio.effect
+                                        { label = "remove"
+                                        , volume = sharedModel.audioMapping.effects
+                                        }
+                                        |> Audio.withDelay 120
+                                        |> Audio.play
+                                    ]
+                                )
 
-                                    Just Board.MissingPlayerSpawn ->
-                                        case Board.findSpawn (Undo.value editorBoard) of
+                            Add ->
+                                let
+                                    editorBoard =
+                                        Undo.insertWith
+                                            (\board ->
+                                                { board
+                                                    | blocks =
+                                                        case model.selectedBlockType of
+                                                            Board.PlayerSpawn _ ->
+                                                                board.blocks
+                                                                    |> Dict.map
+                                                                        (\_ block ->
+                                                                            case block of
+                                                                                Board.PlayerSpawn _ ->
+                                                                                    Board.Empty
+
+                                                                                _ ->
+                                                                                    block
+                                                                        )
+                                                                    |> Dict.insert model.editorCursor
+                                                                        model.selectedBlockType
+
+                                                            Board.EnemySpawner _ ->
+                                                                board.blocks
+                                                                    |> Dict.map
+                                                                        (\_ block ->
+                                                                            case block of
+                                                                                Board.EnemySpawner _ ->
+                                                                                    Board.Wall
+
+                                                                                _ ->
+                                                                                    block
+                                                                        )
+                                                                    |> Dict.insert model.editorCursor
+                                                                        model.selectedBlockType
+
+                                                            _ ->
+                                                                List.foldl
+                                                                    (\x blocks_ ->
+                                                                        List.foldl
+                                                                            (\y blocks__ ->
+                                                                                List.foldl
+                                                                                    (\z ->
+                                                                                        Dict.insert ( x, y, z ) model.selectedBlockType
+                                                                                    )
+                                                                                    blocks__
+                                                                                    (List.range (min z1 z2) (max z1 z2))
+                                                                            )
+                                                                            blocks_
+                                                                            (List.range (min y1 y2) (max y1 y2))
+                                                                    )
+                                                                    board.blocks
+                                                                    (List.range (min x1 x2) (max x1 x2))
+                                                }
+                                            )
+                                            model.editorBoard
+                                in
+                                ( { model
+                                    | mouseDragging = NoInteraction
+                                    , editorBoard = editorBoard
+                                    , boardEncoding =
+                                        editorBoard
+                                            |> Undo.value
+                                            |> Serialize.encodeToJson Board.boardCodec
+                                            |> Json.Encode.encode 0
+                                    , selectedBlock =
+                                        let
+                                            board =
+                                                editorBoard
+                                                    |> Undo.value
+                                        in
+                                        board.blocks
+                                            |> Dict.get model.editorCursor
+                                            |> Maybe.map (\block -> ( model.editorCursor, block ))
+                                    , boardPlayError =
+                                        case model.boardPlayError of
                                             Nothing ->
                                                 model.boardPlayError
 
-                                            Just _ ->
-                                                Nothing
-                          }
-                        , Cmd.none
-                        )
+                                            Just Board.MissingPlayerSpawn ->
+                                                case Board.findSpawn (Undo.value editorBoard) of
+                                                    Nothing ->
+                                                        model.boardPlayError
 
-                    Select ->
-                        ( { model
-                            | mouseDragging = NoInteraction
-                            , selectedBlock =
+                                                    Just _ ->
+                                                        Nothing
+                                  }
+                                , Cmd.batch
+                                    [ Audio.effect
+                                        { label = "add"
+                                        , volume = sharedModel.audioMapping.effects
+                                        }
+                                        |> Audio.play
+                                    , Audio.effect
+                                        { label = "add"
+                                        , volume = sharedModel.audioMapping.effects
+                                        }
+                                        |> Audio.withDelay 60
+                                        |> Audio.play
+                                    , Audio.effect
+                                        { label = "add"
+                                        , volume = sharedModel.audioMapping.effects
+                                        }
+                                        |> Audio.withDelay 120
+                                        |> Audio.play
+                                    ]
+                                )
+
+                            Select ->
+                                ( model, Cmd.none )
+
+                    Nothing ->
+                        case model.blockEditMode of
+                            Remove ->
                                 let
                                     editorBoard =
-                                        model.editorBoard
-                                            |> Undo.value
+                                        Undo.insertWith
+                                            (\board ->
+                                                { board
+                                                    | blocks =
+                                                        Dict.insert model.editorCursor
+                                                            Board.Empty
+                                                            board.blocks
+                                                }
+                                            )
+                                            model.editorBoard
                                 in
-                                editorBoard.blocks
-                                    |> Dict.get model.editorCursor
-                                    |> Maybe.map (\block -> ( model.editorCursor, block ))
-                          }
-                        , Cmd.none
-                        )
+                                ( { model
+                                    | mouseDragging = NoInteraction
+                                    , editorBoard = editorBoard
+                                    , boardEncoding =
+                                        editorBoard
+                                            |> Undo.value
+                                            |> Serialize.encodeToJson Board.boardCodec
+                                            |> Json.Encode.encode 0
+                                    , selectedBlock = Nothing
+                                  }
+                                , Audio.effect
+                                    { label = "remove"
+                                    , volume = sharedModel.audioMapping.effects
+                                    }
+                                    |> Audio.play
+                                )
 
-        MouseMove pointerId offset movement ->
+                            Add ->
+                                let
+                                    editorBoard =
+                                        Undo.insertWith
+                                            (\board ->
+                                                { board
+                                                    | blocks =
+                                                        case model.selectedBlockType of
+                                                            Board.PlayerSpawn _ ->
+                                                                board.blocks
+                                                                    |> Dict.map
+                                                                        (\_ block ->
+                                                                            case block of
+                                                                                Board.PlayerSpawn _ ->
+                                                                                    Board.Empty
+
+                                                                                _ ->
+                                                                                    block
+                                                                        )
+                                                                    |> Dict.insert model.editorCursor
+                                                                        model.selectedBlockType
+
+                                                            Board.EnemySpawner _ ->
+                                                                board.blocks
+                                                                    |> Dict.map
+                                                                        (\_ block ->
+                                                                            case block of
+                                                                                Board.EnemySpawner _ ->
+                                                                                    Board.Wall
+
+                                                                                _ ->
+                                                                                    block
+                                                                        )
+                                                                    |> Dict.insert model.editorCursor
+                                                                        model.selectedBlockType
+
+                                                            _ ->
+                                                                Dict.insert model.editorCursor
+                                                                    model.selectedBlockType
+                                                                    board.blocks
+                                                }
+                                            )
+                                            model.editorBoard
+                                in
+                                ( { model
+                                    | mouseDragging = NoInteraction
+                                    , editorBoard = editorBoard
+                                    , boardEncoding =
+                                        editorBoard
+                                            |> Undo.value
+                                            |> Serialize.encodeToJson Board.boardCodec
+                                            |> Json.Encode.encode 0
+                                    , selectedBlock =
+                                        let
+                                            board =
+                                                editorBoard
+                                                    |> Undo.value
+                                        in
+                                        board.blocks
+                                            |> Dict.get model.editorCursor
+                                            |> Maybe.map (\block -> ( model.editorCursor, block ))
+                                    , boardPlayError =
+                                        case model.boardPlayError of
+                                            Nothing ->
+                                                model.boardPlayError
+
+                                            Just Board.MissingPlayerSpawn ->
+                                                case Board.findSpawn (Undo.value editorBoard) of
+                                                    Nothing ->
+                                                        model.boardPlayError
+
+                                                    Just _ ->
+                                                        Nothing
+                                  }
+                                , Audio.effect
+                                    { label = "add"
+                                    , volume = sharedModel.audioMapping.effects
+                                    }
+                                    |> Audio.play
+                                )
+
+                            Select ->
+                                ( { model
+                                    | mouseDragging = NoInteraction
+                                    , selectedBlock =
+                                        let
+                                            editorBoard =
+                                                model.editorBoard
+                                                    |> Undo.value
+                                        in
+                                        editorBoard.blocks
+                                            |> Dict.get model.editorCursor
+                                            |> Maybe.map (\block -> ( model.editorCursor, block ))
+                                  }
+                                , Cmd.none
+                                )
+
+        MouseMove details offset movement ->
             if Set.member "Shift" model.editorKeysDown then
-                moveCameraByMouse pointerId movement model
+                moveCameraByMouse details movement model
 
             else
                 moveCursorByMouse offset model
@@ -796,12 +1015,12 @@ update toSharedMsg sharedModel toMsg msg model =
             )
 
 
-moveCameraByMouse : Json.Encode.Value -> Point2d Pixels Board.ScreenCoordinates -> Model -> ( Model, Cmd msg )
-moveCameraByMouse pointerId movement model =
+moveCameraByMouse : MouseDetails -> Point2d Pixels Board.ScreenCoordinates -> Model -> ( Model, Cmd msg )
+moveCameraByMouse details movement model =
     case model.cameraMode of
         Orbit ->
             ( { model
-                | mouseDragging = InteractionMoving pointerId
+                | mouseDragging = InteractionMoving details
                 , cameraRotation =
                     model.cameraRotation
                         |> Quantity.minus
@@ -941,7 +1160,47 @@ moveCursorByMouse offset model =
             in
             case maybeIntersection of
                 Nothing ->
-                    ( model, Cmd.none )
+                    case model.blockEditMode of
+                        Remove ->
+                            ( model, Cmd.none )
+
+                        Select ->
+                            ( model, Cmd.none )
+
+                        Add ->
+                            if model.cameraElevation |> Quantity.greaterThan (Quantity 0) then
+                                case
+                                    Axis3d.intersectionWithRectangle
+                                        (Rectangle3d.centeredOn
+                                            (SketchPlane3d.xy
+                                                |> SketchPlane3d.moveTo
+                                                    (Point3d.meters
+                                                        (toFloat editorBoard.maxX / 2 - 0.5)
+                                                        (toFloat editorBoard.maxY / 2 - 0.5)
+                                                        -0.5
+                                                    )
+                                            )
+                                            ( Length.meters (toFloat editorBoard.maxX)
+                                            , Length.meters (toFloat editorBoard.maxY)
+                                            )
+                                        )
+                                        ray
+                                of
+                                    Nothing ->
+                                        ( model, Cmd.none )
+
+                                    Just intersectionPoint ->
+                                        ( { model
+                                            | editorCursor =
+                                                intersectionPoint
+                                                    |> Point3d.translateIn Direction3d.positiveZ (Length.meters 0.5)
+                                                    |> Board.point3dToPoint
+                                          }
+                                        , Cmd.none
+                                        )
+
+                            else
+                                ( model, Cmd.none )
 
                 Just ( intersection, _ ) ->
                     ( { model
@@ -987,18 +1246,15 @@ moveCursorByMouse offset model =
                     )
 
 
-tick : Duration -> Model -> Model
-tick deltaMs model =
+tick : Shared.LoadedModel -> Duration -> Model -> ( Model, Cmd msg )
+tick sharedModel deltaMs model =
     case model.editorMode of
         EditBoard ->
-            model
+            ( model, Cmd.none )
 
         TestGame ->
-            { model
-                | level =
-                    model.level
-                        |> Board.tick deltaMs
-            }
+            Board.tick sharedModel.audioMapping deltaMs model.level
+                |> Tuple.mapFirst (\level -> { model | level = level })
 
 
 handleEditorKeyPressed : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> String -> Model -> ( Model, Cmd msg )
@@ -1136,165 +1392,7 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                     "auto"
         , Html.Attributes.style "width" "100vw"
         ]
-        [ Html.div
-            ([ Html.Attributes.id "editor-viewport"
-             , case model.editorMode of
-                EditBoard ->
-                    Html.Attributes.class ""
-
-                TestGame ->
-                    Html.Attributes.style "width" <|
-                        -- "calc(100vw - 25rem)"
-                        "100vw"
-             , Html.Attributes.style "grid-column" <|
-                case model.editorMode of
-                    EditBoard ->
-                        "1"
-
-                    TestGame ->
-                        "1 / 2"
-             , Html.Attributes.style "grid-row" <|
-                case model.editorMode of
-                    EditBoard ->
-                        "2"
-
-                    TestGame ->
-                        "1"
-             ]
-                ++ (case model.mouseDragging of
-                        NoInteraction ->
-                            [ Html.Events.on "pointerdown" (decodeMouseDown toMsg)
-                            , Html.Events.on "pointermove" (decodePointerMove toMsg Json.Encode.null)
-                            , Html.Attributes.property "___setPointerCapture" Json.Encode.null
-                            ]
-
-                        InteractionStart pointer ->
-                            [ Html.Events.on "pointerup" (decodeMouseUp toMsg)
-                            , Html.Events.on "pointermove" (decodePointerMove toMsg pointer)
-                            , Html.Attributes.property "___setPointerCapture" pointer
-                            ]
-
-                        InteractionMoving pointer ->
-                            [ Html.Events.on "pointerup" (decodeMouseUp toMsg)
-                            , Html.Events.on "pointermove" (decodePointerMove toMsg pointer)
-                            , Html.Attributes.property "___setPointerCapture" pointer
-                            ]
-                   )
-            )
-            [ case model.screenSize of
-                Nothing ->
-                    Html.div [] [ Html.text "Loading..." ]
-
-                Just screenSize ->
-                    let
-                        lights =
-                            case model.editorMode of
-                                TestGame ->
-                                    Board.gameLights model.level.board (Frame3d.originPoint model.level.playerFrame)
-
-                                EditBoard ->
-                                    let
-                                        sun =
-                                            Scene3d.Light.directional (Scene3d.Light.castsShadows True)
-                                                { direction =
-                                                    Direction3d.negativeZ
-                                                        |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
-                                                        |> Direction3d.rotateAround Axis3d.z
-                                                            (model.cameraRotation
-                                                                |> Quantity.plus (Angle.degrees 90)
-                                                            )
-                                                , intensity = Illuminance.lux 80000
-                                                , chromaticity = Scene3d.Light.sunlight
-                                                }
-
-                                        sky =
-                                            Scene3d.Light.overhead
-                                                { upDirection = Direction3d.positiveZ
-                                                , chromaticity = Scene3d.Light.skylight
-                                                , intensity = Illuminance.lux 20000
-                                                }
-
-                                        upsideDownSky =
-                                            Scene3d.Light.overhead
-                                                { upDirection = Direction3d.negativeZ
-                                                , chromaticity = Scene3d.Light.skylight
-                                                , intensity = Illuminance.lux 40000
-                                                }
-
-                                        environment =
-                                            Scene3d.Light.overhead
-                                                { upDirection = Direction3d.reverse Direction3d.positiveZ
-                                                , chromaticity = Scene3d.Light.daylight
-                                                , intensity = Illuminance.lux 15000
-                                                }
-                                    in
-                                    Scene3d.fourLights sun sky environment upsideDownSky
-                    in
-                    Board.view3dScene
-                        lights
-                        (case model.editorMode of
-                            TestGame ->
-                                sharedModel.screenSize
-
-                            EditBoard ->
-                                screenSize
-                        )
-                        (case model.editorMode of
-                            TestGame ->
-                                Board.gamePlayCamera model.level.playerFrame
-
-                            EditBoard ->
-                                editorCamera model
-                        )
-                        (case model.editorMode of
-                            EditBoard ->
-                                let
-                                    editorBoard =
-                                        model.editorBoard
-                                            |> Undo.value
-                                in
-                                List.concat
-                                    [ editorBoard.blocks
-                                        |> Dict.toList
-                                        |> List.map (viewBlock sharedModel editorBoard model)
-                                    , [ viewCursor
-                                            (case model.blockEditMode of
-                                                Select ->
-                                                    Color.white
-
-                                                Remove ->
-                                                    Color.red
-
-                                                Add ->
-                                                    Color.green
-                                            )
-                                            model.cursorBounce
-                                            model.editorCursor
-                                      , viewOrientationArrows
-                                      , case model.selectedBlock of
-                                            Nothing ->
-                                                Scene3d.nothing
-
-                                            Just ( point, _ ) ->
-                                                viewCursor Color.yellow model.cursorBounce point
-                                      , if model.showBoardBounds then
-                                            viewBounds editorBoard
-
-                                        else
-                                            Scene3d.nothing
-                                      ]
-                                    ]
-
-                            TestGame ->
-                                List.concat
-                                    [ model.level.board.blocks
-                                        |> Dict.toList
-                                        |> List.map Board.viewBlock
-                                    , [ Board.viewPlayer model.level ]
-                                    , List.map Board.viewEnemy model.level.enemies
-                                    ]
-                        )
-            ]
+        [ viewEditor3dScene sharedModel toMsg model
         , viewHeader setScreen toSharedMsg sharedModel toMsg model
         , viewSettings toSharedMsg sharedModel toMsg model
         , case model.editorMode of
@@ -1325,6 +1423,24 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                             ]
                         ]
                     , Board.viewGameOver model.level
+                        (Html.div
+                            [ Html.Attributes.style "display" "flex"
+                            , Html.Attributes.style "flex-direction" "column"
+                            , Html.Attributes.style "gap" "0.5rem"
+                            ]
+                            [ Html.button
+                                [ Html.Attributes.type_ "button"
+                                , Html.Events.onClick (toMsg RestartLevel)
+                                ]
+                                [ Html.text "Restart" ]
+                            , Html.button
+                                [ Html.Attributes.type_ "button"
+                                , Html.Events.onClick (toMsg ChangeMode)
+                                ]
+                                [ Html.text "Edit" ]
+                            ]
+                        )
+                    , Board.viewAllPointsCollected model.level
                         (Html.div
                             [ Html.Attributes.style "display" "flex"
                             , Html.Attributes.style "flex-direction" "column"
@@ -1609,6 +1725,8 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                                 [ Board.DefaultBoard
                                 , Board.BasicMiniBoard
                                 , Board.ZigZagBoard
+                                , Board.SomethingFamiliarBoard
+                                , Board.LayersBoard
                                 ]
                             , toLabel =
                                 \value ->
@@ -1621,6 +1739,12 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
 
                                         Board.ZigZagBoard ->
                                             "Zig zag"
+
+                                        Board.SomethingFamiliarBoard ->
+                                            "Something Familiar"
+
+                                        Board.LayersBoard ->
+                                            "Layers"
                             , toKey =
                                 \value ->
                                     case value of
@@ -1632,6 +1756,12 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
 
                                         Board.ZigZagBoard ->
                                             "ZigZagBoard"
+
+                                        Board.SomethingFamiliarBoard ->
+                                            "SomethingFamiliarBoard"
+
+                                        Board.LayersBoard ->
+                                            "LayersBoard"
                             , onSelect =
                                 \value ->
                                     toMsg <|
@@ -1647,6 +1777,12 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
 
                                             Just Board.ZigZagBoard ->
                                                 LoadEditorBoard Board.zigZagBoard
+
+                                            Just Board.SomethingFamiliarBoard ->
+                                                LoadEditorBoard Board.somethingFamiliarBoard
+
+                                            Just Board.LayersBoard ->
+                                                LoadEditorBoard Board.layersBoard
                             }
                         ]
                     ]
@@ -1654,11 +1790,230 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
     ]
 
 
+viewEditor3dScene : Shared.LoadedModel -> (Msg -> msg) -> Model -> Html msg
+viewEditor3dScene sharedModel toMsg model =
+    Html.div
+        ([ Html.Attributes.id "editor-viewport"
+         , case model.editorMode of
+            EditBoard ->
+                Html.Attributes.class ""
+
+            TestGame ->
+                Html.Attributes.style "width" <|
+                    -- "calc(100vw - 25rem)"
+                    "100vw"
+         , Html.Attributes.style "grid-column" <|
+            case model.editorMode of
+                EditBoard ->
+                    "1"
+
+                TestGame ->
+                    "1 / 2"
+         , Html.Attributes.style "grid-row" <|
+            case model.editorMode of
+                EditBoard ->
+                    "2"
+
+                TestGame ->
+                    "1"
+         ]
+            ++ (case model.mouseDragging of
+                    NoInteraction ->
+                        [ Html.Events.on "pointerdown" (decodeMouseDown toMsg)
+                        , Html.Events.on "pointermove"
+                            (decodePointerMove toMsg
+                                { pointerId = Json.Encode.null
+                                , modifyingMany = Nothing
+                                }
+                            )
+                        , Html.Attributes.property "___setPointerCapture" Json.Encode.null
+                        ]
+
+                    InteractionStart details ->
+                        [ Html.Events.on "pointerup" (decodeMouseUp toMsg)
+                        , Html.Events.on "pointermove" (decodePointerMove toMsg details)
+                        , Html.Attributes.property "___setPointerCapture" details.pointerId
+                        ]
+
+                    InteractionMoving details ->
+                        [ Html.Events.on "pointerup" (decodeMouseUp toMsg)
+                        , Html.Events.on "pointermove" (decodePointerMove toMsg details)
+                        , Html.Attributes.property "___setPointerCapture" details.pointerId
+                        ]
+               )
+        )
+        [ case model.screenSize of
+            Nothing ->
+                Html.div [] [ Html.text "Loading..." ]
+
+            Just screenSize ->
+                let
+                    lights =
+                        case model.editorMode of
+                            TestGame ->
+                                Board.gameLights model.level.board (Frame3d.originPoint model.level.playerFrame)
+
+                            EditBoard ->
+                                let
+                                    sun =
+                                        Scene3d.Light.directional (Scene3d.Light.castsShadows True)
+                                            { direction =
+                                                Direction3d.negativeZ
+                                                    |> Direction3d.rotateAround Axis3d.x (Angle.degrees 70)
+                                                    |> Direction3d.rotateAround Axis3d.z
+                                                        (model.cameraRotation
+                                                            |> Quantity.plus (Angle.degrees 90)
+                                                        )
+                                            , intensity = Illuminance.lux 80000
+                                            , chromaticity = Scene3d.Light.sunlight
+                                            }
+
+                                    sky =
+                                        Scene3d.Light.overhead
+                                            { upDirection = Direction3d.positiveZ
+                                            , chromaticity = Scene3d.Light.skylight
+                                            , intensity = Illuminance.lux 20000
+                                            }
+
+                                    upsideDownSky =
+                                        Scene3d.Light.overhead
+                                            { upDirection = Direction3d.negativeZ
+                                            , chromaticity = Scene3d.Light.skylight
+                                            , intensity = Illuminance.lux 40000
+                                            }
+
+                                    environment =
+                                        Scene3d.Light.overhead
+                                            { upDirection = Direction3d.reverse Direction3d.positiveZ
+                                            , chromaticity = Scene3d.Light.daylight
+                                            , intensity = Illuminance.lux 15000
+                                            }
+                                in
+                                Scene3d.fourLights sun sky environment upsideDownSky
+                in
+                Board.view3dScene
+                    lights
+                    (case model.editorMode of
+                        TestGame ->
+                            sharedModel.screenSize
+
+                        EditBoard ->
+                            screenSize
+                    )
+                    (case model.editorMode of
+                        TestGame ->
+                            Board.gamePlayCamera model.level.playerFrame
+
+                        EditBoard ->
+                            editorCamera model
+                    )
+                    (case model.editorMode of
+                        EditBoard ->
+                            let
+                                editorBoard =
+                                    model.editorBoard
+                                        |> Undo.value
+                            in
+                            List.concat
+                                [ let
+                                    editingMany =
+                                        case model.mouseDragging of
+                                            NoInteraction ->
+                                                Nothing
+
+                                            InteractionStart details ->
+                                                details.modifyingMany
+
+                                            InteractionMoving details ->
+                                                details.modifyingMany
+
+                                    blocks =
+                                        case editingMany of
+                                            Just modifyingMany ->
+                                                let
+                                                    ( x1, y1, z1 ) =
+                                                        modifyingMany
+
+                                                    ( x2, y2, z2 ) =
+                                                        model.editorCursor
+                                                in
+                                                List.foldl
+                                                    (\x blocks_ ->
+                                                        List.foldl
+                                                            (\y blocks__ ->
+                                                                List.foldl
+                                                                    (\z ->
+                                                                        case model.blockEditMode of
+                                                                            Remove ->
+                                                                                Dict.remove ( x, y, z )
+
+                                                                            Add ->
+                                                                                Dict.insert ( x, y, z )
+                                                                                    model.selectedBlockType
+
+                                                                            Select ->
+                                                                                identity
+                                                                    )
+                                                                    blocks__
+                                                                    (List.range (min z1 z2) (max z1 z2))
+                                                            )
+                                                            blocks_
+                                                            (List.range (min y1 y2) (max y1 y2))
+                                                    )
+                                                    editorBoard.blocks
+                                                    (List.range (min x1 x2) (max x1 x2))
+
+                                            Nothing ->
+                                                editorBoard.blocks
+                                  in
+                                  blocks
+                                    |> Dict.toList
+                                    |> List.map (viewBlock sharedModel editorBoard model)
+                                , [ viewCursor
+                                        (case model.blockEditMode of
+                                            Select ->
+                                                Color.white
+
+                                            Remove ->
+                                                Color.red
+
+                                            Add ->
+                                                Color.green
+                                        )
+                                        model.cursorBounce
+                                        model.editorCursor
+                                  , viewOrientationArrows
+                                  , case model.selectedBlock of
+                                        Nothing ->
+                                            Scene3d.nothing
+
+                                        Just ( point, _ ) ->
+                                            viewCursor Color.yellow model.cursorBounce point
+                                  , if model.showBoardBounds then
+                                        viewBounds editorBoard
+
+                                    else
+                                        Scene3d.nothing
+                                  ]
+                                ]
+
+                        TestGame ->
+                            List.concat
+                                [ model.level.board.blocks
+                                    |> Dict.toList
+                                    |> List.map Board.viewBlock
+                                , [ Board.viewPlayer model.level ]
+                                , List.map Board.viewEnemy model.level.enemies
+                                ]
+                    )
+        ]
+
+
 viewSettings : (Shared.Msg -> msg) -> Shared.LoadedModel -> (Msg -> msg) -> Model -> Html msg
 viewSettings toSharedMsg sharedModel toMsg model =
     Html.Extra.modal { open = model.showSettings, onClose = toMsg (ShowSettings False) }
         []
-        [ Html.h2
+        [ Html.h1
             [ Html.Attributes.style "width" "100%"
             , Html.Attributes.style "margin-top" "0"
             ]
@@ -1677,6 +2032,26 @@ viewSettings toSharedMsg sharedModel toMsg model =
         , Html.span [] [ Html.text "Hold 'Shift' and move mouse to use camera actions (orbit, pan, zoom)" ]
         , Html.br [] []
         , Html.br [] []
+        , Html.span [] [ Html.text "Hold 'Alt/Option' to edit an area of blocks" ]
+        , Html.br [] []
+        , Html.br [] []
+        , Html.h2 [] [ Html.text "Audio" ]
+        , Html.label
+            [ Html.Attributes.style "display" "flex"
+            , Html.Attributes.style "align-items" "center"
+            , Html.Attributes.style "gap" "1rem"
+            ]
+            [ Html.span [] [ Html.text "Sound Effects" ]
+            , Html.Extra.range
+                []
+                { step = 0.1
+                , min = 0.0
+                , max = 1.0
+                , value = sharedModel.audioMapping.effects
+                , onInput = Shared.AudioEffectsChanged >> toSharedMsg
+                }
+            ]
+        , Html.h2 [] [ Html.text "Input" ]
         , let
             viewMapping =
                 Input.viewMapping (Shared.SetMapping >> toSharedMsg)
@@ -2085,12 +2460,12 @@ decodeMouseUp toMsg =
             )
 
 
-decodePointerMove : (Msg -> msg) -> Json.Decode.Value -> Json.Decode.Decoder msg
-decodePointerMove toMsg pointer =
+decodePointerMove : (Msg -> msg) -> MouseDetails -> Json.Decode.Decoder msg
+decodePointerMove toMsg mouseDetails =
     Json.Decode.map4
         (\ox oy mx my ->
             toMsg
-                (MouseMove pointer
+                (MouseMove mouseDetails
                     (Point2d.pixels ox oy)
                     (Point2d.pixels mx my)
                 )
@@ -2668,8 +3043,8 @@ viewBounds board =
                     Scene3d.lineSegment
                         (Scene3d.Material.color Color.orange)
                         (LineSegment3d.from
-                            (Point3d.meters -0.5 (toFloat y - 0.5) -0.5)
-                            (Point3d.meters (toFloat board.maxX - 0.5) (toFloat y - 0.5) -0.5)
+                            (Point3d.meters -0.501 (toFloat y - 0.501) -0.501)
+                            (Point3d.meters (toFloat board.maxX - 0.501) (toFloat y - 0.501) -0.501)
                         )
                 )
                 (List.range 0 board.maxY)
@@ -2678,58 +3053,58 @@ viewBounds board =
                     Scene3d.lineSegment
                         (Scene3d.Material.color Color.orange)
                         (LineSegment3d.from
-                            (Point3d.meters (toFloat x - 0.5) -0.5 -0.5)
-                            (Point3d.meters (toFloat x - 0.5) (toFloat board.maxY - 0.5) -0.5)
+                            (Point3d.meters (toFloat x - 0.501) -0.501 -0.501)
+                            (Point3d.meters (toFloat x - 0.501) (toFloat board.maxY - 0.501) -0.501)
                         )
                 )
                 (List.range 0 board.maxX)
             , [ Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters -0.5 -0.5 (toFloat board.maxZ - 0.5))
-                        (Point3d.meters (toFloat board.maxX - 0.5) -0.5 (toFloat board.maxZ - 0.5))
+                        (Point3d.meters -0.501 -0.501 (toFloat board.maxZ - 0.501))
+                        (Point3d.meters (toFloat board.maxX - 0.501) -0.501 (toFloat board.maxZ - 0.501))
                     )
               , Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters -0.5 (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
-                        (Point3d.meters (toFloat board.maxX - 0.5) (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                        (Point3d.meters -0.501 (toFloat board.maxY - 0.501) (toFloat board.maxZ - 0.501))
+                        (Point3d.meters (toFloat board.maxX - 0.501) (toFloat board.maxY - 0.501) (toFloat board.maxZ - 0.501))
                     )
               , Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters -0.5 -0.5 (toFloat board.maxZ - 0.5))
-                        (Point3d.meters -0.5 (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                        (Point3d.meters -0.501 -0.501 (toFloat board.maxZ - 0.501))
+                        (Point3d.meters -0.501 (toFloat board.maxY - 0.501) (toFloat board.maxZ - 0.501))
                     )
               , Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters (toFloat board.maxX - 0.5) -0.5 (toFloat board.maxZ - 0.5))
-                        (Point3d.meters (toFloat board.maxX - 0.5) (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                        (Point3d.meters (toFloat board.maxX - 0.501) -0.501 (toFloat board.maxZ - 0.501))
+                        (Point3d.meters (toFloat board.maxX - 0.501) (toFloat board.maxY - 0.501) (toFloat board.maxZ - 0.501))
                     )
               , Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters -0.5 -0.5 -0.5)
-                        (Point3d.meters -0.5 -0.5 (toFloat board.maxZ - 0.5))
+                        (Point3d.meters -0.501 -0.501 -0.501)
+                        (Point3d.meters -0.501 -0.501 (toFloat board.maxZ - 0.501))
                     )
               , Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters (toFloat board.maxX - 0.5) -0.5 -0.5)
-                        (Point3d.meters (toFloat board.maxX - 0.5) -0.5 (toFloat board.maxZ - 0.5))
+                        (Point3d.meters (toFloat board.maxX - 0.501) -0.501 -0.501)
+                        (Point3d.meters (toFloat board.maxX - 0.501) -0.501 (toFloat board.maxZ - 0.501))
                     )
               , Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters -0.5 (toFloat board.maxY - 0.5) -0.5)
-                        (Point3d.meters -0.5 (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                        (Point3d.meters -0.501 (toFloat board.maxY - 0.501) -0.501)
+                        (Point3d.meters -0.501 (toFloat board.maxY - 0.501) (toFloat board.maxZ - 0.501))
                     )
               , Scene3d.lineSegment
                     (Scene3d.Material.color Color.orange)
                     (LineSegment3d.from
-                        (Point3d.meters (toFloat board.maxX - 0.5) (toFloat board.maxY - 0.5) -0.5)
-                        (Point3d.meters (toFloat board.maxX - 0.5) (toFloat board.maxY - 0.5) (toFloat board.maxZ - 0.5))
+                        (Point3d.meters (toFloat board.maxX - 0.501) (toFloat board.maxY - 0.501) -0.501)
+                        (Point3d.meters (toFloat board.maxX - 0.501) (toFloat board.maxY - 0.501) (toFloat board.maxZ - 0.501))
                     )
               ]
             ]
@@ -2807,7 +3182,13 @@ viewHeader setScreen _ sharedModel toMsg model =
                         ]
                     ]
                 , Html.div
-                    [ Html.Attributes.attribute "role" "group" ]
+                    [ Html.Attributes.attribute "role" "group"
+                    , if Set.member "Shift" model.editorKeysDown then
+                        Html.Attributes.style "outline" "2px solid rgb(25, 255, 75)"
+
+                      else
+                        Html.Attributes.class ""
+                    ]
                     [ Html.button
                         [ Html.Attributes.type_ "button"
                         , Html.Events.onClick (toMsg (SetCameraMode Orbit))
@@ -2882,6 +3263,11 @@ viewHeader setScreen _ sharedModel toMsg model =
                     ]
                 , Html.div
                     [ Html.Attributes.attribute "role" "group"
+                    , if Set.member "Alt" model.editorKeysDown && not (Set.member "Shift" model.editorKeysDown) then
+                        Html.Attributes.style "outline" "2px solid rgb(25, 255, 75)"
+
+                      else
+                        Html.Attributes.class ""
                     ]
                     [ Html.button
                         [ Html.Attributes.Extra.aria "current" <|
