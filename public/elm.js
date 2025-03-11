@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1741641253431"
+    "1741729152113"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -17336,6 +17336,7 @@ var $ianmackenzie$elm_units$Quantity$compare = F2(
 		var y = _v1.a;
 		return A2($elm$core$Basics$compare, x, y);
 	});
+var $author$project$Board$enemyAnimationDuration = $ianmackenzie$elm_units$Duration$seconds(3);
 var $ianmackenzie$elm_units$Quantity$equalWithin = F3(
 	function (_v0, _v1, _v2) {
 		var tolerance = _v0.a;
@@ -17657,6 +17658,10 @@ var $author$project$Board$moveEnemy = F3(
 				$author$project$Board$durationEnemyMovement) ? _Utils_update(
 				enemy,
 				{
+					animationTimeline: function () {
+						var newAnimTimeline = A2($ianmackenzie$elm_units$Quantity$plus, deltaDuration, enemy.animationTimeline);
+						return A2($ianmackenzie$elm_units$Quantity$greaterThan, $author$project$Board$enemyAnimationDuration, newAnimTimeline) ? A2($ianmackenzie$elm_units$Quantity$minus, $author$project$Board$enemyAnimationDuration, newAnimTimeline) : newAnimTimeline;
+					}(),
 					movingTo: A2(
 						$elm$core$Maybe$withDefault,
 						_List_Nil,
@@ -17666,7 +17671,14 @@ var $author$project$Board$moveEnemy = F3(
 							enemy.movingFrom,
 							$author$project$Board$point3dToPoint(
 								$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame))))
-				}) : enemy;
+				}) : _Utils_update(
+				enemy,
+				{
+					animationTimeline: function () {
+						var newAnimTimeline = A2($ianmackenzie$elm_units$Quantity$plus, deltaDuration, enemy.animationTimeline);
+						return A2($ianmackenzie$elm_units$Quantity$greaterThan, $author$project$Board$enemyAnimationDuration, newAnimTimeline) ? A2($ianmackenzie$elm_units$Quantity$minus, $author$project$Board$enemyAnimationDuration, newAnimTimeline) : newAnimTimeline;
+					}()
+				});
 			var _v1 = enemyWithUpdatedPath.movingTo;
 			if (!_v1.b) {
 				return _Utils_update(
@@ -17809,7 +17821,13 @@ var $author$project$Board$tickEnemySpawners = F2(
 											$author$project$Board$point3dToPoint(
 												$ianmackenzie$elm_geometry$Frame3d$originPoint(level.playerFrame))));
 									return $elm$core$Maybe$Just(
-										{durationBetweenMoves: $author$project$Board$durationEnemyMovement, movingFrom: point, movingTo: movingTo, targetPoint: point});
+										{
+											animationTimeline: $ianmackenzie$elm_units$Duration$seconds(0),
+											durationBetweenMoves: $author$project$Board$durationEnemyMovement,
+											movingFrom: point,
+											movingTo: movingTo,
+											targetPoint: point
+										});
 								}()) : _Utils_Tuple2(
 								A3(
 									$elm$core$Dict$insert,
@@ -26694,7 +26712,14 @@ var $author$project$Board$viewEnemy = function (enemy) {
 		$ianmackenzie$elm_3d_scene$Scene3d$Light$color($avh4$elm_color$Color$red),
 		$ianmackenzie$elm_units$Luminance$nits(10000));
 	var dimensions = {
-		length: $ianmackenzie$elm_units$Length$meters(0.45),
+		length: A3(
+			$ianmackenzie$elm_units$Quantity$interpolateFrom,
+			$ianmackenzie$elm_units$Length$meters(0.35),
+			$ianmackenzie$elm_units$Length$meters(0.55),
+			function (f) {
+				return (f < 0.5) ? $elm_community$easing_functions$Ease$inOutElastic(f * 2) : A2($elm_community$easing_functions$Ease$reverse, $elm_community$easing_functions$Ease$inOutElastic, (f - 0.5) * 2);
+			}(
+				A2($ianmackenzie$elm_units$Quantity$ratio, enemy.animationTimeline, $author$project$Board$enemyAnimationDuration))),
 		radius: $ianmackenzie$elm_units$Length$meters(0.1)
 	};
 	return $ianmackenzie$elm_3d_scene$Scene3d$group(

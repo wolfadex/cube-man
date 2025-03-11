@@ -500,7 +500,18 @@ viewEnemy enemy =
 
         dimensions =
             { radius = Length.meters 0.1
-            , length = Length.meters 0.45
+            , length =
+                Quantity.ratio enemy.animationTimeline enemyAnimationDuration
+                    |> (\f ->
+                            if f < 0.5 then
+                                Ease.inOutElastic (f * 2)
+
+                            else
+                                Ease.reverse Ease.inOutElastic ((f - 0.5) * 2)
+                       )
+                    |> Quantity.interpolateFrom
+                        (Length.meters 0.35)
+                        (Length.meters 0.55)
             }
 
         visualPoint =
@@ -1257,6 +1268,11 @@ moveEnemiesHelper deltaDuration movedEnemies toMoveEnemies level =
                 moveEnemiesHelper deltaDuration (movedEnemy :: movedEnemies) restEnemies level
 
 
+enemyAnimationDuration : Duration
+enemyAnimationDuration =
+    Duration.seconds 3
+
+
 moveEnemy : Duration -> Level -> Enemy -> Enemy
 moveEnemy deltaDuration level enemy =
     case level.playerTarget of
@@ -1279,10 +1295,31 @@ moveEnemy deltaDuration level enemy =
                                     |> point3dToPoint
                                     |> findEnemyPath level.board.blocks enemy.movingFrom
                                     |> Maybe.withDefault []
+                            , animationTimeline =
+                                let
+                                    newAnimTimeline =
+                                        enemy.animationTimeline |> Quantity.plus deltaDuration
+                                in
+                                if newAnimTimeline |> Quantity.greaterThan enemyAnimationDuration then
+                                    newAnimTimeline |> Quantity.minus enemyAnimationDuration
+
+                                else
+                                    newAnimTimeline
                         }
 
                     else
-                        enemy
+                        { enemy
+                            | animationTimeline =
+                                let
+                                    newAnimTimeline =
+                                        enemy.animationTimeline |> Quantity.plus deltaDuration
+                                in
+                                if newAnimTimeline |> Quantity.greaterThan enemyAnimationDuration then
+                                    newAnimTimeline |> Quantity.minus enemyAnimationDuration
+
+                                else
+                                    newAnimTimeline
+                        }
             in
             case enemyWithUpdatedPath.movingTo of
                 [] ->
@@ -1399,6 +1436,7 @@ tickEnemySpawners deltaDuration level =
                                         , movingFrom = point
                                         , movingTo = movingTo
                                         , durationBetweenMoves = durationEnemyMovement
+                                        , animationTimeline = Duration.seconds 0
                                         }
                                     )
 
@@ -1485,6 +1523,7 @@ type alias Enemy =
     , movingFrom : Point
     , movingTo : List Point
     , durationBetweenMoves : Duration
+    , animationTimeline : Duration
     }
 
 
