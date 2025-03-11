@@ -920,7 +920,7 @@ ${indent.repeat(level)}}`;
   var VERSION = "2.0.0-beta.4";
   var TARGET_NAME = "Cube-Man";
   var INITIAL_ELM_COMPILED_TIMESTAMP = Number(
-    "1741729152113"
+    "1741729705637"
   );
   var ORIGINAL_COMPILATION_MODE = "standard";
   var ORIGINAL_BROWSER_UI_POSITION = "BottomLeft";
@@ -18128,7 +18128,7 @@ var $author$project$Board$setPlayerFacing = function (model) {
 					var playerBoardPoint3d = $author$project$Board$pointToPoint3d(playerBoardPoint);
 					if (A3(
 						$ianmackenzie$elm_units$Quantity$equalWithin,
-						$ianmackenzie$elm_units$Length$meters(0.1),
+						$ianmackenzie$elm_units$Length$meters(0.2),
 						A2($ianmackenzie$elm_geometry$Point3d$distanceFrom, playerBoardPoint3d, playerPoint),
 						$ianmackenzie$elm_units$Length$meters(0))) {
 						var targetBoardPoint = $author$project$Board$point3dToPoint(

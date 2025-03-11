@@ -1012,7 +1012,7 @@ setPlayerFacing model =
                                 |> pointToPoint3d
                     in
                     if
-                        Quantity.equalWithin (Length.meters 0.1)
+                        Quantity.equalWithin (Length.meters 0.2)
                             (Point3d.distanceFrom playerBoardPoint3d playerPoint)
                             (Length.meters 0)
                     then

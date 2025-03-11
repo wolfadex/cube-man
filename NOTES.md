@@ -14,7 +14,6 @@ Thoughts and ideas about where this project is headed.
 - Tunnels through levels?
 - Powerups?
 - Multiplayer mode?
-- "coyote time" where you can turn a little later than right at the center of an intersection
 - camera should slightly lead the player/be a little more fluid and not as stiff
 
 ### Art/graphics
