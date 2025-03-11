@@ -3,7 +3,6 @@
 Thoughts and ideas about where this project is headed.
 
 ### Enemies
-- Pulsating?
 - Explode on contact?
 
 ### Desktop version
