@@ -256,11 +256,9 @@ view { setScreen, toSharedMsg, sharedModel, toMsg, model } =
                         [ model.level.board.blocks
                             |> Dict.toList
                             |> List.map
-                                (Board.viewBlock
-                                 -- { wallMesh = sharedModel.wallMesh
-                                 -- }
-                                )
-                        , [ Board.viewPlayer model.level ]
+                                Board.viewBlockDynamic
+                        , model.level.board.staticBlocks
+                        , [ Board.viewPlayer model.level, Board.viewWalls model.level.board.staticWallsMesh ]
                         , List.map Board.viewEnemy model.level.enemies
                         ]
                     )

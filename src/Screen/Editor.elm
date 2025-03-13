@@ -53,6 +53,7 @@ import Rectangle3d
 import Scene3d
 import Scene3d.Light
 import Scene3d.Material
+import Scene3d.Mesh
 import Screen exposing (Screen)
 import Serialize
 import Set exposing (Set)
@@ -158,6 +159,8 @@ init =
                         )
                         ( 0, Dict.empty )
                     |> Tuple.second
+            , staticBlocks = []
+            , staticWallsMesh = Scene3d.Mesh.facets []
             }
     in
     ( { xLowerVisible = 0
@@ -2001,8 +2004,9 @@ viewEditor3dScene sharedModel toMsg model =
                             List.concat
                                 [ model.level.board.blocks
                                     |> Dict.toList
-                                    |> List.map Board.viewBlock
-                                , [ Board.viewPlayer model.level ]
+                                    |> List.map Board.viewBlockDynamic
+                                , model.level.board.staticBlocks
+                                , [ Board.viewPlayer model.level, Board.viewWalls model.level.board.staticWallsMesh ]
                                 , List.map Board.viewEnemy model.level.enemies
                                 ]
                     )
